@@ -1,6 +1,6 @@
 # KML-WEBSITE-
 
-Official modern landing page, interactive coordinate playground, and download portal for **Excel to KML Pro** (v3.5.1).
+Official modern landing page, interactive coordinate playground, and download portal for **Excel to KML Pro**.
 
 ## 🚀 Overview
 **Excel to KML Pro** is an open-source survey benchmark converter that transforms Excel/CSV coordinates into 3D Google Earth KML & KMZ with 6,864 national EPSG grids, Helmert 2D site calibration, and geotagged site photo balloons.
