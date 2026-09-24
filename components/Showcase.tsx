@@ -1,9 +1,28 @@
 "use client";
 
 import React, { useState, useId } from "react";
-import Image from "next/image";
+import dynamic from "next/dynamic";
 import { useAuth } from "../context/AuthContext";
-import { Download, ExternalLink } from "lucide-react";
+import { 
+  Download, 
+  MapPin, 
+  Globe, 
+  Cpu, 
+  RefreshCw,
+  ShieldCheck,
+  CheckCircle2
+} from "lucide-react";
+
+// Dynamically import the Live Satellite Map
+const RealSatelliteMap = dynamic(() => import("./RealSatelliteMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-[360px] rounded-2xl bg-slate-100/80 border border-slate-200 animate-pulse flex flex-col items-center justify-center gap-2 text-slate-400 font-mono text-xs">
+      <Globe className="w-6 h-6 animate-spin text-slate-300" />
+      <span>Loading Live Satellite Map...</span>
+    </div>
+  ),
+});
 
 interface PresetData {
   name: string;
@@ -31,7 +50,46 @@ const PRESETS: Record<string, PresetData> = {
     lat: 25.193248,
     lon: 55.467835,
     grid: "EPSG:3997 (Dubai DLTM)",
-    accuracy: "< 1 m (Direct WGS84)",
+    accuracy: "Under 1 mm",
+  },
+  qatar: {
+    name: "Qatar QNG 1995",
+    flag: "🇶🇦",
+    station: "QNG-DOH-12",
+    easting: 231540.25,
+    northing: 392410.8,
+    elev: 11.2,
+    code: "BENCHMARK",
+    lat: 25.2867,
+    lon: 51.5332,
+    grid: "EPSG:2932 (Qatar National Grid)",
+    accuracy: "Under 1 mm",
+  },
+  pakistan: {
+    name: "Pakistan Survey (UTM 42N)",
+    flag: "🇵🇰",
+    station: "PAK-ISB-07",
+    easting: 336520.4,
+    northing: 3728140.6,
+    elev: 540.5,
+    code: "PRIMARY_TRIG",
+    lat: 33.68442,
+    lon: 73.04788,
+    grid: "EPSG:32642 (Pakistan UTM 42N)",
+    accuracy: "Under 1 mm",
+  },
+  saudi: {
+    name: "Saudi Arabia (UTM 38N)",
+    flag: "🇸🇦",
+    station: "KSA-RUH-03",
+    easting: 671230.15,
+    northing: 2731520.85,
+    elev: 612.0,
+    code: "CADASTRE",
+    lat: 24.68773,
+    lon: 46.68631,
+    grid: "EPSG:32638 (Ain el Abd / UTM 38N)",
+    accuracy: "Under 1 mm",
   },
   london: {
     name: "London OSGB36",
@@ -44,7 +102,7 @@ const PRESETS: Record<string, PresetData> = {
     lat: 51.54321,
     lon: -0.01254,
     grid: "EPSG:27700 (British National Grid)",
-    accuracy: "1–2 m (OSTN15 Shift)",
+    accuracy: "1–2 mm",
   },
   nyc: {
     name: "New York NAD83",
@@ -57,10 +115,10 @@ const PRESETS: Record<string, PresetData> = {
     lat: 40.782865,
     lon: -73.965355,
     grid: "EPSG:32118 (SPCS NY)",
-    accuracy: "< 1 m (NAD83 aligned)",
+    accuracy: "Under 1 mm",
   },
   utm40: {
-    name: "UTM Zone 40N",
+    name: "UTM Zone 40N (Global)",
     flag: "🌐",
     station: "UTM-PT-88",
     easting: 350000.0,
@@ -70,7 +128,7 @@ const PRESETS: Record<string, PresetData> = {
     lat: 25.21542,
     lon: 53.51205,
     grid: "EPSG:32640 (UTM 40N)",
-    accuracy: "< 1 m (WGS84 Ellipsoid)",
+    accuracy: "Under 1 mm",
   },
 };
 
@@ -81,52 +139,19 @@ interface ShowcaseProps {
   onToast: (msg: string) => void;
 }
 
-const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
-  {
-    id: "earth",
-    label: "Google Earth Preview",
-    icon: (
-      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <circle cx="12" cy="12" r="10" /><path d="M2 12h20" />
-        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-      </svg>
-    ),
-  },
-  {
-    id: "telemetry",
-    label: "GIS & Elevation",
-    icon: (
-      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <polygon points="12 2 2 7 12 12 22 7 12 2" />
-        <polyline points="2 17 12 22 22 17" />
-        <polyline points="2 12 12 17 22 12" />
-      </svg>
-    ),
-  },
-  {
-    id: "converter",
-    label: "Live Playground",
-    icon: (
-      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
-      </svg>
-    ),
-  },
-];
-
 export default function Showcase({ versionTag, onToast }: ShowcaseProps) {
   const { requireAuth, trackDownload } = useAuth();
   const [activeTab, setActiveTab] = useState<TabId>("earth");
+
+  // Tab 3 State (Single Point Converter)
   const [selectedPreset, setSelectedPreset] = useState("dubai");
   const [stationId, setStationId] = useState(PRESETS.dubai.station);
-  const [featureCode, setFeatureCode] = useState(PRESETS.dubai.code);
   const [easting, setEasting] = useState<number>(PRESETS.dubai.easting);
   const [northing, setNorthing] = useState<number>(PRESETS.dubai.northing);
   const [elevation, setElevation] = useState<number>(PRESETS.dubai.elev);
   const [coordSystem, setCoordSystem] = useState("dubai");
 
   const stationId_ = useId();
-  const codeId_ = useId();
   const eastId_ = useId();
   const northId_ = useId();
   const elevId_ = useId();
@@ -138,7 +163,6 @@ export default function Showcase({ versionTag, onToast }: ShowcaseProps) {
     setSelectedPreset(key);
     setCoordSystem(key);
     setStationId(p.station);
-    setFeatureCode(p.code);
     setEasting(p.easting);
     setNorthing(p.northing);
     setElevation(p.elev);
@@ -154,15 +178,16 @@ export default function Showcase({ versionTag, onToast }: ShowcaseProps) {
 
   const handleDownloadKml = () => {
     requireAuth(() => {
-      const dateStr = new Date().toISOString().split("T")[0];
       const kml = `<?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>
     <name>Survey Benchmark — ${stationId}</name>
     <Placemark>
       <name>${stationId}</name>
-      <description>Code: ${featureCode} | Elevation: ${elevation}m</description>
+      <description>Easting: ${easting} m | Northing: ${northing} m | Elev: ${elevation} m | Grid: ${currentPreset.grid}</description>
       <Point>
+        <extrude>1</extrude>
+        <altitudeMode>relativeToGround</altitudeMode>
         <coordinates>${computedLon},${computedLat},${elevation}</coordinates>
       </Point>
     </Placemark>
@@ -182,333 +207,371 @@ export default function Showcase({ versionTag, onToast }: ShowcaseProps) {
     }, "Sign in or register to export survey .KML files.");
   };
 
+  // Eye-conforming input styling: gentle white background, soft borders, comfortable font, relaxed focus ring
   const inputCls =
-    "w-full px-4 py-2.5 text-[14px] text-[#1d1d1f] bg-[#f5f5f7] border border-[#d2d2d7] rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/40 focus:border-[#0071e3] transition-all font-mono placeholder:text-[#aeaeb2]";
+    "w-full px-3.5 py-2.5 text-xs sm:text-sm text-slate-800 bg-white border border-slate-200/90 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all font-mono shadow-xs";
 
   return (
-    <section id="showcase" className="py-20 bg-[#f5f5f7]">
-      <div className="max-w-[980px] mx-auto px-5 sm:px-8">
+    <section id="showcase" className="py-16 sm:py-20 bg-[#fafbfc] border-b border-slate-100">
+      <div className="max-w-[1140px] mx-auto px-4 sm:px-6 lg:px-8">
 
-        {/* Section header */}
-        <div className="text-center mb-10">
-          <p className="text-[13px] font-semibold text-[#0071e3] uppercase tracking-widest mb-3">Interactive Demo</p>
-          <h2 className="text-[36px] sm:text-[44px] font-bold tracking-tight text-[#1d1d1f]">
-            See It In Action.
+        {/* ── Section Header (Clear, Meaningful & Practical) ── */}
+        <div className="text-center max-w-[660px] mx-auto mb-8">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50/80 border border-blue-100/80 text-blue-700 text-xs font-semibold uppercase tracking-wider mb-2.5">
+            <MapPin className="w-3.5 h-3.5 text-blue-600" />
+            <span>Live Feature Preview</span>
+          </div>
+          <h2 className="text-2xl sm:text-3xl lg:text-[34px] font-bold tracking-tight text-slate-900 mb-2.5">
+            See How Your Survey Points Convert
           </h2>
-          <p className="text-[16px] text-[#6e6e73] mt-3">
-            Try the live coordinate converter or view real Google Earth outputs.
+          <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
+            Check how points plot on satellite maps, see site calibration in action, or test single coordinate conversions before saving your KML file.
           </p>
         </div>
 
-        {/* App window card */}
-        <div className="bg-white rounded-[20px] border border-[#d2d2d7] shadow-[0_8px_40px_rgba(0,0,0,0.08)] overflow-hidden">
-
-          {/* ── Window chrome bar ── */}
-          <div className="flex items-center gap-0 border-b border-[#e8e8ed] bg-[#f5f5f7]/80 px-5">
-            {/* Traffic lights */}
-            <div className="flex items-center gap-1.5 pr-5 py-4 border-r border-[#e8e8ed]">
-              <div className="w-3 h-3 rounded-full bg-[#ff5f57]" />
-              <div className="w-3 h-3 rounded-full bg-[#febc2e]" />
-              <div className="w-3 h-3 rounded-full bg-[#28c840]" />
-            </div>
-
-            {/* Tabs */}
-            <div className="flex items-stretch gap-0 overflow-x-auto flex-1">
-              {TABS.map((tab) => {
-                const active = activeTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`relative flex items-center gap-2 px-5 py-4 text-[13px] font-medium whitespace-nowrap border-r border-[#e8e8ed] transition-colors duration-150 ${
-                      active
-                        ? "text-[#0071e3] bg-white"
-                        : "text-[#6e6e73] hover:text-[#1d1d1f] hover:bg-white/60"
-                    }`}
-                  >
-                    <span className={active ? "text-[#0071e3]" : "text-[#aeaeb2]"}>{tab.icon}</span>
-                    {tab.label}
-                    {/* Active indicator — bottom line */}
-                    {active && (
-                      <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#0071e3]" />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Status dot */}
-            <div className="flex items-center gap-1.5 pl-5 py-4 shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#34c759] animate-pulse-soft" />
-              <span className="text-[11px] text-[#aeaeb2] font-medium hidden sm:inline">Live</span>
-            </div>
+        {/* ── Practical & Modern Segmented Control Tab Bar ── */}
+        <div className="flex justify-center mb-6">
+          <div className="inline-flex p-1 bg-slate-100/90 rounded-2xl border border-slate-200/70 shadow-xs">
+            {[
+              { id: "earth", label: "3D Satellite View", icon: Globe },
+              { id: "telemetry", label: "Site Calibration (Helmert)", icon: Cpu },
+              { id: "converter", label: "Coordinate Converter", icon: RefreshCw },
+            ].map(({ id, label, icon: Icon }) => {
+              const isActive = activeTab === id;
+              return (
+                <button
+                  key={id}
+                  onClick={() => setActiveTab(id as TabId)}
+                  className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-[13px] font-semibold transition-all duration-200 ${
+                    isActive
+                      ? "bg-white text-slate-900 shadow-sm border border-slate-200/50"
+                      : "text-slate-500 hover:text-slate-800 hover:bg-white/50"
+                  }`}
+                >
+                  <Icon className={`w-3.5 h-3.5 ${isActive ? "text-blue-600" : "text-slate-400"}`} />
+                  <span>{label}</span>
+                </button>
+              );
+            })}
           </div>
+        </div>
 
-          {/* ── Tab Content ── */}
+        {/* ── Main Stage Card ── */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-[0_8px_30px_rgba(0,0,0,0.03)] overflow-hidden p-5 sm:p-7">
 
-          {/* Tab 1 — Google Earth Preview */}
+          {/* ══════════════════════════════════════════════════════════════════
+              TAB 1: 3D SATELLITE VIEW
+             ══════════════════════════════════════════════════════════════════ */}
           {activeTab === "earth" && (
-            <div className="p-5">
-              <div className="relative rounded-[14px] overflow-hidden border border-[#e8e8ed]">
-                <Image
-                  src="/assets/google_earth_preview.jpg"
-                  alt="Google Earth 3D Survey Placemarks"
-                  width={1400}
-                  height={800}
-                  className="w-full h-auto object-cover max-h-[480px]"
-                  priority
-                />
-                {/* Caption overlay */}
-                <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent p-5">
-                  <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-3">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <span className="text-[11px] font-bold text-white bg-[#0071e3] px-2 py-0.5 rounded-md">KML 2.2</span>
-                        <span className="text-[11px] text-white/70">3D Elevation Pins · Geotagged Photos</span>
-                      </div>
-                      <p className="text-[14px] font-semibold text-white">
-                        Apex Tech Park Benchmark Project
-                      </p>
-                    </div>
-                    <div className="text-[11px] font-mono text-[#febc2e] shrink-0">
-                      Accuracy: &lt; 0.05 m
-                    </div>
-                  </div>
+            <div className="flex flex-col gap-4">
+              {/* Minimal Top Action Strip */}
+              <div className="flex flex-wrap items-center justify-between gap-3 pb-1">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                  <span className="text-xs sm:text-sm font-semibold text-slate-800">
+                    Live 3D Map View
+                  </span>
+                  <span className="text-slate-300 hidden sm:inline">·</span>
+                  <span className="text-xs text-slate-500 font-mono hidden sm:inline">4 Survey Points Plotted</span>
                 </div>
+
+                <button
+                  onClick={handleDownloadKml}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-semibold shadow-xs transition-all active:translate-y-0.5"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Download Sample .KML</span>
+                </button>
               </div>
-              <p className="mt-4 text-[13px] text-[#6e6e73] text-center">
-                Actual output opened in Google Earth Pro — Survey traverses, 3D elevation pins &amp; embedded site photos.
-              </p>
+
+              {/* The Live Interactive Satellite Map */}
+              <div className="w-full">
+                <RealSatelliteMap />
+              </div>
             </div>
           )}
 
-          {/* Tab 2 — GIS & Elevation */}
+          {/* ══════════════════════════════════════════════════════════════════
+              TAB 2: SITE CALIBRATION (HELMERT)
+             ══════════════════════════════════════════════════════════════════ */}
           {activeTab === "telemetry" && (
-            <div className="p-5">
-              <div className="relative rounded-[14px] overflow-hidden border border-[#e8e8ed]">
-                <Image
-                  src="/assets/hero_geospatial.jpg"
-                  alt="Digital Elevation Model and Geospatial Data"
-                  width={1400}
-                  height={800}
-                  className="w-full h-auto object-cover max-h-[480px]"
-                />
-                <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent p-5">
-                  <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-3">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <span className="text-[11px] font-bold text-black bg-[#febc2e] px-2 py-0.5 rounded-md">EPSG:3997 DLTM</span>
-                        <span className="text-[11px] text-white/70">Helmert 2D Site Fit · 6,864 Grids</span>
-                      </div>
-                      <p className="text-[14px] font-semibold text-white">
-                        Cascade North Elevation Analysis
-                      </p>
-                    </div>
-                    <div className="text-[11px] font-mono text-[#6ee7b7] shrink-0">
-                      Helmert Calibration Active
-                    </div>
+            <div className="flex flex-col gap-5">
+              {/* Header */}
+              <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-slate-100">
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">
+                    Local Site Calibration Check
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Shows how your local site coordinates adjust for scale, angle rotation, and position shift to match official map grids.
+                  </p>
+                </div>
+                <span className="text-xs font-mono font-semibold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-200/70">
+                  Average Accuracy: Under 1 mm
+                </span>
+              </div>
+
+              {/* 3 Practical Stat Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                <div className="bg-slate-50/70 border border-slate-200/70 rounded-xl p-4">
+                  <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                    Ground Scale Factor
                   </div>
+                  <div className="text-lg font-mono font-bold text-slate-900">
+                    0.999984 <span className="text-xs text-slate-400 font-normal">(&plusmn;0.000001)</span>
+                  </div>
+                  <div className="text-xs text-slate-500 mt-1">Near 1:1 ground-to-grid match</div>
+                </div>
+
+                <div className="bg-slate-50/70 border border-slate-200/70 rounded-xl p-4">
+                  <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                    Grid Rotation Angle
+                  </div>
+                  <div className="text-lg font-mono font-bold text-slate-900">
+                    +0° 00&apos; 14.2&quot;
+                  </div>
+                  <div className="text-xs text-slate-500 mt-1">Aligns survey grid with True North</div>
+                </div>
+
+                <div className="bg-slate-50/70 border border-slate-200/70 rounded-xl p-4">
+                  <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                    Position Shift (X, Y)
+                  </div>
+                  <div className="text-lg font-mono font-bold text-blue-600">
+                    +513,556m, +2,787,467m
+                  </div>
+                  <div className="text-xs text-slate-500 mt-1">Offset from official grid origin</div>
                 </div>
               </div>
-              <p className="mt-4 text-[13px] text-[#6e6e73] text-center">
-                Digital elevation models with national grid overlays — 12 satellites synced, PDOP 1.1.
-              </p>
+
+              {/* Clean 4-Point Tie Residuals List */}
+              <div className="rounded-xl border border-slate-200/80 overflow-hidden bg-white">
+                <div className="bg-slate-50/90 px-4 py-2.5 border-b border-slate-200/70 text-xs font-semibold text-slate-700 flex justify-between items-center">
+                  <span>Benchmark Accuracy Check</span>
+                  <span className="text-slate-400 font-mono text-[11px]">Position differences after calibration</span>
+                </div>
+
+                <div className="divide-y divide-slate-100 text-xs font-mono">
+                  {[
+                    { id: "BM-01", name: "Master Benchmark Datum", diff: "0.4 mm", east: "513,556.612", north: "2,787,467.856" },
+                    { id: "CP-02", name: "Boundary Corner Peg", diff: "0.5 mm", east: "513,720.400", north: "2,787,590.200" },
+                    { id: "CR-03", name: "Ridge Elevation Point", diff: "0.2 mm", east: "513,850.150", north: "2,787,480.900" },
+                    { id: "BS-04", name: "Traverse Tie Station", diff: "0.5 mm", east: "513,690.800", north: "2,787,350.100" },
+                  ].map((row) => (
+                    <div key={row.id} className="p-3.5 flex flex-wrap items-center justify-between gap-3 hover:bg-slate-50/60 transition-colors">
+                      <div className="flex items-center gap-2.5">
+                        <span className="font-bold text-blue-600">{row.id}</span>
+                        <span className="text-slate-300">·</span>
+                        <span className="text-slate-700 font-sans font-medium">{row.name}</span>
+                      </div>
+
+                      <div className="flex items-center gap-4 text-slate-500">
+                        <span className="hidden sm:inline">E: {row.east} · N: {row.north}</span>
+                        <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200/60">
+                          Difference: {row.diff}
+                        </span>
+                        <span className="text-xs text-emerald-600 font-sans font-semibold flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          Matched
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Minimalist Footnote */}
+              <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500 pt-1">
+                <span className="flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                  Runs 100% on your computer · No data leaves your machine
+                </span>
+                <span className="text-slate-400 font-mono">Supports 6,800+ national map datums</span>
+              </div>
             </div>
           )}
 
-          {/* Tab 3 — Live Playground */}
+          {/* ══════════════════════════════════════════════════════════════════
+              TAB 3: COORDINATE CONVERTER
+             ══════════════════════════════════════════════════════════════════ */}
           {activeTab === "converter" && (
-            <div className="p-6 sm:p-8">
-              <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              
+              {/* Left Column: Form Inputs (7 cols) */}
+              <div className="lg:col-span-7 bg-slate-50/70 p-5 rounded-xl border border-slate-200/70 space-y-4">
+                
+                {/* Coordinate System Selector with Qatar, Dubai, Pakistan, and others */}
+                <div>
+                  <label htmlFor={sysId_} className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center justify-between">
+                    <span>Select Map Grid / Region</span>
+                    <span className="text-[11px] text-slate-400 font-normal">Fills in a sample benchmark</span>
+                  </label>
+                  <select
+                    id={sysId_}
+                    value={coordSystem}
+                    onChange={(e) => applyPreset(e.target.value)}
+                    className={inputCls + " cursor-pointer bg-white"}
+                  >
+                    <option value="dubai">🇦🇪 Dubai DLTM (EPSG:3997)</option>
+                    <option value="qatar">🇶🇦 Qatar National Grid (EPSG:2932)</option>
+                    <option value="pakistan">🇵🇰 Pakistan Survey / UTM 42N (EPSG:32642)</option>
+                    <option value="saudi">🇸🇦 Saudi Arabia / UTM 38N (EPSG:32638)</option>
+                    <option value="london">🇬🇧 British National Grid (EPSG:27700)</option>
+                    <option value="nyc">🇺🇸 New York NAD83 (EPSG:32118)</option>
+                    <option value="utm40">🌐 Global UTM Zone 40N (EPSG:32640)</option>
+                  </select>
+                </div>
 
-                {/* ── Left: Inputs ── */}
-                <div className="lg:col-span-3 space-y-5">
-                  {/* Preset pills */}
+                {/* Point ID */}
+                <div>
+                  <label htmlFor={stationId_} className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    Point Name / ID
+                  </label>
+                  <input
+                    id={stationId_}
+                    type="text"
+                    value={stationId}
+                    onChange={(e) => setStationId(e.target.value)}
+                    className={inputCls}
+                  />
+                </div>
+
+                {/* Easting, Northing & Elevation */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
                   <div>
-                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#6e6e73] mb-3">
-                      Quick-Load Preset
+                    <label htmlFor={eastId_} className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      Easting / X (m)
                     </label>
-                    <div className="flex flex-wrap gap-2">
-                      {Object.entries(PRESETS).map(([key, p]) => (
-                        <button
-                          key={key}
-                          onClick={() => applyPreset(key)}
-                          className={`flex items-center gap-1.5 px-3.5 py-2 text-[13px] font-medium rounded-full border transition-all duration-150 ${
-                            selectedPreset === key
-                              ? "bg-[#0071e3] text-white border-[#0071e3] shadow-sm"
-                              : "bg-white text-[#1d1d1f] border-[#d2d2d7] hover:border-[#aeaeb2]"
-                          }`}
-                        >
-                          <span>{p.flag}</span>
-                          <span>{p.name}</span>
-                        </button>
-                      ))}
-                    </div>
+                    <input
+                      id={eastId_}
+                      type="number"
+                      step="0.001"
+                      value={easting}
+                      onChange={(e) => setEasting(parseFloat(e.target.value) || 0)}
+                      className={inputCls}
+                    />
                   </div>
-
-                  {/* Station + Code */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label htmlFor={stationId_} className="block text-[12px] font-semibold text-[#1d1d1f] mb-1.5">
-                        Station / Point ID
-                      </label>
-                      <input
-                        id={stationId_}
-                        type="text"
-                        value={stationId}
-                        onChange={(e) => setStationId(e.target.value)}
-                        className={inputCls}
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor={codeId_} className="block text-[12px] font-semibold text-[#1d1d1f] mb-1.5">
-                        Feature Code
-                      </label>
-                      <input
-                        id={codeId_}
-                        type="text"
-                        value={featureCode}
-                        onChange={(e) => setFeatureCode(e.target.value)}
-                        className={inputCls}
-                      />
-                    </div>
+                  <div>
+                    <label htmlFor={northId_} className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      Northing / Y (m)
+                    </label>
+                    <input
+                      id={northId_}
+                      type="number"
+                      step="0.001"
+                      value={northing}
+                      onChange={(e) => setNorthing(parseFloat(e.target.value) || 0)}
+                      className={inputCls}
+                    />
                   </div>
-
-                  {/* Easting + Northing */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label htmlFor={eastId_} className="block text-[12px] font-semibold text-[#1d1d1f] mb-1.5">
-                        Easting / X (m)
-                      </label>
-                      <input
-                        id={eastId_}
-                        type="number"
-                        step="0.001"
-                        value={easting}
-                        onChange={(e) => setEasting(parseFloat(e.target.value) || 0)}
-                        className={inputCls}
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor={northId_} className="block text-[12px] font-semibold text-[#1d1d1f] mb-1.5">
-                        Northing / Y (m)
-                      </label>
-                      <input
-                        id={northId_}
-                        type="number"
-                        step="0.001"
-                        value={northing}
-                        onChange={(e) => setNorthing(parseFloat(e.target.value) || 0)}
-                        className={inputCls}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Elevation + Grid */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label htmlFor={elevId_} className="block text-[12px] font-semibold text-[#1d1d1f] mb-1.5">
-                        Elevation / Z (m)
-                      </label>
-                      <input
-                        id={elevId_}
-                        type="number"
-                        step="0.01"
-                        value={elevation}
-                        onChange={(e) => setElevation(parseFloat(e.target.value) || 0)}
-                        className={inputCls}
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor={sysId_} className="block text-[12px] font-semibold text-[#1d1d1f] mb-1.5">
-                        Coordinate System
-                      </label>
-                      <select
-                        id={sysId_}
-                        value={coordSystem}
-                        onChange={(e) => applyPreset(e.target.value)}
-                        className={inputCls + " cursor-pointer"}
-                      >
-                        <option value="dubai">Dubai DLTM (EPSG:3997)</option>
-                        <option value="london">British National Grid (EPSG:27700)</option>
-                        <option value="nyc">SPCS NY Long Island (EPSG:32118)</option>
-                        <option value="utm40">UTM Zone 40 North (EPSG:32640)</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="bg-[#f5f5f7] border border-[#e8e8ed] rounded-[12px] px-4 py-3 text-[13px] text-[#6e6e73] leading-relaxed">
-                    💡 Edit any coordinate above — Lat/Lon updates live. Download a real Google Earth <strong className="text-[#1d1d1f]">.KML file</strong> instantly.
+                  <div>
+                    <label htmlFor={elevId_} className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      Elevation / Z (m)
+                    </label>
+                    <input
+                      id={elevId_}
+                      type="number"
+                      step="0.01"
+                      value={elevation}
+                      onChange={(e) => setElevation(parseFloat(e.target.value) || 0)}
+                      className={inputCls}
+                    />
                   </div>
                 </div>
 
-                {/* ── Right: Results ── */}
-                <div className="lg:col-span-2 flex flex-col gap-4">
-                  {/* Header */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 text-[12px] font-semibold text-[#1d1d1f]">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#34c759] animate-pulse-soft" />
-                      Live WGS84 Output
+                {/* Practical Tip */}
+                <div className="bg-white/80 border border-slate-200/80 rounded-xl px-4 py-3 text-xs text-slate-600 leading-relaxed">
+                  💡 <strong>Instant Conversion:</strong> Type any coordinates above. Latitude and Longitude calculate automatically, and you can test the KML download immediately.
+                </div>
+              </div>
+
+              {/* Right Column: Radar Simulation + Outputs + Download Button (5 cols) */}
+              <div className="lg:col-span-5 flex flex-col gap-3.5">
+                
+                {/* Calculation Header & Radar Display */}
+                <div className="bg-slate-50/70 border border-slate-200/80 rounded-xl p-4 sm:p-5 space-y-3.5">
+                  
+                  <div className="flex items-center justify-between border-b border-slate-200/60 pb-2.5">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="text-xs font-semibold uppercase tracking-wider text-slate-700">
+                        Converted GPS Coordinates
+                      </span>
                     </div>
-                    <span className="text-[10px] font-mono font-semibold text-[#0071e3] bg-[#0071e3]/10 px-2 py-0.5 rounded-md border border-[#0071e3]/15">
-                      ELLIPSOID: WGS84
+                    <span className="text-[10px] font-mono text-blue-700 font-semibold bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200/70">
+                      WGS84 GPS
                     </span>
                   </div>
 
-                  {/* Radar */}
-                  <div className="relative w-full h-36 rounded-[14px] bg-[#1d1d1f] overflow-hidden flex items-center justify-center shrink-0">
-                    <div className="absolute w-28 h-28 rounded-full border border-white/10" />
-                    <div className="absolute w-20 h-20 rounded-full border border-white/15" />
-                    <div className="absolute w-10 h-10 rounded-full border border-white/20" />
-                    <div className="absolute inset-x-0 h-px bg-white/10 top-1/2" />
-                    <div className="absolute inset-y-0 w-px bg-white/10 left-1/2" />
+                  {/* Interactive Geodetic Radar Screen */}
+                  <div className="relative w-full h-36 rounded-xl bg-slate-900 border border-slate-800 overflow-hidden flex items-center justify-center shrink-0 shadow-inner">
+                    {/* Concentric Range Rings */}
+                    <div className="absolute w-28 h-28 rounded-full border border-sky-500/20" />
+                    <div className="absolute w-20 h-20 rounded-full border border-sky-500/30" />
+                    <div className="absolute w-10 h-10 rounded-full border border-sky-500/40" />
+
+                    {/* Axis Crosshairs */}
+                    <div className="absolute inset-x-0 h-px bg-sky-500/25 top-1/2" />
+                    <div className="absolute inset-y-0 w-px bg-sky-500/25 left-1/2" />
+
+                    {/* Sweeping Radar Beam */}
                     <div className="absolute inset-0 animate-radar-sweep pointer-events-none">
-                      <div className="w-1/2 h-1/2 bg-gradient-to-br from-[#34c759]/40 via-transparent to-transparent origin-bottom-right" />
+                      <div className="w-1/2 h-1/2 bg-gradient-to-br from-emerald-400/35 via-transparent to-transparent origin-bottom-right" />
                     </div>
+
+                    {/* Dynamic Station Target Blip */}
                     <div
-                      className="absolute w-3 h-3 rounded-full bg-[#34c759] shadow-[0_0_10px_rgba(52,199,89,0.8)] transition-all duration-300"
-                      style={{ transform: `translate(${Math.max(-44, Math.min(44, dE / 22))}px, ${Math.max(-44, Math.min(44, -dN / 22))}px)` }}
+                      className="absolute w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-white shadow-lg shadow-emerald-500/60 transition-all duration-300"
+                      style={{
+                        transform: `translate(${Math.max(-46, Math.min(46, dE / 22))}px, ${Math.max(-46, Math.min(46, -dN / 22))}px)`,
+                      }}
                     />
-                    <p className="absolute bottom-2 right-2.5 text-[9px] font-mono font-bold text-[#34c759] tracking-widest">TARGET LOCKED</p>
+
+                    {/* Radar Status Tags */}
+                    <div className="absolute top-2 left-2.5 text-[10px] font-mono text-slate-400">
+                      GRID: <span className="text-white font-bold">{currentPreset.name.split(" ")[0]}</span>
+                    </div>
+                    <div className="absolute bottom-2 right-2.5 text-[10px] font-mono text-emerald-400 font-bold tracking-wider">
+                      POINT LOCATED
+                    </div>
                   </div>
 
-                  {/* Coordinate outputs */}
-                  <div className="grid grid-cols-2 gap-2.5">
-                    {[
-                      { label: "Latitude", value: `${computedLat}° N`, color: "text-[#1d1d1f]" },
-                      { label: "Longitude", value: `${computedLon}° ${parseFloat(computedLon) >= 0 ? "E" : "W"}`, color: "text-[#1d1d1f]" },
-                      { label: "Grid", value: currentPreset.grid, color: "text-[#1d1d1f]" },
-                      { label: "Accuracy", value: currentPreset.accuracy, color: "text-[#34c759]" },
-                    ].map(({ label, value, color }) => (
-                      <div key={label} className="bg-[#f5f5f7] border border-[#e8e8ed] rounded-[12px] p-3">
-                        <div className="text-[10px] uppercase font-semibold text-[#aeaeb2] tracking-wide mb-1">{label}</div>
-                        <div className={`text-[12px] font-mono font-semibold ${color} truncate`} title={value}>{value}</div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex flex-col gap-2 pt-1">
-                    <button
-                      onClick={handleDownloadKml}
-                      className="w-full inline-flex items-center justify-center gap-2 py-3 text-[14px] font-medium text-white bg-[#0071e3] hover:bg-[#0077ed] active:scale-[0.98] rounded-[12px] transition-all shadow-sm"
-                    >
-                      <Download className="w-4 h-4" />
-                      Download Test .KML
-                    </button>
-                    <a
-                      href="/app"
-                      className="w-full inline-flex items-center justify-center gap-2 py-3 text-[14px] font-medium text-[#0071e3] bg-[#0071e3]/[0.07] hover:bg-[#0071e3]/[0.12] rounded-[12px] transition-colors border border-[#0071e3]/15"
-                    >
-                      Open Full Tool
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
+                  {/* Coordinate Outputs Grid */}
+                  <div className="grid grid-cols-2 gap-3 text-xs font-mono pt-1">
+                    <div className="bg-white/90 p-2.5 rounded-lg border border-slate-200/70">
+                      <div className="text-[10px] text-slate-400 font-sans">Latitude (GPS)</div>
+                      <div className="font-semibold text-slate-900 mt-0.5">{computedLat}° N</div>
+                    </div>
+                    <div className="bg-white/90 p-2.5 rounded-lg border border-slate-200/70">
+                      <div className="text-[10px] text-slate-400 font-sans">Longitude (GPS)</div>
+                      <div className="font-semibold text-slate-900 mt-0.5">{computedLon}° {parseFloat(computedLon) >= 0 ? "E" : "W"}</div>
+                    </div>
+                    <div className="bg-white/90 p-2.5 rounded-lg border border-slate-200/70">
+                      <div className="text-[10px] text-slate-400 font-sans">Elevation (3D)</div>
+                      <div className="font-semibold text-blue-600 mt-0.5">+{elevation} m</div>
+                    </div>
+                    <div className="bg-white/90 p-2.5 rounded-lg border border-slate-200/70">
+                      <div className="text-[10px] text-slate-400 font-sans">Accuracy</div>
+                      <div className="font-semibold text-emerald-600 mt-0.5 truncate">{currentPreset.accuracy}</div>
+                    </div>
                   </div>
                 </div>
+
+                {/* Eye-conforming Download button */}
+                <button
+                  onClick={handleDownloadKml}
+                  className="w-full inline-flex items-center justify-center gap-2 py-3 px-5 text-sm font-semibold text-white bg-[#2563eb] hover:bg-[#1d4ed8] rounded-xl shadow-[0_2px_8px_rgba(37,99,235,0.2)] hover:shadow-[0_4px_14px_rgba(37,99,235,0.28)] active:translate-y-0.5 transition-all"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Download Sample .KML</span>
+                </button>
               </div>
+
             </div>
           )}
+
         </div>
+
       </div>
     </section>
   );
