@@ -5,8 +5,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/sync-app.js",
     "build": "next build",
     "start": "next start",
+    "sync:app": "node scripts/sync-app.js",
     "lint": "eslint",
     "postinstall": "prisma generate"
   },
