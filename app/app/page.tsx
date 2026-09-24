@@ -4,12 +4,13 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "../../context/AuthContext";
-import { RotateCw, Maximize2, Minimize2, ArrowLeft, Download } from "lucide-react";
+import { RotateCw, Maximize2, Minimize2, ArrowLeft, Download, Loader2 } from "lucide-react";
 
 export default function WebAppPage() {
   const { user } = useAuth();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [reloadKey, setReloadKey] = useState(Date.now());
+  const [isLoading, setIsLoading] = useState(true);
   const [isReloading, setIsReloading] = useState(false);
 
   useEffect(() => {
@@ -24,8 +25,8 @@ export default function WebAppPage() {
 
   const handleReload = () => {
     setIsReloading(true);
+    setIsLoading(true);
     setReloadKey(Date.now());
-    setTimeout(() => setIsReloading(false), 600);
   };
 
   return (
@@ -57,22 +58,18 @@ export default function WebAppPage() {
               <span className="font-extrabold text-sm text-slate-900 tracking-tight">
                 Excel to KML <span className="text-blue-600">PRO</span>
               </span>
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-mono bg-emerald-50 text-emerald-700 px-2.5 py-0.5 rounded-md border border-emerald-200/80 font-semibold">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Live Main Repo Sync
-              </span>
             </div>
           </div>
 
           <div className="flex items-center gap-2.5">
-            {/* Sync / Reload from Main Repo Button */}
+            {/* Refresh Button */}
             <button
               onClick={handleReload}
               className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg border border-slate-200 transition-all cursor-pointer"
-              title="Reload HTML directly from main app repo"
+              title="Refresh"
             >
-              <RotateCw className={`w-3.5 h-3.5 text-blue-600 ${isReloading ? "animate-spin" : ""}`} />
-              <span className="hidden sm:inline">Reload Engine</span>
+              <RotateCw className={`w-3.5 h-3.5 text-slate-600 ${isReloading ? "animate-spin" : ""}`} />
+              <span className="hidden sm:inline">Refresh</span>
             </button>
 
             {user ? (
@@ -120,14 +117,24 @@ export default function WebAppPage() {
         </button>
       )}
 
-      {/* Main Web App Frame (Directly Loaded from Main App Repo) */}
+      {/* Main Web App Frame */}
       <main className="flex-1 w-full h-full relative overflow-hidden bg-slate-50">
+        {isLoading && (
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-50/90 backdrop-blur-2xs gap-3">
+            <Loader2 className="w-7 h-7 text-blue-600 animate-spin" />
+            <span className="text-xs font-medium text-slate-600">Loading web app...</span>
+          </div>
+        )}
         <iframe
           key={reloadKey}
           src={`/api/app-html?v=${reloadKey}`}
-          title="Excel to KML Pro Full Web Application"
+          title="Excel to KML Pro"
           className="w-full h-full border-0 absolute inset-0"
           allow="clipboard-read; clipboard-write; geolocation"
+          onLoad={() => {
+            setIsLoading(false);
+            setIsReloading(false);
+          }}
         />
       </main>
     </div>

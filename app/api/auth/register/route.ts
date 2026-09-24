@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { getClientIp, getIpGeoLocation } from "@/lib/geo";
 
 export async function POST(req: NextRequest) {
   try {
@@ -29,13 +30,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Create user
+    // Capture Client IP and Geographic Location
+    const clientIp = getClientIp(req);
+    const geo = await getIpGeoLocation(clientIp, req);
+
+    // Create user with IP and Location
     const user = db.createUser({
       name,
       email,
       password,
       organization,
       role,
+      ipAddress: geo.ip,
+      location: geo.location,
     });
 
     // Create session

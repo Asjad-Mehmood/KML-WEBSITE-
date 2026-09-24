@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
 
   if (format === "csv") {
     // Generate CSV string
-    const headers = ["ID", "Timestamp", "User Email", "User Name", "Asset Type", "File Name", "Version", "IP Address"];
+    const headers = ["ID", "Timestamp", "User Email", "User Name", "Asset Type", "File Name", "Version", "IP Address", "Location"];
     const rows = downloads.map((d) => [
       `"${d.id}"`,
       `"${d.timestamp}"`,
@@ -24,6 +24,7 @@ export async function GET(req: NextRequest) {
       `"${d.fileName}"`,
       `"${d.version}"`,
       `"${d.ipAddress || ""}"`,
+      `"${d.location || "Unknown"}"`,
     ]);
 
     const csvContent = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");

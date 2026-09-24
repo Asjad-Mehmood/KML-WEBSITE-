@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { getClientIp, getIpGeoLocation } from "@/lib/geo";
 
 export async function POST(req: NextRequest) {
   try {
@@ -35,7 +36,8 @@ export async function POST(req: NextRequest) {
       version = "v3.5.5",
     } = body;
 
-    const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "127.0.0.1";
+    const clientIp = getClientIp(req);
+    const geo = await getIpGeoLocation(clientIp, req);
     const userAgent = req.headers.get("user-agent") || "Browser Client";
 
     // Record the download in database
@@ -46,7 +48,8 @@ export async function POST(req: NextRequest) {
       assetType,
       fileName,
       version,
-      ipAddress: ip,
+      ipAddress: geo.ip,
+      location: geo.location,
       userAgent,
     });
 

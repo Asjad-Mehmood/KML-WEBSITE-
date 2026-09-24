@@ -26,6 +26,13 @@ export async function GET() {
     assetCounts[d.assetType] = (assetCounts[d.assetType] || 0) + 1;
   });
 
+  // Breakdown by location
+  const locationCounts: Record<string, number> = {};
+  downloads.forEach((d) => {
+    const loc = d.location || "Unknown Origin";
+    locationCounts[loc] = (locationCounts[loc] || 0) + 1;
+  });
+
   return NextResponse.json({
     success: true,
     stats: {
@@ -34,6 +41,7 @@ export async function GET() {
       totalConversions: conversions.length,
       roleCounts,
       assetCounts,
+      locationCounts,
       settings,
       recentUsers: users.slice(0, 5),
       recentDownloads: downloads.slice(0, 5),

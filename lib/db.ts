@@ -14,6 +14,8 @@ export interface UserRecord {
   updatedAt: string;
   lastLoginAt: string;
   downloadCount: number;
+  ipAddress?: string;
+  location?: string;
 }
 
 export interface SessionRecord {
@@ -33,6 +35,7 @@ export interface DownloadRecord {
   fileName: string;
   version: string;
   ipAddress?: string;
+  location?: string;
   userAgent?: string;
   timestamp: string;
 }
@@ -240,6 +243,8 @@ export const db = {
     password?: string;
     organization?: string;
     role?: string;
+    ipAddress?: string;
+    location?: string;
   }): UserRecord {
     const data = readDb();
     const cleanEmail = params.email.trim().toLowerCase();
@@ -264,6 +269,8 @@ export const db = {
       updatedAt: new Date().toISOString(),
       lastLoginAt: new Date().toISOString(),
       downloadCount: 0,
+      ipAddress: params.ipAddress,
+      location: params.location,
     };
 
     data.users.push(newUser);
@@ -345,6 +352,7 @@ export const db = {
     fileName: string;
     version: string;
     ipAddress?: string;
+    location?: string;
     userAgent?: string;
   }): DownloadRecord {
     const data = readDb();
@@ -357,6 +365,7 @@ export const db = {
       fileName: entry.fileName,
       version: entry.version,
       ipAddress: entry.ipAddress,
+      location: entry.location,
       userAgent: entry.userAgent,
       timestamp: new Date().toISOString(),
     };
@@ -425,6 +434,8 @@ export const db = {
       createdAt: user.createdAt,
       lastLoginAt: user.lastLoginAt,
       downloadCount: user.downloadCount,
+      ipAddress: user.ipAddress || null,
+      location: user.location || null,
     };
   },
 
