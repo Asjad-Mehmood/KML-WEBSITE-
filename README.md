@@ -53,7 +53,6 @@ Built with **Next.js 16 (App Router & Turbopack)**, **Tailwind CSS v4 (Apple/Lin
 
 ### 1. Install Dependencies
 ```bash
-cd kmlconverter
 npm install
 ```
 
