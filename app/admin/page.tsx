@@ -24,8 +24,8 @@ import {
   Layers,
   Sparkles,
   Server,
-  MapPin,
   Compass,
+  ShieldCheck,
 } from "lucide-react";
 
 interface UserItem {
@@ -39,6 +39,8 @@ interface UserItem {
   downloadCount: number;
   ipAddress?: string;
   location?: string;
+  hasFullAccess?: boolean;
+  customMaxPoints?: number;
 }
 
 interface DownloadItem {
@@ -75,6 +77,10 @@ interface AppSettings {
   maintenanceMode: boolean;
   announcementBanner: string;
   announcementActive: boolean;
+  webAppRestricted: boolean;
+  webMaxPoints: number;
+  webWatermarkKml: boolean;
+  webDisableReports: boolean;
 }
 
 export default function AdminPage() {
@@ -115,6 +121,8 @@ export default function AdminPage() {
     organization: "",
     role: "Surveyor",
     password: "",
+    hasFullAccess: false,
+    customMaxPoints: "",
   });
 
   // Downloads state
@@ -126,13 +134,17 @@ export default function AdminPage() {
 
   // Settings state
   const [settingsForm, setSettingsForm] = useState<AppSettings>({
-    appVersion: "v3.5.5",
+    appVersion: "v3.5.7",
     installerFileName: "ExcelToKMLPro-Lite-Setup.exe",
     installerFileSize: "3.2 MB",
     requireAuthForDownload: true,
     maintenanceMode: false,
     announcementBanner: "",
     announcementActive: false,
+    webAppRestricted: true,
+    webMaxPoints: 50,
+    webWatermarkKml: true,
+    webDisableReports: true,
   });
   const [settingsSaved, setSettingsSaved] = useState(false);
 
@@ -297,12 +309,22 @@ export default function AdminPage() {
   const handleSaveUser = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const payload: Record<string, unknown> = {
+        name: userForm.name,
+        email: userForm.email,
+        organization: userForm.organization,
+        role: userForm.role,
+        hasFullAccess: userForm.hasFullAccess,
+        customMaxPoints: userForm.customMaxPoints ? parseInt(userForm.customMaxPoints, 10) : null,
+      };
+      if (userForm.password) payload.password = userForm.password;
+
       if (editingUser) {
         // Update user
         const res = await fetch(`/api/admin/users/${editingUser.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(userForm),
+          body: JSON.stringify(payload),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Failed to update user");
@@ -312,7 +334,7 @@ export default function AdminPage() {
         const res = await fetch("/api/admin/users", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(userForm),
+          body: JSON.stringify(payload),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Failed to create user");
@@ -320,11 +342,38 @@ export default function AdminPage() {
       }
       setUserModalOpen(false);
       setEditingUser(null);
-      setUserForm({ name: "", email: "", organization: "", role: "Surveyor", password: "" });
+      setUserForm({
+        name: "",
+        email: "",
+        organization: "",
+        role: "Surveyor",
+        password: "",
+        hasFullAccess: false,
+        customMaxPoints: "",
+      });
       loadUsers(userSearch);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Error saving user";
       showToast(msg, "error");
+    }
+  };
+
+  const handleToggleUserFullAccess = async (userId: string, grant: boolean) => {
+    try {
+      const res = await fetch(`/api/admin/users/${userId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ hasFullAccess: grant }),
+      });
+      if (res.ok) {
+        showToast(grant ? "Granted full web access to surveyor" : "Applied web demo point limits to surveyor");
+        loadUsers(userSearch);
+      } else {
+        const data = await res.json();
+        showToast(data.error || "Failed to update access", "error");
+      }
+    } catch {
+      showToast("Network error updating access", "error");
     }
   };
 
@@ -917,7 +966,15 @@ export default function AdminPage() {
                 <button
                   onClick={() => {
                     setEditingUser(null);
-                    setUserForm({ name: "", email: "", organization: "", role: "Surveyor", password: "" });
+                    setUserForm({
+                      name: "",
+                      email: "",
+                      organization: "",
+                      role: "Surveyor",
+                      password: "",
+                      hasFullAccess: false,
+                      customMaxPoints: "",
+                    });
                     setUserModalOpen(true);
                   }}
                   className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-bold transition-all shadow-lg shadow-blue-600/30 flex items-center gap-2"
@@ -937,6 +994,7 @@ export default function AdminPage() {
                       <th className="px-6 py-4">Organization</th>
                       <th className="px-6 py-4">Role</th>
                       <th className="px-6 py-4">Registration IP &amp; Origin</th>
+                      <th className="px-6 py-4">Web Access Tier</th>
                       <th className="px-6 py-4">Downloads</th>
                       <th className="px-6 py-4">Registered</th>
                       <th className="px-6 py-4 text-right">Actions</th>
@@ -945,7 +1003,7 @@ export default function AdminPage() {
                   <tbody className="divide-y divide-slate-800/60">
                     {users.length === 0 ? (
                       <tr>
-                        <td colSpan={7} className="px-6 py-12 text-center text-slate-500">
+                        <td colSpan={8} className="px-6 py-12 text-center text-slate-500">
                           No users found matching query
                         </td>
                       </tr>
@@ -994,6 +1052,37 @@ export default function AdminPage() {
                               );
                             })()}
                           </td>
+                          <td className="px-6 py-4">
+                            {u.hasFullAccess || u.role === "ADMIN" ? (
+                              <div className="flex items-center gap-2">
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                                  <ShieldCheck className="w-3.5 h-3.5" /> Full Pro Access
+                                </span>
+                                {u.role !== "ADMIN" && (
+                                  <button
+                                    onClick={() => handleToggleUserFullAccess(u.id, false)}
+                                    className="text-[11px] text-slate-400 hover:text-amber-400 underline decoration-dotted transition-colors"
+                                    title="Click to apply web demo point limit"
+                                  >
+                                    Restrict
+                                  </button>
+                                )}
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                                  <Lock className="w-3.5 h-3.5" /> Demo ({u.customMaxPoints ? `${u.customMaxPoints} pts` : `${settingsForm.webMaxPoints || 50} pts`})
+                                </span>
+                                <button
+                                  onClick={() => handleToggleUserFullAccess(u.id, true)}
+                                  className="text-[11px] text-slate-400 hover:text-emerald-400 underline decoration-dotted transition-colors"
+                                  title="Click to grant full web access"
+                                >
+                                  Grant Full
+                                </button>
+                              </div>
+                            )}
+                          </td>
                           <td className="px-6 py-4 font-bold text-blue-400">{u.downloadCount}</td>
                           <td className="px-6 py-4 text-xs text-slate-400">
                             {new Date(u.createdAt).toLocaleDateString()}
@@ -1009,6 +1098,8 @@ export default function AdminPage() {
                                     organization: u.organization || "",
                                     role: u.role || "Surveyor",
                                     password: "",
+                                    hasFullAccess: Boolean(u.hasFullAccess),
+                                    customMaxPoints: u.customMaxPoints ? String(u.customMaxPoints) : "",
                                   });
                                   setUserModalOpen(true);
                                 }}
@@ -1112,6 +1203,48 @@ export default function AdminPage() {
                     className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500"
                     placeholder={editingUser ? "Unchanged" : "••••••••••••"}
                   />
+                </div>
+
+                {/* Web Restrictions & Limit Settings per User */}
+                <div className="pt-3 border-t border-slate-800 space-y-3">
+                  <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                    Web App Access &amp; Limits
+                  </div>
+
+                  <label className="flex items-start gap-3 p-3 rounded-xl bg-slate-800/80 border border-slate-700/60 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={userForm.hasFullAccess}
+                      onChange={(e) => setUserForm({ ...userForm, hasFullAccess: e.target.checked })}
+                      className="mt-0.5 rounded bg-slate-700 border-slate-600 text-blue-600 focus:ring-0"
+                    />
+                    <div>
+                      <div className="text-xs font-bold text-white">Grant Full Unrestricted Web Access</div>
+                      <div className="text-[11px] text-slate-400">
+                        Bypasses the web demo points limit &amp; report restrictions for this account.
+                      </div>
+                    </div>
+                  </label>
+
+                  {!userForm.hasFullAccess && (
+                    <div>
+                      <label className="block text-xs text-slate-300 font-medium mb-1">
+                        Custom Point Limit (optional)
+                      </label>
+                      <input
+                        type="number"
+                        min="5"
+                        max="10000"
+                        value={userForm.customMaxPoints}
+                        onChange={(e) => setUserForm({ ...userForm, customMaxPoints: e.target.value })}
+                        className="w-full px-3.5 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-blue-500"
+                        placeholder={`Leave blank to use global default (${settingsForm.webMaxPoints || 50} pts)`}
+                      />
+                      <div className="text-[10px] text-slate-400 mt-1">
+                        Overrides the global limit for this specific surveyor account.
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="pt-4 flex items-center justify-end gap-3">
@@ -1397,6 +1530,91 @@ export default function AdminPage() {
                       <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
                     </label>
                   </div>
+                </div>
+
+                {/* Web App Demo Restrictions Card */}
+                <div className="p-6 rounded-2xl bg-slate-800/50 border border-amber-500/20 space-y-4">
+                  <div className="flex items-center gap-3 pb-3 border-b border-slate-700/60">
+                    <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center">
+                      <Lock className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                        Web App Demo Restrictions &amp; Point Limits
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                          Drive Desktop Downloads
+                        </span>
+                      </h4>
+                      <p className="text-xs text-slate-400">
+                        Limit web features so users are prompted to download the full offline Windows Desktop Edition
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Master Web Restriction Toggle */}
+                  <div className="flex items-center justify-between p-4 rounded-xl bg-slate-800/80 border border-slate-700/70">
+                    <div>
+                      <div className="font-bold text-xs text-white">Enforce Web App Demo Mode</div>
+                      <div className="text-[11px] text-slate-400">
+                        When enabled, visitors &amp; standard surveyors cannot bulk convert without downloading desktop app.
+                      </div>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={settingsForm.webAppRestricted}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, webAppRestricted: e.target.checked })}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                    </label>
+                  </div>
+
+                  {settingsForm.webAppRestricted && (
+                    <div className="space-y-4 pt-1">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                            Default Web Points Limit per Conversion
+                          </label>
+                          <input
+                            type="number"
+                            min="5"
+                            max="5000"
+                            value={settingsForm.webMaxPoints}
+                            onChange={(e) => setSettingsForm({ ...settingsForm, webMaxPoints: parseInt(e.target.value, 10) || 50 })}
+                            className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-amber-500 font-mono"
+                            placeholder="50"
+                          />
+                          <p className="text-[10px] text-slate-400 mt-1">
+                            Converting datasets larger than this triggers the Desktop Download modal.
+                          </p>
+                        </div>
+
+                        <div className="flex flex-col justify-center space-y-2.5 pt-1">
+                          <label className="flex items-center gap-2.5 text-xs text-slate-300 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={settingsForm.webDisableReports}
+                              onChange={(e) => setSettingsForm({ ...settingsForm, webDisableReports: e.target.checked })}
+                              className="rounded bg-slate-800 border-slate-700 text-amber-500 focus:ring-0"
+                            />
+                            <span>Lock PDF &amp; Cadastral Reports on Web</span>
+                          </label>
+
+                          <label className="flex items-center gap-2.5 text-xs text-slate-300 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={settingsForm.webWatermarkKml}
+                              onChange={(e) => setSettingsForm({ ...settingsForm, webWatermarkKml: e.target.checked })}
+                              className="rounded bg-slate-800 border-slate-700 text-amber-500 focus:ring-0"
+                            />
+                            <span>Add &quot;Desktop Edition&quot; Watermark in Web KML</span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Announcement Banner */}

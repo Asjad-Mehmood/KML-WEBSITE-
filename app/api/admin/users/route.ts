@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { name, email, password, organization, role } = body;
+    const { name, email, password, organization, role, hasFullAccess, customMaxPoints } = body;
 
     if (!name || !email) {
       return NextResponse.json({ error: "Name and email are required" }, { status: 400 });
@@ -41,6 +41,8 @@ export async function POST(req: NextRequest) {
       role: role || "Surveyor",
       ipAddress: geo.ip,
       location: geo.location,
+      hasFullAccess: typeof hasFullAccess === "boolean" ? hasFullAccess : (role === "ADMIN"),
+      customMaxPoints: customMaxPoints ? Number(customMaxPoints) : undefined,
     });
 
     return NextResponse.json({

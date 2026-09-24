@@ -16,6 +16,8 @@ export interface UserRecord {
   downloadCount: number;
   ipAddress?: string;
   location?: string;
+  hasFullAccess?: boolean;
+  customMaxPoints?: number;
 }
 
 export interface SessionRecord {
@@ -62,6 +64,10 @@ export interface AppSettings {
   maintenanceMode: boolean;
   announcementBanner: string;
   announcementActive: boolean;
+  webAppRestricted: boolean;
+  webMaxPoints: number;
+  webWatermarkKml: boolean;
+  webDisableReports: boolean;
 }
 
 interface DatabaseSchema {
@@ -151,13 +157,17 @@ function getInitialData(): DatabaseSchema {
     ],
     conversions: [],
     settings: {
-      appVersion: "v3.5.5",
+      appVersion: "v3.5.7",
       installerFileName: "ExcelToKMLPro-Lite-Setup.exe",
       installerFileSize: "3.2 MB",
       requireAuthForDownload: true,
       maintenanceMode: false,
-      announcementBanner: "Excel to KML Pro v3.5.5 is live with 6,864 EPSG grids & DLTM UAE support.",
+      announcementBanner: "Excel to KML Pro is live with 6,864 EPSG grids & DLTM UAE support.",
       announcementActive: false,
+      webAppRestricted: true,
+      webMaxPoints: 50,
+      webWatermarkKml: true,
+      webDisableReports: true,
     },
     meta: {
       createdAt: new Date().toISOString(),
@@ -188,6 +198,12 @@ function readDb(): DatabaseSchema {
 
     if (!parsed.settings) {
       parsed.settings = initial.settings;
+    }
+    if (parsed.settings.webAppRestricted === undefined) {
+      parsed.settings.webAppRestricted = true;
+      parsed.settings.webMaxPoints = parsed.settings.webMaxPoints || 50;
+      parsed.settings.webWatermarkKml = parsed.settings.webWatermarkKml ?? true;
+      parsed.settings.webDisableReports = parsed.settings.webDisableReports ?? true;
     }
     if (!parsed.users.some((u: UserRecord) => u.email === "admin@exceltokml.com" || u.role === "ADMIN")) {
       parsed.users.unshift(initial.users[0]);
@@ -245,6 +261,8 @@ export const db = {
     role?: string;
     ipAddress?: string;
     location?: string;
+    hasFullAccess?: boolean;
+    customMaxPoints?: number;
   }): UserRecord {
     const data = readDb();
     const cleanEmail = params.email.trim().toLowerCase();
@@ -271,6 +289,8 @@ export const db = {
       downloadCount: 0,
       ipAddress: params.ipAddress,
       location: params.location,
+      hasFullAccess: params.hasFullAccess ?? (params.role === "ADMIN"),
+      customMaxPoints: params.customMaxPoints,
     };
 
     data.users.push(newUser);
@@ -436,6 +456,8 @@ export const db = {
       downloadCount: user.downloadCount,
       ipAddress: user.ipAddress || null,
       location: user.location || null,
+      hasFullAccess: user.hasFullAccess ?? (user.role === "ADMIN"),
+      customMaxPoints: user.customMaxPoints || null,
     };
   },
 
@@ -479,6 +501,8 @@ export const db = {
       organization: string;
       role: string;
       password?: string;
+      hasFullAccess?: boolean;
+      customMaxPoints?: number;
     }>
   ): UserRecord {
     const data = readDb();
@@ -502,6 +526,8 @@ export const db = {
     if (updates.name !== undefined) user.name = updates.name.trim();
     if (updates.organization !== undefined) user.organization = updates.organization.trim();
     if (updates.role !== undefined) user.role = updates.role.trim();
+    if (updates.hasFullAccess !== undefined) user.hasFullAccess = updates.hasFullAccess;
+    if (updates.customMaxPoints !== undefined) user.customMaxPoints = updates.customMaxPoints;
 
     if (updates.password && updates.password.trim()) {
       user.salt = generateSalt();

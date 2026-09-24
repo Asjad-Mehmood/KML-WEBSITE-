@@ -1,13 +1,251 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
+import { db } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
 const GITHUB_RAW_URL =
   "https://raw.githubusercontent.com/chaudaryyabdullah03-collab/kml-convertor/main/app/index.html";
 
-export async function GET() {
+function applyWebRestrictions(html: string, req: NextRequest): string {
+  try {
+    const token =
+      req.cookies.get("surveyor_auth_token")?.value ||
+      req.headers.get("authorization")?.replace("Bearer ", "");
+
+    let user = null;
+    if (token) {
+      const sessionData = db.validateSession(token);
+      if (sessionData) {
+        user = sessionData.user;
+      }
+    }
+
+    const settings = db.getSettings();
+    const isAdmin = db.isAdmin(user);
+    const hasFullAccess =
+      !settings.webAppRestricted ||
+      isAdmin ||
+      Boolean(user?.hasFullAccess);
+
+    const isRestricted = !hasFullAccess;
+    const maxPoints = hasFullAccess
+      ? 999999
+      : user?.customMaxPoints || settings.webMaxPoints || 50;
+    const watermark = isRestricted && (settings.webWatermarkKml ?? true);
+    const disableReports = isRestricted && (settings.webDisableReports ?? true);
+
+    const injectionPayload = JSON.stringify({
+      isRestricted,
+      hasFullAccess,
+      maxPoints,
+      watermark,
+      disableReports,
+      userName: user?.name || null,
+    });
+
+    const script = `
+<script id="web-app-restrictions-guard">
+(function() {
+  const config = ${injectionPayload};
+  window.__APP_RESTRICTIONS__ = config;
+
+  function initGuard() {
+    // 1. Create Top Notification Banner
+    const banner = document.createElement("div");
+    banner.id = "app-restriction-banner";
+
+    const titlebar = document.querySelector(".titlebar");
+    const aboutBtn = document.getElementById("aboutBtn");
+
+    if (titlebar && aboutBtn) {
+      banner.style.cssText = "display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:6px;font-family:system-ui,-apple-system,sans-serif;font-size:11px;font-weight:600;margin-right:8px;";
+      if (config.isRestricted) {
+        banner.style.backgroundColor = "rgba(245, 158, 11, 0.15)";
+        banner.style.color = "#fbbf24";
+        banner.style.border = "1px solid rgba(245, 158, 11, 0.35)";
+        banner.innerHTML = '<span style="display:inline-flex;align-items:center;gap:4px;">⚠️ <span>Web Demo: <strong>' + config.maxPoints + ' Pts Limit</strong></span></span>' +
+          '<button id="btn-download-desktop" style="margin-left:6px;background:#2563eb;color:#fff;border:none;border-radius:4px;padding:2px 7px;font-size:10px;font-weight:700;cursor:pointer;">Get Desktop</button>';
+      } else {
+        banner.style.backgroundColor = "rgba(16, 185, 129, 0.15)";
+        banner.style.color = "#34d399";
+        banner.style.border = "1px solid rgba(16, 185, 129, 0.35)";
+        banner.innerHTML = '✨ Full Pro Access (Unlimited)';
+      }
+      titlebar.insertBefore(banner, aboutBtn);
+    } else {
+      banner.style.cssText = "position:fixed;top:8px;right:14px;z-index:99999;display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:10px;font-family:system-ui,-apple-system,sans-serif;font-size:12px;font-weight:600;box-shadow:0 4px 14px rgba(0,0,0,0.15);transition:all 0.2s;";
+      if (config.isRestricted) {
+        banner.style.backgroundColor = "#fffbeb";
+        banner.style.color = "#92400e";
+        banner.style.border = "1px solid #fde68a";
+        banner.innerHTML = '<span style="display:inline-flex;align-items:center;gap:4px;">⚠️ <span>Web Demo: <strong>' + config.maxPoints + ' Points Limit</strong></span></span>' +
+          '<button id="btn-download-desktop" style="margin-left:6px;background:#2563eb;color:#fff;border:none;border-radius:6px;padding:3px 8px;font-size:11px;font-weight:700;cursor:pointer;">Get Desktop (Unlimited)</button>';
+      } else {
+        banner.style.backgroundColor = "#ecfdf5";
+        banner.style.color = "#065f46";
+        banner.style.border = "1px solid #a7f3d0";
+        banner.innerHTML = '✨ Full Pro Access (Unlimited Points)';
+      }
+      document.body.appendChild(banner);
+    }
+
+    const dlBtn = document.getElementById("btn-download-desktop");
+    if (dlBtn) {
+      dlBtn.onclick = function() {
+        if (window.top) window.top.location.href = "/#download";
+        else window.location.href = "/#download";
+      };
+    }
+
+    if (!config.isRestricted) return;
+
+    // Helper modal for showing restriction limit dialog
+    function showLimitModal(totalPoints) {
+      let modal = document.getElementById("web-limit-modal");
+      if (!modal) {
+        modal = document.createElement("div");
+        modal.id = "web-limit-modal";
+        modal.style.cssText = "position:fixed;inset:0;background:rgba(15,23,42,0.65);backdrop-filter:blur(4px);z-index:999999;display:flex;align-items:center;justify-content:center;padding:16px;font-family:system-ui,-apple-system,sans-serif;";
+        modal.innerHTML = '<div style="background:#fff;border-radius:16px;max-width:440px;width:100%;padding:24px;box-shadow:0 20px 40px rgba(0,0,0,0.2);border:1px solid #e2e8f0;text-align:center;">' +
+          '<div style="width:48px;height:48px;border-radius:12px;background:#fef3c7;color:#d97706;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:24px;">⚠️</div>' +
+          '<h3 style="font-size:18px;font-weight:800;color:#0f172a;margin:0 0 8px;">Web Demo Point Limit Reached</h3>' +
+          '<p id="web-modal-desc" style="font-size:13px;color:#475569;line-height:1.5;margin:0 0 20px;"></p>' +
+          '<div style="display:flex;flex-direction:column;gap:8px;">' +
+            '<button id="btn-modal-download" style="width:100%;padding:10px 16px;background:#2563eb;color:#fff;font-weight:700;font-size:13px;border-radius:10px;border:none;cursor:pointer;box-shadow:0 4px 12px rgba(37,99,235,0.25);">Download Windows Desktop App (Unlimited)</button>' +
+            '<button id="btn-modal-trim" style="width:100%;padding:9px 16px;background:#f1f5f9;color:#334155;font-weight:600;font-size:12px;border-radius:10px;border:1px solid #cbd5e1;cursor:pointer;">Continue with First ' + config.maxPoints + ' Points</button>' +
+          '</div>' +
+        '</div>';
+        document.body.appendChild(modal);
+
+        document.getElementById("btn-modal-download").onclick = function() {
+          if (window.top) window.top.location.href = "/#download";
+          else window.location.href = "/#download";
+        };
+      }
+
+      document.getElementById("web-modal-desc").innerHTML = "You loaded <strong>" + totalPoints + " points</strong>. The web demo is capped at <strong>" + config.maxPoints + " points</strong> per conversion.<br><br>Download the Windows Desktop edition for <strong>unlimited points</strong>, bulk datasets, and full offline CAD performance.";
+      modal.style.display = "flex";
+
+      document.getElementById("btn-modal-trim").onclick = function() {
+        modal.style.display = "none";
+        trimDataToLimit();
+      };
+    }
+
+    function trimDataToLimit() {
+      const dataEl = document.getElementById("data");
+      if (!dataEl) return;
+      const lines = dataEl.value.split("\\n");
+      const header = lines[0] || "";
+      const isHeader = header.toLowerCase().includes("station") || header.toLowerCase().includes("east") || header.toLowerCase().includes("x");
+      const maxLines = isHeader ? config.maxPoints + 1 : config.maxPoints;
+
+      if (lines.length > maxLines) {
+        dataEl.value = lines.slice(0, maxLines).join("\\n");
+        const chkBtn = document.getElementById("calRun") || document.getElementById("scRun");
+        if (chkBtn) chkBtn.click();
+      }
+    }
+
+    function checkPointsLimit() {
+      const dataEl = document.getElementById("data");
+      if (!dataEl || !dataEl.value) return;
+      const lines = dataEl.value.trim().split("\\n").filter(l => l.trim().length > 0);
+      const isHeader = lines[0] && (lines[0].toLowerCase().includes("station") || lines[0].toLowerCase().includes("east") || lines[0].toLowerCase().includes("x"));
+      const pointCount = isHeader ? lines.length - 1 : lines.length;
+
+      if (pointCount > config.maxPoints) {
+        showLimitModal(pointCount);
+      }
+    }
+
+    const dataEl = document.getElementById("data");
+    if (dataEl) {
+      dataEl.addEventListener("change", checkPointsLimit);
+      dataEl.addEventListener("paste", function() {
+        setTimeout(checkPointsLimit, 250);
+      });
+    }
+
+    const msaveBtn = document.getElementById("msave");
+    if (msaveBtn) {
+      msaveBtn.addEventListener("click", function(e) {
+        const dataEl = document.getElementById("data");
+        if (dataEl && dataEl.value) {
+          const lines = dataEl.value.trim().split("\\n").filter(l => l.trim().length > 0);
+          const isHeader = lines[0] && (lines[0].toLowerCase().includes("station") || lines[0].toLowerCase().includes("east"));
+          const pointCount = isHeader ? lines.length - 1 : lines.length;
+          if (pointCount > config.maxPoints) {
+            e.preventDefault();
+            e.stopPropagation();
+            showLimitModal(pointCount);
+            return false;
+          }
+        }
+      }, true);
+    }
+
+    if (config.disableReports) {
+      const repBtn = document.getElementById("saveRep");
+      if (repBtn) {
+        repBtn.addEventListener("click", function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          let modal = document.getElementById("web-rep-modal");
+          if (!modal) {
+            modal = document.createElement("div");
+            modal.id = "web-rep-modal";
+            modal.style.cssText = "position:fixed;inset:0;background:rgba(15,23,42,0.65);backdrop-filter:blur(4px);z-index:999999;display:flex;align-items:center;justify-content:center;padding:16px;font-family:system-ui,-apple-system,sans-serif;";
+            modal.innerHTML = '<div style="background:#fff;border-radius:16px;max-width:400px;width:100%;padding:24px;box-shadow:0 20px 40px rgba(0,0,0,0.2);text-align:center;">' +
+              '<div style="width:48px;height:48px;border-radius:12px;background:#eff6ff;color:#2563eb;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:24px;">📄</div>' +
+              '<h3 style="font-size:17px;font-weight:800;color:#0f172a;margin:0 0 8px;">Desktop Pro Feature</h3>' +
+              '<p style="font-size:13px;color:#475569;line-height:1.5;margin:0 0 20px;">PDF Cadastral & Survey Reports are available exclusively in the <strong>Excel to KML Pro Desktop Edition</strong>.</p>' +
+              '<button id="btn-rep-dl" style="width:100%;padding:10px 16px;background:#2563eb;color:#fff;font-weight:700;font-size:13px;border-radius:10px;border:none;cursor:pointer;margin-bottom:8px;">Download Windows Desktop App</button>' +
+              '<button id="btn-rep-close" style="width:100%;padding:8px 16px;background:#f8fafc;color:#64748b;font-weight:600;font-size:12px;border-radius:10px;border:1px solid #e2e8f0;cursor:pointer;">Dismiss</button>' +
+            '</div>';
+            document.body.appendChild(modal);
+            document.getElementById("btn-rep-dl").onclick = function() {
+              if (window.top) window.top.location.href = "/#download";
+              else window.location.href = "/#download";
+            };
+            document.getElementById("btn-rep-close").onclick = function() {
+              modal.style.display = "none";
+            };
+          }
+          modal.style.display = "flex";
+          return false;
+        }, true);
+      }
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initGuard);
+  } else {
+    initGuard();
+  }
+})();
+</script>
+`;
+
+    const lastBodyIndex = html.lastIndexOf("</body>");
+    if (lastBodyIndex !== -1) {
+      return (
+        html.substring(0, lastBodyIndex) +
+        script +
+        html.substring(lastBodyIndex)
+      );
+    }
+    return html + script;
+  } catch (err) {
+    console.warn("Failed injecting web restrictions:", err);
+    return html;
+  }
+}
+
+export async function GET(req: NextRequest) {
   // 1. Fetch directly from GitHub on every open / refresh
   try {
     const timestampedUrl = `${GITHUB_RAW_URL}?t=${Date.now()}`;
@@ -21,17 +259,19 @@ export async function GET() {
     });
 
     if (res.ok) {
-      const content = await res.text();
+      const rawContent = await res.text();
 
       // Silently save copy to public/app.html for offline / fallback resilience
       try {
         const fallbackPath = path.resolve(process.cwd(), "public/app.html");
-        fs.promises.writeFile(fallbackPath, content, "utf-8").catch(() => {});
+        fs.promises.writeFile(fallbackPath, rawContent, "utf-8").catch(() => {});
       } catch {
         // ignore background write
       }
 
-      return new NextResponse(content, {
+      const protectedContent = applyWebRestrictions(rawContent, req);
+
+      return new NextResponse(protectedContent, {
         status: 200,
         headers: {
           "Content-Type": "text/html; charset=utf-8",
@@ -56,8 +296,9 @@ export async function GET() {
   for (const candidate of fallbackCandidates) {
     try {
       if (fs.existsSync(candidate)) {
-        const content = await fs.promises.readFile(candidate, "utf-8");
-        return new NextResponse(content, {
+        const rawContent = await fs.promises.readFile(candidate, "utf-8");
+        const protectedContent = applyWebRestrictions(rawContent, req);
+        return new NextResponse(protectedContent, {
           status: 200,
           headers: {
             "Content-Type": "text/html; charset=utf-8",
@@ -75,3 +316,4 @@ export async function GET() {
     headers: { "Content-Type": "text/plain" },
   });
 }
+
