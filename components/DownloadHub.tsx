@@ -1,7 +1,18 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { 
+  Download, 
+  FileSpreadsheet, 
+  ShieldCheck, 
+  Copy, 
+  Check, 
+  Globe, 
+  ExternalLink, 
+  Sparkles,
+  Laptop
+} from "lucide-react";
 
 interface DownloadHubProps {
   versionTag: string;
@@ -25,11 +36,12 @@ export default function DownloadHub({
   onToast,
 }: DownloadHubProps) {
   const { requireAuth, trackDownload } = useAuth();
+  const [copied, setCopied] = useState(false);
 
   const handleDownloadExe = () => {
     requireAuth(() => {
       trackDownload("windows_installer", "ExcelToKMLPro-Lite-Setup.exe", versionTag);
-      onToast(`🚀 Initiating download for ExcelToKMLPro-Lite-Setup.exe (${versionTag})`);
+      onToast(`🚀 Starting download for ExcelToKMLPro-Lite-Setup.exe (${versionTag})`);
       const link = document.createElement("a");
       link.href = downloadUrl;
       link.download = "ExcelToKMLPro-Lite-Setup.exe";
@@ -71,213 +83,171 @@ BLDG-C2,513620.000,2787440.000,15.15,STRUCTURE,Building Column Corner B
 
   const handleCopyHash = () => {
     navigator.clipboard.writeText(sha256Hash).then(() => {
+      setCopied(true);
       onToast("📋 SHA-256 hash copied to clipboard");
+      setTimeout(() => setCopied(false), 2500);
     });
   };
 
   return (
-    <section className="py-20 bg-white" id="download">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-block text-xs font-bold uppercase tracking-wider text-amber-800 bg-amber-50 px-3 py-1 rounded-full mb-3 border border-amber-200">
-            Official Release {versionTag}
+    <section className="py-20 lg:py-24 bg-white border-b border-slate-100" id="download">
+      <div className="max-w-[1140px] mx-auto px-5 sm:px-8">
+        
+        {/* Section Header (Meaningful, Clear, No Buzzwords) */}
+        <div className="text-center max-w-[620px] mx-auto mb-14">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50/80 border border-blue-100/80 text-blue-700 text-xs font-semibold uppercase tracking-wider mb-2.5">
+            <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+            <span>Download &amp; Installation</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-950 tracking-tight mb-4">
+          <h2 className="text-2xl sm:text-3xl lg:text-[34px] font-bold tracking-tight text-slate-900 mb-3">
             Download Excel to KML Pro
           </h2>
-          <p className="text-base sm:text-lg text-slate-600 leading-relaxed">
-            Get the official release for Windows. Lightweight, native, and completely free to use for registered surveyors.
+          <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
+            Install the desktop application on Windows or download our sample survey dataset to test coordinate conversion right away.
           </p>
         </div>
 
-        <div className="max-w-5xl mx-auto">
-          {/* Primary Banner Card */}
-          <div className="p-8 sm:p-12 rounded-3xl bg-gradient-to-br from-slate-50 via-white to-blue-50/40 border border-slate-200 shadow-xl shadow-slate-200/50 mb-10">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-              <div className="lg:col-span-7 space-y-4">
-                <div className="flex items-center gap-3">
-                  <span className="bg-amber-400 text-slate-950 font-mono font-bold text-xs px-2.5 py-0.5 rounded shadow-2xs">
-                    RECOMMENDED
+        {/* Primary Download Card */}
+        <div className="p-6 sm:p-8 lg:p-10 rounded-2xl bg-[#fafbfc] border border-slate-200/80 shadow-[0_8px_30px_rgba(0,0,0,0.03)] mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            
+            {/* Left Details (7 cols) */}
+            <div className="lg:col-span-7 space-y-4">
+              <div className="flex flex-wrap items-center gap-2.5">
+                <span className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200/70 text-xs font-semibold px-2.5 py-0.5 rounded-md">
+                  <Laptop className="w-3.5 h-3.5" />
+                  Windows 64-bit
+                </span>
+                <span className="text-xs text-slate-500 font-medium">{releaseDateText}</span>
+              </div>
+
+              <h3 className="text-xl sm:text-2xl font-bold text-slate-900">
+                Official Windows Desktop Application
+              </h3>
+
+              <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">
+                Runs natively on Windows 10 and Windows 11. Includes all 6,800+ national EPSG coordinate grids pre-installed, allowing you to convert and verify total station files without needing CAD or expensive GIS desktop licenses.
+              </p>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
+                <button
+                  onClick={handleDownloadExe}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-[#2563eb] hover:bg-[#1d4ed8] active:translate-y-0.5 text-white text-sm font-semibold rounded-xl shadow-[0_2px_8px_rgba(37,99,235,0.2)] hover:shadow-[0_4px_14px_rgba(37,99,235,0.28)] transition-all cursor-pointer"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Download Windows Installer</span>
+                </button>
+
+                <button
+                  onClick={handleDownloadSampleCsv}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3.5 bg-white hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200/90 shadow-xs transition-colors cursor-pointer"
+                >
+                  <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+                  <span>Download Sample CSV</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Right Metadata Card (5 cols) */}
+            <div className="lg:col-span-5 bg-white p-5 sm:p-6 rounded-xl border border-slate-200/80 shadow-xs space-y-3 font-sans">
+              <div className="flex justify-between items-center text-xs pb-2.5 border-b border-slate-100">
+                <span className="text-slate-500">Current Release</span>
+                <span className="font-mono font-bold text-slate-800">{versionTag}</span>
+              </div>
+              <div className="flex justify-between items-center text-xs pb-2.5 border-b border-slate-100">
+                <span className="text-slate-500">Operating System</span>
+                <span className="font-medium text-slate-800">Windows 10 / 11 (64-bit)</span>
+              </div>
+              <div className="flex justify-between items-center text-xs pb-2.5 border-b border-slate-100">
+                <span className="text-slate-500">License</span>
+                <span className="font-semibold text-emerald-700">Free for Registered Users</span>
+              </div>
+
+              {/* SHA-256 Checksum */}
+              <div className="pt-1">
+                <div className="flex items-center justify-between text-[11px] text-slate-500 mb-1.5">
+                  <span className="font-medium">SHA-256 Checksum:</span>
+                  <span className="text-emerald-700 font-semibold flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                    Verified Binary
                   </span>
-                  <span className="text-xs font-semibold text-slate-500">{releaseDateText}</span>
                 </div>
-
-                <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight">
-                  Windows Native Installer (Lite)
-                </h3>
-
-                <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-                  Installs in seconds and uses the Microsoft Edge WebView2 display engine already built into Windows 10
-                  and 11. Includes taskbar integration, clean window chrome, and full offline EPSG database.
-                </p>
-
-                <div className="flex flex-col sm:flex-row items-center gap-4 pt-2">
+                <div className="flex items-center justify-between bg-slate-50 border border-slate-200/80 rounded-xl p-2.5">
+                  <code className="text-[11px] font-mono text-slate-700 truncate mr-2 select-all">
+                    {sha256Hash}
+                  </code>
                   <button
-                    onClick={handleDownloadExe}
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-7 py-3.5 bg-blue-600 hover:bg-blue-700 active:scale-98 text-white font-bold rounded-2xl shadow-xl shadow-blue-500/25 transition-all cursor-pointer"
+                    onClick={handleCopyHash}
+                    className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-white rounded-lg transition-colors border border-transparent hover:border-slate-200 cursor-pointer"
+                    title="Copy SHA-256 hash"
                   >
-                    <svg className="w-6 h-6 stroke-2" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                      <polyline points="7 10 12 15 17 10" />
-                      <line x1="12" y1="15" x2="12" y2="3" />
-                    </svg>
-                    <div className="text-left">
-                      <div className="text-sm font-extrabold">Download Windows Installer</div>
-                      <div className="text-xs font-normal text-blue-100">
-                        ExcelToKMLPro-Lite-Setup.exe &bull; {fileSizeText}
-                      </div>
-                    </div>
-                  </button>
-
-                  <button
-                    onClick={handleDownloadSampleCsv}
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3.5 bg-white hover:bg-slate-50 text-slate-700 text-sm font-bold rounded-2xl border border-slate-200 transition-colors cursor-pointer"
-                    title="Download a test CSV dataset with coordinates"
-                  >
-                    <svg className="w-4 h-4 text-blue-600 stroke-2" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                      <polyline points="14 2 14 8 20 8" />
-                      <line x1="12" y1="18" x2="12" y2="12" />
-                      <line x1="9" y1="15" x2="15" y2="15" />
-                    </svg>
-                    <span>Download Sample CSV</span>
+                    {copied ? (
+                      <Check className="w-4 h-4 text-emerald-600" />
+                    ) : (
+                      <Copy className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
               </div>
-
-              {/* Metadata Box Right */}
-              <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-xs space-y-4">
-                <div className="flex justify-between items-center text-xs pb-3 border-b border-slate-100">
-                  <span className="font-semibold text-slate-400">Version</span>
-                  <span className="font-mono font-bold text-slate-800">{versionTag}</span>
-                </div>
-                <div className="flex justify-between items-center text-xs pb-3 border-b border-slate-100">
-                  <span className="font-semibold text-slate-400">Operating System</span>
-                  <span className="font-medium text-slate-800">Windows 10 / 11 (64-bit)</span>
-                </div>
-                <div className="flex justify-between items-center text-xs pb-3 border-b border-slate-100">
-                  <span className="font-semibold text-slate-400">File Size</span>
-                  <span className="font-mono font-bold text-slate-800">{bytesText}</span>
-                </div>
-                <div className="flex justify-between items-center text-xs pb-3 border-b border-slate-100">
-                  <span className="font-semibold text-slate-400">License</span>
-                  <span className="font-bold text-emerald-600">Open Source / Free</span>
-                </div>
-
-                <div>
-                  <div className="flex items-center justify-between text-[11px] font-semibold text-slate-400 mb-1.5">
-                    <span>SHA-256 Checksum:</span>
-                    <span className="text-emerald-600">Verified Binary</span>
-                  </div>
-                  <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl p-2.5">
-                    <code className="text-[11px] font-mono text-slate-700 truncate mr-2 select-all">
-                      {sha256Hash}
-                    </code>
-                    <button
-                      onClick={handleCopyHash}
-                      className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-white rounded-lg transition-colors border border-transparent hover:border-slate-200 cursor-pointer"
-                      title="Copy SHA-256 hash"
-                    >
-                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Secondary Download Alternatives */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Web App */}
-            <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-xs hover:border-blue-300 transition-all flex flex-col justify-between">
-              <div>
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-                    <svg className="w-5 h-5 stroke-2" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                      <circle cx="12" cy="12" r="10" />
-                      <line x1="2" y1="12" x2="22" y2="12" />
-                      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-slate-900 text-sm">In-Browser Web App</h4>
-                    <span className="text-[11px] font-bold text-emerald-600">Zero Installation</span>
-                  </div>
-                </div>
-                <p className="text-xs text-slate-600 leading-relaxed mb-4">
-                  Runs directly in any modern browser on macOS, Linux, ChromeOS, and Windows. Same full EPSG coordinate engine.
-                </p>
-              </div>
-              <a
-                href="/app"
-                className="text-xs font-bold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1"
-              >
-                <span>Launch Web Tool</span> &rarr;
-              </a>
             </div>
 
-            {/* Portable Version */}
-            <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-xs hover:border-blue-300 transition-all flex flex-col justify-between">
-              <div>
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-9 h-9 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
-                    <svg className="w-5 h-5 stroke-2" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                      <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
-                      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-slate-900 text-sm">Portable USB Edition</h4>
-                    <span className="text-[11px] font-bold text-amber-600">No Setup Required</span>
-                  </div>
-                </div>
-                <p className="text-xs text-slate-600 leading-relaxed mb-4">
-                  Single standalone executable. Copy to a thumb drive and run directly on any field laptop without administrator privileges.
-                </p>
-              </div>
-              <a
-                href={releaseNotesUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs font-bold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1"
-              >
-                <span>View Releases on GitHub</span> &rarr;
-              </a>
-            </div>
-
-            {/* Mobile & PWA */}
-            <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-xs hover:border-blue-300 transition-all flex flex-col justify-between">
-              <div>
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-9 h-9 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
-                    <svg className="w-5 h-5 stroke-2" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                      <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
-                      <line x1="12" y1="18" x2="12.01" y2="18" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-slate-900 text-sm">Android &amp; iOS PWA</h4>
-                    <span className="text-[11px] font-bold text-purple-600">Mobile Friendly</span>
-                  </div>
-                </div>
-                <p className="text-xs text-slate-600 leading-relaxed mb-4">
-                  Android APK and iOS Progressive Web App (PWA). Add to home screen in Safari or Chrome for offline surveying in the field.
-                </p>
-              </div>
-              <a
-                href="https://github.com/chaudaryyabdullah03-collab/kml-convertor/tree/main/android"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs font-bold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1"
-              >
-                <span>Mobile Build Instructions</span> &rarr;
-              </a>
-            </div>
           </div>
         </div>
+
+        {/* Secondary Options Cards (2 clean columns) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Web App */}
+          <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                  <Globe className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-slate-900 text-sm">Online Web Converter</h4>
+                  <span className="text-[11px] font-semibold text-blue-600 font-mono">No Install Needed</span>
+                </div>
+              </div>
+              <p className="text-xs text-slate-600 leading-relaxed mb-4">
+                Convert single coordinates or test spreadsheets directly in your browser on any operating system.
+              </p>
+            </div>
+            <a
+              href="/app"
+              className="text-xs font-semibold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1"
+            >
+              <span>Launch Web Tool</span> &rarr;
+            </a>
+          </div>
+
+          {/* GitHub Releases */}
+          <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-9 h-9 rounded-xl bg-slate-50 text-slate-700 flex items-center justify-center border border-slate-200/60">
+                  <ExternalLink className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-slate-900 text-sm">Release Notes &amp; Updates</h4>
+                  <span className="text-[11px] font-semibold text-slate-500 font-mono">GitHub Repository</span>
+                </div>
+              </div>
+              <p className="text-xs text-slate-600 leading-relaxed mb-4">
+                View detailed version changelogs, build signatures, and open source release notes on GitHub.
+              </p>
+            </div>
+            <a
+              href={releaseNotesUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs font-semibold text-slate-700 hover:text-blue-600 inline-flex items-center gap-1"
+            >
+              <span>View Releases on GitHub</span> &rarr;
+            </a>
+          </div>
+        </div>
+
       </div>
     </section>
   );
