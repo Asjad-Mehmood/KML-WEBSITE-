@@ -67,7 +67,7 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} antialiased scroll-smooth`}
     >
-      <body className="min-h-screen bg-white text-slate-900 selection:bg-blue-100 selection:text-blue-900">
+      <body className="min-h-screen bg-white text-[#1d1d1f] selection:bg-[#0071e3]/20 selection:text-[#0071e3]">
         <AuthProvider>
           {children}
           <AuthModal />

@@ -1,69 +1,50 @@
 import React from "react";
 
+const STEPS = [
+  {
+    num: "01",
+    title: "Import Survey Points",
+    desc: "Copy and paste rows directly from Excel, or drag-and-drop a CSV file. Auto-detects headers and column aliases.",
+    code: ["STATION, EASTING, NORTHING, ELEV", "BM-01, 513556.612, 2787467.856, 14.85", "BM-02, 513642.180, 2787510.320, 15.22"],
+  },
+  {
+    num: "02",
+    title: "Select National Grid",
+    desc: "Type your country, EPSG code, or AutoCAD zone name (e.g. DUB-DLTM, UTM 40N, British Grid). Verify with the built-in prover tool.",
+    code: ["Grid: EPSG:3997 (Dubai DLTM)", "Datum: Direct WGS84 Alignment", "Tie Accuracy: < 1 metre certified"],
+  },
+  {
+    num: "03",
+    title: "Export 3D KML or KMZ",
+    desc: "Press Save KML or Save KMZ. Open instantly in Google Earth, Google Earth Pro, or any GIS application.",
+    code: ["Saved: W-15_Tree_Survey.kmz", "Placemarks: 48 · Boundaries: 3", "Photos: 12 embedded in balloons"],
+  },
+];
+
 export default function Workflow() {
   return (
-    <section className="py-20 bg-slate-50 border-t border-slate-200" id="workflow">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-block text-xs font-bold uppercase tracking-wider text-blue-700 bg-blue-50 px-3 py-1 rounded-full mb-3 border border-blue-200">
-            Simple 3-Step Process
-          </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-950 tracking-tight mb-4">
-            From Spreadsheets to Google Earth in 30 Seconds
+    <section id="workflow" className="py-24 bg-[#f5f5f7]">
+      <div className="max-w-[980px] mx-auto px-5 sm:px-8">
+        <div className="text-center mb-16">
+          <p className="text-[13px] font-semibold text-[#0071e3] uppercase tracking-widest mb-3">Simple Process</p>
+          <h2 className="text-[40px] sm:text-[48px] font-bold tracking-tight text-[#1d1d1f]">
+            From Spreadsheets to Google Earth<br className="hidden sm:block" /> in 30 Seconds.
           </h2>
-          <p className="text-base sm:text-lg text-slate-600 leading-relaxed">
-            No complicated CAD export setups or paid GIS subscriptions. Follow these 3 intuitive steps.
-          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Step 1 */}
-          <div className="p-8 rounded-2xl bg-white border border-slate-200/90 shadow-sm relative">
-            <div className="w-10 h-10 rounded-xl bg-blue-600 text-white font-extrabold flex items-center justify-center text-lg mb-6 shadow-md shadow-blue-500/20">
-              1
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {STEPS.map((s) => (
+            <div key={s.num} className="bg-white rounded-[20px] border border-[#e8e8ed] p-8 relative overflow-hidden">
+              <div className="absolute top-6 right-6 text-[56px] font-black text-[#f5f5f7] leading-none select-none">{s.num}</div>
+              <h3 className="text-[17px] font-semibold text-[#1d1d1f] mb-2 relative">{s.title}</h3>
+              <p className="text-[14px] text-[#6e6e73] leading-relaxed mb-6 relative">{s.desc}</p>
+              <div className="bg-[#1d1d1f] rounded-[12px] p-4 font-mono text-[11px] text-[#aeaeb2] leading-loose">
+                {s.code.map((line, i) => (
+                  <div key={i} className={i === 0 ? "text-[#6e6e73]" : "text-[#f5f5f7]"}>{line}</div>
+                ))}
+              </div>
             </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-3">Import Survey Points</h3>
-            <p className="text-sm text-slate-600 leading-relaxed mb-6">
-              Copy and paste rows straight from Excel, drag-and-drop a CSV file, or type points by hand with auto-incrementing station IDs (TBM-01 &rarr; TBM-02).
-            </p>
-            <div className="p-3.5 rounded-xl bg-slate-100 font-mono text-xs text-slate-800 leading-relaxed border border-slate-200">
-              STATION,EASTING,NORTHING,ELEV<br />
-              BM-01,513556.612,2787467.856,14.85<br />
-              BM-02,513642.180,2787510.320,15.22
-            </div>
-          </div>
-
-          {/* Step 2 */}
-          <div className="p-8 rounded-2xl bg-white border border-slate-200/90 shadow-sm relative">
-            <div className="w-10 h-10 rounded-xl bg-blue-600 text-white font-extrabold flex items-center justify-center text-lg mb-6 shadow-md shadow-blue-500/20">
-              2
-            </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-3">Select National Grid</h3>
-            <p className="text-sm text-slate-600 leading-relaxed mb-6">
-              Type your country or AutoCAD zone code (e.g. <code>DUB-DLTM</code>, <code>UTM 40N</code>, <code>British Grid</code>). Check your known benchmark with the integrated prover tool.
-            </p>
-            <div className="p-3.5 rounded-xl bg-slate-100 font-mono text-xs text-slate-800 leading-relaxed border border-slate-200">
-              Grid: EPSG:3997 (Dubai DLTM)<br />
-              Datum: Direct WGS84 Alignment<br />
-              Tie Accuracy: &lt; 1 metre certified
-            </div>
-          </div>
-
-          {/* Step 3 */}
-          <div className="p-8 rounded-2xl bg-white border border-slate-200/90 shadow-sm relative">
-            <div className="w-10 h-10 rounded-xl bg-blue-600 text-white font-extrabold flex items-center justify-center text-lg mb-6 shadow-md shadow-blue-500/20">
-              3
-            </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-3">Export 3D KML or KMZ</h3>
-            <p className="text-sm text-slate-600 leading-relaxed mb-6">
-              Press <strong>Save KML</strong> or <strong>Save KMZ</strong>. Open the generated file in Google Earth, Google Earth Pro, or GIS apps for instant 3D inspection.
-            </p>
-            <div className="p-3.5 rounded-xl bg-slate-100 font-mono text-xs text-slate-800 leading-relaxed border border-slate-200">
-              Saved: W-15_Tree_Survey.kmz<br />
-              Placemarks: 48 &bull; Boundaries: 3<br />
-              Photos: 12 embedded in balloon
-            </div>
-          </div>
+          ))}
         </div>
       </div>
     </section>

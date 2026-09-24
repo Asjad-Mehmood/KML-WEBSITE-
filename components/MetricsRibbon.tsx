@@ -1,45 +1,25 @@
 import React from "react";
 
+const METRICS = [
+  { value: "6,864", unit: "+",  label: "EPSG Grid Systems" },
+  { value: "100",   unit: "%",  label: "Offline & Air-Gapped" },
+  { value: "<1",    unit: "s",  label: "10K-Point Conversion" },
+  { value: "3.2",   unit: "MB", label: "Windows Installer Size" },
+];
+
 export default function MetricsRibbon() {
   return (
-    <section className="py-12 border-y border-slate-200 bg-slate-50/70">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-          <div className="p-4">
-            <div className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-              6,864<span className="text-blue-600">+</span>
+    <section className="border-y border-[#d2d2d7] bg-[#f5f5f7] py-12">
+      <div className="max-w-[980px] mx-auto px-5 sm:px-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-0 divide-x divide-[#d2d2d7]">
+          {METRICS.map(({ value, unit, label }) => (
+            <div key={label} className="flex flex-col items-center text-center px-6 py-2">
+              <div className="text-[40px] font-bold tracking-tight text-[#1d1d1f]">
+                {value}<span className="text-[#0071e3]">{unit}</span>
+              </div>
+              <div className="text-[13px] text-[#6e6e73] mt-1">{label}</div>
             </div>
-            <div className="text-xs sm:text-sm font-medium text-slate-500 mt-1">
-              National Grids &amp; EPSG Systems
-            </div>
-          </div>
-
-          <div className="p-4">
-            <div className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-              3.2<span className="text-blue-600"> MB</span>
-            </div>
-            <div className="text-xs sm:text-sm font-medium text-slate-500 mt-1">
-              Ultra-Lightweight Windows Installer
-            </div>
-          </div>
-
-          <div className="p-4">
-            <div className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-              100<span className="text-emerald-600">%</span>
-            </div>
-            <div className="text-xs sm:text-sm font-medium text-slate-500 mt-1">
-              Offline &amp; Secure (Zero Cloud Risk)
-            </div>
-          </div>
-
-          <div className="p-4">
-            <div className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-              &lt; 1<span className="text-blue-600">s</span>
-            </div>
-            <div className="text-xs sm:text-sm font-medium text-slate-500 mt-1">
-              Instant 10,000+ Point Conversion
-            </div>
-          </div>
+          ))}
         </div>
       </div>
     </section>
