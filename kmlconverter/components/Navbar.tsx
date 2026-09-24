@@ -95,15 +95,13 @@ export default function Navbar({ onDownloadClick }: NavbarProps) {
           >
             FAQ
           </a>
-          <a
-            href="/app.html"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/app"
             className="px-3.5 py-2 rounded-lg text-blue-600 font-bold hover:bg-blue-50 transition-colors flex items-center gap-1"
           >
             Web App
             <span className="text-xs">↗</span>
-          </a>
+          </Link>
         </nav>
 
         {/* Auth & Action CTAs */}
@@ -276,15 +274,13 @@ export default function Navbar({ onDownloadClick }: NavbarProps) {
           >
             FAQ
           </a>
-          <a
-            href="/app.html"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/app"
             onClick={() => setMobileMenuOpen(false)}
             className="block px-3 py-2 rounded-lg text-base font-bold text-blue-600 bg-blue-50/60"
           >
             Launch Web App ↗
-          </a>
+          </Link>
           {!user && (
             <div className="pt-2 border-t border-slate-100 flex gap-2">
               <button

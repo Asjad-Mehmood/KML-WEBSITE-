@@ -36,9 +36,7 @@ export default function CtaBanner({
               <span>Download for Windows ({fileSizeText})</span>
             </button>
             <a
-              href="/app.html"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/app"
               className="inline-flex items-center justify-center gap-2 px-6 py-4 bg-blue-700/60 hover:bg-blue-700 text-white font-bold rounded-2xl border border-blue-400/40 transition-colors"
             >
               <span>Launch Web App &rarr;</span>

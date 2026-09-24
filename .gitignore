@@ -1,0 +1,12 @@
+# Next.js & Node ignores
+node_modules/
+.next/
+out/
+build/
+.DS_Store
+*.log
+.vercel
+.data/
+.env
+.env*.local
+!.env.example

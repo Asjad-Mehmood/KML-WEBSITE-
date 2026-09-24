@@ -21,6 +21,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://exceltokml.pro"),
   title: "Excel to KML Pro — Download Free Survey Benchmark Converter",
   description:
     "Download Excel to KML Pro — The precision survey benchmark converter. Convert Excel and CSV coordinates to Google Earth KML & KMZ with 6,864 EPSG world grids, site calibration, and geotagged photos. 100% offline.",

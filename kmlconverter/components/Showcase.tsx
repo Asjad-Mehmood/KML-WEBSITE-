@@ -522,9 +522,7 @@ export default function Showcase({ versionTag, onToast }: ShowcaseProps) {
                 </button>
 
                 <a
-                  href="/app.html"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href="/app"
                   className="inline-flex items-center justify-center py-3 px-4 bg-white hover:bg-slate-100 text-slate-800 text-xs font-bold rounded-xl border border-slate-200 transition-colors"
                 >
                   <span>Open Full Tool ↗</span>

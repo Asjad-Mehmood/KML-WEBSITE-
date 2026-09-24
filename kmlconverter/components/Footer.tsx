@@ -71,7 +71,7 @@ export default function Footer({
                 </a>
               </li>
               <li>
-                <a href="/app.html" target="_blank" className="hover:text-blue-600 transition-colors">
+                <a href="/app" className="hover:text-blue-600 transition-colors">
                   Full Web App
                 </a>
               </li>
@@ -186,7 +186,7 @@ export default function Footer({
             <button onClick={onDownloadClick} className="hover:text-blue-600 cursor-pointer">
               Download
             </button>
-            <a href="/app.html" target="_blank" className="hover:text-blue-600">
+            <a href="/app" className="hover:text-blue-600">
               Online App
             </a>
           </div>

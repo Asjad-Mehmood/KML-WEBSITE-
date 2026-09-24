@@ -212,9 +212,7 @@ BLDG-C2,513620.000,2787440.000,15.15,STRUCTURE,Building Column Corner B
                 </p>
               </div>
               <a
-                href="/app.html"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/app"
                 className="text-xs font-bold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1"
               >
                 <span>Launch Web Tool</span> &rarr;
