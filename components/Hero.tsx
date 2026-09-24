@@ -2,10 +2,10 @@
 
 import React from "react";
 import dynamic from "next/dynamic";
-import { 
-  Download, 
-  ChevronRight, 
-  FileSpreadsheet, 
+import {
+  Download,
+  ChevronRight,
+  FileSpreadsheet,
   Layers,
   Globe,
   ArrowRight
@@ -36,12 +36,12 @@ export default function Hero({ versionTag, fileSizeText, onDownloadClick }: Hero
 
       <div className="max-w-[1280px] mx-auto px-5 sm:px-8">
         <div className="grid lg:grid-cols-12 gap-10 lg:gap-8 items-center">
-          
+
           {/* ══════════════════════════════════════════════════════════════════
               LEFT: Minimal, Modern & Balanced Typography
              ══════════════════════════════════════════════════════════════════ */}
           <div className="lg:col-span-5 flex flex-col items-start text-left">
-            
+
             {/* Modern Version Badge */}
             <div className="group inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-50/90 border border-slate-200/90 shadow-xs hover:border-slate-300 transition-all mb-6">
               <span className="flex h-2 w-2 relative">
@@ -73,7 +73,7 @@ export default function Hero({ versionTag, fileSizeText, onDownloadClick }: Hero
 
             {/* Action Buttons with subtle modern polish */}
             <div className="flex flex-wrap items-center gap-3 mb-8 w-full sm:w-auto">
-              <button 
+              <button
                 onClick={onDownloadClick}
                 className="group inline-flex items-center justify-center gap-2.5 px-6 py-3 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-xl text-sm font-semibold shadow-[0_4px_14px_rgba(0,113,227,0.28)] hover:shadow-[0_6px_20px_rgba(0,113,227,0.38)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
               >
@@ -82,11 +82,11 @@ export default function Hero({ versionTag, fileSizeText, onDownloadClick }: Hero
                 <span className="text-blue-100 text-xs font-normal">({fileSizeText})</span>
               </button>
 
-              <a 
-                href="#showcase"
+              <a
+                href={`/app?web=true`}
                 className="group inline-flex items-center justify-center gap-1.5 px-5 py-3 text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200/90 hover:border-slate-300 rounded-xl text-sm font-medium shadow-xs transition-all duration-200"
               >
-                <span>Live Demo</span>
+                <span>Try In Browser</span>
                 <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
               </a>
             </div>

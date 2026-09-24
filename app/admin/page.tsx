@@ -144,6 +144,46 @@ export default function AdminPage() {
     setTimeout(() => setToast(null), 3500);
   };
 
+  const formatLocationDisplay = (locStr?: string | null): { text: string; flag: string } => {
+    if (!locStr || locStr === "Localhost (Dev)" || locStr === "127.0.0.1" || locStr === "Localhost") {
+      return { text: "Localhost (Dev)", flag: "💻" };
+    }
+
+    const trimmed = locStr.trim();
+
+    // If it's a 2-letter country code like "PK", "AE", "US", etc.
+    if (trimmed.length === 2) {
+      const code = trimmed.toUpperCase();
+      let flag = "🌐";
+      try {
+        flag = code.replace(/./g, (c) => String.fromCodePoint(c.charCodeAt(0) + 127397));
+      } catch {
+        // ignore
+      }
+      try {
+        const regionNames = new Intl.DisplayNames(["en"], { type: "region" });
+        const name = regionNames.of(code) || code;
+        return { text: name, flag };
+      } catch {
+        return { text: code, flag };
+      }
+    }
+
+    // Flag icons based on location text
+    let flag = "🌐";
+    if (trimmed.includes("Pakistan") || trimmed.endsWith("PK")) flag = "🇵🇰";
+    else if (trimmed.includes("Emirates") || trimmed.includes("Dubai") || trimmed.endsWith("AE")) flag = "🇦🇪";
+    else if (trimmed.includes("United States") || trimmed.endsWith("US") || trimmed.includes("USA")) flag = "🇺🇸";
+    else if (trimmed.includes("United Kingdom") || trimmed.endsWith("GB") || trimmed.includes("London")) flag = "🇬🇧";
+    else if (trimmed.includes("Saudi Arabia") || trimmed.endsWith("SA")) flag = "🇸🇦";
+    else if (trimmed.includes("Qatar") || trimmed.endsWith("QA")) flag = "🇶🇦";
+    else if (trimmed.includes("Canada") || trimmed.endsWith("CA")) flag = "🇨🇦";
+    else if (trimmed.includes("Germany") || trimmed.endsWith("DE")) flag = "🇩🇪";
+    else if (trimmed.includes("India") || trimmed.endsWith("IN")) flag = "🇮🇳";
+
+    return { text: trimmed, flag };
+  };
+
   // Check Admin session
   const verifyAuth = useCallback(async () => {
     try {
@@ -762,15 +802,16 @@ export default function AdminPage() {
                     Object.entries(stats.locationCounts)
                       .sort(([, a], [, b]) => b - a)
                       .slice(0, 5)
-                      .map(([loc, count]) => {
+                      .map(([locKey, count]) => {
                         const total = stats.totalDownloads || 1;
                         const pct = Math.round((count / total) * 100);
+                        const loc = formatLocationDisplay(locKey);
                         return (
-                          <div key={loc} className="space-y-1.5">
+                          <div key={locKey} className="space-y-1.5">
                             <div className="flex justify-between items-center text-xs font-semibold">
                               <span className="text-slate-300 flex items-center gap-1.5">
-                                <MapPin className="w-3.5 h-3.5 text-rose-400" />
-                                {loc}
+                                <span className="text-sm shrink-0">{loc.flag}</span>
+                                <span>{loc.text}</span>
                               </span>
                               <span className="text-emerald-400 font-mono">
                                 {count} {count === 1 ? "event" : "events"} ({pct}%)
@@ -806,36 +847,39 @@ export default function AdminPage() {
                 </div>
 
                 <div className="space-y-2.5">
-                  {downloads.slice(0, 4).map((dl) => (
-                    <div
-                      key={dl.id}
-                      className="p-3 rounded-2xl bg-slate-800/50 border border-slate-800 flex items-center justify-between gap-3 text-xs"
-                    >
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center shrink-0">
-                          <Download className="w-3.5 h-3.5" />
-                        </div>
-                        <div className="min-w-0">
-                          <div className="font-semibold text-white truncate max-w-[150px]">
-                            {dl.userName || dl.userEmail || "Anonymous"}
+                  {downloads.slice(0, 4).map((dl) => {
+                    const loc = formatLocationDisplay(dl.location);
+                    return (
+                      <div
+                        key={dl.id}
+                        className="p-3 rounded-2xl bg-slate-800/50 border border-slate-800 flex items-center justify-between gap-3 text-xs"
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center shrink-0">
+                            <Download className="w-3.5 h-3.5" />
                           </div>
-                          <div className="text-[11px] text-slate-400 flex items-center gap-1">
-                            <MapPin className="w-3 h-3 text-rose-400 shrink-0" />
-                            <span className="truncate max-w-[130px]">{dl.location || "Localhost (Dev)"}</span>
+                          <div className="min-w-0">
+                            <div className="font-semibold text-white truncate max-w-[150px]">
+                              {dl.userName || dl.userEmail || "Anonymous"}
+                            </div>
+                            <div className="text-[11px] text-slate-400 flex items-center gap-1">
+                              <span className="text-xs shrink-0">{loc.flag}</span>
+                              <span className="truncate max-w-[130px]">{loc.text}</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div className="text-right shrink-0">
-                        <span className="font-mono text-[11px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 block mb-1">
-                          {dl.ipAddress || "127.0.0.1"}
-                        </span>
-                        <span className="text-[10px] text-slate-500">
-                          {new Date(dl.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                        </span>
+                        <div className="text-right shrink-0">
+                          <span className="font-mono text-[11px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 block mb-1">
+                            {dl.ipAddress || "127.0.0.1"}
+                          </span>
+                          <span className="text-[10px] text-slate-500">
+                            {new Date(dl.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -933,17 +977,22 @@ export default function AdminPage() {
                             </span>
                           </td>
                           <td className="px-6 py-4">
-                            <div className="flex flex-col gap-1">
-                              <div className="flex items-center gap-1.5 text-xs text-white font-medium">
-                                <MapPin className="w-3.5 h-3.5 text-rose-400 shrink-0" />
-                                <span className="truncate max-w-[180px]">{u.location || "Localhost (Dev)"}</span>
-                              </div>
-                              <div>
-                                <span className="font-mono text-[11px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">
-                                  {u.ipAddress || "127.0.0.1"}
-                                </span>
-                              </div>
-                            </div>
+                            {(() => {
+                              const loc = formatLocationDisplay(u.location);
+                              return (
+                                <div className="flex flex-col gap-1">
+                                  <div className="flex items-center gap-1.5 text-xs text-white font-medium">
+                                    <span className="text-sm shrink-0">{loc.flag}</span>
+                                    <span className="truncate max-w-[180px]">{loc.text}</span>
+                                  </div>
+                                  <div>
+                                    <span className="font-mono text-[11px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">
+                                      {u.ipAddress || "127.0.0.1"}
+                                    </span>
+                                  </div>
+                                </div>
+                              );
+                            })()}
                           </td>
                           <td className="px-6 py-4 font-bold text-blue-400">{u.downloadCount}</td>
                           <td className="px-6 py-4 text-xs text-slate-400">
@@ -1160,17 +1209,22 @@ export default function AdminPage() {
                             </span>
                           </td>
                           <td className="px-6 py-4">
-                            <div className="flex flex-col gap-1">
-                              <div className="flex items-center gap-1.5 text-xs text-white font-medium">
-                                <MapPin className="w-3.5 h-3.5 text-rose-400 shrink-0" />
-                                <span className="truncate max-w-[180px]">{dl.location || "Localhost (Dev)"}</span>
-                              </div>
-                              <div>
-                                <span className="font-mono text-[11px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                                  {dl.ipAddress || "127.0.0.1"}
-                                </span>
-                              </div>
-                            </div>
+                            {(() => {
+                              const loc = formatLocationDisplay(dl.location);
+                              return (
+                                <div className="flex flex-col gap-1">
+                                  <div className="flex items-center gap-1.5 text-xs text-white font-medium">
+                                    <span className="text-sm shrink-0">{loc.flag}</span>
+                                    <span className="truncate max-w-[180px]">{loc.text}</span>
+                                  </div>
+                                  <div>
+                                    <span className="font-mono text-[11px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                                      {dl.ipAddress || "127.0.0.1"}
+                                    </span>
+                                  </div>
+                                </div>
+                              );
+                            })()}
                           </td>
                           <td className="px-6 py-4 text-xs text-slate-300 font-mono">{dl.fileName}</td>
                           <td className="px-6 py-4 text-xs text-slate-400 font-bold">{dl.version}</td>

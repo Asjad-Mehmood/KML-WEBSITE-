@@ -11,6 +11,64 @@ export interface GeoLocation {
 // In-memory cache for IP lookups to avoid redundant API calls
 const ipGeoCache = new Map<string, GeoLocation>();
 
+let regionNames: Intl.DisplayNames | null = null;
+try {
+  regionNames = new Intl.DisplayNames(["en"], { type: "region" });
+} catch {
+  // fallback if Intl not available
+}
+
+/**
+ * Convert 2-letter ISO country code to full English country name
+ * e.g. "PK" -> "Pakistan", "AE" -> "United Arab Emirates", "US" -> "United States"
+ */
+export function resolveCountryName(codeOrName: string): string {
+  if (!codeOrName) return "Unknown Country";
+  const clean = codeOrName.trim();
+  if (clean.length === 2 && regionNames) {
+    try {
+      const resolved = regionNames.of(clean.toUpperCase());
+      if (resolved) return resolved;
+    } catch {
+      // return fallback
+    }
+  }
+  return clean;
+}
+
+/**
+ * Get country flag emoji from 2-letter code
+ * e.g. "PK" -> "🇵🇰", "AE" -> "🇦🇪"
+ */
+export function getCountryFlag(code: string): string {
+  if (!code || code.length !== 2) return "";
+  try {
+    return code
+      .toUpperCase()
+      .replace(/./g, (char) => String.fromCodePoint(char.charCodeAt(0) + 127397));
+  } catch {
+    return "";
+  }
+}
+
+/**
+ * Format any raw location string (e.g. "PK" or "AE") into a readable location with country name
+ */
+export function formatLocation(loc?: string | null): string {
+  if (!loc || loc.trim() === "") return "Unknown Origin";
+  const clean = loc.trim();
+
+  // If it's a 2-letter country code like "PK"
+  if (clean.length === 2) {
+    const fullName = resolveCountryName(clean);
+    const flag = getCountryFlag(clean);
+    return flag ? `${flag} ${fullName}` : fullName;
+  }
+
+  // If already formatted, return cleaned
+  return clean;
+}
+
 /**
  * Extract client IP address from Next.js request headers
  */
@@ -95,29 +153,40 @@ export async function getIpGeoLocation(
   }
 
   // Check CDN headers provided by Vercel or Cloudflare
+  let headerCity = "";
+  let headerCountryCode = "";
+
   if (req) {
     const vercelCity = req.headers.get("x-vercel-ip-city");
     const vercelCountry = req.headers.get("x-vercel-ip-country");
     const cfCountry = req.headers.get("cf-ipcountry");
 
-    if (vercelCountry || cfCountry) {
-      const city = vercelCity ? decodeURIComponent(vercelCity) : "";
-      const country = vercelCountry || cfCountry || "Global";
-      const location = city ? `${city}, ${country}` : country;
-
-      const edgeResult: GeoLocation = {
-        ip: cleanIp,
-        location,
-        city: city || "Unknown City",
-        country,
-        countryCode: country.length === 2 ? country.toUpperCase() : "INT",
-      };
-      ipGeoCache.set(cleanIp, edgeResult);
-      return edgeResult;
+    if (vercelCity) {
+      headerCity = decodeURIComponent(vercelCity).trim();
+    }
+    if (vercelCountry) {
+      headerCountryCode = vercelCountry.trim().toUpperCase();
+    } else if (cfCountry) {
+      headerCountryCode = cfCountry.trim().toUpperCase();
     }
   }
 
-  // Query free ip-api.com with 2s timeout
+  // If we already have BOTH city and country code from edge headers, use them directly
+  if (headerCity && headerCountryCode) {
+    const fullCountry = resolveCountryName(headerCountryCode);
+    const location = `${headerCity}, ${fullCountry}`;
+    const result: GeoLocation = {
+      ip: cleanIp,
+      location,
+      city: headerCity,
+      country: fullCountry,
+      countryCode: headerCountryCode,
+    };
+    ipGeoCache.set(cleanIp, result);
+    return result;
+  }
+
+  // If city is missing from headers (e.g. only "PK" was provided), query ip-api.com to get the exact city!
   try {
     const res = await fetch(`http://ip-api.com/json/${cleanIp}?fields=status,country,countryCode,regionName,city`, {
       signal: AbortSignal.timeout(2000),
@@ -127,9 +196,9 @@ export async function getIpGeoLocation(
     if (res.ok) {
       const data = await res.json();
       if (data.status === "success") {
-        const city = data.city || "";
-        const country = data.country || "";
-        const countryCode = data.countryCode || "INT";
+        const city = data.city || headerCity || "";
+        const country = data.country || resolveCountryName(data.countryCode || headerCountryCode);
+        const countryCode = data.countryCode || headerCountryCode || "INT";
         const location = city && country ? `${city}, ${country}` : country || city || "Unknown";
 
         const result: GeoLocation = {
@@ -147,7 +216,21 @@ export async function getIpGeoLocation(
     console.warn(`Geo lookup failed for IP ${cleanIp}:`, err);
   }
 
-  // Fallback
+  // Fallback to header country code if available (convert "PK" to "Pakistan")
+  if (headerCountryCode) {
+    const fullCountry = resolveCountryName(headerCountryCode);
+    const fallbackWithCountry: GeoLocation = {
+      ip: cleanIp,
+      location: fullCountry,
+      city: headerCity || "Unknown City",
+      country: fullCountry,
+      countryCode: headerCountryCode,
+    };
+    ipGeoCache.set(cleanIp, fallbackWithCountry);
+    return fallbackWithCountry;
+  }
+
+  // Final Fallback
   const fallbackResult: GeoLocation = {
     ip: cleanIp,
     location: "Unknown Origin",
