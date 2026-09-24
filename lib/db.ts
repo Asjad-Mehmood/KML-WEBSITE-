@@ -51,11 +51,22 @@ export interface ConversionRecord {
   timestamp: string;
 }
 
+export interface AppSettings {
+  appVersion: string;
+  installerFileName: string;
+  installerFileSize: string;
+  requireAuthForDownload: boolean;
+  maintenanceMode: boolean;
+  announcementBanner: string;
+  announcementActive: boolean;
+}
+
 interface DatabaseSchema {
   users: UserRecord[];
   sessions: SessionRecord[];
   downloads: DownloadRecord[];
   conversions: ConversionRecord[];
+  settings: AppSettings;
   meta: {
     createdAt: string;
     version: string;
@@ -77,9 +88,24 @@ function generateSalt(): string {
 function getInitialData(): DatabaseSchema {
   const defaultSalt = generateSalt();
   const defaultHash = hashPassword("cadastral2026", defaultSalt);
+  const adminSalt = generateSalt();
+  const adminHash = hashPassword("admin2026!", adminSalt);
 
   return {
     users: [
+      {
+        id: "usr_admin_master",
+        name: "System Administrator",
+        email: "admin@exceltokml.com",
+        passwordHash: adminHash,
+        salt: adminSalt,
+        organization: "Excel to KML Pro Core Team",
+        role: "ADMIN",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        lastLoginAt: new Date().toISOString(),
+        downloadCount: 0,
+      },
       {
         id: "usr_lead_surveyor_01",
         name: "Asjad Mehmood",
@@ -121,6 +147,15 @@ function getInitialData(): DatabaseSchema {
       },
     ],
     conversions: [],
+    settings: {
+      appVersion: "v3.5.5",
+      installerFileName: "ExcelToKMLPro-Lite-Setup.exe",
+      installerFileSize: "3.2 MB",
+      requireAuthForDownload: true,
+      maintenanceMode: false,
+      announcementBanner: "Excel to KML Pro v3.5.5 is live with 6,864 EPSG grids & DLTM UAE support.",
+      announcementActive: false,
+    },
     meta: {
       createdAt: new Date().toISOString(),
       version: "1.0.0",
@@ -145,7 +180,16 @@ function readDb(): DatabaseSchema {
     }
 
     const raw = fs.readFileSync(DB_FILE, "utf-8");
-    cachedDb = JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    const initial = getInitialData();
+
+    if (!parsed.settings) {
+      parsed.settings = initial.settings;
+    }
+    if (!parsed.users.some((u: UserRecord) => u.email === "admin@exceltokml.com" || u.role === "ADMIN")) {
+      parsed.users.unshift(initial.users[0]);
+    }
+    cachedDb = parsed;
     return cachedDb!;
   } catch (err) {
     console.error("Database read error, using fallback memory state", err);
@@ -382,5 +426,152 @@ export const db = {
       lastLoginAt: user.lastLoginAt,
       downloadCount: user.downloadCount,
     };
+  },
+
+  /* --------------------------------------------------------------------------
+     ADMIN SPECIFIC OPERATIONS
+     -------------------------------------------------------------------------- */
+
+  // Check if a user record or object has admin privileges
+  isAdmin(user: { role?: string; email?: string } | null | undefined): boolean {
+    if (!user) return false;
+    return (
+      user.role === "ADMIN" ||
+      user.role === "Super Admin" ||
+      user.email?.toLowerCase() === "admin@exceltokml.com"
+    );
+  },
+
+  // Get all users with optional search query
+  getAllUsers(query?: string) {
+    const data = readDb();
+    let list = data.users;
+    if (query && query.trim()) {
+      const q = query.trim().toLowerCase();
+      list = list.filter(
+        (u) =>
+          u.name.toLowerCase().includes(q) ||
+          u.email.toLowerCase().includes(q) ||
+          (u.organization && u.organization.toLowerCase().includes(q)) ||
+          (u.role && u.role.toLowerCase().includes(q))
+      );
+    }
+    return list.map(this.sanitizeUser);
+  },
+
+  // Update user by ID
+  updateUser(
+    id: string,
+    updates: Partial<{
+      name: string;
+      email: string;
+      organization: string;
+      role: string;
+      password?: string;
+    }>
+  ): UserRecord {
+    const data = readDb();
+    const userIndex = data.users.findIndex((u) => u.id === id);
+    if (userIndex === -1) {
+      throw new Error("User not found");
+    }
+
+    const user = data.users[userIndex];
+
+    if (updates.email && updates.email.toLowerCase() !== user.email.toLowerCase()) {
+      const duplicate = data.users.find(
+        (u) => u.id !== id && u.email.toLowerCase() === updates.email!.toLowerCase()
+      );
+      if (duplicate) {
+        throw new Error("Another user already exists with this email address.");
+      }
+      user.email = updates.email.trim().toLowerCase();
+    }
+
+    if (updates.name !== undefined) user.name = updates.name.trim();
+    if (updates.organization !== undefined) user.organization = updates.organization.trim();
+    if (updates.role !== undefined) user.role = updates.role.trim();
+
+    if (updates.password && updates.password.trim()) {
+      user.salt = generateSalt();
+      user.passwordHash = hashPassword(updates.password.trim(), user.salt);
+    }
+
+    user.updatedAt = new Date().toISOString();
+    data.users[userIndex] = user;
+    writeDb(data);
+    return user;
+  },
+
+  // Delete user by ID
+  deleteUser(id: string): boolean {
+    const data = readDb();
+    const target = data.users.find((u) => u.id === id);
+    if (!target) return false;
+
+    // Prevent deletion of master admin
+    if (target.email === "admin@exceltokml.com") {
+      throw new Error("Cannot delete master administrator account.");
+    }
+
+    data.users = data.users.filter((u) => u.id !== id);
+    data.sessions = data.sessions.filter((s) => s.userId !== id);
+    writeDb(data);
+    return true;
+  },
+
+  // Get all downloads
+  getAllDownloads() {
+    const data = readDb();
+    return [...data.downloads].reverse();
+  },
+
+  // Delete single download record
+  deleteDownload(id: string): boolean {
+    const data = readDb();
+    const initialLen = data.downloads.length;
+    data.downloads = data.downloads.filter((d) => d.id !== id);
+    if (data.downloads.length !== initialLen) {
+      writeDb(data);
+      return true;
+    }
+    return false;
+  },
+
+  // Clear all download records
+  clearDownloads(): void {
+    const data = readDb();
+    data.downloads = [];
+    writeDb(data);
+  },
+
+  // Get all conversions
+  getAllConversions() {
+    const data = readDb();
+    return [...data.conversions].reverse();
+  },
+
+  // Clear all conversions
+  clearConversions(): void {
+    const data = readDb();
+    data.conversions = [];
+    writeDb(data);
+  },
+
+  // Get app settings
+  getSettings(): AppSettings {
+    const data = readDb();
+    return data.settings;
+  },
+
+  // Update app settings
+  updateSettings(updates: Partial<AppSettings>): AppSettings {
+    const data = readDb();
+    data.settings = {
+      ...data.settings,
+      ...updates,
+    };
+    writeDb(data);
+    return data.settings;
   },
 };
