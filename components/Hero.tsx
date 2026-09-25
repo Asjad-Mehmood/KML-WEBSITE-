@@ -115,7 +115,7 @@ export default function Hero({ versionTag, fileSizeText, onDownloadClick }: Hero
           {/* ══════════════════════════════════════════════════════════════════
               RIGHT: Live Geospatial Coordinate Converter with Radar
              ══════════════════════════════════════════════════════════════════ */}
-          <div className="lg:col-span-7 w-full flex items-center justify-center lg:justify-end">
+          <div className="lg:col-span-7 w-full min-w-0 flex items-center justify-center lg:justify-end">
             <HeroConverter />
           </div>
 
