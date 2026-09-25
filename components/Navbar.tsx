@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -34,7 +35,7 @@ const NAV_LINKS = [
 ];
 
 export default function Navbar({ onDownloadClick }: { onDownloadClick: () => void }) {
-  const { user, logout, setAuthModalOpen, setAuthModalMode, setAuthIntentText } = useAuth();
+  const { user, logout } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -88,11 +89,9 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const openAuth = (mode: "login" | "register") => {
-    setAuthModalMode(mode);
-    setAuthIntentText(mode === "register" ? "Join to download Pro" : "Welcome back");
-    setAuthModalOpen(true);
-  };
+  // Sign in goes to the login page, which returns the visitor here afterwards
+  const pathname = usePathname();
+  const loginHref = pathname && pathname !== "/login" ? `/login?next=${encodeURIComponent(pathname)}` : "/login";
 
   const initials = user ? user.name.substring(0, 2).toUpperCase() : "";
 
@@ -183,9 +182,9 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
                 )}
               </div>
             ) : (
-              <button onClick={() => openAuth("login")} className="hidden sm:block px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">
+              <Link href={loginHref} className="hidden sm:block px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">
                 Sign in
-              </button>
+              </Link>
             )}
 
             <button
@@ -228,9 +227,9 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
           </nav>
           <div className="mt-8 flex flex-col gap-4">
             {!user ? (
-              <button onClick={() => { openAuth("login"); setMobileMenuOpen(false); }} className="w-full py-4 rounded-2xl bg-slate-100 text-slate-900 border border-black/5 font-bold text-lg text-center active:scale-95 transition-transform">
+              <Link href={loginHref} onClick={() => setMobileMenuOpen(false)} className="w-full py-4 rounded-2xl bg-slate-100 text-slate-900 border border-black/5 font-bold text-lg text-center active:scale-95 transition-transform">
                 Sign In
-              </button>
+              </Link>
             ) : (
               <div className="bg-white rounded-2xl p-4 border border-black/[0.08] shadow-sm">
                 <p className="text-sm text-slate-500 mb-1">Signed in as</p>

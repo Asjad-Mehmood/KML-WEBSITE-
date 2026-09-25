@@ -299,6 +299,12 @@ export const db = {
     return false;
   },
 
+  /** Sign a user out everywhere (e.g. after a password reset). */
+  async deleteUserSessions(userId: string): Promise<number> {
+    const { count } = await prisma.session.deleteMany({ where: { userId } });
+    return count;
+  },
+
   async touchUserLogin(userId: string): Promise<void> {
     await prisma.user.update({
       where: { id: userId },
