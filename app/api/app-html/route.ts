@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 import { db } from "@/lib/db";
+import { isWindowsAppRequest, sessionForToken, tokenFromRequest } from "@/lib/serverSession";
+import { WEB_APP_LOGIN_URL } from "@/lib/authRedirect";
 
 export const dynamic = "force-dynamic";
 
@@ -432,7 +434,29 @@ async function applyWebRestrictions(html: string, req: NextRequest): Promise<str
   }
 }
 
+// Shown inside the /app frame if the session is missing or expired
+const SIGN_IN_REQUIRED_HTML = `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign in required — Excel to KML Pro</title></head>
+<body style="margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:system-ui,-apple-system,sans-serif;background:#f8fafc;color:#0f172a">
+<main style="max-width:380px;padding:32px;text-align:center">
+<h1 style="font-size:20px;margin:0 0 8px">Sign in to use the web app</h1>
+<p style="font-size:14px;color:#475569;line-height:1.5;margin:0 0 20px">The Excel to KML Pro web app is available to signed-in users. Creating an account is free.</p>
+<a href="${WEB_APP_LOGIN_URL}" target="_top" style="display:inline-block;padding:10px 20px;border-radius:10px;background:#0071e3;color:#fff;font-weight:600;font-size:14px;text-decoration:none">Sign in</a>
+</main></body></html>`;
+
 export async function GET(req: NextRequest) {
+  // 0. Web app is for signed-in users only (the Windows desktop app loads it without a browser session)
+  if (!isWindowsAppRequest(req) && !(await sessionForToken(tokenFromRequest(req)))) {
+    return new NextResponse(SIGN_IN_REQUIRED_HTML, {
+      status: 401,
+      headers: {
+        "Content-Type": "text/html; charset=utf-8",
+        "Cache-Control": "no-store",
+      },
+    });
+  }
+
   // 1. Fetch directly from GitHub on every open / refresh
   try {
     const timestampedUrl = `${GITHUB_RAW_URL}?t=${Date.now()}`;

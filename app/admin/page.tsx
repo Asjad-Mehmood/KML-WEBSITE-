@@ -125,8 +125,8 @@ export default function AdminPage() {
   const [detailModalOpen, setDetailModalOpen] = useState(false);
 
   // Login form state
-  const [loginEmail, setLoginEmail] = useState("admin@exceltokml.com");
-  const [loginPassword, setLoginPassword] = useState("admin2026!");
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
   const [loginError, setLoginError] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
 
@@ -623,7 +623,7 @@ export default function AdminPage() {
                 value={loginEmail}
                 onChange={(e) => setLoginEmail(e.target.value)}
                 className="w-full px-4 py-3 bg-slate-800/80 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500 transition-colors"
-                placeholder="admin@exceltokml.com"
+                placeholder="you@example.com"
               />
             </div>
 
@@ -653,19 +653,6 @@ export default function AdminPage() {
               )}
             </button>
 
-            {/* Quick Demo Fill */}
-            <div className="pt-4 border-t border-slate-800 text-center">
-              <button
-                type="button"
-                onClick={() => {
-                  setLoginEmail("admin@exceltokml.com");
-                  setLoginPassword("admin2026!");
-                }}
-                className="text-xs text-blue-400 hover:text-blue-300 font-semibold transition-colors cursor-pointer"
-              >
-                Auto-fill Master Admin Credentials
-              </button>
-            </div>
           </form>
         </div>
       </div>

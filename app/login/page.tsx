@@ -1,13 +1,20 @@
 "use client";
 
-import React, { useState, useId } from "react";
+import React, { useState, useId, useSyncExternalStore } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
+import { safeNextPath } from "../../lib/authRedirect";
 
 export default function LoginPage() {
   const router = useRouter();
+  // ?next= from the URL (e.g. /app); read on the client only, null during server render
+  const nextParam = useSyncExternalStore(
+    () => () => {},
+    () => new URLSearchParams(window.location.search).get("next"),
+    () => null
+  );
   const { login } = useAuth();
 
   const [email, setEmail] = useState("");
@@ -31,18 +38,14 @@ export default function LoginPage() {
 
     const success = await login(email, password);
     if (success) {
-      router.push("/#download");
+      // Back to where the visitor was headed (e.g. /app), else the download section
+      router.push(safeNextPath(new URLSearchParams(window.location.search).get("next")));
     } else {
       setError("Login failed. Please check credentials.");
     }
     setIsSubmitting(false);
   };
 
-  const handleDemoFill = () => {
-    setEmail("surveyor@geotech.com");
-    setPassword("surveyor123");
-    setError(null);
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 flex flex-col justify-between p-4 sm:p-8 font-sans">
@@ -94,6 +97,11 @@ export default function LoginPage() {
           <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
             Sign in to download Excel to KML Pro, access offline EPSG databases, and export survey coordinates.
           </p>
+          {nextParam === "/app" && (
+            <p role="status" className="mt-3 text-xs sm:text-sm font-medium text-blue-800 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+              Sign in or create a free account to use the web app.
+            </p>
+          )}
         </div>
 
         {error && (
@@ -123,6 +131,9 @@ export default function LoginPage() {
               <label htmlFor={passwordId} className="block text-xs font-bold text-slate-700">
                 Password
               </label>
+              <Link href="/forgot-password" className="text-xs font-semibold text-blue-600 hover:text-blue-700">
+                Forgot password?
+              </Link>
             </div>
             <input
               id={passwordId}
@@ -146,35 +157,14 @@ export default function LoginPage() {
 
         <div className="mt-6 pt-5 border-t border-slate-100 flex items-center justify-between text-xs">
           <span className="text-slate-500">Need an account?</span>
-          <Link href="/register" className="font-bold text-blue-600 hover:text-blue-700">
+          <Link
+            href={nextParam ? `/register?next=${encodeURIComponent(nextParam)}` : "/register"}
+            className="font-bold text-blue-600 hover:text-blue-700"
+          >
             Create Free Account &rarr;
           </Link>
         </div>
 
-        <div className="mt-4 pt-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-slate-400">
-          <span>Quick testing:</span>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleDemoFill}
-              className="font-bold text-slate-600 hover:text-blue-600 hover:underline cursor-pointer"
-            >
-              Fill Demo Surveyor
-            </button>
-            <span>&bull;</span>
-            <button
-              type="button"
-              onClick={() => {
-                setEmail("admin@exceltokml.com");
-                setPassword("admin2026!");
-                setError(null);
-              }}
-              className="font-bold text-slate-600 hover:text-blue-600 hover:underline cursor-pointer"
-            >
-              Fill Master Admin
-            </button>
-          </div>
-        </div>
       </div>
 
       {/* Footer */}

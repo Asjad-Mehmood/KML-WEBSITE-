@@ -11,7 +11,9 @@
     "sync:app": "node scripts/sync-app.js",
     "lint": "eslint",
     "postinstall": "prisma generate",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "build:epsg": "node scripts/build-epsg-index.mjs",
+    "set-password": "node scripts/set-password.mjs"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -24,6 +26,8 @@
     "leaflet": "^1.9.4",
     "lucide-react": "^1.48.0",
     "next": "16.3.6",
+    "nodemailer": "^7.0.13",
+    "proj4": "^2.22.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "three": "^0.186.1"
@@ -31,8 +35,10 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/nodemailer": "^8.0.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "epsg-index": "^2.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.3.6",
     "prisma": "^6.19.3",

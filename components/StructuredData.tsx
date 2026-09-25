@@ -12,7 +12,7 @@ export default function StructuredData() {
     applicationCategory: "BusinessApplication",
     applicationSubCategory: "Geographic Information System (GIS)",
     description:
-      "Precision survey benchmark converter. Convert Excel (.xlsx) and CSV coordinates into Google Earth 3D KML & KMZ with 6,864 EPSG world grids, local site calibration, and geotagged site inspection balloons. 100% offline and secure.",
+      "Precision survey benchmark converter. Convert Excel (.xlsx) and CSV coordinates into Google Earth 3D KML & KMZ with 5,800+ EPSG world grids, local site calibration, and geotagged site inspection balloons. 100% offline and secure.",
     url: baseUrl,
     downloadUrl:
       "https://github.com/chaudaryyabdullah03-collab/kml-convertor/releases/latest/download/ExcelToKMLPro-Lite-Setup.exe",
@@ -41,7 +41,7 @@ export default function StructuredData() {
     },
     featureList: [
       "Batch conversion of Excel and CSV coordinate tables to KML/KMZ",
-      "6,864 National and Regional EPSG Coordinate Systems",
+      "5,800+ National and Regional EPSG Coordinate Systems",
       "Helmert 2D Bursa-Wolf Transformation & Site Calibration",
       "Auto-detect Point ID, Easting, Northing, and Elevation",
       "Closed 3D boundary polygon creation with area & perimeter measurement",
@@ -58,7 +58,7 @@ export default function StructuredData() {
     name: "Excel to KML Pro",
     url: baseUrl,
     description:
-      "Convert survey spreadsheets into Google Earth 3D models with 6,864 EPSG coordinate grids.",
+      "Convert survey spreadsheets into Google Earth 3D models with 5,800+ EPSG coordinate grids.",
     inLanguage: "en-US",
     publisher: {
       "@type": "Organization",

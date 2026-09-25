@@ -29,6 +29,9 @@ export async function POST(req: NextRequest) {
     if (!name || !email) {
       return NextResponse.json({ error: "Name and email are required" }, { status: 400 });
     }
+    if (typeof password !== "string" || password.length < 8) {
+      return NextResponse.json({ error: "Set a password of at least 8 characters for the new user" }, { status: 400 });
+    }
 
     const clientIp = getClientIp(req);
     const geo = await getIpGeoLocation(clientIp, req);
@@ -36,7 +39,7 @@ export async function POST(req: NextRequest) {
     const newUser = await db.createUser({
       name,
       email,
-      password: password || "surveyor2026!",
+      password,
       organization: organization || "Independent Surveyor",
       role: role || "Surveyor",
       ipAddress: geo.ip,

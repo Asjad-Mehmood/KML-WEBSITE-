@@ -1,13 +1,20 @@
 "use client";
 
-import React, { useState, useId } from "react";
+import React, { useState, useId, useSyncExternalStore } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
+import { safeNextPath } from "../../lib/authRedirect";
 
 export default function RegisterPage() {
   const router = useRouter();
+  // ?next= from the URL (e.g. /app); read on the client only, null during server render
+  const nextParam = useSyncExternalStore(
+    () => () => {},
+    () => new URLSearchParams(window.location.search).get("next"),
+    () => null
+  );
   const { register } = useAuth();
 
   const [name, setName] = useState("");
@@ -58,21 +65,14 @@ export default function RegisterPage() {
     });
 
     if (success) {
-      router.push("/#download");
+      // Back to where the visitor was headed (e.g. /app), else the download section
+      router.push(safeNextPath(new URLSearchParams(window.location.search).get("next")));
     } else {
       setError("Registration failed. Please try again.");
     }
     setIsSubmitting(false);
   };
 
-  const handleDemoFill = () => {
-    setName("Asjad Mehmood");
-    setEmail("asjad.surveyor@geotech.com");
-    setPassword("surveyor2026");
-    setOrganization("Apex Geomatics & Land Survey");
-    setRole("Cadastral Surveyor");
-    setError(null);
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 flex flex-col justify-between p-4 sm:p-8 font-sans">
@@ -236,21 +236,14 @@ export default function RegisterPage() {
 
         <div className="mt-6 pt-5 border-t border-slate-100 flex items-center justify-between text-xs">
           <span className="text-slate-500">Already have an account?</span>
-          <Link href="/login" className="font-bold text-blue-600 hover:text-blue-700">
+          <Link
+            href={nextParam ? `/login?next=${encodeURIComponent(nextParam)}` : "/login"}
+            className="font-bold text-blue-600 hover:text-blue-700"
+          >
             Sign In Here &rarr;
           </Link>
         </div>
 
-        <div className="mt-4 pt-3 flex items-center justify-between text-xs text-slate-400">
-          <span>Quick testing:</span>
-          <button
-            type="button"
-            onClick={handleDemoFill}
-            className="font-bold text-slate-600 hover:text-blue-600 hover:underline"
-          >
-            Fill Demo Surveyor Profile
-          </button>
-        </div>
       </div>
 
       {/* Footer */}

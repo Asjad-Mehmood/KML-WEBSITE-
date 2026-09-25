@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -15,7 +16,7 @@ import {
 
 function GithubIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
       <path
         fillRule="evenodd"
         clipRule="evenodd"
@@ -25,18 +26,20 @@ function GithubIcon({ className }: { className?: string }) {
   );
 }
 
+// Absolute paths so the links also work from /faq and other pages
 const NAV_LINKS = [
-  { label: "Features", href: "#features" },
-  { label: "Demo", href: "#showcase" },
-  { label: "How It Works", href: "#workflow" },
-  { label: "FAQ", href: "#faq" },
+  { label: "Features", href: "/#features", id: "features" },
+  { label: "Demo", href: "/#showcase", id: "showcase" },
+  { label: "How It Works", href: "/#workflow", id: "workflow" },
+  { label: "FAQ", href: "/#faq", id: "faq" },
 ];
 
 export default function Navbar({ onDownloadClick }: { onDownloadClick: () => void }) {
-  const { user, logout, setAuthModalOpen, setAuthModalMode, setAuthIntentText } = useAuth();
+  const { user, logout } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -44,6 +47,37 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Highlight the nav link of the section currently in view
+  useEffect(() => {
+    const sections = NAV_LINKS.map((l) => document.getElementById(l.id)).filter(
+      (el): el is HTMLElement => el !== null
+    );
+    if (sections.length === 0) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) setActiveId(entry.target.id);
+        }
+      },
+      { rootMargin: "-45% 0px -50% 0px" }
+    );
+    sections.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+
+  // Mobile menu: close on Escape and stop the page scrolling behind it
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setMobileMenuOpen(false);
+    document.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [mobileMenuOpen]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -55,11 +89,9 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const openAuth = (mode: "login" | "register") => {
-    setAuthModalMode(mode);
-    setAuthIntentText(mode === "register" ? "Join to download Pro" : "Welcome back");
-    setAuthModalOpen(true);
-  };
+  // Sign in goes to the login page, which returns the visitor here afterwards
+  const pathname = usePathname();
+  const loginHref = pathname && pathname !== "/login" ? `/login?next=${encodeURIComponent(pathname)}` : "/login";
 
   const initials = user ? user.name.substring(0, 2).toUpperCase() : "";
 
@@ -74,26 +106,37 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
             }`}
         >
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 pl-2 pr-4 py-1 group rounded-full hover:bg-black/[0.04] transition-colors">
-            <div className="relative w-8 h-8 rounded-full overflow-hidden bg-gradient-to-tr from-slate-800 to-slate-950 shadow-inner flex items-center justify-center group-hover:scale-105 group-hover:shadow-[0_0_15px_rgba(0,0,0,0.1)] transition-all">
-              <Image src="/assets/icon.png" alt="Excel to KML Pro — Survey Coordinate & Benchmark Converter" width={32} height={32} className="w-full h-full object-contain p-0.5" priority />
-            </div>
-            <span className="font-extrabold text-[15px] tracking-tight text-slate-900 hidden sm:block">
-              KML<span className="text-[#0071e3]">Pro</span>
+          <Link
+            href="/"
+            aria-label="Excel to KML Pro — home"
+            className="flex items-center pl-1.5 pr-3 sm:pr-4 py-1 rounded-full hover:bg-black/[0.04] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+          >
+            <span className="relative w-8 h-8 shrink-0 rounded-full overflow-hidden bg-gradient-to-tr from-slate-800 to-slate-950 shadow-inner flex items-center justify-center">
+              <Image src="/assets/icon.png" alt="" width={32} height={32} className="w-full h-full object-contain p-0.5" priority />
+            </span>
+            <span className="ml-2.5 hidden sm:inline-flex items-center gap-1.5 whitespace-nowrap">
+              <span className="font-extrabold text-[15px] tracking-tight text-slate-900">Excel to KML</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-[#0071e3] px-1.5 py-0.5 rounded-md leading-none">Pro</span>
             </span>
           </Link>
 
           {/* Center Links */}
-          <nav className="hidden md:flex items-center gap-1">
-            {NAV_LINKS.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                className="px-4 py-2 text-[14px] font-semibold text-slate-600 hover:text-slate-900 hover:bg-black/5 rounded-full transition-all duration-200"
-              >
-                {link.label}
-              </a>
-            ))}
+          <nav aria-label="Main" className="hidden md:flex items-center gap-1">
+            {NAV_LINKS.map((link) => {
+              const isActive = activeId === link.id;
+              return (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  aria-current={isActive ? "location" : undefined}
+                  className={`px-4 py-2 text-[14px] font-semibold rounded-full transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+                    isActive ? "text-slate-900 bg-black/[0.05]" : "text-slate-600 hover:text-slate-900 hover:bg-black/5"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
           </nav>
 
           {/* Right Actions */}
@@ -102,14 +145,20 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
               href="https://github.com/chaudaryyabdullah03-collab/kml-convertor"
               target="_blank"
               rel="noreferrer"
-              className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-black/5 text-slate-500 hover:text-slate-900 transition-colors hidden sm:flex"
+              aria-label="Excel to KML Pro on GitHub"
+              title="GitHub"
+              className="w-9 h-9 items-center justify-center rounded-full hover:bg-black/5 text-slate-500 hover:text-slate-900 transition-colors hidden sm:flex"
             >
               <GithubIcon className="w-4 h-4" />
             </a>
 
             {user ? (
               <div className="relative" ref={dropdownRef}>
-                <button onClick={() => setDropdownOpen(!dropdownOpen)} className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-full border border-black/5 hover:bg-black/[0.03] transition-all bg-white shadow-sm">
+                <button
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  aria-haspopup="menu"
+                  aria-expanded={dropdownOpen}
+                  className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-full border border-black/5 hover:bg-black/[0.03] transition-all bg-white shadow-sm">
                   <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#0071e3] to-[#34aadc] text-white flex items-center justify-center text-xs font-bold shadow-sm">{initials}</div>
                   <span className="text-sm font-semibold text-slate-700">{user.name.split(" ")[0]}</span>
                   <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${dropdownOpen ? "rotate-180" : ""}`} />
@@ -138,21 +187,27 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
                 )}
               </div>
             ) : (
-              <button onClick={() => openAuth("login")} className="hidden sm:block px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">
+              <Link href={loginHref} className="hidden sm:block px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">
                 Sign in
-              </button>
+              </Link>
             )}
 
             <button
               onClick={onDownloadClick}
-              className="bg-[#0071e3] text-white px-5 py-2 rounded-full text-sm font-bold shadow-md shadow-[#0071e3]/20 hover:shadow-lg hover:shadow-[#0071e3]/30 hover:-translate-y-0.5 transition-all flex items-center gap-2"
+              className="bg-[#0071e3] text-white px-5 py-2 rounded-full text-sm font-bold shadow-md shadow-[#0071e3]/20 hover:shadow-lg hover:shadow-[#0071e3]/30 hover:-translate-y-0.5 transition-all flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
             >
               <Download className="w-4 h-4" />
               <span>Download</span>
             </button>
 
             {/* Mobile Menu Toggle */}
-            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="w-10 h-10 flex md:hidden items-center justify-center rounded-full bg-slate-100 text-slate-900 shadow-sm border border-black/5">
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-menu"
+              className="w-10 h-10 flex md:hidden items-center justify-center rounded-full bg-slate-100 text-slate-900 shadow-sm border border-black/5"
+            >
               {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             </button>
           </div>
@@ -160,24 +215,26 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
       </header>
 
       {/* Mobile Menu Fullscreen Overlay */}
-      <div className={`fixed inset-0 z-40 bg-white/90 backdrop-blur-2xl transition-all duration-400 ease-in-out flex flex-col md:hidden ${mobileMenuOpen ? "opacity-100 pointer-events-auto translate-y-0" : "opacity-0 pointer-events-none -translate-y-4"}`}>
+      <div
+        id="mobile-menu"
+        // Closed menu is invisible; inert also keeps its links out of the tab order
+        inert={!mobileMenuOpen}
+        className={`fixed inset-0 z-40 bg-white transition-all duration-400 ease-in-out flex flex-col md:hidden ${mobileMenuOpen ? "opacity-100 pointer-events-auto translate-y-0" : "opacity-0 pointer-events-none -translate-y-4"}`}
+      >
         <div className="flex-1 overflow-y-auto pt-28 px-6 pb-6 flex flex-col">
-          <nav className="flex flex-col gap-6 flex-1">
+          <nav aria-label="Main" className="flex flex-col gap-6 flex-1">
             {NAV_LINKS.map(link => (
-              <a key={link.label} href={link.href} onClick={() => setMobileMenuOpen(false)} className="text-3xl font-black text-slate-900 tracking-tight flex items-center justify-between group">
+              <Link key={link.label} href={link.href} onClick={() => setMobileMenuOpen(false)} className="text-3xl font-black text-slate-900 tracking-tight flex items-center justify-between group">
                 <span>{link.label}</span>
                 <ChevronDown className="w-6 h-6 -rotate-90 opacity-0 group-hover:opacity-100 group-hover:translate-x-2 transition-all text-[#0071e3]" />
-              </a>
+              </Link>
             ))}
-            <a href="/admin" onClick={() => setMobileMenuOpen(false)} className="text-xl font-bold text-blue-600 tracking-tight flex items-center gap-2 pt-4 border-t border-black/5">
-              <Shield className="w-5 h-5 text-blue-600" /> Admin Portal
-            </a>
           </nav>
           <div className="mt-8 flex flex-col gap-4">
             {!user ? (
-              <button onClick={() => { openAuth("login"); setMobileMenuOpen(false); }} className="w-full py-4 rounded-2xl bg-slate-100 text-slate-900 border border-black/5 font-bold text-lg text-center active:scale-95 transition-transform">
+              <Link href={loginHref} onClick={() => setMobileMenuOpen(false)} className="w-full py-4 rounded-2xl bg-slate-100 text-slate-900 border border-black/5 font-bold text-lg text-center active:scale-95 transition-transform">
                 Sign In
-              </button>
+              </Link>
             ) : (
               <div className="bg-white rounded-2xl p-4 border border-black/[0.08] shadow-sm">
                 <p className="text-sm text-slate-500 mb-1">Signed in as</p>

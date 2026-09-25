@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     template: "%s | Excel to KML Pro",
   },
   description:
-    "Free Excel to KML Pro converts survey spreadsheets and CSV coordinates into Google Earth 3D KML/KMZ. Supports 6,864 EPSG datums, Helmert site calibration, elevation extrusions, and geotagged photos. 100% offline & secure.",
+    "Free Excel to KML Pro converts survey spreadsheets and CSV coordinates into Google Earth 3D KML/KMZ. Supports 5,800+ EPSG coordinate systems, Helmert site calibration, elevation extrusions, and geotagged photos. 100% offline & secure.",
   keywords: [
     "Excel to KML",
     "Convert Excel to KML",
@@ -95,7 +95,7 @@ export const metadata: Metadata = {
     siteName: "Excel to KML Pro",
     title: "Excel to KML Pro — Free Survey Coordinate & Benchmark Converter",
     description:
-      "Convert raw survey spreadsheets into Google Earth 3D models with 6,864 EPSG datums, local site calibration, and 3D elevation extrusions. 100% offline.",
+      "Convert raw survey spreadsheets into Google Earth 3D models with 5,800+ EPSG coordinate systems, local site calibration, and 3D elevation extrusions. 100% offline.",
     locale: "en_US",
     images: [
       {
@@ -110,7 +110,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Excel to KML Pro — Free Survey Coordinate & Benchmark Converter",
     description:
-      "Turn Excel & CSV survey coordinates into Google Earth 3D KML/KMZ with 6,864 EPSG datums. 100% offline & free.",
+      "Turn Excel & CSV survey coordinates into Google Earth 3D KML/KMZ with 5,800+ EPSG coordinate systems. 100% offline & free.",
     images: ["/assets/hero_geospatial.jpg"],
     creator: "@ExcelToKMLPro",
   },
