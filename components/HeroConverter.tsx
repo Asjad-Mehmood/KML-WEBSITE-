@@ -8,7 +8,6 @@ import {
   Download,
   ChevronDown,
   Globe,
-  MapPin,
 } from "lucide-react";
 
 /* ─── Coordinate System Definition ─── */
@@ -43,10 +42,10 @@ const POPULAR_SYSTEMS: CoordSystem[] = [
     accuracy: "< 1 mm",
     datum: "WGS-84 / DLTM",
     lon0: 55.333333333,
-    lat0: 24.0,
+    lat0: 0, // EPSG:3997 latitude of origin is the equator
     k0: 1.0,
     x0: 500000,
-    y0: 2200000,
+    y0: 0,
     defaultE: 513556.612,
     defaultN: 2787467.856,
     defaultZ: 14.85,
@@ -1146,8 +1145,8 @@ Datum: ${current.datum}]]></description>
               <RefreshCw className="w-3.5 h-3.5 text-cyan-300" />
             </div>
             <div>
-              <h3 className="text-xs font-bold text-cyan-100 leading-tight">Quick Coordinate Converter</h3>
-              <p className="text-[10px] font-medium" style={{ color: "rgba(0,180,255,0.5)" }}>
+              <h3 className="text-[13px] font-bold text-cyan-50 leading-tight">Quick Coordinate Converter</h3>
+              <p className="text-[11px] font-medium" style={{ color: "rgba(0,180,255,0.5)" }}>
                 Grid (E, N) → GPS (Lat, Lon) • 160+ World Systems
               </p>
             </div>
@@ -1157,28 +1156,26 @@ Datum: ${current.datum}]]></description>
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
             </span>
-            <span className="text-[10px] font-bold text-emerald-400">Live</span>
+            <span className="text-[11px] font-bold text-emerald-400">Live</span>
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-12 gap-0">
           {/* ── Left: Inputs ── */}
-          <div className="sm:col-span-7 px-4 py-3 space-y-2.5" style={{ borderRight: "1px solid rgba(0,180,255,0.06)" }}>
+          <div className="sm:col-span-7 px-4 py-4 space-y-3" style={{ borderRight: "1px solid rgba(0,180,255,0.06)" }}>
 
             {/* Simple, Clean Dropdown for ALL World Systems */}
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="block text-[9px] font-semibold uppercase tracking-wider text-cyan-400/60">
-                  Coordinate System / Zone
-                </label>
-                <span className="text-[9px] font-mono text-cyan-400/40">160+ Worldwide</span>
-              </div>
+              <label htmlFor="hc-system" className="block mb-1 text-[10px] font-semibold uppercase tracking-wider text-cyan-400/70">
+                Coordinate system / zone
+              </label>
 
               <div className="relative">
                 <select
+                  id="hc-system"
                   value={selectedId}
                   onChange={(e) => handleSystemChange(e.target.value)}
-                  className="w-full appearance-none px-3 py-2 pr-8 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer focus:outline-none focus:border-cyan-400/50"
+                  className="w-full appearance-none px-3 py-2.5 pr-8 rounded-lg text-base sm:text-[13px] font-semibold transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-cyan-400/40"
                   style={{
                     background: "rgba(0, 180, 255, 0.05)",
                     border: "1px solid rgba(0, 180, 255, 0.15)",
@@ -1256,28 +1253,32 @@ Datum: ${current.datum}]]></description>
             {/* Easting & Northing Inputs */}
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-[9px] font-semibold uppercase tracking-wider mb-0.5 text-cyan-400/50">
+                <label htmlFor="hc-easting" className="block text-[10px] font-semibold uppercase tracking-wider mb-1 text-cyan-400/70">
                   Easting (m)
                 </label>
                 <input
+                  id="hc-easting"
+                  inputMode="decimal"
                   type="number"
                   step="0.001"
                   value={easting}
                   onChange={(e) => setEasting(parseFloat(e.target.value) || 0)}
-                  className="w-full px-2.5 py-2 rounded-lg text-[11px] font-mono font-semibold focus:outline-none focus:border-cyan-400/40 transition-all"
+                  className="w-full px-3 py-2.5 rounded-lg text-base sm:text-[13px] font-mono font-semibold focus:outline-none focus:ring-2 focus:ring-cyan-400/40 transition-all"
                   style={inputStyle}
                 />
               </div>
               <div>
-                <label className="block text-[9px] font-semibold uppercase tracking-wider mb-0.5 text-cyan-400/50">
+                <label htmlFor="hc-northing" className="block text-[10px] font-semibold uppercase tracking-wider mb-1 text-cyan-400/70">
                   Northing (m)
                 </label>
                 <input
+                  id="hc-northing"
+                  inputMode="decimal"
                   type="number"
                   step="0.001"
                   value={northing}
                   onChange={(e) => setNorthing(parseFloat(e.target.value) || 0)}
-                  className="w-full px-2.5 py-2 rounded-lg text-[11px] font-mono font-semibold focus:outline-none focus:border-cyan-400/40 transition-all"
+                  className="w-full px-3 py-2.5 rounded-lg text-base sm:text-[13px] font-mono font-semibold focus:outline-none focus:ring-2 focus:ring-cyan-400/40 transition-all"
                   style={inputStyle}
                 />
               </div>
@@ -1285,66 +1286,68 @@ Datum: ${current.datum}]]></description>
 
             {/* Elevation Input */}
             <div>
-              <label className="block text-[9px] font-semibold uppercase tracking-wider mb-0.5 text-cyan-400/50">
+              <label htmlFor="hc-elevation" className="block text-[10px] font-semibold uppercase tracking-wider mb-1 text-cyan-400/70">
                 Elevation (m)
               </label>
               <input
+                id="hc-elevation"
+                inputMode="decimal"
                 type="number"
                 step="0.01"
                 value={elevation}
                 onChange={(e) => setElevation(parseFloat(e.target.value) || 0)}
-                className="w-full px-2.5 py-2 rounded-lg text-[11px] font-mono font-semibold focus:outline-none focus:border-cyan-400/40 transition-all"
+                className="w-full px-3 py-2.5 rounded-lg text-base sm:text-[13px] font-mono font-semibold focus:outline-none focus:ring-2 focus:ring-cyan-400/40 transition-all"
                 style={inputStyle}
               />
             </div>
 
             {/* Computed GPS Output */}
             <div
-              className="rounded-lg p-2.5 space-y-1.5"
+              className="rounded-lg p-3 space-y-2"
               style={{ background: "rgba(0, 255, 180, 0.04)", border: "1px solid rgba(0, 255, 180, 0.1)" }}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                  <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-wider">
-                    Converted Coordinates (WGS84)
+                  <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">
+                    WGS84 result
                   </span>
                 </div>
                 <button
                   type="button"
                   onClick={copyCoords}
-                  className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] transition-colors hover:bg-cyan-500/10 cursor-pointer"
+                  className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-semibold transition-colors hover:bg-cyan-500/10 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50"
                   style={{ color: "rgba(0,180,255,0.7)", background: "rgba(0,180,255,0.06)" }}
                   title="Copy Latitude, Longitude"
                 >
-                  {copied ? <CheckCircle2 className="w-2.5 h-2.5 text-emerald-400" /> : <Copy className="w-2.5 h-2.5" />}
+                  {copied ? <CheckCircle2 className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
                   <span>{copied ? "Copied" : "Copy GPS"}</span>
                 </button>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <div className="text-[8px] uppercase tracking-wider text-cyan-400/40 font-medium">Latitude</div>
-                  <div className="text-[11px] font-mono font-bold text-cyan-100">
-                    {computedLat}° {parseFloat(computedLat) >= 0 ? "N" : "S"}
+                  <div className="text-[9px] uppercase tracking-wider text-cyan-400/60 font-medium">Latitude</div>
+                  <div className="text-[13px] font-mono font-bold text-cyan-50">
+                    {Math.abs(computed.lat).toFixed(6)}° {computed.lat >= 0 ? "N" : "S"}
                   </div>
                 </div>
                 <div>
-                  <div className="text-[8px] uppercase tracking-wider text-cyan-400/40 font-medium">Longitude</div>
-                  <div className="text-[11px] font-mono font-bold text-cyan-100">
-                    {computedLon}° {parseFloat(computedLon) >= 0 ? "E" : "W"}
+                  <div className="text-[9px] uppercase tracking-wider text-cyan-400/60 font-medium">Longitude</div>
+                  <div className="text-[13px] font-mono font-bold text-cyan-50">
+                    {Math.abs(computed.lon).toFixed(6)}° {computed.lon >= 0 ? "E" : "W"}
                   </div>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2 pt-1 border-t border-cyan-500/10">
                 <div>
-                  <div className="text-[8px] uppercase tracking-wider text-cyan-400/40 font-medium">Elevation</div>
-                  <div className="text-[11px] font-mono font-bold text-cyan-300">+{elevation} m</div>
+                  <div className="text-[9px] uppercase tracking-wider text-cyan-400/60 font-medium">Elevation</div>
+                  <div className="text-[13px] font-mono font-bold text-cyan-300">{elevation >= 0 ? "+" : ""}{elevation} m</div>
                 </div>
                 <div>
-                  <div className="text-[8px] uppercase tracking-wider text-cyan-400/40 font-medium">Accuracy</div>
-                  <div className="text-[11px] font-mono font-bold text-emerald-400">{current.accuracy}</div>
+                  <div className="text-[9px] uppercase tracking-wider text-cyan-400/60 font-medium">Accuracy</div>
+                  <div className="text-[13px] font-mono font-bold text-emerald-400">{current.accuracy}</div>
                 </div>
               </div>
 
@@ -1352,7 +1355,7 @@ Datum: ${current.datum}]]></description>
               <button
                 type="button"
                 onClick={downloadKml}
-                className="w-full mt-2 py-2 px-3 rounded-lg text-[10px] font-bold tracking-wide transition-all duration-200 flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.98] cursor-pointer"
+                className="w-full mt-1 py-2.5 px-3 rounded-lg text-[13px] font-semibold transition-all duration-200 flex items-center justify-center gap-2 shadow-sm active:scale-[0.98] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/60"
                 style={{
                   background: downloaded
                     ? "linear-gradient(135deg, rgba(16, 185, 129, 0.95), rgba(5, 150, 105, 0.95))"
@@ -1382,7 +1385,7 @@ Datum: ${current.datum}]]></description>
           </div>
 
           {/* ── Right: Radar Display ── */}
-          <div className="sm:col-span-5 p-3 flex flex-col gap-2">
+          <div className="hidden sm:flex sm:col-span-5 p-3 flex-col gap-2" aria-hidden>
             <div
               className="relative w-full aspect-square rounded-xl overflow-hidden"
               style={{ border: "1px solid rgba(0,180,255,0.08)" }}
@@ -1400,24 +1403,24 @@ Datum: ${current.datum}]]></description>
 
               {/* HUD labels */}
               <div
-                className="absolute top-2 left-2 text-[7px] font-mono pointer-events-none"
+                className="absolute top-2 left-2 text-[9px] font-mono pointer-events-none"
                 style={{ color: "rgba(0,180,255,0.6)" }}
               >
                 GRID: <span className="text-cyan-300 font-bold">{current.grid}</span>
               </div>
               <div
-                className="absolute top-2 right-2 text-[7px] font-mono pointer-events-none"
+                className="absolute top-2 right-2 text-[9px] font-mono pointer-events-none"
                 style={{ color: "rgba(0,180,255,0.4)" }}
               >
-                CM: {current.lon0}°
+                CM {Number(current.lon0.toFixed(4))}°
               </div>
               <div
-                className="absolute bottom-2 left-2 text-[7px] font-mono pointer-events-none text-emerald-400 font-semibold"
+                className="absolute bottom-2 left-2 text-[9px] font-mono pointer-events-none text-emerald-400 font-semibold"
               >
                 ● GPS SYNC
               </div>
               <div
-                className="absolute bottom-2 right-2 text-[7px] font-mono pointer-events-none"
+                className="absolute bottom-2 right-2 text-[9px] font-mono pointer-events-none"
                 style={{ color: "rgba(0,180,255,0.4)" }}
               >
                 {current.accuracy}
@@ -1436,11 +1439,11 @@ Datum: ${current.datum}]]></description>
               style={{ background: "rgba(0,180,255,0.04)", border: "1px solid rgba(0,180,255,0.08)" }}
             >
               <div>
-                <div className="text-[8px] uppercase tracking-wider text-cyan-400/40">Station ID</div>
+                <div className="text-[9px] uppercase tracking-wider text-cyan-400/60">Station ID</div>
                 <div className="text-[11px] font-mono font-bold text-cyan-200">{current.station}</div>
               </div>
               <div className="text-right">
-                <div className="text-[8px] uppercase tracking-wider text-cyan-400/40">Datum</div>
+                <div className="text-[9px] uppercase tracking-wider text-cyan-400/60">Datum</div>
                 <div className="text-[10px] font-mono font-bold text-cyan-100 truncate max-w-[100px]">
                   {current.datum.split(" ")[0]}
                 </div>
@@ -1454,11 +1457,11 @@ Datum: ${current.datum}]]></description>
           className="px-4 py-2 flex items-center justify-between"
           style={{ borderTop: "1px solid rgba(0, 180, 255, 0.06)" }}
         >
-          <span className="text-[9px] font-medium flex items-center gap-1.5 text-cyan-400/60">
+          <span className="text-[11px] font-medium flex items-center gap-1.5 text-cyan-400/70">
             <Globe className="w-3 h-3 text-cyan-400/80" />
             Exports standard KML 2.2 for Google Earth
           </span>
-          <span className="text-[9px] font-mono text-cyan-400/40">
+          <span className="text-[11px] font-mono text-cyan-400/50">
             {current.grid}
           </span>
         </div>
