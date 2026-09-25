@@ -63,15 +63,16 @@ export default function Hero({ versionTag, fileSizeText, onDownloadClick }: Hero
 
             {/* Headline */}
             <h1 className="text-[32px] sm:text-[40px] lg:text-[44px] font-extrabold tracking-tight text-slate-900 leading-[1.1] mb-5 text-balance">
-              Convert Survey Spreadsheets into{" "}
+              Excel Survey Data to{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0071e3] via-[#0284c7] to-[#0ea5e9]">
-                Google Earth 3D KML &amp; KMZ
+                <span className="whitespace-nowrap">Google Earth</span>{" "}
+                <span className="whitespace-nowrap">KML &amp; KMZ</span>
               </span>
             </h1>
 
             {/* Subtitle */}
             <p className="text-base sm:text-[17px] text-slate-600 leading-relaxed mb-8 max-w-[480px]">
-              Turn Excel or CSV survey coordinates into ready-to-view Google Earth files. See points, boundaries, and 3D elevations in seconds — no complex GIS software required.
+              Open your Excel or CSV coordinates on any grid and get a file that opens straight in Google Earth — points, boundaries and elevations in seconds, no GIS software needed.
             </p>
 
             {/* Action Buttons with subtle modern polish */}
