@@ -102,7 +102,7 @@ export default function AuthModal() {
           </form>
 
           <p className="text-center text-[12px] text-[#aeaeb2] mt-5">
-            🔒 Free forever · Zero spam · Access all 6,864 EPSG grids
+            🔒 Free forever · Zero spam · Access 5,800+ EPSG grids
           </p>
         </div>
       </div>

@@ -4,7 +4,7 @@ import { Globe, Crosshair, Zap, Layers } from "lucide-react";
 const METRICS = [
   {
     icon: Globe,
-    value: "6,800+",
+    value: "5,800+",
     label: "Map Datums Supported",
     detail: "Global EPSG coordinate systems",
   },

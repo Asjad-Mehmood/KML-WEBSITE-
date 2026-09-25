@@ -987,7 +987,7 @@ export const db = {
           installerFileSize: "3.2 MB",
           requireAuthForDownload: true,
           maintenanceMode: false,
-          announcementBanner: "Excel to KML Pro is live with 6,864 EPSG grids & DLTM UAE support.",
+          announcementBanner: "Excel to KML Pro is live with 5,800+ EPSG grids & DLTM UAE support.",
           announcementActive: false,
           webAppRestricted: true,
           webMaxPoints: 50,

@@ -36,7 +36,7 @@ const FEATURES: FeatureCard[] = [
     accentBar: "bg-blue-500",
     badge: "Global Coverage",
     title: "Official Regional Map Grids",
-    desc: "Works with government coordinate grids across UAE, Qatar, Pakistan, Saudi Arabia, the UK, and 6,800+ worldwide regions.",
+    desc: "Works with government coordinate grids across UAE, Qatar, Pakistan, Saudi Arabia, the UK, and 5,800+ other coordinate systems worldwide.",
     chips: ["Dubai DLTM", "Qatar QNG", "Pakistan UTM", "Saudi KSA"],
     layout: "wide",
     preview: "grids",

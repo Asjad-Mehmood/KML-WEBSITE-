@@ -219,7 +219,7 @@ export default function SpecsTable() {
                 </span>
               ))}
               <span className="text-[12px] font-semibold text-blue-700 bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-lg">
-                + 6,864 national EPSG datums
+                + 5,800+ EPSG coordinate systems
               </span>
             </div>
           </SpecBlock>
@@ -255,7 +255,7 @@ export default function SpecsTable() {
                 Popular survey coordinate systems
               </h3>
               <p className="text-[13px] sm:text-sm text-slate-500 mt-1 max-w-[620px]">
-                6,864 pre-configured projections from the official EPSG registry, transformed directly to WGS84 for Google Earth.
+                5,800+ projections from the official EPSG registry, transformed directly to WGS84 for Google Earth.
               </p>
             </div>
           </div>

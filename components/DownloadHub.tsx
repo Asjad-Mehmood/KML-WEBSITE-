@@ -210,7 +210,7 @@ BLDG-C2,513620.000,2787440.000,15.15,STRUCTURE,Building Column Corner B
               </div>
 
               <p className="text-[13px] sm:text-sm text-slate-600 leading-relaxed mb-5 max-w-[520px]">
-                Native app for Windows 10 and 11 with all 6,864 EPSG datums, local Helmert calibration, and Google Earth 3D export built in.
+                Native app for Windows 10 and 11 with 5,800+ EPSG coordinate systems, local Helmert calibration, and Google Earth 3D export built in.
               </p>
 
               <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 mb-7">

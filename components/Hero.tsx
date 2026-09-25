@@ -106,7 +106,7 @@ export default function Hero({ versionTag, fileSizeText, onDownloadClick }: Hero
               </div>
               <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-50 text-slate-700 text-xs font-medium border border-slate-200/60">
                 <Layers className="w-3.5 h-3.5 text-indigo-500" />
-                <span>6,864 EPSG Grids</span>
+                <span>5,800+ EPSG Grids</span>
               </div>
             </div>
 

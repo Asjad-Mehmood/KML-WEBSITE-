@@ -871,7 +871,7 @@ ${placemarks}
                     Calculated locally · Helmert 4-parameter (dX, dY, scale, rotation) &amp; Bursa-Wolf compliant.
                   </span>
                   <span className="text-slate-400 font-mono text-[11px] pl-[22px] sm:pl-0">
-                    6,864 EPSG datums · ISO 19111
+                    5,800+ EPSG systems · ISO 19111
                   </span>
                 </div>
               </div>
