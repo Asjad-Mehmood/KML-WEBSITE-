@@ -18,8 +18,8 @@ import {
 const RealSatelliteMap = dynamic(() => import("./RealSatelliteMap"), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-[400px] rounded-2xl bg-slate-900 border border-slate-800 animate-pulse flex flex-col items-center justify-center gap-2 text-cyan-400 font-mono text-xs">
-      <Globe className="w-6 h-6 animate-spin text-cyan-500" />
+    <div className="w-full h-[400px] rounded-2xl bg-slate-900 border border-slate-800 flex flex-col items-center justify-center gap-2 text-cyan-300 font-mono text-xs">
+      <Globe className="w-6 h-6 animate-spin text-cyan-500" aria-hidden />
       <span>Loading Interactive Satellite View...</span>
     </div>
   ),
