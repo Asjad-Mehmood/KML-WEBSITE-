@@ -11,6 +11,7 @@ export async function GET() {
   const users = db.getAllUsers();
   const downloads = db.getAllDownloads();
   const conversions = db.getAllConversions();
+  const activities = db.getAllActivities(200);
   const settings = db.getSettings();
 
   // Breakdown by role
@@ -33,12 +34,23 @@ export async function GET() {
     locationCounts[loc] = (locationCounts[loc] || 0) + 1;
   });
 
+  // Calculate total points processed across activities
+  let totalPointsProcessed = 0;
+  activities.forEach((a) => {
+    if (typeof a.pointsCount === "number") {
+      totalPointsProcessed += a.pointsCount;
+    }
+  });
+
   return NextResponse.json({
     success: true,
     stats: {
       totalUsers: users.length,
       totalDownloads: downloads.length,
       totalConversions: conversions.length,
+      totalActivities: activities.length,
+      totalFilesStored: db.getAllFiles().length,
+      totalPointsProcessed,
       roleCounts,
       assetCounts,
       locationCounts,
@@ -46,6 +58,7 @@ export async function GET() {
       recentUsers: users.slice(0, 5),
       recentDownloads: downloads.slice(0, 5),
       recentConversions: conversions.slice(0, 5),
+      recentActivities: activities.slice(0, 6),
     },
   });
 }

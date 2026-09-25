@@ -26,7 +26,13 @@ import {
   Server,
   Compass,
   ShieldCheck,
+  Eye,
+  BarChart3,
+  HardDrive,
+  Clock,
+  Filter,
 } from "lucide-react";
+import SurveyorDetailModal from "@/components/admin/SurveyorDetailModal";
 
 interface UserItem {
   id: string;
@@ -69,6 +75,29 @@ interface ConversionItem {
   timestamp: string;
 }
 
+interface UserActivityItem {
+  id: string;
+  userId: string | null;
+  userEmail: string | null;
+  userName?: string | null;
+  action: string;
+  title: string;
+  details?: string;
+  fileName?: string;
+  fileSize?: string;
+  pointsCount?: number;
+  linesCount?: number;
+  polygonsCount?: number;
+  crs?: string;
+  exportFormat?: string;
+  photosCount?: number;
+  durationMs?: number;
+  status?: "success" | "warning" | "error";
+  ipAddress?: string;
+  userAgent?: string;
+  timestamp: string;
+}
+
 interface AppSettings {
   appVersion: string;
   installerFileName: string;
@@ -84,10 +113,16 @@ interface AppSettings {
 }
 
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState<"overview" | "users" | "downloads" | "conversions" | "settings">("overview");
+  const [activeTab, setActiveTab] = useState<
+    "overview" | "users" | "activities" | "downloads" | "conversions" | "settings"
+  >("overview");
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean | null>(null);
   const [adminUser, setAdminUser] = useState<UserItem | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Individual person detail modal state
+  const [detailUserId, setDetailUserId] = useState<string | null>(null);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
 
   // Login form state
   const [loginEmail, setLoginEmail] = useState("admin@exceltokml.com");
@@ -100,6 +135,8 @@ export default function AdminPage() {
     totalUsers: number;
     totalDownloads: number;
     totalConversions: number;
+    totalActivities?: number;
+    totalPointsProcessed?: number;
     roleCounts: Record<string, number>;
     assetCounts: Record<string, number>;
     locationCounts?: Record<string, number>;
@@ -107,6 +144,7 @@ export default function AdminPage() {
     recentUsers: UserItem[];
     recentDownloads: DownloadItem[];
     recentConversions: ConversionItem[];
+    recentActivities?: UserActivityItem[];
   } | null>(null);
 
   // Users state
@@ -124,6 +162,12 @@ export default function AdminPage() {
     hasFullAccess: false,
     customMaxPoints: "",
   });
+
+  // App activities telemetry state
+  const [allActivities, setAllActivities] = useState<UserActivityItem[]>([]);
+  const [activityFilter, setActivityFilter] = useState("all");
+  const [activitySearch, setActivitySearch] = useState("");
+  const [activitiesLoading, setActivitiesLoading] = useState(false);
 
   // Downloads state
   const [downloads, setDownloads] = useState<DownloadItem[]>([]);
@@ -238,6 +282,9 @@ export default function AdminPage() {
       // Load users
       loadUsers();
 
+      // Load activities
+      loadActivities();
+
       // Load downloads
       const dlRes = await fetch("/api/admin/downloads");
       if (dlRes.ok) {
@@ -266,6 +313,19 @@ export default function AdminPage() {
       }
     } finally {
       setUsersLoading(false);
+    }
+  };
+
+  const loadActivities = async () => {
+    setActivitiesLoading(true);
+    try {
+      const res = await fetch("/api/admin/activities?limit=200");
+      if (res.ok) {
+        const data = await res.json();
+        setAllActivities(data.activities || []);
+      }
+    } finally {
+      setActivitiesLoading(false);
     }
   };
 
@@ -421,6 +481,21 @@ export default function AdminPage() {
     }
   };
 
+  // Clear all application activities
+  const handleClearActivities = async () => {
+    if (!confirm("Are you sure you want to clear ALL application activity telemetry?")) return;
+    try {
+      const res = await fetch("/api/admin/activities", { method: "DELETE" });
+      if (res.ok) {
+        setAllActivities([]);
+        showToast("Application telemetry logs cleared");
+        loadDashboardData();
+      }
+    } catch {
+      showToast("Failed to clear telemetry logs", "error");
+    }
+  };
+
   // Clear conversions
   const handleClearConversions = async () => {
     if (!confirm("Are you sure you want to clear all conversion telemetry?")) return;
@@ -528,7 +603,7 @@ export default function AdminPage() {
             <button
               type="submit"
               disabled={loginLoading}
-              className="w-full py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-blue-600/30 transition-all flex items-center justify-center gap-2"
+              className="w-full py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-blue-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
               {loginLoading ? (
                 <RefreshCw className="w-5 h-5 animate-spin" />
@@ -547,7 +622,7 @@ export default function AdminPage() {
                   setLoginEmail("admin@exceltokml.com");
                   setLoginPassword("admin2026!");
                 }}
-                className="text-xs text-blue-400 hover:text-blue-300 font-semibold transition-colors"
+                className="text-xs text-blue-400 hover:text-blue-300 font-semibold transition-colors cursor-pointer"
               >
                 Auto-fill Master Admin Credentials
               </button>
@@ -563,6 +638,20 @@ export default function AdminPage() {
   // --------------------------------------------------------------------------
   const filteredDownloads =
     downloadFilter === "all" ? downloads : downloads.filter((d) => d.assetType === downloadFilter);
+
+  const filteredActivities = allActivities.filter((act) => {
+    const matchesAction = activityFilter === "all" || act.action === activityFilter;
+    if (!matchesAction) return false;
+    if (!activitySearch.trim()) return true;
+    const q = activitySearch.toLowerCase();
+    return (
+      (act.userName && act.userName.toLowerCase().includes(q)) ||
+      (act.userEmail && act.userEmail.toLowerCase().includes(q)) ||
+      (act.title && act.title.toLowerCase().includes(q)) ||
+      (act.fileName && act.fileName.toLowerCase().includes(q)) ||
+      (act.crs && act.crs.toLowerCase().includes(q))
+    );
+  });
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-blue-500/30">
@@ -590,10 +679,10 @@ export default function AdminPage() {
             <div className="flex items-center gap-2">
               <span className="font-extrabold text-base tracking-tight text-white">Excel to KML Pro</span>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-500/20 text-blue-400 border border-blue-500/30">
-                Admin Panel
+                Admin Control
               </span>
             </div>
-            <p className="text-xs text-slate-400">Full System & Data Management</p>
+            <p className="text-xs text-slate-400">Full System &amp; Surveyor Intelligence Management</p>
           </div>
         </div>
 
@@ -613,7 +702,7 @@ export default function AdminPage() {
 
           <button
             onClick={handleAdminLogout}
-            className="p-2 rounded-xl text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 transition-colors"
+            className="p-2 rounded-xl text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 transition-colors cursor-pointer"
             title="Sign Out"
           >
             <LogOut className="w-4 h-4" />
@@ -626,8 +715,9 @@ export default function AdminPage() {
         {/* Navigation Tabs */}
         <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-slate-900 border border-slate-800 overflow-x-auto">
           {[
-            { id: "overview", label: "Overview & Metrics", icon: Activity },
+            { id: "overview", label: "Overview & Metrics", icon: BarChart3 },
             { id: "users", label: `Registered Surveyors (${users.length})`, icon: Users },
+            { id: "activities", label: `App Activity & Telemetry (${allActivities.length})`, icon: Activity },
             { id: "downloads", label: `Download Logs (${downloads.length})`, icon: Download },
             { id: "conversions", label: `Conversions (${conversions.length})`, icon: Globe },
             { id: "settings", label: "System & Release Settings", icon: Settings },
@@ -638,7 +728,7 @@ export default function AdminPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${
+                className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
                   active
                     ? "bg-blue-600 text-white shadow-lg shadow-blue-600/30"
                     : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/60"
@@ -656,72 +746,90 @@ export default function AdminPage() {
         {/* ================================================================== */}
         {activeTab === "overview" && (
           <div className="space-y-8">
-            {/* Stat Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
-                <div className="flex items-center justify-between text-slate-400 mb-4">
-                  <span className="text-xs font-bold uppercase tracking-wider">Registered Surveyors</span>
-                  <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center">
-                    <Users className="w-5 h-5" />
+            {/* Stat Cards (5 metrics) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+              <div className="p-5 rounded-3xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
+                <div className="flex items-center justify-between text-slate-400 mb-3">
+                  <span className="text-xs font-bold uppercase tracking-wider">Surveyors</span>
+                  <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center">
+                    <Users className="w-4 h-4" />
                   </div>
                 </div>
                 <div>
                   <div className="text-3xl font-black text-white">{stats?.totalUsers ?? users.length}</div>
-                  <p className="text-xs text-slate-400 mt-1">Verified cadastral accounts</p>
+                  <p className="text-[11px] text-slate-400 mt-1">Verified user accounts</p>
                 </div>
               </div>
 
-              <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
-                <div className="flex items-center justify-between text-slate-400 mb-4">
-                  <span className="text-xs font-bold uppercase tracking-wider">Gated Downloads</span>
-                  <div className="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
-                    <Download className="w-5 h-5" />
+              <div className="p-5 rounded-3xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
+                <div className="flex items-center justify-between text-slate-400 mb-3">
+                  <span className="text-xs font-bold uppercase tracking-wider">Downloads</span>
+                  <div className="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
+                    <Download className="w-4 h-4" />
                   </div>
                 </div>
                 <div>
                   <div className="text-3xl font-black text-white">{stats?.totalDownloads ?? downloads.length}</div>
-                  <p className="text-xs text-slate-400 mt-1">Logged asset downloads</p>
+                  <p className="text-[11px] text-slate-400 mt-1">Windows installer &amp; CSV logs</p>
                 </div>
               </div>
 
-              <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
-                <div className="flex items-center justify-between text-slate-400 mb-4">
-                  <span className="text-xs font-bold uppercase tracking-wider">Coordinates Converted</span>
-                  <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
-                    <Globe className="w-5 h-5" />
+              <div className="p-5 rounded-3xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
+                <div className="flex items-center justify-between text-slate-400 mb-3">
+                  <span className="text-xs font-bold uppercase tracking-wider">Points Processed</span>
+                  <div className="w-8 h-8 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center">
+                    <Sparkles className="w-4 h-4" />
                   </div>
                 </div>
                 <div>
-                  <div className="text-3xl font-black text-white">{stats?.totalConversions ?? conversions.length}</div>
-                  <p className="text-xs text-slate-400 mt-1">Live benchmark conversions</p>
+                  <div className="text-3xl font-black text-cyan-400 font-mono">
+                    {stats?.totalPointsProcessed ? stats.totalPointsProcessed.toLocaleString() : "0"}
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-1">Total coordinates converted</p>
                 </div>
               </div>
 
-              <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
-                <div className="flex items-center justify-between text-slate-400 mb-4">
-                  <span className="text-xs font-bold uppercase tracking-wider">Database Status</span>
-                  <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center">
-                    <Server className="w-5 h-5" />
+              <div className="p-5 rounded-3xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
+                <div className="flex items-center justify-between text-slate-400 mb-3">
+                  <span className="text-xs font-bold uppercase tracking-wider">App Telemetry</span>
+                  <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                    <Activity className="w-4 h-4" />
                   </div>
                 </div>
                 <div>
-                  <div className="text-lg font-black text-emerald-400 flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-                    Healthy & Operational
+                  <div className="text-3xl font-black text-white">
+                    {(stats?.totalActivities ?? allActivities.length) || conversions.length}
                   </div>
-                  <p className="text-xs text-slate-400 mt-1">Neon DB / Local Resilient Store</p>
+                  <p className="text-[11px] text-slate-400 mt-1">Total user actions logged</p>
+                </div>
+              </div>
+
+              <div className="p-5 rounded-3xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
+                <div className="flex items-center justify-between text-slate-400 mb-3">
+                  <span className="text-xs font-bold uppercase tracking-wider">System Engine</span>
+                  <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center">
+                    <Server className="w-4 h-4" />
+                  </div>
+                </div>
+                <div>
+                  <div className="text-base font-black text-emerald-400 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    Operational
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-1">Resilient local &amp; edge store</p>
                 </div>
               </div>
             </div>
 
-            {/* Quick Actions & Telemetry Summary */}
+            {/* Quick Actions & Live Telemetry Feed */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-6">
+              {/* Asset Distribution */}
+              <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-6">
                 <div className="flex items-center justify-between">
                   <h3 className="text-base font-bold text-white flex items-center gap-2">
                     <Layers className="w-4 h-4 text-blue-400" /> Asset Distribution
                   </h3>
-                  <span className="text-xs text-slate-500">All-time downloads breakdown</span>
+                  <span className="text-xs text-slate-500">All-time downloads</span>
                 </div>
 
                 <div className="space-y-4">
@@ -782,56 +890,92 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-slate-800 flex flex-wrap gap-3">
+                <div className="pt-2 border-t border-slate-800 flex flex-wrap gap-2.5">
                   <a
                     href="/api/admin/downloads?format=csv"
-                    className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white transition-colors flex items-center gap-2"
+                    className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white transition-colors flex items-center gap-2"
                   >
-                    <FileSpreadsheet className="w-4 h-4 text-emerald-400" /> Export Downloads to CSV
+                    <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" /> Export CSV
                   </a>
                   <button
                     onClick={() => setActiveTab("users")}
-                    className="px-4 py-2.5 rounded-xl bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 text-xs font-bold transition-colors flex items-center gap-2"
+                    className="px-3.5 py-2 rounded-xl bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer"
                   >
-                    <Users className="w-4 h-4" /> Manage All Surveyors
+                    <Users className="w-3.5 h-3.5" /> All Surveyors ({users.length})
                   </button>
                 </div>
               </div>
 
-              {/* System State Banner */}
-              <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 flex flex-col justify-between space-y-6">
-                <div>
-                  <h3 className="text-base font-bold text-white mb-2 flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-amber-400" /> Engine Release
-                  </h3>
-                  <div className="p-4 rounded-2xl bg-slate-800/80 border border-slate-700/60 space-y-2">
-                    <div className="flex justify-between text-xs">
-                      <span className="text-slate-400">Live Version:</span>
-                      <span className="font-bold text-white">{settingsForm.appVersion}</span>
-                    </div>
-                    <div className="flex justify-between text-xs">
-                      <span className="text-slate-400">Installer File:</span>
-                      <span className="font-bold text-slate-300 truncate max-w-[140px]">{settingsForm.installerFileName}</span>
-                    </div>
-                    <div className="flex justify-between text-xs">
-                      <span className="text-slate-400">Installer Size:</span>
-                      <span className="font-bold text-slate-300">{settingsForm.installerFileSize}</span>
-                    </div>
-                    <div className="flex justify-between text-xs">
-                      <span className="text-slate-400">Gate Mode:</span>
-                      <span className={`font-bold ${settingsForm.requireAuthForDownload ? "text-emerald-400" : "text-amber-400"}`}>
-                        {settingsForm.requireAuthForDownload ? "Enabled (Auth Required)" : "Disabled (Public)"}
-                      </span>
-                    </div>
+              {/* Live Application Telemetry Feed (Desktop & Web App) */}
+              <div className="lg:col-span-2 p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-base font-bold text-white flex items-center gap-2">
+                      <Activity className="w-4 h-4 text-emerald-400" /> Live Application Telemetry Feed
+                    </h3>
+                    <p className="text-xs text-slate-400">
+                      Real-time files converted, coordinates calculated, and exports across users
+                    </p>
                   </div>
+                  <button
+                    onClick={() => setActiveTab("activities")}
+                    className="text-xs font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1 cursor-pointer"
+                  >
+                    <span>Full Log ({allActivities.length})</span> &rarr;
+                  </button>
                 </div>
 
-                <button
-                  onClick={() => setActiveTab("settings")}
-                  className="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 transition-colors flex items-center justify-center gap-2"
-                >
-                  <Settings className="w-4 h-4" /> Configure System Settings
-                </button>
+                <div className="space-y-2.5">
+                  {allActivities.length === 0 ? (
+                    <div className="py-10 text-center text-slate-500 text-xs bg-slate-800/30 rounded-2xl border border-slate-800">
+                      No application activity logged yet. When surveyors convert files, telemetry events appear here.
+                    </div>
+                  ) : (
+                    allActivities.slice(0, 5).map((act) => (
+                      <div
+                        key={act.id}
+                        className="p-3.5 rounded-2xl bg-slate-800/50 border border-slate-800/80 flex items-center justify-between gap-3 text-xs hover:border-slate-700 transition-colors"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-blue-500/15 text-blue-400 border border-blue-500/20 shrink-0">
+                            {act.action.replace("_", " ")}
+                          </span>
+                          <div className="min-w-0">
+                            <div className="font-semibold text-white truncate max-w-md">
+                              {act.title}
+                            </div>
+                            <div className="text-[11px] text-slate-400 flex items-center gap-2">
+                              {act.userId ? (
+                                <button
+                                  onClick={() => {
+                                    setDetailUserId(act.userId);
+                                    setDetailModalOpen(true);
+                                  }}
+                                  className="text-blue-400 hover:text-blue-300 font-semibold underline decoration-dotted cursor-pointer"
+                                >
+                                  {act.userName || act.userEmail || "Surveyor"}
+                                </button>
+                              ) : (
+                                <span className="text-slate-400">{act.userName || act.userEmail || "Anonymous"}</span>
+                              )}
+                              {act.pointsCount !== undefined && (
+                                <span className="text-cyan-400 font-mono">• {act.pointsCount} points</span>
+                              )}
+                              {act.crs && <span className="text-amber-400 truncate max-w-[120px]">• {act.crs}</span>}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="text-right shrink-0">
+                          <span className="text-[10px] text-slate-500 block">
+                            {new Date(act.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                          </span>
+                          <span className="font-mono text-[10px] text-slate-400">{act.ipAddress || "127.0.0.1"}</span>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             </div>
 
@@ -885,11 +1029,11 @@ export default function AdminPage() {
               <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-base font-bold text-white flex items-center gap-2">
-                    <Activity className="w-4 h-4 text-blue-400" /> Latest Download IP Logs
+                    <Download className="w-4 h-4 text-blue-400" /> Latest Download IP Logs
                   </h3>
                   <button
                     onClick={() => setActiveTab("downloads")}
-                    className="text-xs font-semibold text-blue-400 hover:text-blue-300"
+                    className="text-xs font-semibold text-blue-400 hover:text-blue-300 cursor-pointer"
                   >
                     View All &rarr;
                   </button>
@@ -936,7 +1080,7 @@ export default function AdminPage() {
         )}
 
         {/* ================================================================== */}
-        {/* TAB 2: USERS MANAGEMENT */}
+        {/* TAB 2: USERS MANAGEMENT (WITH INDIVIDUAL PERSON DETAILS TRIGGER) */}
         {/* ================================================================== */}
         {activeTab === "users" && (
           <div className="space-y-6">
@@ -958,7 +1102,7 @@ export default function AdminPage() {
               <div className="flex items-center gap-3 w-full sm:w-auto">
                 <button
                   onClick={() => loadUsers(userSearch)}
-                  className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-colors"
+                  className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer"
                   title="Refresh users"
                 >
                   <RefreshCw className={`w-4 h-4 ${usersLoading ? "animate-spin" : ""}`} />
@@ -977,7 +1121,7 @@ export default function AdminPage() {
                     });
                     setUserModalOpen(true);
                   }}
-                  className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-bold transition-all shadow-lg shadow-blue-600/30 flex items-center gap-2"
+                  className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-bold transition-all shadow-lg shadow-blue-600/30 flex items-center gap-2 cursor-pointer"
                 >
                   <Plus className="w-4 h-4" /> Add Surveyor
                 </button>
@@ -1012,18 +1156,31 @@ export default function AdminPage() {
                         <tr key={u.id} className="hover:bg-slate-800/30 transition-colors">
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center font-bold text-xs text-white">
+                              <button
+                                onClick={() => {
+                                  setDetailUserId(u.id);
+                                  setDetailModalOpen(true);
+                                }}
+                                className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center font-bold text-xs text-white shadow-md hover:scale-105 transition-transform cursor-pointer shrink-0"
+                                title="Click to view full surveyor intelligence & telemetry"
+                              >
                                 {u.name.charAt(0)}
-                              </div>
+                              </button>
                               <div>
-                                <div className="font-bold text-white flex items-center gap-2">
-                                  {u.name}
+                                <button
+                                  onClick={() => {
+                                    setDetailUserId(u.id);
+                                    setDetailModalOpen(true);
+                                  }}
+                                  className="font-bold text-white hover:text-blue-400 flex items-center gap-2 transition-colors text-left cursor-pointer"
+                                >
+                                  <span>{u.name}</span>
                                   {u.role === "ADMIN" && (
                                     <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase bg-rose-500/20 text-rose-400 border border-rose-500/30">
                                       Admin
                                     </span>
                                   )}
-                                </div>
+                                </button>
                                 <div className="text-xs text-slate-400">{u.email}</div>
                               </div>
                             </div>
@@ -1061,7 +1218,7 @@ export default function AdminPage() {
                                 {u.role !== "ADMIN" && (
                                   <button
                                     onClick={() => handleToggleUserFullAccess(u.id, false)}
-                                    className="text-[11px] text-slate-400 hover:text-amber-400 underline decoration-dotted transition-colors"
+                                    className="text-[11px] text-slate-400 hover:text-amber-400 underline decoration-dotted transition-colors cursor-pointer"
                                     title="Click to apply web demo point limit"
                                   >
                                     Restrict
@@ -1075,7 +1232,7 @@ export default function AdminPage() {
                                 </span>
                                 <button
                                   onClick={() => handleToggleUserFullAccess(u.id, true)}
-                                  className="text-[11px] text-slate-400 hover:text-emerald-400 underline decoration-dotted transition-colors"
+                                  className="text-[11px] text-slate-400 hover:text-emerald-400 underline decoration-dotted transition-colors cursor-pointer"
                                   title="Click to grant full web access"
                                 >
                                   Grant Full
@@ -1089,6 +1246,18 @@ export default function AdminPage() {
                           </td>
                           <td className="px-6 py-4 text-right">
                             <div className="inline-flex items-center gap-2">
+                              {/* Deep-dive individual person details */}
+                              <button
+                                onClick={() => {
+                                  setDetailUserId(u.id);
+                                  setDetailModalOpen(true);
+                                }}
+                                className="p-2 rounded-lg bg-blue-600/15 hover:bg-blue-600/25 text-blue-400 hover:text-blue-300 transition-colors border border-blue-500/20 cursor-pointer"
+                                title="View Complete Individual Person Details & Telemetry"
+                              >
+                                <Eye className="w-3.5 h-3.5" />
+                              </button>
+
                               <button
                                 onClick={() => {
                                   setEditingUser(u);
@@ -1103,7 +1272,7 @@ export default function AdminPage() {
                                   });
                                   setUserModalOpen(true);
                                 }}
-                                className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
+                                className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
                                 title="Edit user"
                               >
                                 <Edit3 className="w-3.5 h-3.5" />
@@ -1111,7 +1280,7 @@ export default function AdminPage() {
                               {u.email !== "admin@exceltokml.com" && (
                                 <button
                                   onClick={() => handleDeleteUser(u.id, u.name)}
-                                  className="p-2 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 transition-colors"
+                                  className="p-2 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 transition-colors cursor-pointer"
                                   title="Delete user"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
@@ -1129,146 +1298,187 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* User Create / Edit Modal */}
-        {userModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl">
-              <h3 className="text-lg font-bold text-white mb-4">
-                {editingUser ? "Edit Surveyor Account" : "Create New Surveyor"}
-              </h3>
-              <form onSubmit={handleSaveUser} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                    Full Name
-                  </label>
+        {/* ================================================================== */}
+        {/* TAB 3: APP ACTIVITY & TELEMETRY (GLOBAL APPLICATION LOG) */}
+        {/* ================================================================== */}
+        {activeTab === "activities" && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div className="flex flex-wrap items-center gap-2">
+                {[
+                  { id: "all", label: "All Telemetry" },
+                  { id: "conversion", label: "Conversions" },
+                  { id: "export", label: "Exports" },
+                  { id: "file_upload", label: "File Uploads" },
+                  { id: "batch_process", label: "Batch Process" },
+                  { id: "photos_attached", label: "Photos Attached" },
+                ].map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => setActivityFilter(item.id)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      activityFilter === item.id
+                        ? "bg-blue-600 text-white"
+                        : "bg-slate-900 border border-slate-800 text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <div className="relative flex-1 sm:w-64">
+                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
-                    required
-                    value={userForm.name}
-                    onChange={(e) => setUserForm({ ...userForm, name: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500"
-                    placeholder="e.g. Asjad Mehmood"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={userForm.email}
-                    onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500"
-                    placeholder="surveyor@firm.com"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                    Organization / Bureau
-                  </label>
-                  <input
-                    type="text"
-                    value={userForm.organization}
-                    onChange={(e) => setUserForm({ ...userForm, organization: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500"
-                    placeholder="Apex Survey & Mapping"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                    Discipline / Role
-                  </label>
-                  <select
-                    value={userForm.role}
-                    onChange={(e) => setUserForm({ ...userForm, role: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500"
-                  >
-                    <option value="Cadastral Surveyor">Cadastral Surveyor</option>
-                    <option value="Civil Engineer">Civil Engineer</option>
-                    <option value="GIS Specialist">GIS Specialist</option>
-                    <option value="Drone Operator">Drone Operator</option>
-                    <option value="Surveyor">General Surveyor</option>
-                    <option value="ADMIN">Administrator (Full Access)</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                    {editingUser ? "New Password (leave blank to keep unchanged)" : "Password"}
-                  </label>
-                  <input
-                    type="password"
-                    value={userForm.password}
-                    onChange={(e) => setUserForm({ ...userForm, password: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500"
-                    placeholder={editingUser ? "Unchanged" : "••••••••••••"}
+                    placeholder="Search file, surveyor, CRS..."
+                    value={activitySearch}
+                    onChange={(e) => setActivitySearch(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
                   />
                 </div>
 
-                {/* Web Restrictions & Limit Settings per User */}
-                <div className="pt-3 border-t border-slate-800 space-y-3">
-                  <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                    Web App Access &amp; Limits
-                  </div>
+                <button
+                  onClick={loadActivities}
+                  className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                  title="Refresh activity logs"
+                >
+                  <RefreshCw className={`w-4 h-4 ${activitiesLoading ? "animate-spin" : ""}`} />
+                </button>
 
-                  <label className="flex items-start gap-3 p-3 rounded-xl bg-slate-800/80 border border-slate-700/60 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={userForm.hasFullAccess}
-                      onChange={(e) => setUserForm({ ...userForm, hasFullAccess: e.target.checked })}
-                      className="mt-0.5 rounded bg-slate-700 border-slate-600 text-blue-600 focus:ring-0"
-                    />
-                    <div>
-                      <div className="text-xs font-bold text-white">Grant Full Unrestricted Web Access</div>
-                      <div className="text-[11px] text-slate-400">
-                        Bypasses the web demo points limit &amp; report restrictions for this account.
-                      </div>
-                    </div>
-                  </label>
+                <button
+                  onClick={handleClearActivities}
+                  className="px-3.5 py-2 rounded-xl bg-rose-600/20 text-rose-400 hover:bg-rose-600/30 text-xs font-bold transition-colors flex items-center gap-1.5 border border-rose-500/30 cursor-pointer"
+                >
+                  <Trash2 className="w-3.5 h-3.5" /> Clear All Logs
+                </button>
+              </div>
+            </div>
 
-                  {!userForm.hasFullAccess && (
-                    <div>
-                      <label className="block text-xs text-slate-300 font-medium mb-1">
-                        Custom Point Limit (optional)
-                      </label>
-                      <input
-                        type="number"
-                        min="5"
-                        max="10000"
-                        value={userForm.customMaxPoints}
-                        onChange={(e) => setUserForm({ ...userForm, customMaxPoints: e.target.value })}
-                        className="w-full px-3.5 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-blue-500"
-                        placeholder={`Leave blank to use global default (${settingsForm.webMaxPoints || 50} pts)`}
-                      />
-                      <div className="text-[10px] text-slate-400 mt-1">
-                        Overrides the global limit for this specific surveyor account.
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="pt-4 flex items-center justify-end gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setUserModalOpen(false)}
-                    className="px-4 py-2 rounded-xl text-sm font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold shadow-lg shadow-blue-600/30 transition-all"
-                  >
-                    {editingUser ? "Save Changes" : "Create Account"}
-                  </button>
-                </div>
-              </form>
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-800/60 border-b border-slate-800 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                    <tr>
+                      <th className="px-6 py-4">Timestamp</th>
+                      <th className="px-6 py-4">Surveyor</th>
+                      <th className="px-6 py-4">Action</th>
+                      <th className="px-6 py-4">Operation / File</th>
+                      <th className="px-6 py-4">Points</th>
+                      <th className="px-6 py-4">Coordinate System</th>
+                      <th className="px-6 py-4">Format</th>
+                      <th className="px-6 py-4">Duration</th>
+                      <th className="px-6 py-4">IP Address</th>
+                      <th className="px-6 py-4 text-right">Surveyor Profile</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/60">
+                    {filteredActivities.length === 0 ? (
+                      <tr>
+                        <td colSpan={10} className="px-6 py-12 text-center text-slate-500">
+                          No application telemetry records logged matching criteria
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredActivities.map((act) => (
+                        <tr key={act.id} className="hover:bg-slate-800/30 transition-colors">
+                          <td className="px-6 py-4 text-slate-400 whitespace-nowrap">
+                            {new Date(act.timestamp).toLocaleString()}
+                          </td>
+                          <td className="px-6 py-4">
+                            {act.userId ? (
+                              <button
+                                onClick={() => {
+                                  setDetailUserId(act.userId);
+                                  setDetailModalOpen(true);
+                                }}
+                                className="font-bold text-white hover:text-blue-400 transition-colors text-left flex items-center gap-1.5 cursor-pointer"
+                              >
+                                <span className="underline decoration-dotted">{act.userName || "Surveyor"}</span>
+                                <Eye className="w-3 h-3 text-blue-400" />
+                              </button>
+                            ) : (
+                              <span className="text-slate-400">{act.userName || act.userEmail || "Anonymous"}</span>
+                            )}
+                            <div className="text-[11px] text-slate-500">{act.userEmail || "—"}</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-blue-500/10 text-blue-400 border border-blue-500/20 whitespace-nowrap">
+                              {act.action.replace("_", " ")}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="font-semibold text-white max-w-[200px] truncate" title={act.title}>
+                              {act.title}
+                            </div>
+                            {act.fileName && (
+                              <div className="text-[11px] text-slate-400 font-mono flex items-center gap-1">
+                                <span className="truncate max-w-[150px]">{act.fileName}</span>
+                                {act.fileSize && <span className="text-slate-500">({act.fileSize})</span>}
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-6 py-4">
+                            {act.pointsCount !== undefined ? (
+                              <span className="font-mono font-bold text-cyan-400">
+                                {act.pointsCount.toLocaleString()} pts
+                              </span>
+                            ) : (
+                              <span className="text-slate-500">—</span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4">
+                            {act.crs ? (
+                              <span className="font-mono text-[11px] text-amber-300 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
+                                {act.crs}
+                              </span>
+                            ) : (
+                              <span className="text-slate-500">—</span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4">
+                            {act.exportFormat ? (
+                              <span className="font-bold text-emerald-400 uppercase text-[10px] bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+                                {act.exportFormat}
+                              </span>
+                            ) : (
+                              <span className="text-slate-500">—</span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 text-slate-400 font-mono">
+                            {act.durationMs ? `${act.durationMs}ms` : "—"}
+                          </td>
+                          <td className="px-6 py-4 font-mono text-slate-400">
+                            {act.ipAddress || "127.0.0.1"}
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            {act.userId ? (
+                              <button
+                                onClick={() => {
+                                  setDetailUserId(act.userId);
+                                  setDetailModalOpen(true);
+                                }}
+                                className="px-2.5 py-1 rounded-lg bg-blue-600/15 hover:bg-blue-600/25 text-blue-400 text-xs font-semibold transition-colors border border-blue-500/20 cursor-pointer inline-flex items-center gap-1"
+                              >
+                                <Eye className="w-3 h-3" /> Profile
+                              </button>
+                            ) : (
+                              <span className="text-slate-600 text-xs">—</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}
 
         {/* ================================================================== */}
-        {/* TAB 3: DOWNLOAD AUDIT TRAIL */}
+        {/* TAB 4: DOWNLOAD AUDIT TRAIL */}
         {/* ================================================================== */}
         {activeTab === "downloads" && (
           <div className="space-y-6">
@@ -1278,7 +1488,7 @@ export default function AdminPage() {
                   <button
                     key={type}
                     onClick={() => setDownloadFilter(type)}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                       downloadFilter === type
                         ? "bg-blue-600 text-white"
                         : "bg-slate-900 border border-slate-800 text-slate-400 hover:text-white"
@@ -1298,7 +1508,7 @@ export default function AdminPage() {
                 </a>
                 <button
                   onClick={handleClearDownloads}
-                  className="px-4 py-2 rounded-xl bg-rose-600/20 text-rose-400 hover:bg-rose-600/30 text-xs font-bold transition-colors flex items-center gap-2 border border-rose-500/30"
+                  className="px-4 py-2 rounded-xl bg-rose-600/20 text-rose-400 hover:bg-rose-600/30 text-xs font-bold transition-colors flex items-center gap-2 border border-rose-500/30 cursor-pointer"
                 >
                   <Trash2 className="w-4 h-4" /> Clear All Logs
                 </button>
@@ -1333,7 +1543,20 @@ export default function AdminPage() {
                             {new Date(dl.timestamp).toLocaleString()}
                           </td>
                           <td className="px-6 py-4">
-                            <div className="font-bold text-white text-xs">{dl.userName || "Verified Surveyor"}</div>
+                            {dl.userId ? (
+                              <button
+                                onClick={() => {
+                                  setDetailUserId(dl.userId);
+                                  setDetailModalOpen(true);
+                                }}
+                                className="font-bold text-white hover:text-blue-400 text-xs text-left flex items-center gap-1 cursor-pointer"
+                              >
+                                <span>{dl.userName || dl.userEmail || "Verified Surveyor"}</span>
+                                <Eye className="w-3 h-3 text-blue-400" />
+                              </button>
+                            ) : (
+                              <div className="font-bold text-white text-xs">{dl.userName || "Verified Surveyor"}</div>
+                            )}
                             <div className="text-[11px] text-slate-500">{dl.userEmail || "anonymous"}</div>
                           </td>
                           <td className="px-6 py-4">
@@ -1359,13 +1582,13 @@ export default function AdminPage() {
                               );
                             })()}
                           </td>
-                          <td className="px-6 py-4 text-xs text-slate-300 font-mono">{dl.fileName}</td>
-                          <td className="px-6 py-4 text-xs text-slate-400 font-bold">{dl.version}</td>
+                          <td className="px-6 py-4 text-xs font-mono text-slate-300">{dl.fileName}</td>
+                          <td className="px-6 py-4 text-xs font-mono text-slate-400">{dl.version}</td>
                           <td className="px-6 py-4 text-right">
                             <button
                               onClick={() => handleDeleteDownload(dl.id)}
-                              className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
-                              title="Delete log entry"
+                              className="p-1.5 rounded-lg text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                              title="Delete log"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -1381,20 +1604,21 @@ export default function AdminPage() {
         )}
 
         {/* ================================================================== */}
-        {/* TAB 4: CONVERSIONS AUDIT */}
+        {/* TAB 5: CONVERSIONS AUDIT */}
         {/* ================================================================== */}
         {activeTab === "conversions" && (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
               <div>
-                <h3 className="text-base font-bold text-white">Geodetic Conversion Log</h3>
-                <p className="text-xs text-slate-400">Real-time coordinates converted via the interactive playground</p>
+                <h3 className="text-base font-bold text-white">Live Benchmark Conversion Audit</h3>
+                <p className="text-xs text-slate-400">Real-time coordinates verified across survey grids</p>
               </div>
+
               <button
                 onClick={handleClearConversions}
-                className="px-4 py-2 rounded-xl bg-rose-600/20 text-rose-400 hover:bg-rose-600/30 text-xs font-bold transition-colors flex items-center gap-2 border border-rose-500/30"
+                className="px-4 py-2 rounded-xl bg-rose-600/20 text-rose-400 hover:bg-rose-600/30 text-xs font-bold transition-colors flex items-center gap-2 border border-rose-500/30 cursor-pointer"
               >
-                <Trash2 className="w-4 h-4" /> Clear History
+                <Trash2 className="w-4 h-4" /> Clear Conversions
               </button>
             </div>
 
@@ -1403,35 +1627,39 @@ export default function AdminPage() {
                 <table className="w-full text-left text-sm">
                   <thead className="bg-slate-800/60 border-b border-slate-800 text-xs font-bold text-slate-400 uppercase tracking-wider">
                     <tr>
-                      <th className="px-6 py-4">Time</th>
-                      <th className="px-6 py-4">Station</th>
-                      <th className="px-6 py-4">Code</th>
+                      <th className="px-6 py-4">Timestamp</th>
+                      <th className="px-6 py-4">Station ID</th>
+                      <th className="px-6 py-4">Feature Code</th>
                       <th className="px-6 py-4">Grid System</th>
                       <th className="px-6 py-4">Easting / Northing</th>
-                      <th className="px-6 py-4">Output Lat / Lon</th>
+                      <th className="px-6 py-4">WGS84 Lat/Lon</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800/60">
                     {conversions.length === 0 ? (
                       <tr>
                         <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
-                          No coordinate conversions recorded yet
+                          No conversion records logged yet
                         </td>
                       </tr>
                     ) : (
-                      conversions.map((c) => (
-                        <tr key={c.id} className="hover:bg-slate-800/30 transition-colors">
+                      conversions.map((conv) => (
+                        <tr key={conv.id} className="hover:bg-slate-800/30 transition-colors">
                           <td className="px-6 py-4 text-xs text-slate-400">
-                            {new Date(c.timestamp).toLocaleTimeString()}
+                            {new Date(conv.timestamp).toLocaleString()}
                           </td>
-                          <td className="px-6 py-4 font-bold text-white text-xs">{c.station}</td>
-                          <td className="px-6 py-4 text-xs text-slate-400">{c.featureCode}</td>
-                          <td className="px-6 py-4 text-xs font-medium text-blue-400">{c.coordSystem}</td>
-                          <td className="px-6 py-4 text-xs font-mono text-slate-300">
-                            E: {c.easting.toFixed(2)}, N: {c.northing.toFixed(2)}
+                          <td className="px-6 py-4 font-mono font-bold text-white text-xs">{conv.station}</td>
+                          <td className="px-6 py-4">
+                            <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 text-slate-300 border border-slate-700">
+                              {conv.featureCode}
+                            </span>
                           </td>
-                          <td className="px-6 py-4 text-xs font-mono text-emerald-400">
-                            {c.lat}, {c.lon}
+                          <td className="px-6 py-4 text-xs text-blue-400 font-semibold">{conv.coordSystem}</td>
+                          <td className="px-6 py-4 font-mono text-xs text-slate-300">
+                            E: {conv.easting.toFixed(3)} | N: {conv.northing.toFixed(3)}
+                          </td>
+                          <td className="px-6 py-4 font-mono text-xs text-emerald-400">
+                            {conv.lat}, {conv.lon}
                           </td>
                         </tr>
                       ))
@@ -1444,36 +1672,62 @@ export default function AdminPage() {
         )}
 
         {/* ================================================================== */}
-        {/* TAB 5: SYSTEM & RELEASE SETTINGS */}
+        {/* TAB 6: SETTINGS & RELEASE MANAGEMENT */}
         {/* ================================================================== */}
         {activeTab === "settings" && (
           <div className="max-w-3xl space-y-6">
-            <div className="p-8 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl">
-              <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
-                <Settings className="w-5 h-5 text-blue-500" /> Release & Platform Parameters
-              </h3>
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl">
+              <div className="mb-6 pb-6 border-b border-slate-800 flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                    <Settings className="w-5 h-5 text-blue-400" /> Platform &amp; Gating Configuration
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Manage download gates, maintenance flags, and global restrictions
+                  </p>
+                </div>
+                <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                  Global Policy
+                </span>
+              </div>
 
               <form onSubmit={handleSaveSettings} className="space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                {/* Application Version */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-                      Active Application Version
+                      Engine Version
                     </label>
                     <input
                       type="text"
+                      required
                       value={settingsForm.appVersion}
                       onChange={(e) => setSettingsForm({ ...settingsForm, appVersion: e.target.value })}
                       className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500"
-                      placeholder="v3.5.5"
+                      placeholder="v3.5.7"
                     />
                   </div>
 
                   <div>
                     <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-                      Installer File Size
+                      Installer Binary
                     </label>
                     <input
                       type="text"
+                      required
+                      value={settingsForm.installerFileName}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, installerFileName: e.target.value })}
+                      className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500 font-mono text-xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                      File Size Text
+                    </label>
+                    <input
+                      type="text"
+                      required
                       value={settingsForm.installerFileSize}
                       onChange={(e) => setSettingsForm({ ...settingsForm, installerFileSize: e.target.value })}
                       className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500"
@@ -1482,21 +1736,8 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-                    Windows Installer Setup Filename
-                  </label>
-                  <input
-                    type="text"
-                    value={settingsForm.installerFileName}
-                    onChange={(e) => setSettingsForm({ ...settingsForm, installerFileName: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500 font-mono"
-                    placeholder="ExcelToKMLPro-Lite-Setup.exe"
-                  />
-                </div>
-
-                {/* Toggles */}
-                <div className="pt-4 border-t border-slate-800 space-y-4">
+                {/* Gate & Maintenance Mode */}
+                <div className="space-y-4 pt-2">
                   <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-800/60 border border-slate-700/60">
                     <div>
                       <div className="font-bold text-sm text-white">Require Surveyor Login to Download</div>
@@ -1638,14 +1879,14 @@ export default function AdminPage() {
                     value={settingsForm.announcementBanner}
                     onChange={(e) => setSettingsForm({ ...settingsForm, announcementBanner: e.target.value })}
                     className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500"
-                    placeholder="e.g. v3.5.5 released with UK OSGB36 & Dubai DLTM improvements!"
+                    placeholder="e.g. v3.5.7 released with UK OSGB36 & Dubai DLTM improvements!"
                   />
                 </div>
 
                 <div className="pt-6 flex justify-end">
                   <button
                     type="submit"
-                    className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold shadow-lg shadow-blue-600/30 transition-all flex items-center gap-2"
+                    className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold shadow-lg shadow-blue-600/30 transition-all flex items-center gap-2 cursor-pointer"
                   >
                     {settingsSaved ? <CheckCircle2 className="w-4 h-4 text-emerald-300" /> : <Settings className="w-4 h-4" />}
                     {settingsSaved ? "Settings Saved!" : "Save & Apply Settings"}
@@ -1656,6 +1897,167 @@ export default function AdminPage() {
           </div>
         )}
       </div>
+
+      {/* Add / Edit Surveyor Modal */}
+      {userModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl relative">
+            <h3 className="text-lg font-bold text-white mb-4">
+              {editingUser ? "Edit Surveyor Account" : "Create New Surveyor"}
+            </h3>
+
+            <form onSubmit={handleSaveUser} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={userForm.name}
+                  onChange={(e) => setUserForm({ ...userForm, name: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500"
+                  placeholder="e.g. Asjad Mehmood"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={userForm.email}
+                  onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500"
+                  placeholder="surveyor@company.com"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                    Organization
+                  </label>
+                  <input
+                    type="text"
+                    value={userForm.organization}
+                    onChange={(e) => setUserForm({ ...userForm, organization: e.target.value })}
+                    className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500"
+                    placeholder="e.g. Geotech Ltd"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                    Role
+                  </label>
+                  <select
+                    value={userForm.role}
+                    onChange={(e) => setUserForm({ ...userForm, role: e.target.value })}
+                    className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500"
+                  >
+                    <option value="Surveyor">Surveyor</option>
+                    <option value="Cadastral Surveyor">Cadastral Surveyor</option>
+                    <option value="Chief Surveyor">Chief Surveyor</option>
+                    <option value="Civil Engineer">Civil Engineer</option>
+                    <option value="GIS Specialist">GIS Specialist</option>
+                    <option value="ADMIN">Administrator</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                  {editingUser ? "New Password (leave blank to keep unchanged)" : "Password"}
+                </label>
+                <input
+                  type="password"
+                  value={userForm.password}
+                  onChange={(e) => setUserForm({ ...userForm, password: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500"
+                  placeholder={editingUser ? "Unchanged" : "••••••••••••"}
+                />
+              </div>
+
+              {/* Web Restrictions & Limit Settings per User */}
+              <div className="pt-3 border-t border-slate-800 space-y-3">
+                <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                  Web App Access &amp; Limits
+                </div>
+
+                <label className="flex items-start gap-3 p-3 rounded-xl bg-slate-800/80 border border-slate-700/60 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={userForm.hasFullAccess}
+                    onChange={(e) => setUserForm({ ...userForm, hasFullAccess: e.target.checked })}
+                    className="mt-0.5 rounded bg-slate-700 border-slate-600 text-blue-600 focus:ring-0"
+                  />
+                  <div>
+                    <div className="text-xs font-bold text-white">Grant Full Unrestricted Web Access</div>
+                    <div className="text-[11px] text-slate-400">
+                      Bypasses the web demo points limit &amp; report restrictions for this account.
+                    </div>
+                  </div>
+                </label>
+
+                {!userForm.hasFullAccess && (
+                  <div>
+                    <label className="block text-xs text-slate-300 font-medium mb-1">
+                      Custom Point Limit (optional)
+                    </label>
+                    <input
+                      type="number"
+                      min="5"
+                      max="10000"
+                      value={userForm.customMaxPoints}
+                      onChange={(e) => setUserForm({ ...userForm, customMaxPoints: e.target.value })}
+                      className="w-full px-3.5 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-blue-500 font-mono"
+                      placeholder={`Leave blank to use global default (${settingsForm.webMaxPoints || 50} pts)`}
+                    />
+                    <div className="text-[10px] text-slate-400 mt-1">
+                      Overrides the global limit for this specific surveyor account.
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-4 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setUserModalOpen(false)}
+                  className="px-4 py-2 rounded-xl text-sm font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold shadow-lg shadow-blue-600/30 transition-all cursor-pointer"
+                >
+                  {editingUser ? "Save Changes" : "Create Account"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Individual Person Details & Telemetry Deep-Dive Modal */}
+      <SurveyorDetailModal
+        userId={detailUserId}
+        isOpen={detailModalOpen}
+        onClose={() => {
+          setDetailModalOpen(false);
+          setDetailUserId(null);
+        }}
+        onUserUpdated={() => {
+          loadUsers(userSearch);
+          loadDashboardData();
+        }}
+        onToast={showToast}
+        globalMaxPoints={settingsForm.webMaxPoints || 50}
+      />
     </div>
   );
 }

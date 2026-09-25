@@ -1,0 +1,134 @@
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/lib/db";
+
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+};
+
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: CORS_HEADERS,
+  });
+}
+
+function getAuthUser(req: NextRequest) {
+  const token =
+    req.cookies.get("surveyor_auth_token")?.value ||
+    req.headers.get("authorization")?.replace("Bearer ", "");
+  if (!token) return null;
+  const sessionData = db.validateSession(token);
+  return sessionData?.user || null;
+}
+
+// GET: Retrieve activity list for the current user
+export async function GET(req: NextRequest) {
+  try {
+    const user = getAuthUser(req);
+    const { searchParams } = new URL(req.url);
+    const limit = parseInt(searchParams.get("limit") || "50", 10);
+    const userParam = searchParams.get("userId");
+
+    // If admin is requesting a specific user, or admin querying all
+    let activities = [];
+    if (user && db.isAdmin(user) && userParam) {
+      activities = db.getUserActivities(userParam, limit);
+    } else if (user) {
+      activities = db.getUserActivities(user.id, limit);
+    } else if (userParam) {
+      activities = db.getUserActivities(userParam, limit);
+    } else {
+      // Guest or unauthenticated - return empty or recent general
+      return NextResponse.json({ activities: [] }, { headers: CORS_HEADERS });
+    }
+
+    return NextResponse.json({ activities }, { headers: CORS_HEADERS });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Internal Server Error";
+    return NextResponse.json({ error: message }, { status: 500, headers: CORS_HEADERS });
+  }
+}
+
+// POST: Record a user activity
+export async function POST(req: NextRequest) {
+  try {
+    const user = getAuthUser(req);
+    const body = await req.json().catch(() => ({}));
+
+    const {
+      action,
+      title,
+      details,
+      fileName,
+      fileSize,
+      pointsCount,
+      linesCount,
+      polygonsCount,
+      crs,
+      exportFormat,
+      photosCount,
+      durationMs,
+      status,
+      userEmail: clientEmail,
+      userId: clientUserId,
+      userName: clientName,
+    } = body;
+
+    if (!action || !title) {
+      return NextResponse.json(
+        { error: "action and title are required fields" },
+        { status: 400, headers: CORS_HEADERS }
+      );
+    }
+
+    const ipAddress =
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      req.headers.get("x-real-ip") ||
+      undefined;
+    const userAgent = req.headers.get("user-agent") || undefined;
+
+    const record = db.recordActivity({
+      userId: user ? user.id : (clientUserId || null),
+      userEmail: user ? user.email : (clientEmail || null),
+      userName: user ? user.name : (clientName || null),
+      action,
+      title,
+      details,
+      fileName,
+      fileSize,
+      pointsCount: typeof pointsCount === "number" ? pointsCount : undefined,
+      linesCount: typeof linesCount === "number" ? linesCount : undefined,
+      polygonsCount: typeof polygonsCount === "number" ? polygonsCount : undefined,
+      crs,
+      exportFormat,
+      photosCount: typeof photosCount === "number" ? photosCount : undefined,
+      durationMs: typeof durationMs === "number" ? durationMs : undefined,
+      status: status || "success",
+      ipAddress,
+      userAgent,
+    });
+
+    return NextResponse.json({ success: true, activity: record }, { headers: CORS_HEADERS });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Internal Server Error";
+    return NextResponse.json({ error: message }, { status: 500, headers: CORS_HEADERS });
+  }
+}
+
+// DELETE: Clear activities
+export async function DELETE(req: NextRequest) {
+  try {
+    const user = getAuthUser(req);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: CORS_HEADERS });
+    }
+
+    db.clearActivities(user.id);
+    return NextResponse.json({ success: true }, { headers: CORS_HEADERS });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Internal Server Error";
+    return NextResponse.json({ error: message }, { status: 500, headers: CORS_HEADERS });
+  }
+}

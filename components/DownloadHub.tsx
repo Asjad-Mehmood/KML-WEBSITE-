@@ -2,14 +2,14 @@
 
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { 
-  Download, 
-  FileSpreadsheet, 
-  ShieldCheck, 
-  Copy, 
-  Check, 
-  Globe, 
-  ExternalLink, 
+import {
+  Download,
+  FileSpreadsheet,
+  ShieldCheck,
+  Copy,
+  Check,
+  Globe,
+  ExternalLink,
   Sparkles,
   Laptop
 } from "lucide-react";
@@ -92,7 +92,7 @@ BLDG-C2,513620.000,2787440.000,15.15,STRUCTURE,Building Column Corner B
   return (
     <section className="py-20 lg:py-24 bg-white border-b border-slate-100" id="download">
       <div className="max-w-[1140px] mx-auto px-5 sm:px-8">
-        
+
         {/* Section Header (Meaningful, Clear, No Buzzwords) */}
         <div className="text-center max-w-[620px] mx-auto mb-14">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50/80 border border-blue-100/80 text-blue-700 text-xs font-semibold uppercase tracking-wider mb-2.5">
@@ -110,7 +110,7 @@ BLDG-C2,513620.000,2787440.000,15.15,STRUCTURE,Building Column Corner B
         {/* Primary Download Card */}
         <div className="p-6 sm:p-8 lg:p-10 rounded-2xl bg-[#fafbfc] border border-slate-200/80 shadow-[0_8px_30px_rgba(0,0,0,0.03)] mb-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            
+
             {/* Left Details (7 cols) */}
             <div className="lg:col-span-7 space-y-4">
               <div className="flex flex-wrap items-center gap-2.5">

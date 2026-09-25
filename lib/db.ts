@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
+import os from "os";
 
 export interface UserRecord {
   id: string;
@@ -56,6 +57,30 @@ export interface ConversionRecord {
   timestamp: string;
 }
 
+
+export interface UserActivityRecord {
+  id: string;
+  userId: string | null;
+  userEmail: string | null;
+  userName?: string | null;
+  action: "file_upload" | "conversion" | "export" | "batch_process" | "photos_attached" | "project_save" | "settings_update";
+  title: string;
+  details?: string;
+  fileName?: string;
+  fileSize?: string;
+  pointsCount?: number;
+  linesCount?: number;
+  polygonsCount?: number;
+  crs?: string;
+  exportFormat?: string;
+  photosCount?: number;
+  durationMs?: number;
+  status?: "success" | "warning" | "error";
+  ipAddress?: string;
+  userAgent?: string;
+  timestamp: string;
+}
+
 export interface AppSettings {
   appVersion: string;
   installerFileName: string;
@@ -70,11 +95,34 @@ export interface AppSettings {
   webDisableReports: boolean;
 }
 
+export interface UserFileRecord {
+  id: string;
+  userId: string | null;
+  userEmail: string | null;
+  userName?: string | null;
+  direction: "import" | "export";
+  fileName: string;
+  fileSize: number;
+  fileSizeFormatted: string;
+  mimeType: string;
+  storedFilePath?: string;
+  contentBase64?: string;
+  pointsCount?: number;
+  crs?: string;
+  action: string;
+  platform: "windows_app" | "web_app";
+  ipAddress?: string;
+  userAgent?: string;
+  timestamp: string;
+}
+
 interface DatabaseSchema {
   users: UserRecord[];
   sessions: SessionRecord[];
   downloads: DownloadRecord[];
   conversions: ConversionRecord[];
+  activities: UserActivityRecord[];
+  files: UserFileRecord[];
   settings: AppSettings;
   meta: {
     createdAt: string;
@@ -83,8 +131,6 @@ interface DatabaseSchema {
   };
 }
 
-const DATA_DIR = path.join(process.cwd(), ".data");
-const DB_FILE = path.join(DATA_DIR, "surveyor_db.json");
 
 function hashPassword(password: string, salt: string): string {
   return crypto.scryptSync(password, salt, 64).toString("hex");
@@ -156,6 +202,8 @@ function getInitialData(): DatabaseSchema {
       },
     ],
     conversions: [],
+    activities: [],
+    files: [],
     settings: {
       appVersion: "v3.5.7",
       installerFileName: "ExcelToKMLPro-Lite-Setup.exe",
@@ -177,25 +225,140 @@ function getInitialData(): DatabaseSchema {
   };
 }
 
-let cachedDb: DatabaseSchema | null = null;
+const globalForDb = globalThis as unknown as {
+  __surveyor_db_cached?: DatabaseSchema;
+};
+
+let resolvedDbFile: string | null = null;
+let resolvedDataDir: string | null = null;
+let storageMode: "file" | "memory" = "file";
+
+function isDirectoryWritable(dirPath: string): boolean {
+  try {
+    if (!fs.existsSync(dirPath)) {
+      return false;
+    }
+    fs.accessSync(dirPath, fs.constants.W_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function getStoragePaths(): { dataDir: string; dbFile: string; isMemory: boolean } {
+  if (resolvedDbFile && resolvedDataDir) {
+    return { dataDir: resolvedDataDir, dbFile: resolvedDbFile, isMemory: storageMode === "memory" };
+  }
+
+  const cwd = typeof process.cwd === "function" ? process.cwd() : "";
+  const isServerless =
+    Boolean(process.env.VERCEL) ||
+    Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME) ||
+    Boolean(process.env.LAMBDA_TASK_ROOT) ||
+    Boolean(process.env.NEXT_RUNTIME) ||
+    cwd.startsWith("/var/task") ||
+    cwd.startsWith("/var/") ||
+    cwd.startsWith("/opt/");
+
+  const candidates: string[] = [];
+
+  if (process.env.DATA_DIR) {
+    candidates.push(process.env.DATA_DIR);
+  }
+
+  // In serverless environments, /var/task is read-only; os.tmpdir() (/tmp) is the only writable directory
+  if (isServerless) {
+    candidates.push(path.join(os.tmpdir(), "exceltokml_data"));
+  } else {
+    // Only attempt process.cwd()/.data if cwd is verified writable and not in /var
+    if (cwd && !cwd.startsWith("/var/") && isDirectoryWritable(cwd)) {
+      candidates.push(path.join(cwd, ".data"));
+    }
+    candidates.push(path.join(os.tmpdir(), "exceltokml_data"));
+  }
+
+  for (const dir of candidates) {
+    try {
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+      // Verify directory is truly writable
+      const probeFile = path.join(dir, `.probe_${Date.now()}_${Math.random().toString(36).slice(2)}`);
+      fs.writeFileSync(probeFile, "probe", "utf-8");
+      fs.unlinkSync(probeFile);
+
+      resolvedDataDir = dir;
+      resolvedDbFile = path.join(dir, "surveyor_db.json");
+      storageMode = "file";
+      return { dataDir: resolvedDataDir, dbFile: resolvedDbFile, isMemory: false };
+    } catch {
+      continue;
+    }
+  }
+
+  // Graceful fallback to in-memory mode if no writable directory is available
+  storageMode = "memory";
+  resolvedDataDir = path.join(os.tmpdir(), "exceltokml_data");
+  resolvedDbFile = path.join(os.tmpdir(), "exceltokml_data", "surveyor_db.json");
+  return { dataDir: resolvedDataDir, dbFile: resolvedDbFile, isMemory: true };
+}
 
 function readDb(): DatabaseSchema {
+  const { dataDir, dbFile, isMemory } = getStoragePaths();
+
+  if (isMemory) {
+    if (!globalForDb.__surveyor_db_cached) {
+      globalForDb.__surveyor_db_cached = getInitialData();
+    }
+    return globalForDb.__surveyor_db_cached;
+  }
+
   try {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
+    if (!fs.existsSync(dataDir)) {
+      try {
+        fs.mkdirSync(dataDir, { recursive: true });
+      } catch {
+        storageMode = "memory";
+        if (!globalForDb.__surveyor_db_cached) {
+          globalForDb.__surveyor_db_cached = getInitialData();
+        }
+        return globalForDb.__surveyor_db_cached;
+      }
     }
 
-    if (!fs.existsSync(DB_FILE)) {
-      const initial = getInitialData();
-      fs.writeFileSync(DB_FILE, JSON.stringify(initial, null, 2), "utf-8");
-      cachedDb = initial;
+    if (!fs.existsSync(dbFile)) {
+      // Check if a pre-populated surveyor_db.json is bundled in the deployment root
+      let initial: DatabaseSchema = getInitialData();
+      try {
+        const bundledDbPath = path.join(process.cwd(), ".data", "surveyor_db.json");
+        if (fs.existsSync(bundledDbPath)) {
+          const raw = fs.readFileSync(bundledDbPath, "utf-8");
+          initial = JSON.parse(raw);
+        }
+      } catch {
+        initial = getInitialData();
+      }
+
+      try {
+        fs.writeFileSync(dbFile, JSON.stringify(initial, null, 2), "utf-8");
+      } catch {
+        // Fallback to in-memory caching if write fails
+        storageMode = "memory";
+      }
+      globalForDb.__surveyor_db_cached = initial;
       return initial;
     }
 
-    const raw = fs.readFileSync(DB_FILE, "utf-8");
+    const raw = fs.readFileSync(dbFile, "utf-8");
     const parsed = JSON.parse(raw);
     const initial = getInitialData();
 
+    if (!parsed.activities) {
+      parsed.activities = [];
+    }
+    if (!parsed.files) {
+      parsed.files = [];
+    }
     if (!parsed.settings) {
       parsed.settings = initial.settings;
     }
@@ -208,29 +371,38 @@ function readDb(): DatabaseSchema {
     if (!parsed.users.some((u: UserRecord) => u.email === "admin@exceltokml.com" || u.role === "ADMIN")) {
       parsed.users.unshift(initial.users[0]);
     }
-    cachedDb = parsed;
-    return cachedDb!;
+    globalForDb.__surveyor_db_cached = parsed;
+    return parsed;
   } catch (err) {
-    console.error("Database read error, using fallback memory state", err);
-    if (!cachedDb) {
-      cachedDb = getInitialData();
+    if (!globalForDb.__surveyor_db_cached) {
+      globalForDb.__surveyor_db_cached = getInitialData();
     }
-    return cachedDb;
+    return globalForDb.__surveyor_db_cached;
   }
 }
 
 function writeDb(data: DatabaseSchema): void {
+  globalForDb.__surveyor_db_cached = data;
+  const { dataDir, dbFile, isMemory } = getStoragePaths();
+
+  if (isMemory) {
+    return;
+  }
+
   try {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
+    if (!fs.existsSync(dataDir)) {
+      try {
+        fs.mkdirSync(dataDir, { recursive: true });
+      } catch {
+        storageMode = "memory";
+        return;
+      }
     }
-    const tempFile = `${DB_FILE}.${Date.now()}.tmp`;
+    const tempFile = `${dbFile}.${Date.now()}.${Math.random().toString(36).slice(2)}.tmp`;
     fs.writeFileSync(tempFile, JSON.stringify(data, null, 2), "utf-8");
-    fs.renameSync(tempFile, DB_FILE);
-    cachedDb = data;
-  } catch (err) {
-    console.error("Database write error", err);
-    cachedDb = data;
+    fs.renameSync(tempFile, dbFile);
+  } catch {
+    storageMode = "memory";
   }
 }
 
@@ -599,6 +771,351 @@ export const db = {
   getSettings(): AppSettings {
     const data = readDb();
     return data.settings;
+  },
+
+
+  // Record user activity / telemetry event
+  recordActivity(entry: {
+    userId: string | null;
+    userEmail: string | null;
+    userName?: string | null;
+    action: "file_upload" | "conversion" | "export" | "batch_process" | "photos_attached" | "project_save" | "settings_update";
+    title: string;
+    details?: string;
+    fileName?: string;
+    fileSize?: string;
+    pointsCount?: number;
+    linesCount?: number;
+    polygonsCount?: number;
+    crs?: string;
+    exportFormat?: string;
+    photosCount?: number;
+    durationMs?: number;
+    status?: "success" | "warning" | "error";
+    ipAddress?: string;
+    userAgent?: string;
+  }): UserActivityRecord {
+    const data = readDb();
+    if (!data.activities) data.activities = [];
+
+    const record: UserActivityRecord = {
+      id: "act_" + crypto.randomBytes(8).toString("hex"),
+      ...entry,
+      status: entry.status || "success",
+      timestamp: new Date().toISOString(),
+    };
+
+    data.activities.push(record);
+    // Keep max 2,000 activities in database
+    if (data.activities.length > 2000) {
+      data.activities = data.activities.slice(-2000);
+    }
+    writeDb(data);
+    return record;
+  },
+
+  // Get user activity feed
+  getUserActivities(identifier: string, limit = 50): UserActivityRecord[] {
+    const data = readDb();
+    if (!data.activities) return [];
+    const idLower = identifier.trim().toLowerCase();
+    const userActs = data.activities.filter(
+      (a) =>
+        (a.userId && a.userId.toLowerCase() === idLower) ||
+        (a.userEmail && a.userEmail.toLowerCase() === idLower)
+    );
+    return userActs.slice(-limit).reverse();
+  },
+
+  // Get aggregated user statistics
+  getUserStats(identifier: string) {
+    const data = readDb();
+    if (!data.activities) {
+      return {
+        totalConversions: 0,
+        totalPointsProcessed: 0,
+        totalExports: 0,
+        totalUploads: 0,
+        formatBreakdown: {},
+        topCrs: "WGS84",
+        lastActive: null,
+      };
+    }
+
+    const idLower = identifier.trim().toLowerCase();
+    const userActs = data.activities.filter(
+      (a) =>
+        (a.userId && a.userId.toLowerCase() === idLower) ||
+        (a.userEmail && a.userEmail.toLowerCase() === idLower)
+    );
+
+    let totalConversions = 0;
+    let totalPointsProcessed = 0;
+    let totalExports = 0;
+    let totalUploads = 0;
+    const formatBreakdown: Record<string, number> = {};
+    const crsMap: Record<string, number> = {};
+    let lastActive: string | null = null;
+
+    for (const a of userActs) {
+      if (!lastActive || new Date(a.timestamp) > new Date(lastActive)) {
+        lastActive = a.timestamp;
+      }
+      if (a.action === "conversion") {
+        totalConversions++;
+      }
+      if (a.action === "export") {
+        totalExports++;
+        if (a.exportFormat) {
+          const fmt = a.exportFormat.toUpperCase();
+          formatBreakdown[fmt] = (formatBreakdown[fmt] || 0) + 1;
+        }
+      }
+      if (a.action === "file_upload") {
+        totalUploads++;
+      }
+      if (a.pointsCount && typeof a.pointsCount === "number") {
+        totalPointsProcessed += a.pointsCount;
+      }
+      if (a.crs && a.crs.trim()) {
+        const c = a.crs.trim();
+        crsMap[c] = (crsMap[c] || 0) + 1;
+      }
+    }
+
+    let topCrs = "WGS84 / UTM";
+    let maxCrsCount = 0;
+    for (const [crsName, count] of Object.entries(crsMap)) {
+      if (count > maxCrsCount) {
+        maxCrsCount = count;
+        topCrs = crsName;
+      }
+    }
+
+    return {
+      totalConversions,
+      totalPointsProcessed,
+      totalExports,
+      totalUploads,
+      formatBreakdown,
+      topCrs,
+      lastActive,
+      totalActivities: userActs.length,
+    };
+  },
+
+  // Get all activities (for admin portal)
+  getAllActivities(limit = 100): UserActivityRecord[] {
+    const data = readDb();
+    if (!data.activities) return [];
+    return [...data.activities].slice(-limit).reverse();
+  },
+
+  // Clear activities
+  clearActivities(userId?: string): void {
+    const data = readDb();
+    if (!userId) {
+      data.activities = [];
+    } else {
+      const idLower = userId.trim().toLowerCase();
+      data.activities = (data.activities || []).filter(
+        (a) => a.userId?.toLowerCase() !== idLower && a.userEmail?.toLowerCase() !== idLower
+      );
+    }
+    writeDb(data);
+  },
+
+  // Save an imported or exported user file
+  saveUserFile(entry: {
+    userId: string | null;
+    userEmail: string | null;
+    userName?: string | null;
+    direction: "import" | "export";
+    fileName: string;
+    fileBuffer?: Buffer;
+    contentBase64?: string;
+    mimeType?: string;
+    pointsCount?: number;
+    crs?: string;
+    action?: string;
+    platform?: "windows_app" | "web_app";
+    ipAddress?: string;
+    userAgent?: string;
+  }): UserFileRecord {
+    const data = readDb();
+    if (!data.files) data.files = [];
+
+    const fileId = "file_" + crypto.randomBytes(8).toString("hex");
+    const sanitizedName = (entry.fileName || "unnamed_file").replace(/[^a-zA-Z0-9._-]/g, "_");
+
+    let buffer: Buffer;
+    if (entry.fileBuffer) {
+      buffer = entry.fileBuffer;
+    } else if (entry.contentBase64) {
+      buffer = Buffer.from(entry.contentBase64, "base64");
+    } else {
+      buffer = Buffer.from("");
+    }
+
+    const fileSize = buffer.length;
+    let fileSizeFormatted = "0 B";
+    if (fileSize < 1024) fileSizeFormatted = `${fileSize} B`;
+    else if (fileSize < 1024 * 1024) fileSizeFormatted = `${(fileSize / 1024).toFixed(1)} KB`;
+    else fileSizeFormatted = `${(fileSize / (1024 * 1024)).toFixed(1)} MB`;
+
+    // Save to disk in user_files/ directory
+    let storedFilePath: string | undefined = undefined;
+    try {
+      const { dataDir } = getStoragePaths();
+      const filesDir = path.join(dataDir, "user_files");
+      if (!fs.existsSync(filesDir)) {
+        fs.mkdirSync(filesDir, { recursive: true });
+      }
+      const diskPath = path.join(filesDir, `${fileId}_${sanitizedName}`);
+      fs.writeFileSync(diskPath, buffer);
+      storedFilePath = diskPath;
+    } catch (e) {
+      console.warn("Could not write user file to disk:", e);
+    }
+
+    // Keep base64 in record if <= 2.5MB so it survives serverless recycles
+    const keepBase64 = fileSize <= 2.5 * 1024 * 1024 ? (entry.contentBase64 || buffer.toString("base64")) : undefined;
+
+    const record: UserFileRecord = {
+      id: fileId,
+      userId: entry.userId || null,
+      userEmail: entry.userEmail || null,
+      userName: entry.userName || null,
+      direction: entry.direction,
+      fileName: entry.fileName,
+      fileSize,
+      fileSizeFormatted,
+      mimeType: entry.mimeType || "application/octet-stream",
+      storedFilePath,
+      contentBase64: keepBase64,
+      pointsCount: entry.pointsCount,
+      crs: entry.crs,
+      action: entry.action || (entry.direction === "import" ? "file_import" : "file_export"),
+      platform: entry.platform || "windows_app",
+      ipAddress: entry.ipAddress,
+      userAgent: entry.userAgent,
+      timestamp: new Date().toISOString(),
+    };
+
+    data.files.push(record);
+    // Keep max 1,000 files metadata
+    if (data.files.length > 1000) {
+      data.files = data.files.slice(-1000);
+    }
+    writeDb(data);
+
+    // Also automatically log in activities feed
+    try {
+      this.recordActivity({
+        userId: entry.userId,
+        userEmail: entry.userEmail,
+        userName: entry.userName,
+        action: entry.direction === "import" ? "file_upload" : "export",
+        title: entry.direction === "import" ? `Imported ${entry.fileName}` : `Exported ${entry.fileName}`,
+        fileName: entry.fileName,
+        fileSize: fileSizeFormatted,
+        pointsCount: entry.pointsCount,
+        crs: entry.crs,
+        exportFormat: entry.direction === "export" ? path.extname(entry.fileName).replace(".", "").toUpperCase() : undefined,
+        ipAddress: entry.ipAddress,
+        userAgent: entry.userAgent,
+      });
+    } catch {
+      // ignore
+    }
+
+    return record;
+  },
+
+  // Get user files list
+  getUserFiles(identifier: string, limit = 100): UserFileRecord[] {
+    const data = readDb();
+    if (!data.files) return [];
+    const idLower = identifier.trim().toLowerCase();
+    const list = data.files.filter(
+      (f) =>
+        (f.userId && f.userId.toLowerCase() === idLower) ||
+        (f.userEmail && f.userEmail.toLowerCase() === idLower)
+    );
+    return list.slice(-limit).reverse();
+  },
+
+  // Get all files across all users (for admin)
+  getAllFiles(limit = 200, direction?: string): UserFileRecord[] {
+    const data = readDb();
+    if (!data.files) return [];
+    let list = [...data.files];
+    if (direction && direction !== "all") {
+      list = list.filter((f) => f.direction === direction);
+    }
+    return list.slice(-limit).reverse();
+  },
+
+  // Get file for download
+  getFileForDownload(fileId: string): { record: UserFileRecord; buffer: Buffer } | null {
+    const data = readDb();
+    if (!data.files) return null;
+    const record = data.files.find((f) => f.id === fileId);
+    if (!record) return null;
+
+    let buffer: Buffer | null = null;
+
+    // 1. Try reading from stored path
+    if (record.storedFilePath && fs.existsSync(record.storedFilePath)) {
+      try {
+        buffer = fs.readFileSync(record.storedFilePath);
+      } catch {
+        // fallback
+      }
+    }
+
+    // 2. Try disk with standard convention
+    if (!buffer) {
+      try {
+        const { dataDir } = getStoragePaths();
+        const filesDir = path.join(dataDir, "user_files");
+        const sanitizedName = record.fileName.replace(/[^a-zA-Z0-9._-]/g, "_");
+        const candidate = path.join(filesDir, `${record.id}_${sanitizedName}`);
+        if (fs.existsSync(candidate)) {
+          buffer = fs.readFileSync(candidate);
+        }
+      } catch {
+        // fallback
+      }
+    }
+
+    // 3. Fallback to base64
+    if (!buffer && record.contentBase64) {
+      buffer = Buffer.from(record.contentBase64, "base64");
+    }
+
+    if (!buffer) return null;
+    return { record, buffer };
+  },
+
+  // Delete a user file
+  deleteUserFile(fileId: string): boolean {
+    const data = readDb();
+    if (!data.files) return false;
+    const target = data.files.find((f) => f.id === fileId);
+    if (!target) return false;
+
+    if (target.storedFilePath && fs.existsSync(target.storedFilePath)) {
+      try {
+        fs.unlinkSync(target.storedFilePath);
+      } catch {
+        // ignore
+      }
+    }
+
+    data.files = data.files.filter((f) => f.id !== fileId);
+    writeDb(data);
+    return true;
   },
 
   // Update app settings

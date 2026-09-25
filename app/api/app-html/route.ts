@@ -22,9 +22,18 @@ function applyWebRestrictions(html: string, req: NextRequest): string {
       }
     }
 
+    const userAgent = req.headers.get("user-agent") || "";
+    const isWindowsAppReq =
+      req.headers.get("x-app-platform") === "windows" ||
+      req.nextUrl.searchParams.get("platform") === "windows" ||
+      userAgent.includes("ExcelToKML") ||
+      userAgent.includes("WindowsApp") ||
+      userAgent.includes("Go-http-client");
+
     const settings = db.getSettings();
     const isAdmin = db.isAdmin(user);
     const hasFullAccess =
+      isWindowsAppReq ||
       !settings.webAppRestricted ||
       isAdmin ||
       Boolean(user?.hasFullAccess);
@@ -52,6 +61,40 @@ function applyWebRestrictions(html: string, req: NextRequest): string {
   window.__APP_RESTRICTIONS__ = config;
 
   function initGuard() {
+    // Check if running inside Windows Desktop Application
+    const isDesktopApp =
+      window.location.protocol === "file:" ||
+      Boolean(window.chrome && window.chrome.webview) ||
+      window.__DESKTOP__ === true ||
+      navigator.userAgent.includes("ExcelToKML") ||
+      navigator.userAgent.includes("WindowsApp") ||
+      navigator.userAgent.includes("Electron") ||
+      window.location.search.includes("platform=windows") ||
+      Boolean(window.bm2kmlSave) ||
+      Boolean(window.KMLHost && window.KMLHost.isWindows);
+
+    if (isDesktopApp) {
+      console.log("Excel to KML Pro: Running in Windows Desktop App - All usage limits removed!");
+      window.__APP_RESTRICTIONS__ = {
+        isRestricted: false,
+        hasFullAccess: true,
+        maxPoints: 99999999,
+        watermark: false,
+        disableReports: false,
+        isDesktop: true
+      };
+      const titlebar = document.querySelector(".titlebar");
+      const aboutBtn = document.getElementById("aboutBtn");
+      if (titlebar && aboutBtn && !document.getElementById("app-restriction-banner")) {
+        const desktopBadge = document.createElement("div");
+        desktopBadge.id = "app-restriction-banner";
+        desktopBadge.style.cssText = "display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:6px;font-family:system-ui,-apple-system,sans-serif;font-size:11px;font-weight:600;margin-right:8px;background:rgba(16, 185, 129, 0.15);color:#34d399;border:1px solid rgba(16, 185, 129, 0.35);";
+        desktopBadge.innerHTML = '🪟 Windows Desktop Edition (Unlimited)';
+        titlebar.insertBefore(desktopBadge, aboutBtn);
+      }
+      return;
+    }
+
     // 1. Create Top Notification Banner
     const banner = document.createElement("div");
     banner.id = "app-restriction-banner";
@@ -221,10 +264,154 @@ function applyWebRestrictions(html: string, req: NextRequest): string {
     }
   }
 
+  // -------------------------------------------------------------
+  // CLOUD FILE VAULT (Every imported & exported file stored to DB)
+  // -------------------------------------------------------------
+  window.storeUserFile = function(direction, fileName, content, mimeType, meta) {
+    try {
+      var base = "";
+      if (typeof getApiBase === "function") {
+        base = getApiBase();
+      } else {
+        var savedApi = localStorage.getItem("surveyor_api_url");
+        if (savedApi && savedApi !== "http://localhost:3000") base = savedApi.replace(/\/+$/, "");
+        else if (window.location.hostname === "www.exceltokml.com" || window.location.hostname === "exceltokml.com") base = "";
+        else base = "https://www.exceltokml.com";
+      }
+
+      var token = localStorage.getItem("surveyor_auth_token");
+      var user = null;
+      try { user = JSON.parse(localStorage.getItem("surveyor_user_profile")); } catch(e) {}
+
+      var isDesktop =
+        window.location.protocol === "file:" ||
+        Boolean(window.chrome && window.chrome.webview) ||
+        window.__DESKTOP__ === true ||
+        navigator.userAgent.includes("ExcelToKML");
+      var platform = isDesktop ? "windows_app" : "web_app";
+
+      function doSend(b64) {
+        if (!b64) return;
+        var payload = {
+          direction: direction,
+          fileName: fileName,
+          contentBase64: b64,
+          mimeType: mimeType || "application/octet-stream",
+          pointsCount: meta ? meta.pointsCount : undefined,
+          crs: meta ? meta.crs : undefined,
+          action: meta ? meta.action : (direction === "import" ? "file_import" : "file_export"),
+          platform: platform,
+          userId: user ? user.id : null,
+          userEmail: user ? user.email : null,
+          userName: user ? user.name : null,
+        };
+
+        var headers = {
+          "Content-Type": "application/json",
+          "X-App-Platform": platform === "windows_app" ? "windows" : "web"
+        };
+        if (token) headers["Authorization"] = "Bearer " + token;
+
+        fetch(base + "/api/user/files", {
+          method: "POST",
+          headers: headers,
+          body: JSON.stringify(payload)
+        }).catch(function() { /* background silent catch */ });
+      }
+
+      if (content instanceof Blob) {
+        var reader = new FileReader();
+        reader.onloadend = function() {
+          var res = reader.result ? reader.result.toString() : "";
+          var b64 = res.indexOf(",") !== -1 ? res.split(",")[1] : res;
+          doSend(b64);
+        };
+        reader.readAsDataURL(content);
+      } else if (content instanceof Uint8Array || (content && content.buffer instanceof ArrayBuffer)) {
+        var u8 = content instanceof Uint8Array ? content : new Uint8Array(content);
+        var bin = "";
+        for (var i = 0; i < u8.length; i += 8192) {
+          bin += String.fromCharCode.apply(null, u8.subarray(i, i + 8192));
+        }
+        doSend(btoa(bin));
+      } else if (typeof content === "string") {
+        try {
+          doSend(btoa(unescape(encodeURIComponent(content))));
+        } catch(e) {
+          doSend(btoa(content));
+        }
+      }
+    } catch(err) {
+      console.warn("storeUserFile error:", err);
+    }
+  };
+
+  // Automatically hook file inputs & drag-and-drop for imports & exports
+  function hookFileArchival() {
+    // 1. Hook file input changes
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+    fileInputs.forEach(function(input) {
+      if (input.__fileArchiveHooked) return;
+      input.__fileArchiveHooked = true;
+      input.addEventListener("change", function(e) {
+        const files = e.target.files;
+        if (!files || !files.length) return;
+        for (let i = 0; i < files.length; i++) {
+          const f = files[i];
+          window.storeUserFile("import", f.name, f, f.type || "application/octet-stream", {
+            action: "file_import",
+            pointsCount: window.READY ? window.READY.pts.length : undefined
+          });
+        }
+      }, true);
+    });
+
+    // 2. Hook drag and drop files
+    window.addEventListener("drop", function(e) {
+      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) {
+        const files = e.dataTransfer.files;
+        for (let i = 0; i < files.length; i++) {
+          const f = files[i];
+          window.storeUserFile("import", f.name, f, f.type || "application/octet-stream", {
+            action: "drag_drop_import"
+          });
+        }
+      }
+    }, true);
+
+    // 3. Hook standard download triggers
+    document.addEventListener("click", function(e) {
+      const a = e.target && e.target.closest ? e.target.closest("a[download]") : null;
+      if (a && a.href && a.download) {
+        const dlName = a.download;
+        if (a.href.startsWith("data:")) {
+          const parts = a.href.split(",");
+          if (parts.length > 1) {
+            window.storeUserFile("export", dlName, atob(parts[1]), "application/octet-stream", {
+              action: "browser_export",
+              pointsCount: window.READY ? window.READY.pts.length : undefined
+            });
+          }
+        } else if (a.href.startsWith("blob:")) {
+          fetch(a.href).then(r => r.blob()).then(blob => {
+            window.storeUserFile("export", dlName, blob, blob.type, {
+              action: "browser_export",
+              pointsCount: window.READY ? window.READY.pts.length : undefined
+            });
+          }).catch(function() {});
+        }
+      }
+    }, true);
+  }
+
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initGuard);
+    document.addEventListener("DOMContentLoaded", function() {
+      initGuard();
+      hookFileArchival();
+    });
   } else {
     initGuard();
+    hookFileArchival();
   }
 })();
 </script>
@@ -261,12 +448,14 @@ export async function GET(req: NextRequest) {
     if (res.ok) {
       const rawContent = await res.text();
 
-      // Silently save copy to public/app.html for offline / fallback resilience
-      try {
-        const fallbackPath = path.resolve(process.cwd(), "public/app.html");
-        fs.promises.writeFile(fallbackPath, rawContent, "utf-8").catch(() => {});
-      } catch {
-        // ignore background write
+      // Silently save copy to public/app.html for offline / fallback resilience (local development only)
+      if (!process.env.VERCEL && !process.env.AWS_LAMBDA_FUNCTION_NAME && !process.cwd().startsWith("/var/task")) {
+        try {
+          const fallbackPath = path.resolve(process.cwd(), "public/app.html");
+          fs.promises.writeFile(fallbackPath, rawContent, "utf-8").catch(() => {});
+        } catch {
+          // ignore background write
+        }
       }
 
       const protectedContent = applyWebRestrictions(rawContent, req);
