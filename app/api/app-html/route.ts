@@ -8,7 +8,7 @@ import { WEB_APP_LOGIN_URL } from "@/lib/authRedirect";
 export const dynamic = "force-dynamic";
 
 const GITHUB_RAW_URL =
-  "https://raw.githubusercontent.com/chaudaryyabdullah03-collab/kml-convertor/main/app/index.html";
+  "https://raw.githubusercontent.com/Asjad-Mehmood/kml-convertor/main/app/index.html";
 
 async function applyWebRestrictions(html: string, req: NextRequest): Promise<string> {
   try {

@@ -29,7 +29,7 @@ export const OG_IMAGE = {
   alt: "Excel to KML Pro converting survey coordinates into Google Earth placemarks",
 };
 
-export const GITHUB_REPO_URL = "https://github.com/chaudaryyabdullah03-collab/kml-convertor";
+export const GITHUB_REPO_URL = "https://github.com/Asjad-Mehmood/kml-convertor";
 export const INSTALLER_URL = `${GITHUB_REPO_URL}/releases/latest/download/ExcelToKMLPro-Lite-Setup.exe`;
 
 /** JSON for a <script type="application/ld+json"> tag, with "<" escaped so it can't close the tag. */
