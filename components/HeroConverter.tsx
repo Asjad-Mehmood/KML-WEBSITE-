@@ -853,16 +853,16 @@ function tmInverse(
   const latRad =
     phi1 -
     ((N1 * tanPhi1) / R1) *
-      (D2 / 2 -
-        (5 + 3 * T1 + 10 * C1 - 4 * C1 * C1 - 9 * ep2) * (D4 / 24) +
-        (61 + 90 * T1 + 298 * C1 + 45 * T1 * T1 - 252 * ep2 - 3 * C1 * C1) * (D6 / 720));
+    (D2 / 2 -
+      (5 + 3 * T1 + 10 * C1 - 4 * C1 * C1 - 9 * ep2) * (D4 / 24) +
+      (61 + 90 * T1 + 298 * C1 + 45 * T1 * T1 - 252 * ep2 - 3 * C1 * C1) * (D6 / 720));
 
   const lonRad =
     lon0 * rad +
     (D -
       (1 + 2 * T1 + C1) * (D3 / 6) +
       (5 - 2 * C1 + 28 * T1 - 3 * C1 * C1 + 8 * ep2 + 24 * T1 * T1) * (D5 / 120)) /
-      cosPhi1;
+    cosPhi1;
 
   let latDeg = latRad / rad;
   let lonDeg = lonRad / rad;
@@ -1046,7 +1046,7 @@ export default function HeroConverter() {
   const blipY = Math.max(-0.95, Math.min(0.95, dN / 5000));
 
   const copyCoords = useCallback(() => {
-    navigator.clipboard.writeText(`${computedLat}, ${computedLon}`).catch(() => {});
+    navigator.clipboard.writeText(`${computedLat}, ${computedLon}`).catch(() => { });
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   }, [computedLat, computedLon]);
@@ -1121,7 +1121,7 @@ Datum: ${current.datum}]]></description>
   };
 
   return (
-    <div className="w-full max-w-[540px] mx-auto lg:mx-0">
+    <div className="w-full max-w-[640px] mx-auto lg:mx-0">
       <div
         className="rounded-2xl overflow-hidden"
         style={{
@@ -1164,7 +1164,7 @@ Datum: ${current.datum}]]></description>
         <div className="grid grid-cols-1 sm:grid-cols-12 gap-0">
           {/* ── Left: Inputs ── */}
           <div className="sm:col-span-7 px-4 py-3 space-y-2.5" style={{ borderRight: "1px solid rgba(0,180,255,0.06)" }}>
-            
+
             {/* Simple, Clean Dropdown for ALL World Systems */}
             <div>
               <div className="flex items-center justify-between mb-1">
