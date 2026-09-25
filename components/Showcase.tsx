@@ -5,21 +5,13 @@ import dynamic from "next/dynamic";
 import { useAuth } from "../context/AuthContext";
 import {
   Download,
-  MapPin,
   Globe,
   FileSpreadsheet,
   Compass,
   CheckCircle2,
   Search,
-  Layers,
-  ArrowRight,
   ShieldCheck,
   RotateCw,
-  Maximize2,
-  TableProperties,
-  Sparkles,
-  Activity,
-  Crosshair
 } from "lucide-react";
 
 // Dynamically import the Live Satellite Map
@@ -236,6 +228,20 @@ const CALIBRATION_PRESETS: Record<string, CalibrationPreset> = {
   },
 };
 
+// Residual plot: 200 px per millimetre, rings at 0.25 / 0.5 mm
+const PLOT_SCALE = 200;
+const TOLERANCE_MM = 5;
+const PLOT_RINGS = [
+  { mm: 0.5, stroke: "rgba(96,165,250,0.45)", fill: "rgba(59,130,246,0.05)", label: "rgba(147,197,253,0.7)", dashed: true },
+  { mm: 0.25, stroke: "rgba(52,211,153,0.5)", fill: "rgba(16,185,129,0.08)", label: "rgba(110,231,183,0.7)", dashed: false },
+];
+const POINT_HEX: Record<CalibrationPoint["color"], string> = {
+  blue: "#60a5fa",
+  indigo: "#818cf8",
+  emerald: "#34d399",
+  amber: "#fbbf24",
+};
+
 interface ShowcaseProps {
   versionTag: string;
   onToast: (msg: string) => void;
@@ -359,25 +365,28 @@ ${placemarks}
 
         {/* ── Segmented Control Tab Switcher ── */}
         <div className="flex justify-center mb-8">
-          <div className="inline-flex p-1 bg-slate-100/90 backdrop-blur-md rounded-2xl border border-slate-200/80 shadow-xs">
+          <div role="tablist" aria-label="Preview mode" className="inline-flex p-1 bg-slate-100/90 backdrop-blur-md rounded-2xl border border-slate-200/80 shadow-xs">
             {[
-              { id: "map", label: "Satellite Map & Points", icon: Globe },
-              { id: "table", label: "Survey Table & KML Output", icon: FileSpreadsheet },
-              { id: "calibration", label: "Site Calibration (Helmert)", icon: Compass },
-            ].map(({ id, label, icon: Icon }) => {
+              { id: "map", label: "Satellite Map & Points", short: "Map", icon: Globe },
+              { id: "table", label: "Survey Table & KML Output", short: "Table", icon: FileSpreadsheet },
+              { id: "calibration", label: "Site Calibration (Helmert)", short: "Calibration", icon: Compass },
+            ].map(({ id, label, short, icon: Icon }) => {
               const isActive = activeTab === id;
               return (
                 <button
                   key={id}
+                  role="tab"
+                  aria-selected={isActive}
                   onClick={() => setActiveTab(id as TabId)}
-                  className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-[13px] font-semibold transition-all duration-200 cursor-pointer ${
+                  className={`flex items-center gap-2 px-3.5 sm:px-5 py-2.5 rounded-xl text-xs sm:text-[13px] font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                     isActive
                       ? "bg-white text-slate-900 shadow-sm border border-slate-200/60"
                       : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
                   }`}
                 >
                   <Icon className={`w-4 h-4 ${isActive ? "text-[#0071e3]" : "text-slate-400"}`} />
-                  <span>{label}</span>
+                  <span className="sm:hidden">{short}</span>
+                  <span className="hidden sm:inline">{label}</span>
                 </button>
               );
             })}
@@ -563,298 +572,294 @@ ${placemarks}
           )}
 
           {/* ══════════════════════════════════════════════════════════════════
-              TAB 3: SITE CALIBRATION (HELMERT) - REDESIGNED
+              TAB 3: SITE CALIBRATION (HELMERT)
              ══════════════════════════════════════════════════════════════════ */}
           {activeTab === "calibration" && (() => {
-            const currentCalibration = CALIBRATION_PRESETS[selectedCalibrationKey] || CALIBRATION_PRESETS.dubai;
+            const cal = CALIBRATION_PRESETS[selectedCalibrationKey] || CALIBRATION_PRESETS.dubai;
+            const maxErrorMm = parseFloat(cal.maxError);
+            const tolerancePct = Math.min(100, (maxErrorMm / TOLERANCE_MM) * 100);
 
             return (
-              <div className="space-y-6">
-                {/* ── Top Header & Interactive Preset Switcher ── */}
+              <div className="space-y-5">
+                {/* ── Header & Preset Switcher ── */}
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-100">
-                  <div className="flex items-start gap-3">
-                    <div className="p-2.5 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 text-white shadow-md shadow-blue-500/20 shrink-0">
-                      <Compass className="w-5 h-5" />
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 text-[#0071e3] flex items-center justify-center shrink-0">
+                      <Compass className="w-5 h-5" strokeWidth={1.8} />
                     </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-base sm:text-lg font-bold text-slate-900">
-                          Helmert 2D Site Calibration &amp; Geodetic Engine
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                        <h3 className="text-base sm:text-lg font-bold tracking-tight text-slate-900">
+                          Helmert 2D Site Calibration
                         </h3>
-                        <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold">
                           <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                          Sub-Millimeter Fit
+                          Sub-mm fit
                         </span>
                       </div>
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        Dual-grid least-squares transformation aligns local total station project coordinates to national EPSG datums.
+                      <p className="text-xs sm:text-[13px] text-slate-500 mt-0.5 leading-relaxed">
+                        Least-squares fit that aligns local total station coordinates to a national EPSG datum.
                       </p>
                     </div>
                   </div>
 
-                  {/* Interactive Calibration Preset Switcher */}
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mr-1">Preset:</span>
+                  <div
+                    role="radiogroup"
+                    aria-label="Calibration preset"
+                    className="flex gap-1 p-1 bg-slate-100/90 rounded-xl border border-slate-200/70 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden shrink-0"
+                  >
                     {Object.entries(CALIBRATION_PRESETS).map(([key, preset]) => {
                       const isSelected = selectedCalibrationKey === key;
                       return (
                         <button
                           key={key}
+                          role="radio"
+                          aria-checked={isSelected}
                           onClick={() => setSelectedCalibrationKey(key)}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                          className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                             isSelected
-                              ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/25 scale-[1.02]"
-                              : "bg-slate-100 text-slate-700 hover:bg-slate-200/80"
+                              ? "bg-white text-slate-900 shadow-sm"
+                              : "text-slate-600 hover:text-slate-900"
                           }`}
                         >
-                          <span>{preset.flag} {preset.name.split(" ")[0]}</span>
+                          {preset.flag} {preset.country === "United Kingdom" ? "UK" : preset.country}
                         </button>
                       );
                     })}
                   </div>
                 </div>
 
-                {/* ── Main Unified Cockpit (No 4-grid fragmentation) ── */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
 
-                  {/* Left Column: Geodetic Alignment Studio (7 Cols) */}
-                  <div className="lg:col-span-7 bg-gradient-to-br from-[#0a1638] via-[#0d2254] to-[#071128] border border-blue-500/30 rounded-3xl p-5 sm:p-6 text-white shadow-xl shadow-blue-950/20 relative overflow-hidden flex flex-col justify-between">
-                    {/* Ambient Glows */}
-                    <div className="absolute top-0 right-0 w-72 h-72 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
-                    <div className="absolute bottom-0 left-0 w-72 h-72 bg-indigo-600/15 rounded-full blur-3xl pointer-events-none" />
+                  {/* ── Left: Residual plot (dark) ── */}
+                  <div className="lg:col-span-7 relative overflow-hidden rounded-2xl border border-blue-500/20 bg-gradient-to-br from-[#0a1638] via-[#0d2254] to-[#071128] text-white p-4 sm:p-6 flex flex-col">
+                    <div aria-hidden className="absolute -top-20 -right-20 w-72 h-72 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
 
-                    <div>
-                      {/* Studio Header Strip */}
-                      <div className="flex items-center justify-between relative z-10 pb-3 border-b border-white/10">
-                        <div className="flex items-center gap-2">
-                          <span className="flex h-2 w-2 relative">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
-                          </span>
-                          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-cyan-300">
-                            Geodetic Alignment Reticle
-                          </span>
-                        </div>
-                        <span className="text-[11px] font-mono font-semibold text-cyan-200 bg-cyan-950/70 border border-cyan-700/50 px-2.5 py-0.5 rounded-full">
-                          {currentCalibration.grid}
+                    <div className="relative flex items-center justify-between gap-3 pb-3 border-b border-white/10">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="relative flex h-2 w-2 shrink-0">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+                        </span>
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-cyan-300 truncate">
+                          Residual plot · {cal.name}
                         </span>
                       </div>
-
-                      {/* Interactive Visual Alignment Reticle */}
-                      <div className="relative w-full h-60 my-4 flex items-center justify-center">
-                        {/* 5mm Tolerance Ring */}
-                        <div className="absolute w-52 h-52 rounded-full border border-dashed border-cyan-400/25 flex items-center justify-center">
-                          <span className="text-[8px] font-mono text-cyan-400/50 absolute top-1">5.0 mm Tolerance Limit</span>
-                        </div>
-
-                        {/* 2mm Tolerance Ring */}
-                        <div className="absolute w-36 h-36 rounded-full border border-blue-400/35 flex items-center justify-center">
-                          <span className="text-[8px] font-mono text-blue-300/50 absolute top-1">2.0 mm Engineering Zone</span>
-                        </div>
-
-                        {/* Sub-Millimeter Core Zone */}
-                        <div className="absolute w-20 h-20 rounded-full border-2 border-emerald-400/50 bg-emerald-500/10 shadow-[0_0_20px_rgba(16,185,129,0.2)] flex items-center justify-center">
-                          <span className="text-[8px] font-mono font-bold text-emerald-300">&lt;0.5 mm</span>
-                        </div>
-
-                        {/* Crosshairs */}
-                        <div className="absolute inset-x-0 h-px bg-cyan-400/25 top-1/2" />
-                        <div className="absolute inset-y-0 w-px bg-cyan-400/25 left-1/2" />
-
-                        {/* Animated Radar Sweep */}
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none animate-radar-sweep">
-                          <div className="w-24 h-24 bg-gradient-to-br from-cyan-400/30 via-emerald-400/15 to-transparent origin-bottom-right rounded-tl-full" />
-                        </div>
-
-                        {/* Dynamic Rotated Site Baseline Vector */}
-                        <div
-                          className="absolute inset-0 flex items-center justify-center pointer-events-none transition-transform duration-700 ease-out"
-                          style={{ transform: `rotate(${currentCalibration.rotationDeg}deg)` }}
-                        >
-                          <div className="w-48 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-emerald-300 shadow-[0_0_10px_rgba(6,182,212,0.8)] relative">
-                            <div className="absolute -top-1.5 right-0 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-white shadow-md shadow-emerald-400/60" />
-                            <div className="absolute -bottom-5 right-2 text-[9px] font-mono font-bold text-emerald-300 tracking-wider">
-                              Site Vector
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Station Blips plotted in reticle */}
-                        <div className="absolute top-10 right-14 flex items-center gap-1">
-                          <span className="w-2 h-2 rounded-full bg-blue-400 animate-ping" />
-                          <span className="text-[9px] font-mono font-bold text-blue-300 bg-slate-900/80 px-1.5 py-0.5 rounded border border-blue-500/30">
-                            BM-01 (0.2mm)
-                          </span>
-                        </div>
-
-                        <div className="absolute bottom-10 left-12 flex items-center gap-1">
-                          <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                          <span className="text-[9px] font-mono font-bold text-emerald-300 bg-slate-900/80 px-1.5 py-0.5 rounded border border-emerald-500/30">
-                            BS-04 (0.4mm)
-                          </span>
-                        </div>
-
-                        <div className="absolute top-12 left-16 flex items-center gap-1">
-                          <span className="w-2 h-2 rounded-full bg-indigo-400" />
-                          <span className="text-[9px] font-mono font-bold text-indigo-300 bg-slate-900/80 px-1.5 py-0.5 rounded border border-indigo-500/30">
-                            CP-02 (0.3mm)
-                          </span>
-                        </div>
-
-                        {/* Status overlays in reticle */}
-                        <div className="absolute bottom-2 left-3 text-[11px] font-mono text-cyan-300 bg-slate-900/80 px-2.5 py-1 rounded-lg border border-cyan-500/30 flex items-center gap-1.5">
-                          <RotateCw className="w-3 h-3 text-cyan-400 animate-spin" style={{ animationDuration: "12s" }} />
-                          <span>Rotation: {currentCalibration.rotation}</span>
-                        </div>
-                        <div className="absolute bottom-2 right-3 text-[11px] font-mono text-emerald-300 bg-slate-900/80 px-2.5 py-1 rounded-lg border border-emerald-500/30">
-                          RMS Residual: ±{currentCalibration.rmsResidual}
-                        </div>
-                      </div>
+                      <span className="shrink-0 text-[11px] font-mono font-semibold text-cyan-200 bg-cyan-950/70 border border-cyan-700/50 px-2 py-0.5 rounded-full">
+                        {cal.grid}
+                      </span>
                     </div>
 
-                    {/* Integrated Translucent Parameter Strip (Replaces separate clunky grids) */}
-                    <div className="p-3.5 rounded-2xl bg-white/[0.08] backdrop-blur-md border border-white/10 grid grid-cols-3 gap-2 text-center relative z-10">
-                      <div>
-                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-300">
-                          Scale Factor
-                        </div>
-                        <div className="text-sm sm:text-base font-mono font-bold text-emerald-400 mt-0.5">
-                          {currentCalibration.scaleFactor}
-                        </div>
-                        <div className="text-[10px] font-mono text-emerald-300/80">
-                          {currentCalibration.scalePpm}
-                        </div>
-                      </div>
-                      <div className="border-x border-white/10 px-1">
-                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-300">
-                          Convergence Angle
-                        </div>
-                        <div className="text-sm sm:text-base font-mono font-bold text-cyan-300 mt-0.5">
-                          {currentCalibration.rotation}
-                        </div>
-                        <div className="text-[10px] font-mono text-cyan-200/80">
-                          True North Corrected
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-300">
-                          Origin Shift (dX, dY)
-                        </div>
-                        <div className="text-xs sm:text-sm font-mono font-bold text-blue-300 mt-0.5 truncate" title={currentCalibration.originShiftFull}>
-                          {currentCalibration.originShiftShort}
-                        </div>
-                        <div className="text-[10px] font-mono text-blue-200/80">
-                          Fixed to Datum
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                    {/* Plot: rings in mm, each benchmark placed at its (dx, dy) */}
+                    <div className="relative flex-1 flex items-center justify-center py-4">
+                      <svg
+                        viewBox="-130 -130 260 260"
+                        className="w-full max-w-[340px] h-auto"
+                        role="img"
+                        aria-label={`Residuals for ${cal.points.length} control benchmarks, all within ${cal.maxError}`}
+                      >
+                        <defs>
+                          <linearGradient id="sweep" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stopColor="rgb(34,211,238)" stopOpacity="0.28" />
+                            <stop offset="100%" stopColor="rgb(34,211,238)" stopOpacity="0" />
+                          </linearGradient>
+                        </defs>
 
-                  {/* Right Column: Least-Squares Quality & Benchmark Network (5 Cols) */}
-                  <div className="lg:col-span-5 bg-gradient-to-b from-slate-50/80 via-white to-blue-50/20 rounded-3xl border border-slate-200/90 p-5 sm:p-6 flex flex-col justify-between shadow-sm">
-                    <div>
-                      {/* Quality Scorecard */}
-                      <div className="flex items-center justify-between pb-3.5 border-b border-slate-200/70">
-                        <div>
-                          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                            Fit Quality Confidence
-                          </div>
-                          <div className="text-2xl font-black font-mono tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600 bg-clip-text text-transparent mt-0.5">
-                            {currentCalibration.confidence} Confidence
-                          </div>
-                        </div>
-                        <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold shadow-2xs">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                          Sub-mm Pass
-                        </span>
-                      </div>
+                        {/* Axes */}
+                        <line x1="-120" y1="0" x2="120" y2="0" stroke="rgba(34,211,238,0.2)" />
+                        <line x1="0" y1="-120" x2="0" y2="120" stroke="rgba(34,211,238,0.2)" />
+                        <text x="118" y="-4" textAnchor="end" className="fill-cyan-300/50 font-mono" fontSize="8">+dx</text>
+                        <text x="4" y="-112" className="fill-cyan-300/50 font-mono" fontSize="8">+dy</text>
 
-                      {/* Error Tolerance Bar */}
-                      <div className="py-3.5 border-b border-slate-200/60 space-y-1.5">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="text-slate-600 font-medium">RMS Residual Error</span>
-                          <span className="font-mono font-bold text-emerald-700">
-                            {currentCalibration.maxError} max (Limit: 5.0 mm)
-                          </span>
-                        </div>
-                        <div className="w-full h-2 rounded-full bg-slate-200/80 overflow-hidden">
-                          <div
-                            className="h-full rounded-full bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-500"
-                            style={{ width: "99.8%" }}
-                          />
-                        </div>
-                      </div>
-
-                      {/* Control Benchmark Stations List */}
-                      <div className="pt-3 pb-2 space-y-2">
-                        <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                          <span>Control Benchmarks</span>
-                          <span className="font-mono text-[10px] text-slate-400">Least-Squares Deltas</span>
-                        </div>
-
-                        {currentCalibration.points.map((pt) => {
-                          const badgeClasses = {
-                            blue: "bg-blue-100 text-blue-800 border-blue-200",
-                            indigo: "bg-indigo-100 text-indigo-800 border-indigo-200",
-                            emerald: "bg-emerald-100 text-emerald-800 border-emerald-200",
-                            amber: "bg-amber-100 text-amber-800 border-amber-200",
-                          }[pt.color];
-
-                          return (
-                            <div
-                              key={pt.id}
-                              className="p-2.5 rounded-xl bg-white border border-slate-200/80 shadow-2xs hover:border-blue-300 transition-colors flex items-center justify-between gap-2"
+                        {/* Rings */}
+                        {PLOT_RINGS.map((r) => (
+                          <g key={r.mm}>
+                            <circle
+                              r={r.mm * PLOT_SCALE}
+                              fill={r.fill}
+                              stroke={r.stroke}
+                              strokeDasharray={r.dashed ? "3 3" : undefined}
+                            />
+                            <text
+                              x={-r.mm * PLOT_SCALE * 0.707 - 3}
+                              y={r.mm * PLOT_SCALE * 0.707 + 9}
+                              textAnchor="end"
+                              className="font-mono"
+                              fill={r.label}
+                              fontSize="8"
                             >
-                              <div className="flex items-center gap-2">
-                                <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-bold border ${badgeClasses}`}>
-                                  {pt.id}
-                                </span>
-                                <div>
-                                  <div className="text-xs font-semibold text-slate-900 leading-tight">
-                                    {pt.name}
-                                  </div>
-                                  <div className="text-[10px] text-slate-500 font-mono">
-                                    dx: {pt.dx} · dy: {pt.dy}
-                                  </div>
-                                </div>
-                              </div>
+                              {r.mm} mm
+                            </text>
+                          </g>
+                        ))}
 
-                              <span className="text-[11px] font-mono font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-md whitespace-nowrap">
-                                ±{pt.residual}
-                              </span>
-                            </div>
+                        {/* Radar sweep */}
+                        <g className="animate-radar-sweep" style={{ transformBox: "view-box", transformOrigin: "center" }}>
+                          <path d="M0 0 L0 -120 A120 120 0 0 1 84.85 -84.85 Z" fill="url(#sweep)" />
+                        </g>
+
+                        {/* Site baseline vector, rotated by the fitted angle */}
+                        <g
+                          style={{ transform: `rotate(${cal.rotationDeg}deg)`, transition: "transform 700ms ease-out" }}
+                        >
+                          <line x1="-118" y1="0" x2="118" y2="0" stroke="rgba(110,231,183,0.5)" strokeWidth="1.5" />
+                          <circle cx="118" cy="0" r="3.5" fill="#34d399" />
+                        </g>
+
+                        {/* Benchmarks */}
+                        {cal.points.map((pt) => {
+                          const cx = parseFloat(pt.dx) * PLOT_SCALE;
+                          const cy = -parseFloat(pt.dy) * PLOT_SCALE;
+                          const color = POINT_HEX[pt.color];
+                          const labelLeft = cx < 0;
+                          return (
+                            <g key={pt.id} style={{ transition: "transform 500ms ease-out" }}>
+                              <circle cx={cx} cy={cy} r="9" fill={color} opacity="0.18" />
+                              <circle cx={cx} cy={cy} r="4" fill={color} stroke="#0a1638" strokeWidth="1.5" />
+                              <text
+                                x={cx + (labelLeft ? -9 : 9)}
+                                y={cy + 3}
+                                textAnchor={labelLeft ? "end" : "start"}
+                                className="font-mono font-bold"
+                                fill={color}
+                                fontSize="9"
+                              >
+                                {pt.id}
+                              </text>
+                            </g>
                           );
                         })}
+                      </svg>
+                    </div>
+
+                    <div className="relative flex flex-wrap items-center justify-center gap-2 mb-4 text-[11px] font-mono">
+                      <span className="inline-flex items-center gap-1.5 text-cyan-200 bg-slate-900/70 px-2.5 py-1 rounded-lg border border-cyan-500/30">
+                        <RotateCw className="w-3 h-3 text-cyan-400" />
+                        Rotation {cal.rotation}
+                      </span>
+                      <span className="text-emerald-300 bg-slate-900/70 px-2.5 py-1 rounded-lg border border-emerald-500/30">
+                        RMS ±{cal.rmsResidual}
+                      </span>
+                      <span className="text-slate-300 bg-slate-900/70 px-2.5 py-1 rounded-lg border border-white/10">
+                        Tolerance {TOLERANCE_MM.toFixed(1)} mm
+                      </span>
+                    </div>
+
+                    {/* Transformation parameters */}
+                    <dl className="relative grid grid-cols-1 sm:grid-cols-3 rounded-xl bg-white/[0.06] border border-white/10 divide-y sm:divide-y-0 sm:divide-x divide-white/10">
+                      {[
+                        { k: "Scale factor", v: cal.scaleFactor, sub: cal.scalePpm, tone: "text-emerald-300" },
+                        { k: "Rotation", v: cal.rotation, sub: "True north corrected", tone: "text-cyan-300" },
+                        { k: "Origin shift (dX, dY)", v: cal.originShiftShort, sub: cal.originShiftFull, tone: "text-blue-300" },
+                      ].map((p) => (
+                        <div key={p.k} className="px-4 py-3 flex sm:block items-baseline justify-between gap-3 sm:text-center min-w-0">
+                          <dt className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{p.k}</dt>
+                          <dd className="min-w-0 text-right sm:text-center">
+                            <div className={`text-sm font-mono font-bold ${p.tone} sm:mt-1 sm:truncate`}>{p.v}</div>
+                            <div className="text-[10px] font-mono text-slate-400 sm:truncate" title={p.sub}>{p.sub}</div>
+                          </dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </div>
+
+                  {/* ── Right: Fit quality + benchmarks ── */}
+                  <div className="lg:col-span-5 rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-6 flex flex-col">
+                    {/* KPIs */}
+                    <div className="grid grid-cols-3 gap-2 mb-4">
+                      {[
+                        { k: "Confidence", v: cal.confidence },
+                        { k: "RMS", v: cal.rmsResidual },
+                        { k: "Max error", v: cal.maxError },
+                      ].map((m) => (
+                        <div key={m.k} className="rounded-xl bg-slate-50 border border-slate-200/70 px-2.5 py-2.5 text-center">
+                          <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">{m.k}</div>
+                          <div className="text-[15px] sm:text-base font-bold font-mono tracking-tight text-slate-900 mt-0.5">{m.v}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Tolerance usage */}
+                    <div className="mb-5">
+                      <div className="flex items-center justify-between text-xs mb-1.5">
+                        <span className="text-slate-600 font-medium">Error budget used</span>
+                        <span className="font-mono font-semibold text-emerald-700">
+                          {cal.maxError} / {TOLERANCE_MM.toFixed(1)} mm
+                        </span>
+                      </div>
+                      <div className="relative w-full h-2 rounded-full bg-slate-100 overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-emerald-500 transition-[width] duration-500"
+                          style={{ width: `${tolerancePct}%` }}
+                        />
+                      </div>
+                      <div className="flex justify-between text-[10px] font-mono text-slate-400 mt-1">
+                        <span>0</span>
+                        <span className="inline-flex items-center gap-1 text-emerald-700 font-semibold">
+                          <CheckCircle2 className="w-3 h-3" />
+                          {Math.round(100 - tolerancePct)}% headroom
+                        </span>
+                        <span>{TOLERANCE_MM.toFixed(1)} mm</span>
                       </div>
                     </div>
 
-                    {/* Action Export Button */}
-                    <div className="pt-3">
-                      <button
-                        onClick={() =>
-                          handleDownloadDatasetKml(
-                            currentCalibration.name,
-                            (DATASETS[currentCalibration.kmlDatasetKey] || DATASETS.dubai).points
-                          )
-                        }
-                        className="w-full inline-flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 via-[#0071e3] to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold shadow-md shadow-blue-500/25 active:translate-y-0.5 transition-all cursor-pointer"
-                      >
-                        <Download className="w-4 h-4" />
-                        <span>Download Calibrated Site KML ({currentCalibration.points.length} Points)</span>
-                      </button>
+                    {/* Benchmarks */}
+                    <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">
+                      <span>Control benchmarks</span>
+                      <span className="font-normal normal-case tracking-normal text-slate-400">Residual</span>
                     </div>
-                  </div>
+                    <ul className="space-y-1.5 mb-5">
+                      {cal.points.map((pt) => {
+                        const residualMm = parseFloat(pt.residual);
+                        return (
+                          <li
+                            key={pt.id}
+                            className="flex items-center gap-3 p-2.5 rounded-xl border border-slate-200/80 hover:border-blue-200 transition-colors"
+                          >
+                            <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: POINT_HEX[pt.color] }} />
+                            <div className="flex-1 min-w-0">
+                              <div className="text-xs leading-snug">
+                                <span className="font-mono font-bold text-slate-900 mr-1.5">{pt.id}</span>
+                                <span className="font-medium text-slate-700">{pt.name}</span>
+                              </div>
+                              <div className="text-[10.5px] font-mono text-slate-400 mt-0.5">
+                                <span className="hidden sm:inline">{pt.role} · </span>dx {pt.dx} · dy {pt.dy}
+                              </div>
+                            </div>
+                            <div className="shrink-0 w-16 text-right">
+                              <div className="text-[11px] font-mono font-bold text-emerald-700">±{pt.residual}</div>
+                              <div className="mt-1 h-1 rounded-full bg-slate-100 overflow-hidden">
+                                <div
+                                  className="h-full rounded-full bg-emerald-400"
+                                  style={{ width: `${Math.min(100, (residualMm / 0.5) * 100)}%` }}
+                                />
+                              </div>
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
 
+                    <button
+                      onClick={() =>
+                        handleDownloadDatasetKml(cal.name, (DATASETS[cal.kmlDatasetKey] || DATASETS.dubai).points)
+                      }
+                      className="mt-auto w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-sm font-semibold shadow-[0_4px_14px_rgba(0,113,227,0.28)] hover:shadow-[0_6px_20px_rgba(0,113,227,0.38)] active:translate-y-0.5 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                    >
+                      <Download className="w-4 h-4" />
+                      <span>Download calibrated site KML</span>
+                    </button>
+                  </div>
                 </div>
 
-                {/* ── Geodetic Standards Quality Footer ── */}
-                <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500 pt-1">
-                  <span className="flex items-center gap-1.5">
-                    <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                    Calculates 100% locally on your machine · Helmert 4-Parameter (dX, dY, Scale, Rotation) &amp; Bursa-Wolf compliant.
+                {/* ── Footer ── */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-500 pt-1">
+                  <span className="flex items-start sm:items-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                    Calculated locally · Helmert 4-parameter (dX, dY, scale, rotation) &amp; Bursa-Wolf compliant.
                   </span>
-                  <span className="text-slate-400 font-mono text-[11px]">
-                    Supports 6,864 EPSG Datums · ISO 19111 Validated
+                  <span className="text-slate-400 font-mono text-[11px] pl-[22px] sm:pl-0">
+                    6,864 EPSG datums · ISO 19111
                   </span>
                 </div>
               </div>
