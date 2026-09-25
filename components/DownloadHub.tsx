@@ -255,7 +255,7 @@ BLDG-C2,513620.000,2787440.000,15.15,STRUCTURE,Building Column Corner B
             </div>
 
             {/* Right: build details + verification */}
-            <div className="lg:col-span-5 bg-slate-50/80 border-t lg:border-t-0 lg:border-l border-slate-200/80 p-6 sm:p-8 flex flex-col">
+            <div className="lg:col-span-5 bg-white border-t lg:border-t-0 lg:border-l border-slate-200/80 p-6 sm:p-8 flex flex-col">
               <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-3">
                 Build details
               </h4>
@@ -284,13 +284,13 @@ BLDG-C2,513620.000,2787440.000,15.15,STRUCTURE,Building Column Corner B
                   </span>
                 </div>
 
-                <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl pl-3 pr-1.5 py-1.5 mb-2">
+                <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl pl-3 pr-1.5 py-1.5 mb-2">
                   <code className="flex-1 min-w-0 text-[11px] font-mono text-slate-700 truncate select-all">
                     {sha256Hash}
                   </code>
                   <button
                     onClick={() => handleCopy("hash")}
-                    className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer shrink-0"
+                    className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-white rounded-lg transition-colors cursor-pointer shrink-0"
                     title="Copy SHA-256 hash"
                     aria-label="Copy SHA-256 hash"
                   >
