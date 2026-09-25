@@ -276,7 +276,7 @@ async function applyWebRestrictions(html: string, req: NextRequest): Promise<str
         base = getApiBase();
       } else {
         var savedApi = localStorage.getItem("surveyor_api_url");
-        if (savedApi && savedApi !== "http://localhost:3000") base = savedApi.replace(/\/+$/, "");
+        if (savedApi && savedApi !== "http://localhost:3000") base = savedApi.replace(/\\/+$/, "");
         else if (window.location.hostname === "www.exceltokml.com" || window.location.hostname === "exceltokml.com") base = "";
         else base = "https://www.exceltokml.com";
       }
