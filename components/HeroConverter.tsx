@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import proj4 from "proj4";
 import {
   RefreshCw,
+  Search,
   Copy,
   CheckCircle2,
   Download,
@@ -13,862 +15,184 @@ import {
 /* ─── Coordinate System Definition ─── */
 interface CoordSystem {
   id: string;
+  code: number;   // EPSG code
+  grid: string;   // "EPSG:3997"
   name: string;
   flag: string;
   station: string;
-  grid: string; // EPSG code e.g. "EPSG:32642"
-  accuracy: string;
   datum: string;
-  lon0: number; // central meridian in degrees
-  lat0: number; // latitude of origin
-  k0: number;   // scale factor
-  x0: number;   // false easting
-  y0: number;   // false northing
+  accuracy: string;
+  def: string;    // proj4 definition
+  unit: string;   // linear unit of E/N: "m", "US ft", "ft"…
   defaultE: number;
   defaultN: number;
   defaultZ: number;
-  a?: number;    // semi-major axis
-  invF?: number; // inverse flattening
 }
 
-/* ─── Curated Major National / Regional Systems ─── */
+/* A row of public/data/epsg-projected.json: [code, name, proj4, [N, W, S, E] area of use, unit].
+   Generated from the EPSG registry by scripts/build-epsg-index.mjs. */
+type EpsgRow = [number, string, string, [number, number, number, number], string];
+
+/* ─── Curated systems (proj4 definitions from the EPSG registry) ───
+   Each sample point is a real benchmark location; the comment gives its WGS84 lat, lon. */
 const POPULAR_SYSTEMS: CoordSystem[] = [
-  {
-    id: "dubai-dltm",
-    name: "Dubai DLTM",
-    flag: "🇦🇪",
-    station: "BM-DUB-01",
-    grid: "EPSG:3997",
-    accuracy: "< 1 mm",
-    datum: "WGS-84 / DLTM",
-    lon0: 55.333333333,
-    lat0: 0, // EPSG:3997 latitude of origin is the equator
-    k0: 1.0,
-    x0: 500000,
-    y0: 0,
-    defaultE: 513556.612,
-    defaultN: 2787467.856,
-    defaultZ: 14.85,
-  },
-  {
-    id: "qatar-qng",
-    name: "Qatar National Grid (QNG)",
-    flag: "🇶🇦",
-    station: "QNG-DOH-12",
-    grid: "EPSG:2932",
-    accuracy: "< 1 mm",
-    datum: "Qatar 1995",
-    lon0: 51.216666667,
-    lat0: 24.45,
-    k0: 0.99999,
-    x0: 200000,
-    y0: 300000,
-    defaultE: 231540.25,
-    defaultN: 392410.8,
-    defaultZ: 11.2,
-    a: 6378249.145,
-    invF: 293.4663,
-  },
-  {
-    id: "pakistan-utm42n",
-    name: "Pakistan UTM 42N",
-    flag: "🇵🇰",
-    station: "PAK-ISB-07",
-    grid: "EPSG:32642",
-    accuracy: "< 1 mm",
-    datum: "WGS-84",
-    lon0: 69.0,
-    lat0: 0,
-    k0: 0.9996,
-    x0: 500000,
-    y0: 0,
-    defaultE: 336520.4,
-    defaultN: 3728140.6,
-    defaultZ: 540.5,
-  },
-  {
-    id: "saudi-utm38n",
-    name: "Saudi Arabia UTM 38N",
-    flag: "🇸🇦",
-    station: "KSA-RUH-03",
-    grid: "EPSG:32638",
-    accuracy: "< 1 mm",
-    datum: "WGS-84",
-    lon0: 45.0,
-    lat0: 0,
-    k0: 0.9996,
-    x0: 500000,
-    y0: 0,
-    defaultE: 671230.15,
-    defaultN: 2731520.85,
-    defaultZ: 612.0,
-  },
-  {
-    id: "uk-osgb36",
-    name: "UK London OSGB36",
-    flag: "🇬🇧",
-    station: "TBM-LON-04",
-    grid: "EPSG:27700",
-    accuracy: "1–2 mm",
-    datum: "OSGB36",
-    lon0: -2.0,
-    lat0: 49.0,
-    k0: 0.9996012717,
-    x0: 400000,
-    y0: -100000,
-    defaultE: 538120.0,
-    defaultN: 184510.0,
-    defaultZ: 12.3,
-    a: 6377563.396,
-    invF: 299.32496,
-  },
-  {
-    id: "usa-nad83-nyc",
-    name: "NYC Long Island NAD83",
-    flag: "🇺🇸",
-    station: "NYC-CTRL-22",
-    grid: "EPSG:32118",
-    accuracy: "< 1 mm",
-    datum: "NAD83",
-    lon0: -74.0,
-    lat0: 40.0,
-    k0: 0.9999,
-    x0: 300000,
-    y0: 0,
-    defaultE: 298450.0,
-    defaultN: 68420.0,
-    defaultZ: 34.2,
-  },
+  // → 25.1932, 55.4678
+  { id: "dubai-dltm", code: 3997, grid: "EPSG:3997", name: "Dubai DLTM", flag: "🇦🇪", station: "BM-DUB-01", datum: "WGS-84 / DLTM", accuracy: "< 1 mm", def: "+proj=tmerc +lat_0=0 +lon_0=55.3333333333333 +k=1 +x_0=500000 +y_0=0 +datum=WGS84 +units=m", unit: "m", defaultE: 513556.612, defaultN: 2787467.856, defaultZ: 14.85 },
+  // → 25.2846, 51.5291
+  { id: "qatar-qng", code: 2932, grid: "EPSG:2932", name: "Qatar National Grid (QNG)", flag: "🇶🇦", station: "QNG-DOH-12", datum: "Qatar 1995", accuracy: "< 1 mm", def: "+proj=tmerc +lat_0=24.45 +lon_0=51.2166666666667 +k=0.99999 +x_0=200000 +y_0=300000 +ellps=intl +towgs84=-119.4248,-303.65872,-11.00061,1.164298,0.174458,1.096259,3.657065 +units=m", unit: "m", defaultE: 231540.25, defaultN: 392410.8, defaultZ: 11.2 },
+  // → 24.8607, 67.0011
+  { id: "pakistan-utm42n", code: 32642, grid: "EPSG:32642", name: "Pakistan Karachi (UTM 42N)", flag: "🇵🇰", station: "PAK-KHI-07", datum: "WGS-84", accuracy: "< 1 mm", def: "+proj=utm +zone=42 +datum=WGS84 +units=m", unit: "m", defaultE: 298038.084, defaultN: 2751004.904, defaultZ: 10 },
+  // → 24.6886, 46.6925
+  { id: "saudi-utm38n", code: 32638, grid: "EPSG:32638", name: "Saudi Arabia UTM 38N", flag: "🇸🇦", station: "KSA-RUH-03", datum: "WGS-84", accuracy: "< 1 mm", def: "+proj=utm +zone=38 +datum=WGS84 +units=m", unit: "m", defaultE: 671230.15, defaultN: 2731520.85, defaultZ: 612 },
+  // → 51.5426, -0.0097
+  { id: "uk-osgb36", code: 27700, grid: "EPSG:27700", name: "UK London OSGB36", flag: "🇬🇧", station: "TBM-LON-04", datum: "OSGB36", accuracy: "~2 m (Helmert)", def: "+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +ellps=airy +towgs84=446.448,-125.157,542.06,0.15,0.247,0.842,-20.489 +units=m", unit: "m", defaultE: 538120, defaultN: 184510, defaultZ: 12.3 },
+  // → 40.7580, -73.9855
+  { id: "usa-nad83-nyc", code: 32118, grid: "EPSG:32118", name: "NYC Long Island (NAD83)", flag: "🇺🇸", station: "NYC-CTRL-22", datum: "NAD83", accuracy: "< 1 mm", def: "+proj=lcc +lat_0=40.1666666666667 +lon_0=-74 +lat_1=41.0333333333333 +lat_2=40.6666666666667 +x_0=300000 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m", unit: "m", defaultE: 301224.407, defaultN: 65665.292, defaultZ: 34.2 },
 ];
 
 const GULF_SYSTEMS: CoordSystem[] = [
-  {
-    id: "uae-utm39n",
-    name: "UAE Abu Dhabi (UTM 39N)",
-    flag: "🇦🇪",
-    station: "BM-AUH-04",
-    grid: "EPSG:32639",
-    accuracy: "< 1 mm",
-    datum: "WGS-84",
-    lon0: 51.0,
-    lat0: 0,
-    k0: 0.9996,
-    x0: 500000,
-    y0: 0,
-    defaultE: 242150.0,
-    defaultN: 2707420.0,
-    defaultZ: 8.5,
-  },
-  {
-    id: "uae-utm40n",
-    name: "UAE Dubai / NE (UTM 40N)",
-    flag: "🇦🇪",
-    station: "BM-SHJ-09",
-    grid: "EPSG:32640",
-    accuracy: "< 1 mm",
-    datum: "WGS-84",
-    lon0: 57.0,
-    lat0: 0,
-    k0: 0.9996,
-    x0: 500000,
-    y0: 0,
-    defaultE: 345200.0,
-    defaultN: 2802100.0,
-    defaultZ: 12.0,
-  },
-  {
-    id: "saudi-utm37n",
-    name: "Saudi Arabia West (UTM 37N)",
-    flag: "🇸🇦",
-    station: "KSA-JED-02",
-    grid: "EPSG:32637",
-    accuracy: "< 1 mm",
-    datum: "WGS-84",
-    lon0: 39.0,
-    lat0: 0,
-    k0: 0.9996,
-    x0: 500000,
-    y0: 0,
-    defaultE: 521400.0,
-    defaultN: 2378900.0,
-    defaultZ: 18.0,
-  },
-  {
-    id: "saudi-utm39n",
-    name: "Saudi Arabia East (UTM 39N)",
-    flag: "🇸🇦",
-    station: "KSA-DMM-07",
-    grid: "EPSG:32639",
-    accuracy: "< 1 mm",
-    datum: "WGS-84",
-    lon0: 51.0,
-    lat0: 0,
-    k0: 0.9996,
-    x0: 500000,
-    y0: 0,
-    defaultE: 421800.0,
-    defaultN: 2921400.0,
-    defaultZ: 10.5,
-  },
-  {
-    id: "oman-utm40n",
-    name: "Oman National Grid (UTM 40N)",
-    flag: "🇴🇲",
-    station: "OMN-MCT-05",
-    grid: "EPSG:32640",
-    accuracy: "< 1 mm",
-    datum: "WGS-84",
-    lon0: 57.0,
-    lat0: 0,
-    k0: 0.9996,
-    x0: 500000,
-    y0: 0,
-    defaultE: 654200.0,
-    defaultN: 2614300.0,
-    defaultZ: 45.0,
-  },
-  {
-    id: "kuwait-utm39n",
-    name: "Kuwait KNG (UTM 39N)",
-    flag: "🇰🇼",
-    station: "KWT-CTY-01",
-    grid: "EPSG:32639",
-    accuracy: "< 1 mm",
-    datum: "WGS-84",
-    lon0: 51.0,
-    lat0: 0,
-    k0: 0.9996,
-    x0: 500000,
-    y0: 0,
-    defaultE: 204300.0,
-    defaultN: 3251200.0,
-    defaultZ: 15.0,
-  },
-  {
-    id: "bahrain-grid",
-    name: "Bahrain State Grid (UTM 39N)",
-    flag: "🇧🇭",
-    station: "BHR-MNM-03",
-    grid: "EPSG:32639",
-    accuracy: "< 1 mm",
-    datum: "WGS-84",
-    lon0: 51.0,
-    lat0: 0,
-    k0: 0.9996,
-    x0: 500000,
-    y0: 0,
-    defaultE: 456700.0,
-    defaultN: 2898400.0,
-    defaultZ: 6.0,
-  },
-  {
-    id: "egypt-utm36n",
-    name: "Egypt Red Belt (UTM 36N)",
-    flag: "🇪🇬",
-    station: "EGY-CAI-08",
-    grid: "EPSG:32636",
-    accuracy: "< 1 mm",
-    datum: "WGS-84",
-    lon0: 33.0,
-    lat0: 0,
-    k0: 0.9996,
-    x0: 500000,
-    y0: 0,
-    defaultE: 331500.0,
-    defaultN: 3326100.0,
-    defaultZ: 75.0,
-  },
+  // → 24.1103, 52.7306
+  { id: "uae-utm39n", code: 32639, grid: "EPSG:32639", name: "UAE Western Region (UTM 39N)", flag: "🇦🇪", station: "BM-RUW-04", datum: "WGS-84", accuracy: "< 1 mm", def: "+proj=utm +zone=39 +datum=WGS84 +units=m", unit: "m", defaultE: 675888.778, defaultN: 2667523.691, defaultZ: 8.5 },
+  // → 25.3275, 55.4620
+  { id: "uae-utm40n", code: 32640, grid: "EPSG:32640", name: "UAE Dubai / NE (UTM 40N)", flag: "🇦🇪", station: "BM-SHJ-09", datum: "WGS-84", accuracy: "< 1 mm", def: "+proj=utm +zone=40 +datum=WGS84 +units=m", unit: "m", defaultE: 345200, defaultN: 2802100, defaultZ: 12 },
+  // → 21.5127, 39.2066
+  { id: "saudi-utm37n", code: 32637, grid: "EPSG:32637", name: "Saudi Arabia West (UTM 37N)", flag: "🇸🇦", station: "KSA-JED-02", datum: "WGS-84", accuracy: "< 1 mm", def: "+proj=utm +zone=37 +datum=WGS84 +units=m", unit: "m", defaultE: 521400, defaultN: 2378900, defaultZ: 18 },
+  // → 26.4106, 50.2159
+  { id: "saudi-utm39n", code: 32639, grid: "EPSG:32639", name: "Saudi Arabia East (UTM 39N)", flag: "🇸🇦", station: "KSA-DMM-07", datum: "WGS-84", accuracy: "< 1 mm", def: "+proj=utm +zone=39 +datum=WGS84 +units=m", unit: "m", defaultE: 421800, defaultN: 2921400, defaultZ: 10.5 },
+  // → 23.6320, 58.5117
+  { id: "oman-utm40n", code: 32640, grid: "EPSG:32640", name: "Oman National Grid (UTM 40N)", flag: "🇴🇲", station: "OMN-MCT-05", datum: "WGS-84", accuracy: "< 1 mm", def: "+proj=utm +zone=40 +datum=WGS84 +units=m", unit: "m", defaultE: 654200, defaultN: 2614300, defaultZ: 45 },
+  // → 29.3759, 47.9774
+  { id: "kuwait-utm39n", code: 32638, grid: "EPSG:32638", name: "Kuwait City (UTM 38N)", flag: "🇰🇼", station: "KWT-CTY-01", datum: "WGS-84", accuracy: "< 1 mm", def: "+proj=utm +zone=38 +datum=WGS84 +units=m", unit: "m", defaultE: 789011.073, defaultN: 3253318.983, defaultZ: 15 },
+  // → 26.2045, 50.5666
+  { id: "bahrain-grid", code: 32639, grid: "EPSG:32639", name: "Bahrain State Grid (UTM 39N)", flag: "🇧🇭", station: "BHR-MNM-03", datum: "WGS-84", accuracy: "< 1 mm", def: "+proj=utm +zone=39 +datum=WGS84 +units=m", unit: "m", defaultE: 456700, defaultN: 2898400, defaultZ: 6 },
+  // → 30.0544, 31.2521
+  { id: "egypt-utm36n", code: 32636, grid: "EPSG:32636", name: "Egypt Red Belt (UTM 36N)", flag: "🇪🇬", station: "EGY-CAI-08", datum: "WGS-84", accuracy: "< 1 mm", def: "+proj=utm +zone=36 +datum=WGS84 +units=m", unit: "m", defaultE: 331500, defaultN: 3326100, defaultZ: 75 },
 ];
 
 const ASIA_SYSTEMS: CoordSystem[] = [
-  {
-    id: "pakistan-utm41n",
-    name: "Pakistan West (UTM 41N)",
-    flag: "🇵🇰",
-    station: "PAK-QTA-02",
-    grid: "EPSG:32641",
-    accuracy: "< 1 mm",
-    datum: "WGS-84",
-    lon0: 63.0,
-    lat0: 0,
-    k0: 0.9996,
-    x0: 500000,
-    y0: 0,
-    defaultE: 692400.0,
-    defaultN: 3341800.0,
-    defaultZ: 1680.0,
-  },
-  {
-    id: "pakistan-utm43n",
-    name: "Pakistan East & Kashmir (UTM 43N)",
-    flag: "🇵🇰",
-    station: "PAK-LHR-14",
-    grid: "EPSG:32643",
-    accuracy: "< 1 mm",
-    datum: "WGS-84",
-    lon0: 75.0,
-    lat0: 0,
-    k0: 0.9996,
-    x0: 500000,
-    y0: 0,
-    defaultE: 436100.0,
-    defaultN: 3495400.0,
-    defaultZ: 217.0,
-  },
-  {
-    id: "india-utm43n",
-    name: "India West (UTM 43N)",
-    flag: "🇮🇳",
-    station: "IND-BOM-01",
-    grid: "EPSG:32643",
-    accuracy: "< 1 mm",
-    datum: "WGS-84",
-    lon0: 75.0,
-    lat0: 0,
-    k0: 0.9996,
-    x0: 500000,
-    y0: 0,
-    defaultE: 278900.0,
-    defaultN: 2112400.0,
-    defaultZ: 14.0,
-  },
-  {
-    id: "india-utm44n",
-    name: "India Central (UTM 44N)",
-    flag: "🇮🇳",
-    station: "IND-DEL-05",
-    grid: "EPSG:32644",
-    accuracy: "< 1 mm",
-    datum: "WGS-84",
-    lon0: 81.0,
-    lat0: 0,
-    k0: 0.9996,
-    x0: 500000,
-    y0: 0,
-    defaultE: 132400.0,
-    defaultN: 3171800.0,
-    defaultZ: 216.0,
-  },
-  {
-    id: "india-utm45n",
-    name: "India East (UTM 45N)",
-    flag: "🇮🇳",
-    station: "IND-CCU-09",
-    grid: "EPSG:32645",
-    accuracy: "< 1 mm",
-    datum: "WGS-84",
-    lon0: 87.0,
-    lat0: 0,
-    k0: 0.9996,
-    x0: 500000,
-    y0: 0,
-    defaultE: 641200.0,
-    defaultN: 2496100.0,
-    defaultZ: 9.0,
-  },
-  {
-    id: "singapore-svy21",
-    name: "Singapore SVY21",
-    flag: "🇸🇬",
-    station: "SGP-CTRL-01",
-    grid: "EPSG:3414",
-    accuracy: "< 1 mm",
-    datum: "SVY21",
-    lon0: 103.833333333,
-    lat0: 1.366666667,
-    k0: 1.0,
-    x0: 28001.642,
-    y0: 38744.572,
-    defaultE: 28001.642,
-    defaultN: 38744.572,
-    defaultZ: 22.0,
-  },
-  {
-    id: "malaysia-utm48n",
-    name: "Malaysia Peninsular (UTM 48N)",
-    flag: "🇲🇾",
-    station: "MYS-KUL-02",
-    grid: "EPSG:32648",
-    accuracy: "< 1 mm",
-    datum: "WGS-84",
-    lon0: 105.0,
-    lat0: 0,
-    k0: 0.9996,
-    x0: 500000,
-    y0: 0,
-    defaultE: 798400.0,
-    defaultN: 347800.0,
-    defaultZ: 55.0,
-  },
-  {
-    id: "china-utm50n",
-    name: "China CGCS2000 (UTM 50N)",
-    flag: "🇨🇳",
-    station: "CHN-BJS-01",
-    grid: "EPSG:32650",
-    accuracy: "< 1 mm",
-    datum: "CGCS2000",
-    lon0: 117.0,
-    lat0: 0,
-    k0: 0.9996,
-    x0: 500000,
-    y0: 0,
-    defaultE: 448200.0,
-    defaultN: 4417600.0,
-    defaultZ: 43.0,
-  },
-  {
-    id: "japan-utm54n",
-    name: "Japan Tokyo (UTM 54N)",
-    flag: "🇯🇵",
-    station: "JPN-TYO-03",
-    grid: "EPSG:32654",
-    accuracy: "< 1 mm",
-    datum: "JGD2011",
-    lon0: 141.0,
-    lat0: 0,
-    k0: 0.9996,
-    x0: 500000,
-    y0: 0,
-    defaultE: 382400.0,
-    defaultN: 3951200.0,
-    defaultZ: 38.0,
-  },
-  {
-    id: "indonesia-utm48s",
-    name: "Indonesia Jakarta (UTM 48S)",
-    flag: "🇮🇩",
-    station: "IDN-JKT-04",
-    grid: "EPSG:32748",
-    accuracy: "< 1 mm",
-    datum: "WGS-84",
-    lon0: 105.0,
-    lat0: 0,
-    k0: 0.9996,
-    x0: 500000,
-    y0: 10000000,
-    defaultE: 704100.0,
-    defaultN: 9312400.0,
-    defaultZ: 16.0,
-  },
+  // → 30.1925, 64.9985
+  { id: "pakistan-utm41n", code: 32641, grid: "EPSG:32641", name: "Pakistan West (UTM 41N)", flag: "🇵🇰", station: "PAK-QTA-02", datum: "WGS-84", accuracy: "< 1 mm", def: "+proj=utm +zone=41 +datum=WGS84 +units=m", unit: "m", defaultE: 692400, defaultN: 3341800, defaultZ: 1680 },
+  // → 31.5919, 74.3265
+  { id: "pakistan-utm43n", code: 32643, grid: "EPSG:32643", name: "Pakistan East & Kashmir (UTM 43N)", flag: "🇵🇰", station: "PAK-LHR-14", datum: "WGS-84", accuracy: "< 1 mm", def: "+proj=utm +zone=43 +datum=WGS84 +units=m", unit: "m", defaultE: 436100, defaultN: 3495400, defaultZ: 217 },
+  // → 19.0926, 72.8985
+  { id: "india-utm43n", code: 32643, grid: "EPSG:32643", name: "India West (UTM 43N)", flag: "🇮🇳", station: "IND-BOM-01", datum: "WGS-84", accuracy: "< 1 mm", def: "+proj=utm +zone=43 +datum=WGS84 +units=m", unit: "m", defaultE: 278900, defaultN: 2112400, defaultZ: 14 },
+  // → 21.1458, 79.0882
+  { id: "india-utm44n", code: 32644, grid: "EPSG:32644", name: "India Central (UTM 44N)", flag: "🇮🇳", station: "IND-NAG-05", datum: "WGS-84", accuracy: "< 1 mm", def: "+proj=utm +zone=44 +datum=WGS84 +units=m", unit: "m", defaultE: 301475.049, defaultN: 2339478.989, defaultZ: 310 },
+  // → 22.5658, 88.3734
+  { id: "india-utm45n", code: 32645, grid: "EPSG:32645", name: "India East (UTM 45N)", flag: "🇮🇳", station: "IND-CCU-09", datum: "WGS-84", accuracy: "< 1 mm", def: "+proj=utm +zone=45 +datum=WGS84 +units=m", unit: "m", defaultE: 641200, defaultN: 2496100, defaultZ: 9 },
+  // → 1.3667, 103.8333
+  { id: "singapore-svy21", code: 3414, grid: "EPSG:3414", name: "Singapore SVY21", flag: "🇸🇬", station: "SGP-CTRL-01", datum: "SVY21", accuracy: "< 1 mm", def: "+proj=tmerc +lat_0=1.36666666666667 +lon_0=103.833333333333 +k=1 +x_0=28001.642 +y_0=38744.572 +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +units=m", unit: "m", defaultE: 28001.642, defaultN: 38744.572, defaultZ: 22 },
+  // → 1.4927, 103.7414
+  { id: "malaysia-utm48n", code: 32648, grid: "EPSG:32648", name: "Malaysia Johor (UTM 48N)", flag: "🇲🇾", station: "MYS-JHB-02", datum: "WGS-84", accuracy: "< 1 mm", def: "+proj=utm +zone=48 +datum=WGS84 +units=m", unit: "m", defaultE: 359985.218, defaultN: 165028.639, defaultZ: 30 },
+  // → 39.9069, 116.3940
+  { id: "china-utm50n", code: 32650, grid: "EPSG:32650", name: "China CGCS2000 (UTM 50N)", flag: "🇨🇳", station: "CHN-BJS-01", datum: "CGCS2000", accuracy: "< 1 mm", def: "+proj=utm +zone=50 +datum=WGS84 +units=m", unit: "m", defaultE: 448200, defaultN: 4417600, defaultZ: 43 },
+  // → 35.6977, 139.7002
+  { id: "japan-utm54n", code: 32654, grid: "EPSG:32654", name: "Japan Tokyo (UTM 54N)", flag: "🇯🇵", station: "JPN-TYO-03", datum: "JGD2011", accuracy: "< 1 mm", def: "+proj=utm +zone=54 +datum=WGS84 +units=m", unit: "m", defaultE: 382400, defaultN: 3951200, defaultZ: 38 },
+  // → -6.2175, 106.8447
+  { id: "indonesia-utm48s", code: 32748, grid: "EPSG:32748", name: "Indonesia Jakarta (UTM 48S)", flag: "🇮🇩", station: "IDN-JKT-04", datum: "WGS-84", accuracy: "< 1 mm", def: "+proj=utm +zone=48 +south +datum=WGS84 +units=m", unit: "m", defaultE: 704100, defaultN: 9312400, defaultZ: 16 },
 ];
 
 const EUROPE_SYSTEMS: CoordSystem[] = [
-  {
-    id: "ireland-itm",
-    name: "Irish Transverse Mercator (ITM)",
-    flag: "🇮🇪",
-    station: "IRL-DUB-01",
-    grid: "EPSG:2157",
-    accuracy: "< 1 mm",
-    datum: "IRENET95",
-    lon0: -8.0,
-    lat0: 53.5,
-    k0: 0.99982,
-    x0: 600000,
-    y0: 750000,
-    defaultE: 715800.0,
-    defaultN: 734600.0,
-    defaultZ: 25.0,
-  },
-  {
-    id: "france-lambert93",
-    name: "France Paris (Lambert-93 / UTM 31N)",
-    flag: "🇫🇷",
-    station: "FRA-PAR-06",
-    grid: "EPSG:2154",
-    accuracy: "< 1 mm",
-    datum: "RGF93",
-    lon0: 3.0,
-    lat0: 0,
-    k0: 0.9996,
-    x0: 500000,
-    y0: 0,
-    defaultE: 448200.0,
-    defaultN: 5411800.0,
-    defaultZ: 35.0,
-  },
-  {
-    id: "germany-utm32n",
-    name: "Germany ETRS89 (UTM 32N)",
-    flag: "🇩🇪",
-    station: "DEU-FRA-02",
-    grid: "EPSG:32632",
-    accuracy: "< 1 mm",
-    datum: "ETRS89",
-    lon0: 9.0,
-    lat0: 0,
-    k0: 0.9996,
-    x0: 500000,
-    y0: 0,
-    defaultE: 476800.0,
-    defaultN: 5552100.0,
-    defaultZ: 112.0,
-  },
-  {
-    id: "netherlands-rdnew",
-    name: "Netherlands Amersfoort (RD New)",
-    flag: "🇳🇱",
-    station: "NLD-AMS-01",
-    grid: "EPSG:28992",
-    accuracy: "< 1 mm",
-    datum: "RD New",
-    lon0: 5.387638889,
-    lat0: 52.156160556,
-    k0: 0.9999079,
-    x0: 155000,
-    y0: 463000,
-    defaultE: 121300.0,
-    defaultN: 487200.0,
-    defaultZ: -2.0,
-    a: 6377397.155,
-    invF: 299.15281,
-  },
-  {
-    id: "switzerland-lv95",
-    name: "Switzerland CH1903+ (LV95)",
-    flag: "🇨🇭",
-    station: "CHE-ZRH-03",
-    grid: "EPSG:2056",
-    accuracy: "< 1 mm",
-    datum: "CH1903+",
-    lon0: 7.439583333,
-    lat0: 46.952405556,
-    k0: 1.0,
-    x0: 2600000,
-    y0: 1200000,
-    defaultE: 2683200.0,
-    defaultN: 1248100.0,
-    defaultZ: 408.0,
-  },
-  {
-    id: "spain-utm30n",
-    name: "Spain Madrid (UTM 30N)",
-    flag: "🇪🇸",
-    station: "ESP-MAD-01",
-    grid: "EPSG:32630",
-    accuracy: "< 1 mm",
-    datum: "ETRS89",
-    lon0: -3.0,
-    lat0: 0,
-    k0: 0.9996,
-    x0: 500000,
-    y0: 0,
-    defaultE: 440300.0,
-    defaultN: 4474200.0,
-    defaultZ: 667.0,
-  },
-  {
-    id: "italy-utm32n",
-    name: "Italy Rome / Milan (UTM 32N)",
-    flag: "🇮🇹",
-    station: "ITA-ROM-04",
-    grid: "EPSG:32632",
-    accuracy: "< 1 mm",
-    datum: "ETRS89",
-    lon0: 9.0,
-    lat0: 0,
-    k0: 0.9996,
-    x0: 500000,
-    y0: 0,
-    defaultE: 785200.0,
-    defaultN: 4643100.0,
-    defaultZ: 37.0,
-  },
+  // → 53.3489, -6.2607
+  { id: "ireland-itm", code: 2157, grid: "EPSG:2157", name: "Irish Transverse Mercator (ITM)", flag: "🇮🇪", station: "IRL-DUB-01", datum: "IRENET95", accuracy: "< 1 mm", def: "+proj=tmerc +lat_0=53.5 +lon_0=-8 +k=0.99982 +x_0=600000 +y_0=750000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m", unit: "m", defaultE: 715800, defaultN: 734600, defaultZ: 25 },
+  // → 48.8584, 2.2945
+  { id: "france-lambert93", code: 2154, grid: "EPSG:2154", name: "France Paris (Lambert-93)", flag: "🇫🇷", station: "FRA-PAR-06", datum: "RGF93", accuracy: "< 1 mm", def: "+proj=lcc +lat_0=46.5 +lon_0=3 +lat_1=49 +lat_2=44 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m", unit: "m", defaultE: 648237.302, defaultN: 6862271.682, defaultZ: 35 },
+  // → 50.1207, 8.6755
+  { id: "germany-utm32n", code: 32632, grid: "EPSG:32632", name: "Germany ETRS89 (UTM 32N)", flag: "🇩🇪", station: "DEU-FRA-02", datum: "ETRS89", accuracy: "< 1 mm", def: "+proj=utm +zone=32 +datum=WGS84 +units=m", unit: "m", defaultE: 476800, defaultN: 5552100, defaultZ: 112 },
+  // → 52.3723, 4.8946
+  { id: "netherlands-rdnew", code: 28992, grid: "EPSG:28992", name: "Netherlands Amersfoort (RD New)", flag: "🇳🇱", station: "NLD-AMS-01", datum: "RD New", accuracy: "< 1 mm", def: "+proj=sterea +lat_0=52.1561605555556 +lon_0=5.38763888888889 +k=0.9999079 +x_0=155000 +y_0=463000 +ellps=bessel +towgs84=565.4171,50.3319,465.5524,1.9342,-1.6677,9.1019,4.0725 +units=m", unit: "m", defaultE: 121300, defaultN: 487200, defaultZ: -2 },
+  // → 47.3785, 8.5404
+  { id: "switzerland-lv95", code: 2056, grid: "EPSG:2056", name: "Switzerland CH1903+ (LV95)", flag: "🇨🇭", station: "CHE-ZRH-03", datum: "CH1903+", accuracy: "< 1 mm", def: "+proj=somerc +lat_0=46.9524055555556 +lon_0=7.43958333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m", unit: "m", defaultE: 2683200, defaultN: 1248100, defaultZ: 408 },
+  // → 40.4163, -3.7037
+  { id: "spain-utm30n", code: 32630, grid: "EPSG:32630", name: "Spain Madrid (UTM 30N)", flag: "🇪🇸", station: "ESP-MAD-01", datum: "ETRS89", accuracy: "< 1 mm", def: "+proj=utm +zone=30 +datum=WGS84 +units=m", unit: "m", defaultE: 440300, defaultN: 4474200, defaultZ: 667 },
+  // → 45.4642, 9.1900
+  { id: "italy-utm32n", code: 32632, grid: "EPSG:32632", name: "Italy Milan (UTM 32N)", flag: "🇮🇹", station: "ITA-MIL-04", datum: "ETRS89", accuracy: "< 1 mm", def: "+proj=utm +zone=32 +datum=WGS84 +units=m", unit: "m", defaultE: 514853.496, defaultN: 5034536.796, defaultZ: 120 },
 ];
 
 const AMERICAS_SYSTEMS: CoordSystem[] = [
-  {
-    id: "usa-nad83-ca",
-    name: "USA California Zone 3 (NAD83)",
-    flag: "🇺🇸",
-    station: "CAL-SFO-03",
-    grid: "EPSG:2227",
-    accuracy: "< 1 mm",
-    datum: "NAD83",
-    lon0: -120.5,
-    lat0: 36.5,
-    k0: 0.9999,
-    x0: 2000000,
-    y0: 500000,
-    defaultE: 2005400.0,
-    defaultN: 512300.0,
-    defaultZ: 16.0,
-  },
-  {
-    id: "usa-nad83-tx",
-    name: "USA Texas Central (NAD83)",
-    flag: "🇺🇸",
-    station: "TEX-ATX-05",
-    grid: "EPSG:2277",
-    accuracy: "< 1 mm",
-    datum: "NAD83",
-    lon0: -100.333333333,
-    lat0: 29.666666667,
-    k0: 0.9999,
-    x0: 700000,
-    y0: 3000000,
-    defaultE: 700200.0,
-    defaultN: 3045600.0,
-    defaultZ: 149.0,
-  },
-  {
-    id: "usa-utm10n",
-    name: "USA Seattle / PNW (UTM 10N)",
-    flag: "🇺🇸",
-    station: "USA-SEA-09",
-    grid: "EPSG:32610",
-    accuracy: "< 1 mm",
-    datum: "WGS-84",
-    lon0: -123.0,
-    lat0: 0,
-    k0: 0.9996,
-    x0: 500000,
-    y0: 0,
-    defaultE: 550400.0,
-    defaultN: 5273100.0,
-    defaultZ: 42.0,
-  },
-  {
-    id: "canada-utm17n",
-    name: "Canada Toronto (UTM 17N)",
-    flag: "🇨🇦",
-    station: "CAN-YYZ-01",
-    grid: "EPSG:32617",
-    accuracy: "< 1 mm",
-    datum: "NAD83 / WGS84",
-    lon0: -81.0,
-    lat0: 0,
-    k0: 0.9996,
-    x0: 500000,
-    y0: 0,
-    defaultE: 630100.0,
-    defaultN: 4834200.0,
-    defaultZ: 76.0,
-  },
+  // → 37.7749, -122.4194
+  { id: "usa-nad83-ca", code: 2227, grid: "EPSG:2227", name: "USA California Zone 3 (NAD83, US ft)", flag: "🇺🇸", station: "CAL-SFO-03", datum: "NAD83", accuracy: "< 1 mm", def: "+proj=lcc +lat_0=36.5 +lon_0=-120.5 +lat_1=38.4333333333333 +lat_2=37.0666666666667 +x_0=2000000.0001016 +y_0=500000.0001016 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=us-ft", unit: "US ft", defaultE: 6006957.098, defaultN: 2110309.181, defaultZ: 16 },
+  // → 30.2672, -97.7431
+  { id: "usa-nad83-tx", code: 2277, grid: "EPSG:2277", name: "USA Texas Central (NAD83, US ft)", flag: "🇺🇸", station: "TEX-ATX-05", datum: "NAD83", accuracy: "< 1 mm", def: "+proj=lcc +lat_0=29.6666666666667 +lon_0=-100.333333333333 +lat_1=31.8833333333333 +lat_2=30.1166666666667 +x_0=699999.999898399 +y_0=3000000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=us-ft", unit: "US ft", defaultE: 3114226.214, defaultN: 10070436.131, defaultZ: 149 },
+  // → 47.6093, -122.3294
+  { id: "usa-utm10n", code: 32610, grid: "EPSG:32610", name: "USA Seattle / PNW (UTM 10N)", flag: "🇺🇸", station: "USA-SEA-09", datum: "WGS-84", accuracy: "< 1 mm", def: "+proj=utm +zone=10 +datum=WGS84 +units=m", unit: "m", defaultE: 550400, defaultN: 5273100, defaultZ: 42 },
+  // → 43.6494, -79.3868
+  { id: "canada-utm17n", code: 32617, grid: "EPSG:32617", name: "Canada Toronto (UTM 17N)", flag: "🇨🇦", station: "CAN-YYZ-01", datum: "NAD83 / WGS84", accuracy: "< 1 mm", def: "+proj=utm +zone=17 +datum=WGS84 +units=m", unit: "m", defaultE: 630100, defaultN: 4834200, defaultZ: 76 },
 ];
 
 const OCEANIA_AFRICA_SYSTEMS: CoordSystem[] = [
-  {
-    id: "aus-gda2020-55",
-    name: "Australia Sydney/Melbourne (MGA 55)",
-    flag: "🇦🇺",
-    station: "AUS-SYD-07",
-    grid: "EPSG:7855",
-    accuracy: "< 1 mm",
-    datum: "GDA2020",
-    lon0: 147.0,
-    lat0: 0,
-    k0: 0.9996,
-    x0: 500000,
-    y0: 10000000,
-    defaultE: 334200.0,
-    defaultN: 6250100.0,
-    defaultZ: 21.0,
-  },
-  {
-    id: "aus-gda2020-56",
-    name: "Australia Brisbane (MGA 56)",
-    flag: "🇦🇺",
-    station: "AUS-BNE-03",
-    grid: "EPSG:7856",
-    accuracy: "< 1 mm",
-    datum: "GDA2020",
-    lon0: 153.0,
-    lat0: 0,
-    k0: 0.9996,
-    x0: 500000,
-    y0: 10000000,
-    defaultE: 502400.0,
-    defaultN: 6961200.0,
-    defaultZ: 14.0,
-  },
-  {
-    id: "nz-nztm2000",
-    name: "New Zealand NZTM2000",
-    flag: "🇳🇿",
-    station: "NZL-WLG-01",
-    grid: "EPSG:2193",
-    accuracy: "< 1 mm",
-    datum: "NZGD2000",
-    lon0: 173.0,
-    lat0: 0,
-    k0: 0.9996,
-    x0: 1600000,
-    y0: 10000000,
-    defaultE: 1748200.0,
-    defaultN: 5427100.0,
-    defaultZ: 19.0,
-  },
-  {
-    id: "brazil-utm23s",
-    name: "Brazil São Paulo / Rio (UTM 23S)",
-    flag: "🇧🇷",
-    station: "BRA-SAO-01",
-    grid: "EPSG:31983",
-    accuracy: "< 1 mm",
-    datum: "SIRGAS 2000",
-    lon0: -45.0,
-    lat0: 0,
-    k0: 0.9996,
-    x0: 500000,
-    y0: 10000000,
-    defaultE: 331400.0,
-    defaultN: 7394200.0,
-    defaultZ: 760.0,
-  },
-  {
-    id: "safrica-lo19",
-    name: "South Africa Cape Town (Lo 19)",
-    flag: "🇿🇦",
-    station: "ZAF-CPT-01",
-    grid: "EPSG:2048",
-    accuracy: "< 1 mm",
-    datum: "Hartebeesthoek94",
-    lon0: 19.0,
-    lat0: 0,
-    k0: 1.0,
-    x0: 0,
-    y0: 0,
-    defaultE: -43200.0,
-    defaultN: -3752100.0,
-    defaultZ: 18.0,
-  },
+  // → -37.8136, 144.9631
+  { id: "aus-gda2020-55", code: 7855, grid: "EPSG:7855", name: "Australia Melbourne (MGA 55)", flag: "🇦🇺", station: "AUS-MEL-07", datum: "GDA2020", accuracy: "< 1 mm", def: "+proj=utm +zone=55 +south +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m", unit: "m", defaultE: 320704.446, defaultN: 5812911.7, defaultZ: 21 },
+  // → -27.4728, 153.0243
+  { id: "aus-gda2020-56", code: 7856, grid: "EPSG:7856", name: "Australia Brisbane (MGA 56)", flag: "🇦🇺", station: "AUS-BNE-03", datum: "GDA2020", accuracy: "< 1 mm", def: "+proj=utm +zone=56 +south +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m", unit: "m", defaultE: 502400, defaultN: 6961200, defaultZ: 14 },
+  // → -41.2939, 174.7700
+  { id: "nz-nztm2000", code: 2193, grid: "EPSG:2193", name: "New Zealand NZTM2000", flag: "🇳🇿", station: "NZL-WLG-01", datum: "NZGD2000", accuracy: "< 1 mm", def: "+proj=tmerc +lat_0=0 +lon_0=173 +k=0.9996 +x_0=1600000 +y_0=10000000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m", unit: "m", defaultE: 1748200, defaultN: 5427100, defaultZ: 19 },
+  // → -23.5538, -46.6518
+  { id: "brazil-utm23s", code: 31983, grid: "EPSG:31983", name: "Brazil São Paulo / Rio (UTM 23S)", flag: "🇧🇷", station: "BRA-SAO-01", datum: "SIRGAS 2000", accuracy: "< 1 mm", def: "+proj=utm +zone=23 +south +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m", unit: "m", defaultE: 331400, defaultN: 7394200, defaultZ: 760 },
+  // → -33.8949, 18.5330
+  { id: "safrica-lo19", code: 2048, grid: "EPSG:2048", name: "South Africa Cape Town (Lo 19)", flag: "🇿🇦", station: "ZAF-CPT-01", datum: "Hartebeesthoek94", accuracy: "< 1 mm", def: "+proj=tmerc +axis=wsu +lat_0=0 +lon_0=19 +k=1 +x_0=0 +y_0=0 +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +units=m", unit: "m", defaultE: -43200, defaultN: -3752100, defaultZ: 18 },
 ];
 
-/* ─── Generate All 60 UTM North & 60 UTM South Systems ─── */
-const ALL_UTM_NORTH: CoordSystem[] = Array.from({ length: 60 }, (_, i) => {
-  const z = i + 1;
-  const lon0 = (z - 1) * 6 - 180 + 3;
-  return {
-    id: `utm-${z}n`,
-    name: `UTM Zone ${z}N (WGS84)`,
-    flag: "🌍",
-    station: `STN-Z${z}N-01`,
-    grid: `EPSG:${32600 + z}`,
-    accuracy: "< 1 mm",
-    datum: "WGS-84",
-    lon0,
-    lat0: 0,
-    k0: 0.9996,
-    x0: 500000,
-    y0: 0,
-    defaultE: 500000.0,
-    defaultN: 3320000.0,
-    defaultZ: 25.0,
-  };
-});
+const CURATED_GROUPS: { label: string; systems: CoordSystem[] }[] = [
+  { label: "Popular", systems: POPULAR_SYSTEMS },
+  { label: "Middle East & Gulf", systems: GULF_SYSTEMS },
+  { label: "Asia & Subcontinent", systems: ASIA_SYSTEMS },
+  { label: "Europe & UK", systems: EUROPE_SYSTEMS },
+  { label: "North America", systems: AMERICAS_SYSTEMS },
+  { label: "Oceania, Africa & S. America", systems: OCEANIA_AFRICA_SYSTEMS },
+];
+const CURATED: CoordSystem[] = CURATED_GROUPS.flatMap((g) => g.systems);
 
-const ALL_UTM_SOUTH: CoordSystem[] = Array.from({ length: 60 }, (_, i) => {
-  const z = i + 1;
-  const lon0 = (z - 1) * 6 - 180 + 3;
+/* Turn an EPSG index row into a usable system, with a sample point at the
+   centre of the system's area of use. */
+function systemFromRow([code, name, def, bbox, unit]: EpsgRow): CoordSystem {
+  const [north, west, south, east] = bbox;
+  const lat = (north + south) / 2;
+  let lon = west <= east ? (west + east) / 2 : (west + east + 360) / 2;
+  if (lon > 180) lon -= 360;
+  let defaultE = 0;
+  let defaultN = 0;
+  try {
+    [defaultE, defaultN] = proj4("WGS84", def, [lon, lat]).map((v) => Number(v.toFixed(3)));
+  } catch {
+    // keep 0, 0 — the user can type their own coordinates
+  }
   return {
-    id: `utm-${z}s`,
-    name: `UTM Zone ${z}S (WGS84)`,
+    id: `epsg-${code}`,
+    code,
+    grid: `EPSG:${code}`,
+    name,
     flag: "🌐",
-    station: `STN-Z${z}S-01`,
-    grid: `EPSG:${32700 + z}`,
-    accuracy: "< 1 mm",
-    datum: "WGS-84",
-    lon0,
-    lat0: 0,
-    k0: 0.9996,
-    x0: 500000,
-    y0: 10000000,
-    defaultE: 500000.0,
-    defaultN: 6680000.0,
-    defaultZ: 25.0,
+    station: `EPSG${code}-PT01`,
+    datum: name.split(" / ")[0],
+    accuracy: "Per EPSG",
+    def,
+    unit,
+    defaultE,
+    defaultN,
+    defaultZ: 0,
   };
-});
+}
 
-/* Map of all systems by ID for quick O(1) lookup */
-const ALL_SYSTEMS_MAP = new Map<string, CoordSystem>();
-[
-  ...POPULAR_SYSTEMS,
-  ...GULF_SYSTEMS,
-  ...ASIA_SYSTEMS,
-  ...EUROPE_SYSTEMS,
-  ...AMERICAS_SYSTEMS,
-  ...OCEANIA_AFRICA_SYSTEMS,
-  ...ALL_UTM_NORTH,
-  ...ALL_UTM_SOUTH,
-].forEach((s) => ALL_SYSTEMS_MAP.set(s.id, s));
+/* Grid (E, N) → WGS84 (lat, lon); null when the input is outside what the projection can invert */
+function gridToWgs84(sys: CoordSystem, easting: number, northing: number): { lat: number; lon: number } | null {
+  if (!Number.isFinite(easting) || !Number.isFinite(northing)) return null;
+  try {
+    const [lon, lat] = proj4(sys.def, "WGS84", [easting, northing]);
+    if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) return null;
+    // Far outside a projection's domain the inverse returns garbage; it must round-trip
+    const [e2, n2] = proj4("WGS84", sys.def, [lon, lat]);
+    if (Math.hypot(e2 - easting, n2 - northing) > 1) return null;
+    return { lat, lon };
+  } catch {
+    return null;
+  }
+}
 
-/* ─── Ellipsoidal Transverse Mercator Math ─── */
-function tmInverse(
-  easting: number,
-  northing: number,
-  lon0: number,
-  lat0: number,
-  k0: number,
-  x0: number,
-  y0: number,
-  a = 6378137.0,
-  invF = 298.257223563
-): { lat: number; lon: number } {
-  if (isNaN(easting) || isNaN(northing)) return { lat: 0, lon: 0 };
-  const f = 1 / invF;
-  const e2 = 2 * f - f * f;
-  const ep2 = e2 / (1 - e2);
-  const x = easting - x0;
-  const y = northing - y0;
-
-  const rad = Math.PI / 180;
-  const lat0Rad = lat0 * rad;
-  const m0 =
-    a *
-    ((1 - e2 / 4 - (3 * e2 * e2) / 64 - (5 * Math.pow(e2, 3)) / 256) * lat0Rad -
-      ((3 * e2) / 8 + (3 * e2 * e2) / 32 + (45 * Math.pow(e2, 3)) / 1024) * Math.sin(2 * lat0Rad) +
-      ((15 * e2 * e2) / 256 + (45 * Math.pow(e2, 3)) / 1024) * Math.sin(4 * lat0Rad) -
-      ((35 * Math.pow(e2, 3)) / 3072) * Math.sin(6 * lat0Rad));
-
-  const M = m0 + y / k0;
-  const mu = M / (a * (1 - e2 / 4 - (3 * e2 * e2) / 64 - (5 * Math.pow(e2, 3)) / 256));
-  const e1 = (1 - Math.sqrt(1 - e2)) / (1 + Math.sqrt(1 - e2));
-
-  const phi1 =
-    mu +
-    ((3 * e1) / 2 - (27 * Math.pow(e1, 3)) / 32) * Math.sin(2 * mu) +
-    ((21 * e1 * e1) / 16 - (55 * Math.pow(e1, 4)) / 32) * Math.sin(4 * mu) +
-    ((151 * Math.pow(e1, 3)) / 96) * Math.sin(6 * mu) +
-    ((1097 * Math.pow(e1, 4)) / 512) * Math.sin(8 * mu);
-
-  const sinPhi1 = Math.sin(phi1);
-  const cosPhi1 = Math.cos(phi1);
-  const tanPhi1 = Math.tan(phi1);
-
-  const N1 = a / Math.sqrt(1 - e2 * sinPhi1 * sinPhi1);
-  const T1 = tanPhi1 * tanPhi1;
-  const C1 = ep2 * cosPhi1 * cosPhi1;
-  const R1 = (a * (1 - e2)) / Math.pow(1 - e2 * sinPhi1 * sinPhi1, 1.5);
-  const D = x / (N1 * k0);
-
-  const D2 = D * D;
-  const D3 = D2 * D;
-  const D4 = D2 * D2;
-  const D5 = D4 * D;
-  const D6 = D3 * D3;
-
-  const latRad =
-    phi1 -
-    ((N1 * tanPhi1) / R1) *
-    (D2 / 2 -
-      (5 + 3 * T1 + 10 * C1 - 4 * C1 * C1 - 9 * ep2) * (D4 / 24) +
-      (61 + 90 * T1 + 298 * C1 + 45 * T1 * T1 - 252 * ep2 - 3 * C1 * C1) * (D6 / 720));
-
-  const lonRad =
-    lon0 * rad +
-    (D -
-      (1 + 2 * T1 + C1) * (D3 / 6) +
-      (5 - 2 * C1 + 28 * T1 - 3 * C1 * C1 + 8 * ep2 + 24 * T1 * T1) * (D5 / 120)) /
-    cosPhi1;
-
-  let latDeg = latRad / rad;
-  let lonDeg = lonRad / rad;
-  if (isNaN(latDeg)) latDeg = 0;
-  if (isNaN(lonDeg)) lonDeg = 0;
-
-  return { lat: latDeg, lon: lonDeg };
+function centralMeridian(def: string): number | null {
+  const m = def.match(/\+lon_0=(-?[\d.]+)/) ?? def.match(/\+zone=(\d+)/);
+  if (!m) return null;
+  return def.includes("+zone=") && !def.includes("+lon_0=") ? Number(m[1]) * 6 - 183 : Number(m[1]);
 }
 
 /* ─── Radar Display Canvas ─── */
@@ -998,9 +322,215 @@ function RadarCanvas({ blipX, blipY }: { blipX: number; blipY: number }) {
 }
 
 /* ─── HeroConverter Component ─── */
+/* ─── Searchable system picker (curated list + full EPSG registry) ─── */
+const RESULT_LIMIT = 50;
+
+type PickerItem = { key: string; code: number; name: string; flag: string; pick: () => CoordSystem };
+
+function SystemPicker({ value, onChange }: { value: CoordSystem; onChange: (sys: CoordSystem) => void }) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [rows, setRows] = useState<EpsgRow[] | null>(null);
+  const [loadError, setLoadError] = useState(false);
+  const [active, setActive] = useState(0);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
+
+  // Fetch the full EPSG list (~160 KB gzipped) only once the picker is first opened
+  useEffect(() => {
+    if (!open || rows || loadError) return;
+    let cancelled = false;
+    fetch("/data/epsg-projected.json")
+      .then((r) => {
+        if (!r.ok) throw new Error(String(r.status));
+        return r.json();
+      })
+      .then((data: EpsgRow[]) => !cancelled && setRows(data))
+      .catch(() => !cancelled && setLoadError(true));
+    return () => {
+      cancelled = true;
+    };
+  }, [open, rows, loadError]);
+
+  // Close when clicking outside
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => {
+      if (rootRef.current && !rootRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [open]);
+
+  const { groups, items, total } = useMemo(() => {
+    const curatedItem = (sys: CoordSystem): PickerItem => ({
+      key: sys.id, code: sys.code, name: sys.name, flag: sys.flag, pick: () => sys,
+    });
+    const q = query.trim().toLowerCase().replace(/^epsg:?\s*/, "");
+    if (!q) {
+      const g = CURATED_GROUPS.map((grp) => ({ label: grp.label, items: grp.systems.map(curatedItem) }));
+      return { groups: g, items: g.flatMap((x) => x.items), total: CURATED.length };
+    }
+    const tokens = q.split(/\s+/);
+    const matches = (text: string) => {
+      const t = text.toLowerCase();
+      return tokens.every((tok) => t.includes(tok));
+    };
+    // Curated presets match on their own label or on their official EPSG name
+    const officialName = new Map((rows ?? []).map((r) => [r[0], r[1]]));
+    const curatedHits = CURATED.filter((sys) =>
+      matches(`${sys.code} ${sys.name} ${sys.datum} ${officialName.get(sys.code) ?? ""}`)
+    );
+    const curatedCodes = new Set(CURATED.map((sys) => sys.code));
+    const registryHits = (rows ?? []).filter((row) => !curatedCodes.has(row[0]) && matches(`${row[0]} ${row[1]}`));
+
+    // Rank: exact code, then curated, then modern global datums, then registry order
+    const rank = (code: number, name: string, curated: boolean) =>
+      (String(code) === q ? 0 : 4) + (curated ? 0 : 2) + (/^(WGS 84|ETRS89|NAD83|GDA2020|SIRGAS 2000)\b/.test(name) ? 0 : 1);
+    const ranked = [
+      ...curatedHits.map((sys) => ({ r: rank(sys.code, officialName.get(sys.code) ?? "WGS 84", true), item: curatedItem(sys) })),
+      ...registryHits.map((row) => ({
+        r: rank(row[0], row[1], false),
+        item: { key: `epsg-${row[0]}`, code: row[0], name: row[1], flag: "🌐", pick: () => systemFromRow(row) },
+      })),
+    ].sort((a, b) => a.r - b.r);
+    const found = ranked.slice(0, RESULT_LIMIT).map((x) => x.item);
+    return { groups: [{ label: "", items: found }], items: found, total: ranked.length };
+  }, [query, rows]);
+
+  const choose = (item: PickerItem) => {
+    onChange(item.pick());
+    setOpen(false);
+    setQuery("");
+  };
+
+  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      const next = Math.max(0, Math.min(items.length - 1, active + (e.key === "ArrowDown" ? 1 : -1)));
+      setActive(next);
+      listRef.current?.querySelector(`[data-index="${next}"]`)?.scrollIntoView({ block: "nearest" });
+    } else if (e.key === "Enter" && items[active]) {
+      e.preventDefault();
+      choose(items[active]);
+    } else if (e.key === "Escape") {
+      setOpen(false);
+    }
+  };
+
+  let index = -1;
+  return (
+    <div ref={rootRef}>
+      <button
+        type="button"
+        id="hc-system"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => {
+          setOpen((o) => !o);
+          setActive(0);
+          setTimeout(() => inputRef.current?.focus(), 0);
+        }}
+        className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-left text-base sm:text-[13px] font-semibold cursor-pointer focus:outline-none focus:ring-2 focus:ring-cyan-400/40"
+        style={{ background: "rgba(0, 180, 255, 0.05)", border: "1px solid rgba(0, 180, 255, 0.15)", color: "#e0f2fe" }}
+      >
+        <span className="shrink-0">{value.flag}</span>
+        <span className="flex-1 min-w-0 truncate">{value.name}</span>
+        <span className="shrink-0 font-mono text-[11px] text-cyan-400/70">{value.grid}</span>
+        <ChevronDown className={`w-3.5 h-3.5 shrink-0 text-cyan-400/60 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+
+      {open && (
+        <div
+          className="mt-1.5 rounded-lg overflow-hidden"
+          style={{ background: "#041528", border: "1px solid rgba(0, 180, 255, 0.2)" }}
+        >
+          <div className="flex items-center gap-2 px-3 py-2" style={{ borderBottom: "1px solid rgba(0, 180, 255, 0.12)" }}>
+            <Search className="w-3.5 h-3.5 text-cyan-400/60 shrink-0" />
+            <input
+              ref={inputRef}
+              role="combobox"
+              aria-expanded
+              aria-controls="hc-system-list"
+              aria-activedescendant={items[active] ? `hc-opt-${items[active].key}` : undefined}
+              aria-label="Search coordinate systems"
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setActive(0);
+              }}
+              onKeyDown={onKeyDown}
+              placeholder="Search country, zone or EPSG code…"
+              className="flex-1 min-w-0 bg-transparent text-base sm:text-[13px] text-cyan-50 placeholder:text-cyan-400/40 focus:outline-none"
+            />
+          </div>
+
+          <ul ref={listRef} id="hc-system-list" role="listbox" aria-label="Coordinate systems" className="max-h-60 overflow-y-auto py-1">
+            {groups.map((grp) => (
+              <React.Fragment key={grp.label || "results"}>
+                {grp.label && (
+                  <li role="presentation" className="px-3 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-cyan-400/50">
+                    {grp.label}
+                  </li>
+                )}
+                {grp.items.map((item) => {
+                  index++;
+                  const i = index;
+                  const isActive = i === active;
+                  const isSelected = item.code === value.code && item.name === value.name;
+                  return (
+                    <li
+                      key={item.key}
+                      id={`hc-opt-${item.key}`}
+                      role="option"
+                      aria-selected={isSelected}
+                      data-index={i}
+                      onMouseEnter={() => setActive(i)}
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => choose(item)}
+                      className={`flex items-center gap-2 px-3 py-1.5 text-[12.5px] cursor-pointer ${isActive ? "bg-cyan-400/10" : ""}`}
+                    >
+                      <span className="shrink-0">{item.flag}</span>
+                      <span className={`flex-1 min-w-0 truncate ${isSelected ? "text-cyan-300 font-semibold" : "text-cyan-50"}`}>
+                        {item.name}
+                      </span>
+                      <span className="shrink-0 font-mono text-[10.5px] text-cyan-400/60">EPSG:{item.code}</span>
+                    </li>
+                  );
+                })}
+              </React.Fragment>
+            ))}
+            {items.length === 0 && (
+              <li className="px-3 py-4 text-center text-[12px] text-cyan-400/60">
+                {rows || loadError ? `No systems match “${query}”` : "Loading EPSG registry…"}
+              </li>
+            )}
+          </ul>
+
+          <div
+            className="px-3 py-1.5 text-[10.5px] text-cyan-400/50 flex justify-between gap-2"
+            style={{ borderTop: "1px solid rgba(0, 180, 255, 0.12)" }}
+          >
+            <span>
+              {loadError
+                ? "Couldn't load the full registry — showing curated systems"
+                : query.trim()
+                  ? total > items.length
+                    ? `Showing ${items.length} of ${total.toLocaleString()} — refine your search`
+                    : `${total.toLocaleString()} match${total === 1 ? "" : "es"}`
+                  : `${CURATED.length} curated · type to search ${rows ? rows.length.toLocaleString() : "5,800+"} EPSG systems`}
+            </span>
+            <span className="hidden sm:inline">↑↓ Enter</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function HeroConverter() {
-  const [selectedId, setSelectedId] = useState("dubai-dltm");
-  const current = ALL_SYSTEMS_MAP.get(selectedId) || POPULAR_SYSTEMS[0];
+  const [current, setCurrent] = useState<CoordSystem>(POPULAR_SYSTEMS[0]);
 
   const [easting, setEasting] = useState<number>(current.defaultE);
   const [northing, setNorthing] = useState<number>(current.defaultN);
@@ -1010,30 +540,17 @@ export default function HeroConverter() {
   const [downloaded, setDownloaded] = useState(false);
 
   // When changing system from dropdown, update coordinates to defaults
-  const handleSystemChange = (id: string) => {
-    setSelectedId(id);
-    const sys = ALL_SYSTEMS_MAP.get(id);
-    if (sys) {
-      setEasting(sys.defaultE);
-      setNorthing(sys.defaultN);
-      setElevation(sys.defaultZ);
-    }
+  const handleSystemChange = (sys: CoordSystem) => {
+    setCurrent(sys);
+    setEasting(sys.defaultE);
+    setNorthing(sys.defaultN);
+    setElevation(sys.defaultZ);
   };
 
-  // Real-time ellipsoidal inverse calculation
-  const computed = useMemo(() => {
-    return tmInverse(
-      easting,
-      northing,
-      current.lon0,
-      current.lat0,
-      current.k0,
-      current.x0,
-      current.y0,
-      current.a,
-      current.invF
-    );
-  }, [easting, northing, current]);
+  // Real-time grid → WGS84 conversion with proj4 (includes the datum shift)
+  const result = useMemo(() => gridToWgs84(current, easting, northing), [easting, northing, current]);
+  const valid = result !== null;
+  const computed = result ?? { lat: 0, lon: 0 };
 
   const computedLat = computed.lat.toFixed(6);
   const computedLon = computed.lon.toFixed(6);
@@ -1147,7 +664,7 @@ Datum: ${current.datum}]]></description>
             <div>
               <h3 className="text-[13px] font-bold text-cyan-50 leading-tight">Quick Coordinate Converter</h3>
               <p className="text-[11px] font-medium" style={{ color: "rgba(0,180,255,0.5)" }}>
-                Grid (E, N) → GPS (Lat, Lon) • 160+ World Systems
+                Grid (E, N) → GPS (Lat, Lon) • 5,800+ EPSG systems
               </p>
             </div>
           </div>
@@ -1170,91 +687,14 @@ Datum: ${current.datum}]]></description>
                 Coordinate system / zone
               </label>
 
-              <div className="relative">
-                <select
-                  id="hc-system"
-                  value={selectedId}
-                  onChange={(e) => handleSystemChange(e.target.value)}
-                  className="w-full appearance-none px-3 py-2.5 pr-8 rounded-lg text-base sm:text-[13px] font-semibold transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-cyan-400/40"
-                  style={{
-                    background: "rgba(0, 180, 255, 0.05)",
-                    border: "1px solid rgba(0, 180, 255, 0.15)",
-                    color: "#e0f2fe",
-                  }}
-                >
-                  <optgroup label="⭐ Popular Systems" style={{ background: "#030e1e", color: "#38bdf8" }}>
-                    {POPULAR_SYSTEMS.map((s) => (
-                      <option key={s.id} value={s.id} style={{ background: "#030e1e", color: "#e0f2fe" }}>
-                        {s.flag} {s.name} ({s.grid})
-                      </option>
-                    ))}
-                  </optgroup>
-
-                  <optgroup label="🇦🇪 Middle East &amp; Gulf" style={{ background: "#030e1e", color: "#38bdf8" }}>
-                    {GULF_SYSTEMS.map((s) => (
-                      <option key={s.id} value={s.id} style={{ background: "#030e1e", color: "#e0f2fe" }}>
-                        {s.flag} {s.name} ({s.grid})
-                      </option>
-                    ))}
-                  </optgroup>
-
-                  <optgroup label="🇵🇰 🇮🇳 Asia &amp; Subcontinent" style={{ background: "#030e1e", color: "#38bdf8" }}>
-                    {ASIA_SYSTEMS.map((s) => (
-                      <option key={s.id} value={s.id} style={{ background: "#030e1e", color: "#e0f2fe" }}>
-                        {s.flag} {s.name} ({s.grid})
-                      </option>
-                    ))}
-                  </optgroup>
-
-                  <optgroup label="🇬🇧 🇪🇺 Europe &amp; UK" style={{ background: "#030e1e", color: "#38bdf8" }}>
-                    {EUROPE_SYSTEMS.map((s) => (
-                      <option key={s.id} value={s.id} style={{ background: "#030e1e", color: "#e0f2fe" }}>
-                        {s.flag} {s.name} ({s.grid})
-                      </option>
-                    ))}
-                  </optgroup>
-
-                  <optgroup label="🇺🇸 🇨🇦 North America" style={{ background: "#030e1e", color: "#38bdf8" }}>
-                    {AMERICAS_SYSTEMS.map((s) => (
-                      <option key={s.id} value={s.id} style={{ background: "#030e1e", color: "#e0f2fe" }}>
-                        {s.flag} {s.name} ({s.grid})
-                      </option>
-                    ))}
-                  </optgroup>
-
-                  <optgroup label="🇦🇺 🇿🇦 Oceania, Africa &amp; S. America" style={{ background: "#030e1e", color: "#38bdf8" }}>
-                    {OCEANIA_AFRICA_SYSTEMS.map((s) => (
-                      <option key={s.id} value={s.id} style={{ background: "#030e1e", color: "#e0f2fe" }}>
-                        {s.flag} {s.name} ({s.grid})
-                      </option>
-                    ))}
-                  </optgroup>
-
-                  <optgroup label="🌍 Global UTM North (Zones 1N to 60N)" style={{ background: "#030e1e", color: "#38bdf8" }}>
-                    {ALL_UTM_NORTH.map((s) => (
-                      <option key={s.id} value={s.id} style={{ background: "#030e1e", color: "#e0f2fe" }}>
-                        {s.flag} {s.name} — CM: {s.lon0}°
-                      </option>
-                    ))}
-                  </optgroup>
-
-                  <optgroup label="🌐 Global UTM South (Zones 1S to 60S)" style={{ background: "#030e1e", color: "#38bdf8" }}>
-                    {ALL_UTM_SOUTH.map((s) => (
-                      <option key={s.id} value={s.id} style={{ background: "#030e1e", color: "#e0f2fe" }}>
-                        {s.flag} {s.name} — CM: {s.lon0}°
-                      </option>
-                    ))}
-                  </optgroup>
-                </select>
-                <ChevronDown className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 text-cyan-400/50 pointer-events-none" />
-              </div>
+              <SystemPicker value={current} onChange={handleSystemChange} />
             </div>
 
             {/* Easting & Northing Inputs */}
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label htmlFor="hc-easting" className="block text-[10px] font-semibold uppercase tracking-wider mb-1 text-cyan-400/70">
-                  Easting (m)
+                  Easting ({current.unit})
                 </label>
                 <input
                   id="hc-easting"
@@ -1269,7 +709,7 @@ Datum: ${current.datum}]]></description>
               </div>
               <div>
                 <label htmlFor="hc-northing" className="block text-[10px] font-semibold uppercase tracking-wider mb-1 text-cyan-400/70">
-                  Northing (m)
+                  Northing ({current.unit})
                 </label>
                 <input
                   id="hc-northing"
@@ -1309,13 +749,14 @@ Datum: ${current.datum}]]></description>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                  <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">
-                    WGS84 result
+                  <span className={`text-[10px] font-bold uppercase tracking-wider ${valid ? "text-emerald-400" : "text-amber-300"}`}>
+                    {valid ? "WGS84 result" : "Outside this system's range"}
                   </span>
                 </div>
                 <button
                   type="button"
                   onClick={copyCoords}
+                  disabled={!valid}
                   className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-semibold transition-colors hover:bg-cyan-500/10 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50"
                   style={{ color: "rgba(0,180,255,0.7)", background: "rgba(0,180,255,0.06)" }}
                   title="Copy Latitude, Longitude"
@@ -1329,13 +770,13 @@ Datum: ${current.datum}]]></description>
                 <div>
                   <div className="text-[9px] uppercase tracking-wider text-cyan-400/60 font-medium">Latitude</div>
                   <div className="text-[13px] font-mono font-bold text-cyan-50">
-                    {Math.abs(computed.lat).toFixed(6)}° {computed.lat >= 0 ? "N" : "S"}
+                    {valid ? `${Math.abs(computed.lat).toFixed(6)}° ${computed.lat >= 0 ? "N" : "S"}` : "—"}
                   </div>
                 </div>
                 <div>
                   <div className="text-[9px] uppercase tracking-wider text-cyan-400/60 font-medium">Longitude</div>
                   <div className="text-[13px] font-mono font-bold text-cyan-50">
-                    {Math.abs(computed.lon).toFixed(6)}° {computed.lon >= 0 ? "E" : "W"}
+                    {valid ? `${Math.abs(computed.lon).toFixed(6)}° ${computed.lon >= 0 ? "E" : "W"}` : "—"}
                   </div>
                 </div>
               </div>
@@ -1355,7 +796,8 @@ Datum: ${current.datum}]]></description>
               <button
                 type="button"
                 onClick={downloadKml}
-                className="w-full mt-1 py-2.5 px-3 rounded-lg text-[13px] font-semibold transition-all duration-200 flex items-center justify-center gap-2 shadow-sm active:scale-[0.98] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/60"
+                disabled={!valid}
+                className="w-full mt-1 py-2.5 px-3 rounded-lg text-[13px] font-semibold transition-all duration-200 flex items-center justify-center gap-2 shadow-sm active:scale-[0.98] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/60"
                 style={{
                   background: downloaded
                     ? "linear-gradient(135deg, rgba(16, 185, 129, 0.95), rgba(5, 150, 105, 0.95))"
@@ -1412,7 +854,7 @@ Datum: ${current.datum}]]></description>
                 className="absolute top-2 right-2 text-[9px] font-mono pointer-events-none"
                 style={{ color: "rgba(0,180,255,0.4)" }}
               >
-                CM {Number(current.lon0.toFixed(4))}°
+                {centralMeridian(current.def) !== null && <>CM {Number(centralMeridian(current.def)!.toFixed(4))}°</>}
               </div>
               <div
                 className="absolute bottom-2 left-2 text-[9px] font-mono pointer-events-none text-emerald-400 font-semibold"
