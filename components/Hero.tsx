@@ -11,13 +11,13 @@ import {
   ArrowRight
 } from "lucide-react";
 
-// Dynamically import Leaflet Satellite Map without SSR
-const RealSatelliteMap = dynamic(() => import("./RealSatelliteMap"), {
+// Dynamically import HeroConverter with radar without SSR
+const HeroConverter = dynamic(() => import("./HeroConverter"), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-[360px] rounded-2xl bg-slate-100 border border-slate-200 animate-pulse flex flex-col items-center justify-center gap-2 text-slate-400 font-mono text-xs">
-      <Globe className="w-6 h-6 animate-spin text-slate-300" />
-      <span>Loading Live Satellite Imagery...</span>
+    <div className="w-full h-[420px] rounded-2xl bg-slate-950 border border-slate-800 animate-pulse flex flex-col items-center justify-center gap-2 text-cyan-400 font-mono text-xs">
+      <Globe className="w-6 h-6 animate-spin text-cyan-500" />
+      <span>Loading Coordinate Converter...</span>
     </div>
   ),
 });
@@ -110,10 +110,10 @@ export default function Hero({ versionTag, fileSizeText, onDownloadClick }: Hero
           </div>
 
           {/* ══════════════════════════════════════════════════════════════════
-              RIGHT: Live Geospatial Satellite Map with Real Points
+              RIGHT: Live Geospatial Coordinate Converter with Radar
              ══════════════════════════════════════════════════════════════════ */}
           <div className="lg:col-span-7 w-full flex items-center justify-center lg:justify-end">
-            <RealSatelliteMap />
+            <HeroConverter />
           </div>
 
         </div>

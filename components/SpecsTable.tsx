@@ -47,7 +47,7 @@ export default function SpecsTable() {
   return (
     <section id="specs" className="py-20 lg:py-24 bg-[#fafbfc] border-b border-slate-100">
       <div className="max-w-[1140px] mx-auto px-5 sm:px-8">
-        
+
         {/* Section Header */}
         <div className="text-center max-w-[620px] mx-auto mb-14">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50/80 border border-blue-100/80 text-blue-700 text-xs font-semibold uppercase tracking-wider mb-2.5">
@@ -65,11 +65,10 @@ export default function SpecsTable() {
         {/* Specifications Table Card */}
         <div className="bg-white rounded-2xl border border-slate-200/80 shadow-[0_8px_30px_rgba(0,0,0,0.03)] overflow-hidden">
           {ROWS.map((row, i) => (
-            <div 
+            <div
               key={row.label}
-              className={`flex flex-col sm:flex-row gap-3 sm:gap-8 px-6 sm:px-8 py-5 sm:py-6 ${
-                i !== ROWS.length - 1 ? "border-b border-slate-100" : ""
-              }`}
+              className={`flex flex-col sm:flex-row gap-3 sm:gap-8 px-6 sm:px-8 py-5 sm:py-6 ${i !== ROWS.length - 1 ? "border-b border-slate-100" : ""
+                }`}
             >
               <div className="sm:w-52 shrink-0 text-xs sm:text-sm font-bold text-slate-800">
                 {row.label}
@@ -78,8 +77,8 @@ export default function SpecsTable() {
                 {row.type === "tags" ? (
                   <div className="flex flex-wrap gap-2">
                     {(row.value as string[]).map((v) => (
-                      <span 
-                        key={v} 
+                      <span
+                        key={v}
                         className={`inline-flex text-[11px] font-semibold px-2.5 py-1 rounded-md font-mono ${row.tagColor}`}
                       >
                         {v}
