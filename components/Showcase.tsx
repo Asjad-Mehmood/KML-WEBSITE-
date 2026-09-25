@@ -659,9 +659,10 @@ ${placemarks}
                         aria-label={`Residuals for ${cal.points.length} control benchmarks, all within ${cal.maxError}`}
                       >
                         <defs>
-                          <linearGradient id="sweep" x1="0" y1="0" x2="1" y2="1">
-                            <stop offset="0%" stopColor="rgb(34,211,238)" stopOpacity="0.28" />
-                            <stop offset="100%" stopColor="rgb(34,211,238)" stopOpacity="0" />
+                          {/* Fades from the trailing edge (left) to the bright leading edge (right) */}
+                          <linearGradient id="sweep" x1="0" y1="0" x2="1" y2="0">
+                            <stop offset="0%" stopColor="rgb(34,211,238)" stopOpacity="0" />
+                            <stop offset="100%" stopColor="rgb(34,211,238)" stopOpacity="0.32" />
                           </linearGradient>
                         </defs>
 
@@ -694,8 +695,19 @@ ${placemarks}
                         ))}
 
                         {/* Radar sweep */}
-                        <g className="animate-radar-sweep" style={{ transformBox: "view-box", transformOrigin: "center" }}>
-                          <path d="M0 0 L0 -120 A120 120 0 0 1 84.85 -84.85 Z" fill="url(#sweep)" />
+                        {/* Rotates about the plot centre (0, 0) in SVG user space. A CSS transform-origin
+                            of "center" resolves against the viewBox's top-left, not its middle. */}
+                        <g>
+                          <path d="M0 0 L-84.85 -84.85 A120 120 0 0 1 0 -120 Z" fill="url(#sweep)" />
+                          <line x1="0" y1="0" x2="0" y2="-120" stroke="rgba(34,211,238,0.55)" strokeWidth="1" />
+                          <animateTransform
+                            attributeName="transform"
+                            type="rotate"
+                            from="0 0 0"
+                            to="360 0 0"
+                            dur="4s"
+                            repeatCount="indefinite"
+                          />
                         </g>
 
                         {/* Site baseline vector, rotated by the fitted angle */}
