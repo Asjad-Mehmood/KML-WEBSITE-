@@ -81,8 +81,8 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
             <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3.5">Resources</h2>
             <ul className="space-y-2.5 text-xs sm:text-sm text-slate-600">
               {[
-                ["https://github.com/chaudaryyabdullah03-collab/kml-convertor", "GitHub Repository"],
-                ["https://github.com/chaudaryyabdullah03-collab/kml-convertor/issues", "Issue Tracker"],
+                ["https://github.com/Asjad-Mehmood/kml-convertor", "GitHub Repository"],
+                ["https://github.com/Asjad-Mehmood/kml-convertor/issues", "Issue Tracker"],
                 ["/faq", "Common Questions"],
                 ["https://epsg.io", "EPSG Geodetic Registry"],
               ].map(([href, label]) => (
@@ -120,7 +120,7 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
             </span>
           </p>
           <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-slate-600">
-            <a href="https://github.com/chaudaryyabdullah03-collab/kml-convertor" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 transition-colors">GitHub</a>
+            <a href="https://github.com/Asjad-Mehmood/kml-convertor" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 transition-colors">GitHub</a>
             <button onClick={onDownloadClick} className="hover:text-blue-600 transition-colors cursor-pointer">Download</button>
             <a href="/app" className="hover:text-blue-600 transition-colors">Web App</a>
           </div>

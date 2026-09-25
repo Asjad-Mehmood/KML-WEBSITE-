@@ -18,18 +18,18 @@ export default function HomeClient() {
   const { requireAuth, trackDownload } = useAuth();
 
   // Dynamic GitHub Release details
-  const [versionTag, setVersionTag] = useState("v3.5.5");
+  const [versionTag, setVersionTag] = useState("v3.6.2");
   const [downloadUrl, setDownloadUrl] = useState(
-    "https://github.com/chaudaryyabdullah03-collab/kml-convertor/releases/latest/download/ExcelToKMLPro-Lite-Setup.exe"
+    "https://github.com/Asjad-Mehmood/kml-convertor/releases/latest/download/ExcelToKMLPro-Lite-Setup.exe"
   );
   const [releaseNotesUrl, setReleaseNotesUrl] = useState(
-    "https://github.com/chaudaryyabdullah03-collab/kml-convertor/releases/latest"
+    "https://github.com/Asjad-Mehmood/kml-convertor/releases/latest"
   );
-  const [fileSizeText, setFileSizeText] = useState("3.14 MB");
-  const [bytesText, setBytesText] = useState("3.14 MB (3,291,632 bytes)");
-  const [releaseDateText, setReleaseDateText] = useState("Release Build: September 2026");
+  const [fileSizeText, setFileSizeText] = useState("3.15 MB");
+  const [bytesText, setBytesText] = useState("3.15 MB (3,305,002 bytes)");
+  const [releaseDateText, setReleaseDateText] = useState("Release Build: Sep 25, 2026");
   const [sha256Hash, setSha256Hash] = useState(
-    "2ba12091e995085a9472520701c8e67d7668e6c1771499cde68b5456680429c1"
+    "70b6f5638be6231b651b65a4af8815d3cab1c006f4822481878f5b75fb0c77e2"
   );
 
   // Toast Notification
@@ -47,7 +47,7 @@ export default function HomeClient() {
     async function loadRelease() {
       try {
         const res = await fetch(
-          "https://api.github.com/repos/chaudaryyabdullah03-collab/kml-convertor/releases/latest"
+          "https://api.github.com/repos/Asjad-Mehmood/kml-convertor/releases/latest"
         );
         if (!res.ok) return;
         const data = await res.json();

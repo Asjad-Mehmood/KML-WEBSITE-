@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     const {
       assetType = "windows_installer",
       fileName = "ExcelToKMLPro-Lite-Setup.exe",
-      version = "v3.5.5",
+      version = "v3.6.2",
     } = body;
 
     const clientIp = getClientIp(req);

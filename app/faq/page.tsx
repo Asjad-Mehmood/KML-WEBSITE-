@@ -17,15 +17,15 @@ export default function FaqPage() {
       <main id="main-content" className="pt-20">
         <Faq headingLevel="h1" />
         <CtaBanner
-          versionTag="v3.5.5"
-          fileSizeText="3.14 MB"
+          versionTag="v3.6.2"
+          fileSizeText="3.15 MB"
           onDownloadClick={handleDownload}
         />
       </main>
       <Footer
-        versionTag="v3.5.5"
-        downloadUrl="https://github.com/chaudaryyabdullah03-collab/kml-convertor/releases/latest"
-        releaseNotesUrl="https://github.com/chaudaryyabdullah03-collab/kml-convertor/releases/latest"
+        versionTag="v3.6.2"
+        downloadUrl="https://github.com/Asjad-Mehmood/kml-convertor/releases/latest"
+        releaseNotesUrl="https://github.com/Asjad-Mehmood/kml-convertor/releases/latest"
         onDownloadClick={handleDownload}
       />
     </div>

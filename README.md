@@ -1,6 +1,6 @@
 # Excel to KML Pro — Web Portal & Geospatial Suite
 
-Official modern web application, interactive coordinate converter, and gated download portal for **Excel to KML Pro** (v3.5.5).
+Official modern web application, interactive coordinate converter, and gated download portal for **Excel to KML Pro** (v3.6.2).
 
 Built with **Next.js 16 (App Router & Turbopack)**, **Tailwind CSS v4 (Apple/Linear-grade White Theme)**, **Prisma ORM**, and **Neon PostgreSQL**.
 
@@ -82,4 +82,4 @@ npm run start
 ---
 
 ## 📜 License
-Community Open Source • Maintained by [chaudaryyabdullah03-collab](https://github.com/chaudaryyabdullah03-collab)
+Community Open Source • Maintained by [Asjad-Mehmood](https://github.com/Asjad-Mehmood)

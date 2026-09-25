@@ -10,7 +10,7 @@ const LOCAL_CANDIDATES = [
 
 const TARGET_PATH = path.resolve(process.cwd(), "public/app.html");
 const GITHUB_RAW_URL =
-  "https://raw.githubusercontent.com/chaudaryyabdullah03-collab/kml-convertor/main/app/index.html";
+  "https://raw.githubusercontent.com/Asjad-Mehmood/kml-convertor/main/app/index.html";
 
 async function syncApp() {
   console.log("🔄 Syncing web app HTML from main app repo...");
