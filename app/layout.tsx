@@ -4,7 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "../context/AuthContext";
 import AuthModal from "../components/AuthModal";
 import Preloader from "../components/Preloader";
-import StructuredData from "../components/StructuredData";
+import { DEFAULT_TITLE, OG_IMAGE, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,65 +25,48 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://exceltokml.com";
-
 export const metadata: Metadata = {
-  metadataBase: new URL(baseUrl),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "Excel to KML Pro — Free Survey Coordinate & Benchmark Converter",
+    default: DEFAULT_TITLE,
     template: "%s | Excel to KML Pro",
   },
-  description:
-    "Free Excel to KML Pro converts survey spreadsheets and CSV coordinates into Google Earth 3D KML/KMZ. Supports 5,800+ EPSG coordinate systems, Helmert site calibration, elevation extrusions, and geotagged photos. 100% offline & secure.",
+  description: SITE_DESCRIPTION,
   keywords: [
     "Excel to KML",
-    "Convert Excel to KML",
     "CSV to KML",
     "Excel to KMZ",
-    "Survey Benchmark Converter",
-    "KML Converter",
-    "EPSG Grid Converter",
-    "KMZ Photo Survey",
-    "Google Earth Surveyor",
+    "Excel to DXF",
+    "survey coordinates to Google Earth",
+    "easting northing to latitude longitude",
+    "UTM to lat long",
+    "EPSG coordinate converter",
     "DLTM to WGS84",
-    "QNG to KML",
-    "Helmert Transformation 2D",
-    "UTM to Lat Long",
-    "Northing Easting to Latitude Longitude",
-    "Civil 3D to Google Earth",
-    "Survey Coordinates to KML",
-    "Cadastral Boundary KML",
-    "Elevation Extrusion Google Earth",
-    "Free KML Converter Windows",
-    "Offline Coordinate Converter",
-    "Total Station CSV to KML",
+    "QNG to WGS84",
+    "total station CSV to KML",
+    "KMZ with photos",
+    "survey benchmark converter",
   ],
-  authors: [{ name: "Asjad Mehmood" }, { name: "chaudaryyabdullah03-collab" }],
-  creator: "Excel to KML Pro",
-  publisher: "Excel to KML Pro",
-  applicationName: "Excel to KML Pro",
-  category: "Geomatics / GIS Application",
+  authors: [{ name: "Asjad Mehmood" }],
+  creator: "Asjad Mehmood",
+  publisher: SITE_NAME,
+  applicationName: SITE_NAME,
+  category: "technology",
   manifest: "/site.webmanifest",
   icons: {
     icon: [
       { url: "/assets/favicon.ico" },
       { url: "/assets/icon.png", sizes: "192x192", type: "image/png" },
     ],
-    apple: [
-      { url: "/assets/icon-512.png", sizes: "512x512", type: "image/png" },
-    ],
+    apple: [{ url: "/assets/icon-512.png", sizes: "512x512", type: "image/png" }],
   },
-  alternates: {
-    canonical: baseUrl,
-  },
+  // Each indexable page sets its own canonical; pages without one (sign-in etc.) are noindex
   robots: {
     index: true,
     follow: true,
-    nocache: false,
     googleBot: {
       index: true,
       follow: true,
-      noimageindex: false,
       "max-video-preview": -1,
       "max-image-preview": "large",
       "max-snippet": -1,
@@ -91,29 +74,19 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    url: baseUrl,
-    siteName: "Excel to KML Pro",
-    title: "Excel to KML Pro — Free Survey Coordinate & Benchmark Converter",
-    description:
-      "Convert raw survey spreadsheets into Google Earth 3D models with 5,800+ EPSG coordinate systems, local site calibration, and 3D elevation extrusions. 100% offline.",
+    siteName: SITE_NAME,
+    title: DEFAULT_TITLE,
+    description: SITE_DESCRIPTION,
     locale: "en_US",
-    images: [
-      {
-        url: "/assets/hero_geospatial.jpg",
-        width: 1200,
-        height: 630,
-        alt: "Excel to KML Pro Geospatial Benchmark & Coordinate Converter Preview",
-      },
-    ],
+    images: [OG_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Excel to KML Pro — Free Survey Coordinate & Benchmark Converter",
-    description:
-      "Turn Excel & CSV survey coordinates into Google Earth 3D KML/KMZ with 5,800+ EPSG coordinate systems. 100% offline & free.",
-    images: ["/assets/hero_geospatial.jpg"],
-    creator: "@ExcelToKMLPro",
+    title: DEFAULT_TITLE,
+    description: SITE_DESCRIPTION,
+    images: [OG_IMAGE.url],
   },
+  formatDetection: { telephone: false, address: false, email: false },
 };
 
 export default function RootLayout({
@@ -127,7 +100,6 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} antialiased scroll-smooth`}
     >
       <head>
-        <StructuredData />
         <link rel="preconnect" href="https://api.github.com" />
       </head>
       <body className="min-h-screen bg-white text-[#1d1d1f] selection:bg-[#0071e3]/20 selection:text-[#0071e3]">

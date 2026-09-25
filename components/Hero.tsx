@@ -62,11 +62,15 @@ export default function Hero({ versionTag, fileSizeText, onDownloadClick }: Hero
             </a>
 
             {/* Headline */}
-            <h1 className="text-[32px] sm:text-[40px] lg:text-[44px] font-extrabold tracking-tight text-slate-900 leading-[1.1] mb-5 text-balance">
-              Excel Survey Data to{" "}
+            <h1 className="text-[28px] sm:text-[34px] lg:text-[38px] font-extrabold tracking-tight text-slate-900 leading-[1.15] mb-5 text-balance">
+              Convert Geospatial Coordinate Tables into{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0071e3] via-[#0284c7] to-[#0ea5e9]">
-                <span className="whitespace-nowrap">Google Earth</span>{" "}
-                <span className="whitespace-nowrap">KML &amp; KMZ</span>
+                <span className="whitespace-nowrap">Google Earth 3D</span>{" "}
+                <span className="whitespace-nowrap">KML &amp; KMZ &amp; DXF</span>
+              </span>
+              <span className="sr-only"> — </span>
+              <span className="block mt-3 text-lg sm:text-xl lg:text-[22px] font-bold tracking-normal text-slate-600 leading-snug">
+                Complete with Site Photos &amp; Comprehensive Reports
               </span>
             </h1>
 

@@ -1,28 +1,12 @@
 import type { Metadata } from "next";
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://exceltokml.pro";
-
+// The web app needs a sign-in, so there is nothing here for search engines to index
 export const metadata: Metadata = {
-  title: "Online Web Coordinate Converter — Excel & CSV to KML Preview",
-  description:
-    "Parse survey coordinates and generate Google Earth KML files directly in your web browser. Instant preview of Easting, Northing, and WGS84 positions.",
-  alternates: {
-    canonical: `${baseUrl}/app`,
-  },
-  openGraph: {
-    title: "Online Web Coordinate Converter | Excel to KML Pro",
-    description:
-      "Parse survey coordinates and preview Google Earth KML files directly in your browser with zero installation.",
-    url: `${baseUrl}/app`,
-    type: "website",
-    images: ["/assets/hero_geospatial.jpg"],
-  },
+  title: "Web App",
+  description: "Convert survey coordinates to Google Earth KML, KMZ and DXF in your browser.",
+  robots: { index: false, follow: false },
 };
 
-export default function AppLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AppLayout({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
