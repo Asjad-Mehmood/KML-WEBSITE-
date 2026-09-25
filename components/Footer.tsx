@@ -2,6 +2,8 @@
 
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 
 interface FooterProps {
   versionTag: string;
@@ -14,10 +16,10 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
   return (
     <footer className="bg-white border-t border-slate-100 pt-16 pb-12">
       <div className="max-w-[1140px] mx-auto px-5 sm:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-slate-100">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-10 pb-12 border-b border-slate-100">
           
           {/* Brand */}
-          <div className="lg:col-span-2 space-y-3.5">
+          <div className="col-span-2 md:col-span-3 lg:col-span-2 space-y-3.5">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center shadow-xs">
                 <Image src="/assets/icon.png" alt="Excel to KML Pro — Geomatics Coordinate Software" width={20} height={20} className="object-contain" />
@@ -35,25 +37,25 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
           </div>
 
           {/* Product Links */}
-          <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3.5">Product</h4>
+          <nav aria-label="Product">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3.5">Product</h2>
             <ul className="space-y-2.5 text-xs sm:text-sm text-slate-600">
-              {["#showcase:Live Map Demo", "#features:Features", "#workflow:How It Works", "#specs:Specifications", "/app:Web App"].map((item) => {
+              {["/#showcase:Live Map Demo", "/#features:Features", "/#workflow:How It Works", "/#specs:Specifications", "/app:Web App"].map((item) => {
                 const [href, label] = item.split(":");
                 return (
                   <li key={label}>
-                    <a href={href} className="hover:text-blue-600 transition-colors">
+                    <Link href={href} className="hover:text-blue-600 transition-colors">
                       {label}
-                    </a>
+                    </Link>
                   </li>
                 );
               })}
             </ul>
-          </div>
+          </nav>
 
           {/* Downloads Links */}
-          <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3.5">Downloads</h4>
+          <nav aria-label="Downloads">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3.5">Downloads</h2>
             <ul className="space-y-2.5 text-xs sm:text-sm text-slate-600">
               <li>
                 <button onClick={onDownloadClick} className="hover:text-blue-600 transition-colors text-left cursor-pointer">
@@ -63,40 +65,48 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
               <li>
                 <a href={releaseNotesUrl} target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 transition-colors">
                   Release Notes ({versionTag})
+                  <ArrowUpRight className="inline w-3 h-3 ml-0.5 text-slate-400" aria-hidden />
                 </a>
               </li>
               <li>
-                <a href="#download" className="hover:text-blue-600 transition-colors">
+                <Link href="/#download" className="hover:text-blue-600 transition-colors">
                   Sample Survey CSV
-                </a>
+                </Link>
               </li>
             </ul>
-          </div>
+          </nav>
 
           {/* Resources Links */}
-          <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3.5">Resources</h4>
+          <nav aria-label="Resources">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3.5">Resources</h2>
             <ul className="space-y-2.5 text-xs sm:text-sm text-slate-600">
               {[
                 ["https://github.com/chaudaryyabdullah03-collab/kml-convertor", "GitHub Repository"],
                 ["https://github.com/chaudaryyabdullah03-collab/kml-convertor/issues", "Issue Tracker"],
-                ["#faq", "Common Questions"],
+                ["/faq", "Common Questions"],
                 ["https://epsg.io", "EPSG Geodetic Registry"],
               ].map(([href, label]) => (
                 <li key={label}>
-                  <a href={href} target={href.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer" className="hover:text-blue-600 transition-colors">
-                    {label}
-                  </a>
+                  {href.startsWith("http") ? (
+                    <a href={href} target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 transition-colors">
+                      {label}
+                      <ArrowUpRight className="inline w-3 h-3 ml-0.5 text-slate-400" aria-hidden />
+                    </a>
+                  ) : (
+                    <Link href={href} className="hover:text-blue-600 transition-colors">
+                      {label}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>
-          </div>
+          </nav>
         </div>
 
         {/* Bottom Copyright Strip */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
-          <p>Copyright &copy; 2026 Excel to KML Pro. Open-source geomatics software.</p>
-          <div className="flex items-center gap-5 text-slate-600">
+          <p className="text-center sm:text-left">Copyright &copy; {new Date().getFullYear()} Excel to KML Pro. Open-source geomatics software.</p>
+          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-slate-600">
             <a href="https://github.com/chaudaryyabdullah03-collab/kml-convertor" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 transition-colors">GitHub</a>
             <button onClick={onDownloadClick} className="hover:text-blue-600 transition-colors cursor-pointer">Download</button>
             <a href="/app" className="hover:text-blue-600 transition-colors">Web App</a>
