@@ -436,7 +436,7 @@ ${placemarks}
                     Placemarks carry real heights (<code className="text-slate-700 bg-slate-100 px-1 py-0.5 rounded font-mono text-[10px]">relativeToGround</code>) for 3D extrusion in Google Earth.
                   </span>
                 </p>
-                <span className="text-slate-400 font-mono text-[11px]">
+                <span className="text-slate-500 font-mono text-[11px]">
                   ESRI World Imagery + OpenStreetMap
                 </span>
               </div>
@@ -526,8 +526,8 @@ ${placemarks}
                       <th className="px-4 py-3 font-mono">Northing (m)</th>
                       <th className="px-4 py-3 font-mono">Elevation (m)</th>
                       <th className="px-4 py-3">Code</th>
-                      <th className="px-4 py-3 font-mono text-[#0071e3]">WGS84 Latitude</th>
-                      <th className="px-4 py-3 font-mono text-[#0071e3]">WGS84 Longitude</th>
+                      <th className="px-4 py-3 font-mono text-blue-700">WGS84 Latitude</th>
+                      <th className="px-4 py-3 font-mono text-blue-700">WGS84 Longitude</th>
                       <th className="px-4 py-3 text-right">Status</th>
                     </tr>
                   </thead>
@@ -547,7 +547,7 @@ ${placemarks}
                         <td className="px-4 py-3 text-blue-700 font-semibold">{Math.abs(row.lat).toFixed(6)}° {row.lat >= 0 ? "N" : "S"}</td>
                         <td className="px-4 py-3 text-blue-700 font-semibold">{Math.abs(row.lon).toFixed(6)}° {row.lon >= 0 ? "E" : "W"}</td>
                         <td className="px-4 py-3 text-right font-sans">
-                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700">
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
                             KML Ready
                           </span>
@@ -556,7 +556,7 @@ ${placemarks}
                     ))}
                     {filteredPoints.length === 0 && (
                       <tr>
-                        <td colSpan={9} className="px-4 py-8 text-center text-slate-400 font-sans text-xs">
+                        <td colSpan={9} className="px-4 py-8 text-center text-slate-500 font-sans text-xs">
                           No survey points matching &quot;{searchFilter}&quot;
                         </td>
                       </tr>
@@ -571,7 +571,7 @@ ${placemarks}
                   <ShieldCheck className="w-4 h-4 text-emerald-600" />
                   Exports directly to Google Earth (.KML / .KMZ) with 3D elevations and feature labels.
                 </span>
-                <span className="font-mono text-slate-400">
+                <span className="font-mono text-slate-500">
                   Total points in dataset: {currentDataset.points.length}
                 </span>
               </div>
@@ -812,7 +812,7 @@ ${placemarks}
                           style={{ width: `${tolerancePct}%` }}
                         />
                       </div>
-                      <div className="flex justify-between text-[10px] font-mono text-slate-400 mt-1">
+                      <div className="flex justify-between text-[10px] font-mono text-slate-500 mt-1">
                         <span>0</span>
                         <span className="inline-flex items-center gap-1 text-emerald-700 font-semibold">
                           <CheckCircle2 className="w-3 h-3" />
@@ -825,7 +825,7 @@ ${placemarks}
                     {/* Benchmarks */}
                     <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">
                       <span>Control benchmarks</span>
-                      <span className="font-normal normal-case tracking-normal text-slate-400">Residual</span>
+                      <span className="font-normal normal-case tracking-normal text-slate-500">Residual</span>
                     </div>
                     <ul className="space-y-1.5 mb-5">
                       {cal.points.map((pt) => {
@@ -841,7 +841,7 @@ ${placemarks}
                                 <span className="font-mono font-bold text-slate-900 mr-1.5">{pt.id}</span>
                                 <span className="font-medium text-slate-700">{pt.name}</span>
                               </div>
-                              <div className="text-[10.5px] font-mono text-slate-400 mt-0.5">
+                              <div className="text-[10.5px] font-mono text-slate-500 mt-0.5">
                                 <span className="hidden sm:inline">{pt.role} · </span>dx {pt.dx} · dy {pt.dy}
                               </div>
                             </div>
@@ -877,7 +877,7 @@ ${placemarks}
                     <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
                     Calculated locally · Helmert 4-parameter (dX, dY, scale, rotation) &amp; Bursa-Wolf compliant.
                   </span>
-                  <span className="text-slate-400 font-mono text-[11px] pl-[22px] sm:pl-0">
+                  <span className="text-slate-500 font-mono text-[11px] pl-[22px] sm:pl-0">
                     5,800+ EPSG systems · ISO 19111
                   </span>
                 </div>

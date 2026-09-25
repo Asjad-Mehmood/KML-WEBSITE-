@@ -234,7 +234,7 @@ BLDG-C2,513620.000,2787440.000,15.15,STRUCTURE,Building Column Corner B
                 >
                   <Download className="w-4 h-4 transition-transform group-hover:translate-y-0.5" />
                   <span>Download for Windows</span>
-                  <span className="text-blue-100/90 text-xs font-normal">· {fileSizeText}</span>
+                  <span className="text-white text-xs font-normal">· {fileSizeText}</span>
                 </button>
 
                 <button
@@ -246,7 +246,7 @@ BLDG-C2,513620.000,2787440.000,15.15,STRUCTURE,Building Column Corner B
                 </button>
               </div>
 
-              <p className="text-[11px] text-slate-400 mt-3">
+              <p className="text-[11px] text-slate-500 mt-3">
                 Free account required · Web version available at{" "}
                 <a href="/app" className="text-slate-500 underline underline-offset-2 hover:text-[#0071e3]">
                   /app
@@ -256,7 +256,7 @@ BLDG-C2,513620.000,2787440.000,15.15,STRUCTURE,Building Column Corner B
 
             {/* Right: build details + verification */}
             <div className="lg:col-span-5 bg-white border-t lg:border-t-0 lg:border-l border-slate-200/80 p-6 sm:p-8 flex flex-col">
-              <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-3">
+              <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-3">
                 Build details
               </h4>
               <dl className="text-[13px] divide-y divide-slate-200/70 mb-6">
@@ -275,7 +275,7 @@ BLDG-C2,513620.000,2787440.000,15.15,STRUCTURE,Building Column Corner B
 
               <div className="mt-auto">
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
                     Verify your download
                   </h4>
                   <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700">
@@ -312,7 +312,7 @@ BLDG-C2,513620.000,2787440.000,15.15,STRUCTURE,Building Column Corner B
                     {copied === "command" ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
                   </button>
                 </div>
-                <p className="text-[11px] text-slate-400 mt-2 leading-snug">
+                <p className="text-[11px] text-slate-500 mt-2 leading-snug">
                   Run in PowerShell from your Downloads folder — the output should match the hash above.
                 </p>
               </div>
@@ -395,7 +395,7 @@ BLDG-C2,513620.000,2787440.000,15.15,STRUCTURE,Building Column Corner B
                 <div className="min-w-0">
                   <div className="text-[11px] text-slate-500">{label}</div>
                   <div className="text-[13px] font-bold text-slate-900">{value}</div>
-                  <div className="text-[11px] text-slate-400 mt-0.5">{note}</div>
+                  <div className="text-[11px] text-slate-500 mt-0.5">{note}</div>
                 </div>
               </div>
             ))}
@@ -437,7 +437,7 @@ BLDG-C2,513620.000,2787440.000,15.15,STRUCTURE,Building Column Corner B
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-1">
                 <h4 className="font-bold text-slate-900 text-[15px]">Release notes &amp; updates</h4>
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded">
                   GitHub
                 </span>
               </div>

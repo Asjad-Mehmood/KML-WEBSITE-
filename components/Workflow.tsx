@@ -154,7 +154,7 @@ function AnimatedStep({
                 <Icon className="w-5 h-5" strokeWidth={1.8} />
               </div>
               <div>
-                <div className="text-[10px] font-bold font-mono uppercase tracking-[0.15em] text-slate-400">
+                <div className="text-[10px] font-bold font-mono uppercase tracking-[0.15em] text-slate-500">
                   {s.step}
                 </div>
                 <h3 className="text-[15px] sm:text-base font-bold text-slate-900 leading-tight">
@@ -166,10 +166,9 @@ function AnimatedStep({
             {/* Large step number watermark */}
             <span
               aria-hidden="true"
-              className={`text-[52px] font-black leading-none ${s.accent} opacity-[0.06] select-none pointer-events-none`}
-            >
-              {s.number}
-            </span>
+              data-n={s.number}
+              className={`text-[52px] font-black leading-none ${s.accent} opacity-[0.06] select-none pointer-events-none before:content-[attr(data-n)]`}
+            />
           </div>
 
           {/* Description */}
@@ -180,7 +179,7 @@ function AnimatedStep({
           {/* Technical Preview Box */}
           <div className="bg-slate-50/90 rounded-xl border border-slate-200/60 overflow-hidden">
             <div className="px-4 py-2.5 border-b border-slate-200/50 flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
                 {s.previewHeader}
               </span>
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
@@ -191,7 +190,7 @@ function AnimatedStep({
                   key={i}
                   className="flex items-center justify-between gap-3 text-[11.5px]"
                 >
-                  <span className="text-slate-400 shrink-0">{line.label}</span>
+                  <span className="text-slate-500 shrink-0">{line.label}</span>
                   <span
                     className={`font-mono font-semibold text-right truncate ${
                       line.highlight ? "text-slate-900" : "text-slate-600"

@@ -91,7 +91,10 @@ const CATEGORIES: { id: FaqCategory; label: string; icon: React.ElementType }[] 
   { id: "security", label: "Privacy & local PC", icon: ShieldCheck },
 ];
 
-export default function Faq() {
+// headingLevel: "h1" when the FAQ is the page itself (/faq), "h2" inside the home page
+export default function Faq({ headingLevel = "h2" }: { headingLevel?: "h1" | "h2" }) {
+  const Heading = headingLevel;
+  const SubHeading = headingLevel === "h1" ? "h2" : "h3";
   const [selectedCategory, setSelectedCategory] = useState<FaqCategory>("all");
   const [openId, setOpenId] = useState<number | null>(1);
 
@@ -112,7 +115,7 @@ export default function Faq() {
             <HelpCircle className="w-3.5 h-3.5 text-blue-500" />
             <span>Help &amp; Answers</span>
           </div>
-          <h2 id="faq-heading" className="tracking-tight text-slate-900 mb-4">
+          <Heading id="faq-heading" className="tracking-tight text-slate-900 mb-4">
             <span className="block text-2xl sm:text-3xl lg:text-[36px] font-extrabold leading-[1.15]">
               Frequently Asked Questions
             </span>
@@ -120,7 +123,7 @@ export default function Faq() {
             <span className="block mt-2 text-base sm:text-lg font-semibold text-slate-500">
               Coordinate Conversion &amp; Google Earth KML
             </span>
-          </h2>
+          </Heading>
           <p className="text-sm sm:text-[15px] text-slate-500 leading-relaxed max-w-[500px] mx-auto">
             Coordinate systems, spreadsheet imports, 3D exports, and data privacy — answered.
           </p>
@@ -179,7 +182,7 @@ export default function Faq() {
                       : "border-slate-200/80 hover:border-slate-300"
                   }`}
                 >
-                  <h3>
+                  <SubHeading>
                     <button
                       id={buttonId}
                       aria-expanded={isOpen}
@@ -204,7 +207,7 @@ export default function Faq() {
                         <Plus className="w-3.5 h-3.5" />
                       </span>
                     </button>
-                  </h3>
+                  </SubHeading>
 
                   {/* Kept in the DOM when closed so answers stay crawlable */}
                   <div
@@ -232,9 +235,9 @@ export default function Faq() {
               <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center shrink-0">
                 <MessageSquare className="w-5 h-5" strokeWidth={1.8} />
               </div>
-              <h3 className="text-[15px] font-bold text-slate-900 leading-tight">
+              <SubHeading className="text-[15px] font-bold text-slate-900 leading-tight">
                 Have a project-specific question?
-              </h3>
+              </SubHeading>
             </div>
             <p className="text-[13px] text-slate-600 leading-relaxed mb-5">
               Working with an unusual local site datum or encountering an AutoCAD coordinate mismatch? Our community can help.

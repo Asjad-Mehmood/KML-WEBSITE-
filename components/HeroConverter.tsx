@@ -441,7 +441,7 @@ function SystemPicker({ value, onChange }: { value: CoordSystem; onChange: (sys:
         <span className="shrink-0">{value.flag}</span>
         <span className="flex-1 min-w-0 truncate">{value.name}</span>
         <span className="shrink-0 font-mono text-[11px] text-cyan-400/70">{value.grid}</span>
-        <ChevronDown className={`w-3.5 h-3.5 shrink-0 text-cyan-400/60 transition-transform ${open ? "rotate-180" : ""}`} />
+        <ChevronDown className={`w-3.5 h-3.5 shrink-0 text-cyan-400/80 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
 
       {open && (
@@ -450,7 +450,7 @@ function SystemPicker({ value, onChange }: { value: CoordSystem; onChange: (sys:
           style={{ background: "#041528", border: "1px solid rgba(0, 180, 255, 0.2)" }}
         >
           <div className="flex items-center gap-2 px-3 py-2" style={{ borderBottom: "1px solid rgba(0, 180, 255, 0.12)" }}>
-            <Search className="w-3.5 h-3.5 text-cyan-400/60 shrink-0" />
+            <Search className="w-3.5 h-3.5 text-cyan-400/80 shrink-0" />
             <input
               ref={inputRef}
               role="combobox"
@@ -473,7 +473,7 @@ function SystemPicker({ value, onChange }: { value: CoordSystem; onChange: (sys:
             {groups.map((grp) => (
               <React.Fragment key={grp.label || "results"}>
                 {grp.label && (
-                  <li role="presentation" className="px-3 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-cyan-400/50">
+                  <li role="presentation" className="px-3 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-cyan-400/80">
                     {grp.label}
                   </li>
                 )}
@@ -498,21 +498,21 @@ function SystemPicker({ value, onChange }: { value: CoordSystem; onChange: (sys:
                       <span className={`flex-1 min-w-0 truncate ${isSelected ? "text-cyan-300 font-semibold" : "text-cyan-50"}`}>
                         {item.name}
                       </span>
-                      <span className="shrink-0 font-mono text-[10.5px] text-cyan-400/60">EPSG:{item.code}</span>
+                      <span className="shrink-0 font-mono text-[10.5px] text-cyan-400/80">EPSG:{item.code}</span>
                     </li>
                   );
                 })}
               </React.Fragment>
             ))}
             {items.length === 0 && (
-              <li className="px-3 py-4 text-center text-[12px] text-cyan-400/60">
+              <li className="px-3 py-4 text-center text-[12px] text-cyan-400/80">
                 {rows || loadError ? `No systems match “${query}”` : "Loading EPSG registry…"}
               </li>
             )}
           </ul>
 
           <div
-            className="px-3 py-1.5 text-[10.5px] text-cyan-400/50 flex justify-between gap-2"
+            className="px-3 py-1.5 text-[10.5px] text-cyan-400/80 flex justify-between gap-2"
             style={{ borderTop: "1px solid rgba(0, 180, 255, 0.12)" }}
           >
             <span>
@@ -608,7 +608,7 @@ function BatchPanel({ sys }: { sys: CoordSystem }) {
         style={fieldStyle}
       />
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p id="hc-batch-help" className="text-[10.5px] text-cyan-400/60">
+        <p id="hc-batch-help" className="text-[10.5px] text-cyan-400/80">
           ID, easting, northing, elevation · tabs, commas or spaces · up to {MAX_ROWS.toLocaleString()} rows
         </p>
         <label className="flex items-center gap-1.5 text-[10.5px] text-cyan-400/70">
@@ -632,7 +632,7 @@ function BatchPanel({ sys }: { sys: CoordSystem }) {
         aria-live="polite"
       >
         {text.trim() === "" ? (
-          <p className="text-[12px] text-cyan-400/60">
+          <p className="text-[12px] text-cyan-400/80">
             Paste your points above — each row converts to WGS84 in your browser, nothing is uploaded.
           </p>
         ) : (
@@ -670,7 +670,7 @@ function BatchPanel({ sys }: { sys: CoordSystem }) {
                     </span>
                   </li>
                 ))}
-                {points.length > 2 && <li className="text-cyan-400/60">+ {points.length - 2} more</li>}
+                {points.length > 2 && <li className="text-cyan-400/80">+ {points.length - 2} more</li>}
               </ul>
             )}
           </>
@@ -828,11 +828,11 @@ Datum: ${current.datum}]]></description>
               <RefreshCw className="w-3.5 h-3.5 text-cyan-300" />
             </div>
             <div className="min-w-0">
-              <h3 className="text-[13px] font-bold text-cyan-50 leading-tight truncate">
+              <h2 className="text-[13px] font-bold text-cyan-50 leading-tight truncate">
                 <span className="sm:hidden">Quick Converter</span>
                 <span className="hidden sm:inline">Quick Coordinate Converter</span>
-              </h3>
-              <p className="hidden sm:block text-[11px] font-medium truncate" style={{ color: "rgba(0,180,255,0.5)" }}>
+              </h2>
+              <p className="hidden sm:block text-[11px] font-medium truncate" style={{ color: "rgba(0,180,255,0.85)" }}>
                 Grid (E, N) → GPS (Lat, Lon) • 5,800+ EPSG systems
               </p>
             </div>
@@ -855,7 +855,7 @@ Datum: ${current.datum}]]></description>
                 aria-selected={mode === id}
                 onClick={() => setMode(id)}
                 className={`flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-md text-[11px] font-semibold whitespace-nowrap transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50 ${
-                  mode === id ? "bg-cyan-400/15 text-cyan-100" : "text-cyan-400/60 hover:text-cyan-200"
+                  mode === id ? "bg-cyan-400/15 text-cyan-100" : "text-cyan-400/80 hover:text-cyan-200"
                 }`}
               >
                 <Icon className="w-3 h-3" aria-hidden />
@@ -950,7 +950,7 @@ Datum: ${current.datum}]]></description>
                   onClick={copyCoords}
                   disabled={!valid}
                   className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-semibold transition-colors hover:bg-cyan-500/10 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50"
-                  style={{ color: "rgba(0,180,255,0.7)", background: "rgba(0,180,255,0.06)" }}
+                  style={{ color: "rgba(0,180,255,0.95)", background: "rgba(0,180,255,0.06)" }}
                   title="Copy Latitude, Longitude"
                 >
                   {copied ? <CheckCircle2 className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
@@ -960,13 +960,13 @@ Datum: ${current.datum}]]></description>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <div className="text-[9px] uppercase tracking-wider text-cyan-400/60 font-medium">Latitude</div>
+                  <div className="text-[9px] uppercase tracking-wider text-cyan-400/80 font-medium">Latitude</div>
                   <div className="text-[13px] font-mono font-bold text-cyan-50">
                     {valid ? `${Math.abs(computed.lat).toFixed(6)}° ${computed.lat >= 0 ? "N" : "S"}` : "—"}
                   </div>
                 </div>
                 <div>
-                  <div className="text-[9px] uppercase tracking-wider text-cyan-400/60 font-medium">Longitude</div>
+                  <div className="text-[9px] uppercase tracking-wider text-cyan-400/80 font-medium">Longitude</div>
                   <div className="text-[13px] font-mono font-bold text-cyan-50">
                     {valid ? `${Math.abs(computed.lon).toFixed(6)}° ${computed.lon >= 0 ? "E" : "W"}` : "—"}
                   </div>
@@ -975,11 +975,11 @@ Datum: ${current.datum}]]></description>
 
               <div className="grid grid-cols-2 gap-2 pt-1 border-t border-cyan-500/10">
                 <div>
-                  <div className="text-[9px] uppercase tracking-wider text-cyan-400/60 font-medium">Elevation</div>
+                  <div className="text-[9px] uppercase tracking-wider text-cyan-400/80 font-medium">Elevation</div>
                   <div className="text-[13px] font-mono font-bold text-cyan-300">{elevation >= 0 ? "+" : ""}{elevation} m</div>
                 </div>
                 <div>
-                  <div className="text-[9px] uppercase tracking-wider text-cyan-400/60 font-medium">Accuracy</div>
+                  <div className="text-[9px] uppercase tracking-wider text-cyan-400/80 font-medium">Accuracy</div>
                   <div className="text-[13px] font-mono font-bold text-emerald-400">{current.accuracy}</div>
                 </div>
               </div>
@@ -1040,13 +1040,13 @@ Datum: ${current.datum}]]></description>
               {/* HUD labels */}
               <div
                 className="absolute top-2 left-2 text-[9px] font-mono pointer-events-none"
-                style={{ color: "rgba(0,180,255,0.6)" }}
+                style={{ color: "rgba(0,180,255,0.8)" }}
               >
                 GRID: <span className="text-cyan-300 font-bold">{current.grid}</span>
               </div>
               <div
                 className="absolute top-2 right-2 text-[9px] font-mono pointer-events-none"
-                style={{ color: "rgba(0,180,255,0.4)" }}
+                style={{ color: "rgba(0,180,255,0.8)" }}
               >
                 {centralMeridian(current.def) !== null && <>CM {Number(centralMeridian(current.def)!.toFixed(4))}°</>}
               </div>
@@ -1057,7 +1057,7 @@ Datum: ${current.datum}]]></description>
               </div>
               <div
                 className="absolute bottom-2 right-2 text-[9px] font-mono pointer-events-none"
-                style={{ color: "rgba(0,180,255,0.4)" }}
+                style={{ color: "rgba(0,180,255,0.8)" }}
               >
                 {current.accuracy}
               </div>
@@ -1075,11 +1075,11 @@ Datum: ${current.datum}]]></description>
               style={{ background: "rgba(0,180,255,0.04)", border: "1px solid rgba(0,180,255,0.08)" }}
             >
               <div>
-                <div className="text-[9px] uppercase tracking-wider text-cyan-400/60">Station ID</div>
+                <div className="text-[9px] uppercase tracking-wider text-cyan-400/80">Station ID</div>
                 <div className="text-[11px] font-mono font-bold text-cyan-200">{current.station}</div>
               </div>
               <div className="text-right">
-                <div className="text-[9px] uppercase tracking-wider text-cyan-400/60">Datum</div>
+                <div className="text-[9px] uppercase tracking-wider text-cyan-400/80">Datum</div>
                 <div className="text-[10px] font-mono font-bold text-cyan-100 truncate max-w-[100px]">
                   {current.datum.split(" ")[0]}
                 </div>
@@ -1097,7 +1097,7 @@ Datum: ${current.datum}]]></description>
             <Globe className="w-3 h-3 text-cyan-400/80" />
             Exports standard KML 2.2 for Google Earth
           </span>
-          <span className="text-[11px] font-mono text-cyan-400/50">
+          <span className="text-[11px] font-mono text-cyan-400/80">
             {current.grid}
           </span>
         </div>

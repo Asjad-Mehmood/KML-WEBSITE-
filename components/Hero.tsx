@@ -82,7 +82,7 @@ export default function Hero({ versionTag, fileSizeText, onDownloadClick }: Hero
               >
                 <Download className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" />
                 <span>Download for Windows</span>
-                <span className="text-blue-100 text-xs font-normal">· {fileSizeText}</span>
+                <span className="text-white text-xs font-normal">· {fileSizeText}</span>
               </button>
 
               <a

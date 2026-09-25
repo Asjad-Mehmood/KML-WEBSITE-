@@ -271,7 +271,7 @@ export default function SpecsTable() {
                 </span>
                 <div className="text-[13px] font-bold text-slate-900 leading-snug">{grid.name}</div>
                 <p className="text-[12px] text-slate-500 mt-0.5">{grid.datum}</p>
-                <div className="mt-auto pt-3 flex items-center gap-1.5 text-[11px] text-slate-400">
+                <div className="mt-auto pt-3 flex items-center gap-1.5 text-[11px] text-slate-500">
                   <MapPin className="w-3 h-3 shrink-0" />
                   <span>{grid.region}</span>
                 </div>

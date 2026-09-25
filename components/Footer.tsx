@@ -31,14 +31,14 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
             <p className="text-xs sm:text-sm text-slate-500 leading-relaxed max-w-[300px]">
               Survey benchmark &amp; coordinate spreadsheet converter for Google Earth and GIS workflows.
             </p>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-500">
               Open-source project maintained for geomatics professionals.
             </p>
           </div>
 
           {/* Product Links */}
           <nav aria-label="Product">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3.5">Product</h2>
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3.5">Product</h2>
             <ul className="space-y-2.5 text-xs sm:text-sm text-slate-600">
               {["/#showcase:Live Map Demo", "/#features:Features", "/#workflow:How It Works", "/#specs:Specifications", "/app:Web App"].map((item) => {
                 const [href, label] = item.split(":");
@@ -55,7 +55,7 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
 
           {/* Downloads Links */}
           <nav aria-label="Downloads">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3.5">Downloads</h2>
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3.5">Downloads</h2>
             <ul className="space-y-2.5 text-xs sm:text-sm text-slate-600">
               <li>
                 <button onClick={onDownloadClick} className="hover:text-blue-600 transition-colors text-left cursor-pointer">
@@ -78,7 +78,7 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
 
           {/* Resources Links */}
           <nav aria-label="Resources">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3.5">Resources</h2>
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3.5">Resources</h2>
             <ul className="space-y-2.5 text-xs sm:text-sm text-slate-600">
               {[
                 ["https://github.com/chaudaryyabdullah03-collab/kml-convertor", "GitHub Repository"],
@@ -104,7 +104,7 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
         </div>
 
         {/* Bottom Copyright Strip */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <p className="text-center sm:text-left">Copyright &copy; {new Date().getFullYear()} Excel to KML Pro. Open-source geomatics software.</p>
           <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-slate-600">
             <a href="https://github.com/chaudaryyabdullah03-collab/kml-convertor" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 transition-colors">GitHub</a>

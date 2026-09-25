@@ -14,14 +14,14 @@ export default function FaqPage() {
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-blue-100 selection:text-blue-900">
       <Navbar onDownloadClick={handleDownload} />
-      <div className="pt-20">
-        <Faq />
-      </div>
-      <CtaBanner
-        versionTag="v3.5.5"
-        fileSizeText="3.14 MB"
-        onDownloadClick={handleDownload}
-      />
+      <main id="main-content" className="pt-20">
+        <Faq headingLevel="h1" />
+        <CtaBanner
+          versionTag="v3.5.5"
+          fileSizeText="3.14 MB"
+          onDownloadClick={handleDownload}
+        />
+      </main>
       <Footer
         versionTag="v3.5.5"
         downloadUrl="https://github.com/chaudaryyabdullah03-collab/kml-convertor/releases/latest"

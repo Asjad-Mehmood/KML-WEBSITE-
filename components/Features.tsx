@@ -54,7 +54,7 @@ const FEATURES: FeatureCard[] = [
   },
   {
     icon: FileSpreadsheet,
-    accent: "text-emerald-600",
+    accent: "text-emerald-700",
     accentLight: "bg-emerald-50",
     accentBorder: "border-emerald-200/70",
     accentBar: "bg-emerald-500",
@@ -76,7 +76,7 @@ const FEATURES: FeatureCard[] = [
   },
   {
     icon: Shapes,
-    accent: "text-amber-600",
+    accent: "text-amber-700",
     accentLight: "bg-amber-50",
     accentBorder: "border-amber-200/70",
     accentBar: "bg-amber-500",
@@ -112,7 +112,7 @@ function GridsPreview() {
     <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 overflow-hidden" aria-hidden>
       <div className="flex items-center gap-2 px-3.5 py-2 border-b border-slate-200/70 bg-white">
         <Search className="w-3.5 h-3.5 text-slate-400" />
-        <span className="text-[11px] text-slate-400">Search grid or EPSG code…</span>
+        <span className="text-[11px] text-slate-500">Search grid or EPSG code…</span>
       </div>
       <ul className="divide-y divide-slate-200/60">
         {GRID_PREVIEW.map((g, i) => (
