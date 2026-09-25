@@ -2,9 +2,6 @@
 
 import React, { useRef, useEffect, useState } from "react";
 import {
-  FileSpreadsheet,
-  Globe,
-  Layers,
   ArrowRight,
   Sparkles,
   CheckCircle2,
@@ -90,7 +87,7 @@ function AnimatedStep({
   idx: number;
   isLast: boolean;
 }) {
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLLIElement>(null);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -112,9 +109,10 @@ function AnimatedStep({
   const Icon = s.icon;
 
   return (
-    <div
+    <li
       ref={ref}
-      className="relative flex flex-col items-center"
+      // Reduced-motion users see the step immediately, without the reveal animation
+      className="relative flex flex-col items-center motion-reduce:!opacity-100 motion-reduce:!transform-none motion-reduce:!transition-none"
       style={{
         opacity: visible ? 1 : 0,
         transform: visible ? "translateY(0)" : "translateY(32px)",
@@ -167,6 +165,7 @@ function AnimatedStep({
 
             {/* Large step number watermark */}
             <span
+              aria-hidden="true"
               className={`text-[52px] font-black leading-none ${s.accent} opacity-[0.06] select-none pointer-events-none`}
             >
               {s.number}
@@ -209,7 +208,7 @@ function AnimatedStep({
 
       {/* Connector Arrow (between cards on md+) */}
       {!isLast && (
-        <div className="hidden md:flex absolute -right-[22px] top-1/2 -translate-y-1/2 z-10 w-[44px] items-center justify-center">
+        <div aria-hidden="true" className="hidden md:flex absolute -right-[22px] top-1/2 -translate-y-1/2 z-10 w-[44px] items-center justify-center">
           <div className="w-9 h-9 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center">
             <ArrowRight className="w-4 h-4 text-slate-400" />
           </div>
@@ -218,13 +217,13 @@ function AnimatedStep({
 
       {/* Connector Arrow (between cards on mobile) */}
       {!isLast && (
-        <div className="flex md:hidden my-4 items-center justify-center">
+        <div aria-hidden="true" className="flex md:hidden my-4 items-center justify-center">
           <div className="w-8 h-8 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center rotate-90">
             <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
           </div>
         </div>
       )}
-    </div>
+    </li>
   );
 }
 
@@ -236,6 +235,7 @@ export default function Workflow() {
     >
       {/* Subtle background pattern */}
       <div
+        aria-hidden="true"
         className="absolute inset-0 opacity-[0.35] pointer-events-none"
         style={{
           backgroundImage:
@@ -268,7 +268,7 @@ export default function Workflow() {
         </div>
 
         {/* Steps Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-7">
+        <ol className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-7">
           {STEPS.map((s, idx) => (
             <AnimatedStep
               key={s.step}
@@ -277,7 +277,7 @@ export default function Workflow() {
               isLast={idx === STEPS.length - 1}
             />
           ))}
-        </div>
+        </ol>
       </div>
     </section>
   );
