@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import Logo from "./Logo";
+import Image from "next/image";
 import { useAuth } from "../context/AuthContext";
 import {
   Download,
@@ -111,7 +111,13 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
             aria-label="Excel to KML Pro — home"
             className="flex items-center pl-1.5 pr-3 sm:pr-4 py-1 rounded-full hover:bg-black/[0.04] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           >
-            <Logo size={32} compactOnMobile />
+            <span className="relative w-8 h-8 shrink-0 rounded-full overflow-hidden bg-gradient-to-tr from-slate-800 to-slate-950 shadow-inner flex items-center justify-center">
+              <Image src="/assets/icon.png" alt="" width={32} height={32} className="w-full h-full object-contain p-0.5" priority />
+            </span>
+            <span className="ml-2.5 hidden sm:inline-flex items-center gap-1.5 whitespace-nowrap">
+              <span className="font-extrabold text-[15px] tracking-tight text-slate-900">Excel to KML</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-[#0071e3] px-1.5 py-0.5 rounded-md leading-none">Pro</span>
+            </span>
           </Link>
 
           {/* Center Links */}
