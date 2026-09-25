@@ -73,14 +73,6 @@ export default function RegisterPage() {
     setIsSubmitting(false);
   };
 
-  const handleDemoFill = () => {
-    setName("Asjad Mehmood");
-    setEmail("asjad.surveyor@geotech.com");
-    setPassword("surveyor2026");
-    setOrganization("Apex Geomatics & Land Survey");
-    setRole("Cadastral Surveyor");
-    setError(null);
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 flex flex-col justify-between p-4 sm:p-8 font-sans">
@@ -252,16 +244,6 @@ export default function RegisterPage() {
           </Link>
         </div>
 
-        <div className="mt-4 pt-3 flex items-center justify-between text-xs text-slate-400">
-          <span>Quick testing:</span>
-          <button
-            type="button"
-            onClick={handleDemoFill}
-            className="font-bold text-slate-600 hover:text-blue-600 hover:underline"
-          >
-            Fill Demo Surveyor Profile
-          </button>
-        </div>
       </div>
 
       {/* Footer */}

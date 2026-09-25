@@ -12,7 +12,8 @@
     "lint": "eslint",
     "postinstall": "prisma generate",
     "db:seed": "tsx prisma/seed.ts",
-    "build:epsg": "node scripts/build-epsg-index.mjs"
+    "build:epsg": "node scripts/build-epsg-index.mjs",
+    "set-password": "node scripts/set-password.mjs"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

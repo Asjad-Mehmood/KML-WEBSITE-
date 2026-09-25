@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { db, isAdminRole } from "@/lib/db";
 import { getClientIp, getIpGeoLocation } from "@/lib/geo";
 
 export async function POST(req: NextRequest) {
@@ -21,6 +21,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Admin accounts are never created through public sign-up
+    if (email.trim().toLowerCase() === "admin@exceltokml.com") {
+      return NextResponse.json({ error: "This email address is reserved." }, { status: 400 });
+    }
+    const safeRole = typeof role === "string" && !isAdminRole(role) ? role : undefined;
+
     // Check if user already exists
     const existing = await db.findUserByEmail(email);
     if (existing) {
@@ -40,7 +46,7 @@ export async function POST(req: NextRequest) {
       email,
       password,
       organization,
-      role,
+      role: safeRole,
       ipAddress: geo.ip,
       location: geo.location,
     });

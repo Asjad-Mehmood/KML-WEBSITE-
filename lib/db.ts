@@ -125,6 +125,16 @@ function hashPassword(password: string, salt: string): string {
   return crypto.scryptSync(password, salt, 64).toString("hex");
 }
 
+/** Unguessable throwaway password for accounts that must not be signed into with a known value */
+function randomSecret(): string {
+  return crypto.randomBytes(24).toString("base64url");
+}
+
+/** Roles that grant admin rights; never accepted from public sign-up */
+export function isAdminRole(role: string | undefined | null): boolean {
+  return /admin/i.test(role ?? "");
+}
+
 function generateSalt(): string {
   return crypto.randomBytes(16).toString("hex");
 }
@@ -156,10 +166,16 @@ async function seedDefaultUsersIfEmpty(): Promise<void> {
   const count = await prisma.user.count();
   if (count > 0) return;
 
+  // No well-known passwords: the admin gets ADMIN_INITIAL_PASSWORD or a random one
+  // (set it afterwards with `npm run set-password`); demo accounts can't sign in.
+  const initialAdminPassword = process.env.ADMIN_INITIAL_PASSWORD;
+  if (!initialAdminPassword) {
+    console.warn("Seeded admin@exceltokml.com with a random password. Set one with: npm run set-password -- admin@exceltokml.com");
+  }
   const adminSalt = generateSalt();
-  const adminHash = hashPassword("admin2026!", adminSalt);
+  const adminHash = hashPassword(initialAdminPassword || randomSecret(), adminSalt);
   const defaultSalt = generateSalt();
-  const defaultHash = hashPassword("cadastral2026", defaultSalt);
+  const defaultHash = hashPassword(randomSecret(), defaultSalt);
 
   await prisma.user.createMany({
     data: [
@@ -198,7 +214,7 @@ async function seedDefaultUsersIfEmpty(): Promise<void> {
         id: "usr_demo_surveyor_03",
         name: "Demo Surveyor",
         email: "surveyor.demo@geotech.com",
-        passwordHash: hashPassword("surveyor123", defaultSalt),
+        passwordHash: hashPassword(randomSecret(), defaultSalt),
         salt: defaultSalt,
         organization: "Apex Survey & Mapping Bureau",
         role: "Cadastral Surveyor",
@@ -243,7 +259,7 @@ export const db = {
   }): Promise<UserRecord> {
     const cleanEmail = params.email.trim().toLowerCase();
     const salt = generateSalt();
-    const passwordHash = hashPassword(params.password || "surveyor123", salt);
+    const passwordHash = hashPassword(params.password || randomSecret(), salt);
 
     const u = await prisma.user.create({
       data: {
@@ -277,21 +293,7 @@ export const db = {
         return true;
       }
     } catch {
-      // fallback below
-    }
-
-    // 2. Known-alias fallback for preconfigured demo accounts
-    const cleanEmail = storedUser.email.toLowerCase().trim();
-    const cleanPass = candidatePassword.trim();
-
-    if (cleanEmail === "admin@exceltokml.com") {
-      if (["admin2026!", "admin2026", "admin123"].includes(cleanPass)) return true;
-    }
-
-    if (
-      ["surveyor.demo@geotech.com", "surveyor@geotech.com", "demo@surveyor.io"].includes(cleanEmail)
-    ) {
-      if (["surveyor123", "cadastral2026", "password123", "surveyor2026"].includes(cleanPass)) return true;
+      // malformed stored hash
     }
 
     return false;

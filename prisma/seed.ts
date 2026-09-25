@@ -7,6 +7,11 @@ function hashPassword(password: string, salt: string): string {
   return crypto.scryptSync(password, salt, 64).toString("hex");
 }
 
+/** Unguessable password for accounts that must not be signed into with a known value */
+function randomSecret(): string {
+  return crypto.randomBytes(24).toString("base64url");
+}
+
 function generateSalt(): string {
   return crypto.randomBytes(16).toString("hex");
 }
@@ -14,10 +19,13 @@ function generateSalt(): string {
 async function main() {
   console.log("🌱 Seeding Neon database...\n");
 
+  // No well-known passwords. Admin: ADMIN_INITIAL_PASSWORD, or random (then use
+  // `npm run set-password`). Demo accounts get random passwords and can't sign in.
+  const initialAdminPassword = process.env.ADMIN_INITIAL_PASSWORD;
   const adminSalt = generateSalt();
-  const adminHash = hashPassword("admin2026!", adminSalt);
+  const adminHash = hashPassword(initialAdminPassword || randomSecret(), adminSalt);
   const defaultSalt = generateSalt();
-  const defaultHash = hashPassword("cadastral2026", defaultSalt);
+  const defaultHash = hashPassword(randomSecret(), defaultSalt);
 
   const users = [
     {
@@ -55,7 +63,7 @@ async function main() {
       id: "usr_demo_surveyor_03",
       name: "Demo Surveyor",
       email: "surveyor.demo@geotech.com",
-      passwordHash: hashPassword("surveyor123", defaultSalt),
+      passwordHash: hashPassword(randomSecret(), defaultSalt),
       salt: defaultSalt,
       organization: "Apex Survey & Mapping Bureau",
       role: "Cadastral Surveyor",
@@ -95,11 +103,11 @@ async function main() {
   console.log("\n✅ App settings seeded.");
 
   console.log("\n🎉 Done! Database is ready.\n");
-  console.log("┌──────────────────────────────────────────────┐");
-  console.log("│  Admin login credentials:                    │");
-  console.log("│  Email:    admin@exceltokml.com              │");
-  console.log("│  Password: admin2026!                        │");
-  console.log("└──────────────────────────────────────────────┘");
+  console.log(
+    initialAdminPassword
+      ? "Admin: admin@exceltokml.com (password from ADMIN_INITIAL_PASSWORD)"
+      : "Admin: admin@exceltokml.com has a random password. Set one with:\n  npm run set-password -- admin@exceltokml.com"
+  );
 }
 
 main()

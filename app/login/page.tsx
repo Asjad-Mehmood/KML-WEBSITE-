@@ -46,11 +46,6 @@ export default function LoginPage() {
     setIsSubmitting(false);
   };
 
-  const handleDemoFill = () => {
-    setEmail("surveyor@geotech.com");
-    setPassword("surveyor123");
-    setError(null);
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 flex flex-col justify-between p-4 sm:p-8 font-sans">
@@ -167,30 +162,6 @@ export default function LoginPage() {
           </Link>
         </div>
 
-        <div className="mt-4 pt-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-slate-400">
-          <span>Quick testing:</span>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleDemoFill}
-              className="font-bold text-slate-600 hover:text-blue-600 hover:underline cursor-pointer"
-            >
-              Fill Demo Surveyor
-            </button>
-            <span>&bull;</span>
-            <button
-              type="button"
-              onClick={() => {
-                setEmail("admin@exceltokml.com");
-                setPassword("admin2026!");
-                setError(null);
-              }}
-              className="font-bold text-slate-600 hover:text-blue-600 hover:underline cursor-pointer"
-            >
-              Fill Master Admin
-            </button>
-          </div>
-        </div>
       </div>
 
       {/* Footer */}
