@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import "leaflet/dist/leaflet.css";
-import { Layers, MapPin, CheckCircle2, Globe, Sparkles } from "lucide-react";
+import { Layers, MapPin, CheckCircle2, Globe } from "lucide-react";
 
 interface SurveyMarker {
   id: string;
@@ -21,8 +21,8 @@ const SURVEY_STATIONS: SurveyMarker[] = [
     name: "Control Datum BM-01",
     lat: 25.1972,
     lng: 55.2744,
-    easting: "513,556.61",
-    northing: "2,787,467.85",
+    easting: "494,060.20",
+    northing: "2,787,900.17",
     elev: "+14.85m",
     code: "PRIMARY_BENCHMARK",
   },
@@ -31,8 +31,8 @@ const SURVEY_STATIONS: SurveyMarker[] = [
     name: "Corner Monument CP-02",
     lat: 25.1995,
     lng: 55.2785,
-    easting: "513,720.40",
-    northing: "2,787,590.20",
+    easting: "494,473.54",
+    northing: "2,788,154.78",
     elev: "+26.50m",
     code: "BOUNDARY_CORNER",
   },
@@ -41,8 +41,8 @@ const SURVEY_STATIONS: SurveyMarker[] = [
     name: "Survey Station CR-03",
     lat: 25.1962,
     lng: 55.2810,
-    easting: "513,850.15",
-    northing: "2,787,480.90",
+    easting: "494,725.37",
+    northing: "2,787,789.12",
     elev: "+38.20m",
     code: "HIGH_CREST",
   },
@@ -51,8 +51,8 @@ const SURVEY_STATIONS: SurveyMarker[] = [
     name: "Traverse Peg BS-04",
     lat: 25.1942,
     lng: 55.2762,
-    easting: "513,690.80",
-    northing: "2,787,350.10",
+    easting: "494,241.48",
+    northing: "2,787,567.77",
     elev: "+19.00m",
     code: "TRAVERSE_PEG",
   },
@@ -122,7 +122,7 @@ export default function RealSatelliteMap() {
       polygonRef.current = polygon;
 
       // Create Custom Google Earth Style Pins
-      const markers: any[] = [];
+      const markers: { id: string; marker: import("leaflet").Marker }[] = [];
       SURVEY_STATIONS.forEach((station) => {
         const pinHtml = `
           <div style="display: flex; flex-direction: column; align-items: center; cursor: pointer; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.35)); user-select: none;">
@@ -221,18 +221,22 @@ export default function RealSatelliteMap() {
   return (
     <div className="relative w-full rounded-2xl bg-white border border-slate-200/90 shadow-sm overflow-hidden flex flex-col">
       {/* Viewport Top Header */}
-      <div className="flex items-center justify-between px-4 py-2.5 bg-slate-50 border-b border-slate-100 text-xs">
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="font-bold text-slate-800">Satellite Inspection &amp; Boundary Map</span>
-          <span className="text-slate-300">·</span>
+      <div className="flex items-center justify-between gap-2 px-3 sm:px-4 py-2.5 bg-slate-50 border-b border-slate-100 text-xs">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="w-2 h-2 shrink-0 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="font-bold text-slate-800 truncate">
+            <span className="sm:hidden">Site map</span>
+            <span className="hidden sm:inline">Satellite Inspection &amp; Boundary Map</span>
+          </span>
+          <span className="text-slate-300 hidden sm:inline">·</span>
           <span className="text-slate-500 font-mono text-[11px] hidden sm:inline">EPSG:3997 (Dubai DLTM)</span>
         </div>
 
         {/* Map Layer Switcher: Satellite / Street */}
-        <div className="flex items-center gap-1 bg-white p-0.5 rounded-lg border border-slate-200">
+        <div role="group" aria-label="Map layer" className="shrink-0 flex items-center gap-1 bg-white p-0.5 rounded-lg border border-slate-200">
           <button
             onClick={() => handleToggleLayer("satellite")}
+            aria-pressed={mapType === "satellite"}
             className={`px-2.5 py-1 rounded text-[11px] font-semibold flex items-center gap-1 transition-all cursor-pointer ${
               mapType === "satellite"
                 ? "bg-[#0071e3] text-white shadow-xs"
@@ -244,6 +248,7 @@ export default function RealSatelliteMap() {
           </button>
           <button
             onClick={() => handleToggleLayer("street")}
+            aria-pressed={mapType === "street"}
             className={`px-2.5 py-1 rounded text-[11px] font-semibold flex items-center gap-1 transition-all cursor-pointer ${
               mapType === "street"
                 ? "bg-[#0071e3] text-white shadow-xs"
@@ -261,11 +266,12 @@ export default function RealSatelliteMap() {
         <div ref={mapContainerRef} className="w-full h-full z-0" />
 
         {/* Floating Station Selector Pills */}
-        <div className="absolute top-3 left-3 z-[1000] flex flex-wrap gap-1 bg-slate-900/80 backdrop-blur-md p-1.5 rounded-xl border border-white/10 shadow-lg">
+        <div role="group" aria-label="Survey stations" className="absolute top-3 left-3 z-[1000] flex flex-wrap gap-1 bg-slate-900/80 backdrop-blur-md p-1.5 rounded-xl border border-white/10 shadow-lg">
           {SURVEY_STATIONS.map((station) => (
             <button
               key={station.id}
               onClick={() => handleSelectStation(station.id)}
+              aria-pressed={activeStationId === station.id}
               className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer ${
                 activeStationId === station.id
                   ? "bg-[#0071e3] text-white shadow-xs"
@@ -290,8 +296,8 @@ export default function RealSatelliteMap() {
       </div>
 
       {/* Active Station Telemetry Footer */}
-      <div className="px-4 py-2.5 bg-slate-50/95 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
-        <div className="flex items-center gap-3 sm:gap-4 text-slate-600">
+      <div className="px-3 sm:px-4 py-2.5 bg-slate-50/95 border-t border-slate-100 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 text-xs font-mono" aria-live="polite">
+        <div className="grid grid-cols-2 sm:flex sm:items-center gap-x-4 gap-y-1 text-slate-600">
           <span>
             <strong className="text-slate-800">STATION:</strong> {activeStation.id}
           </span>

@@ -402,24 +402,24 @@ ${placemarks}
           {activeTab === "map" && (
             <div className="space-y-4">
               {/* Action Bar */}
-              <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
-                <div className="flex items-center gap-2.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+              <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span className="w-2.5 h-2.5 shrink-0 rounded-full bg-emerald-500 animate-pulse" />
                   <span className="text-sm font-bold text-slate-900">
-                    4 Control Benchmarks &amp; Boundary Polygon
+                    4 control benchmarks &amp; boundary
                   </span>
-                  <span className="text-slate-300">·</span>
-                  <span className="text-xs text-slate-500 font-mono">
+                  <span className="text-slate-300 hidden sm:inline">·</span>
+                  <span className="text-xs text-slate-500 font-mono hidden sm:inline">
                     EPSG:3997 (Dubai DLTM)
                   </span>
                 </div>
 
                 <button
                   onClick={() => handleDownloadDatasetKml("Dubai_Site", DATASETS.dubai.points.slice(0, 4))}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-xs font-semibold shadow-[0_2px_10px_rgba(0,113,227,0.25)] hover:shadow-[0_4px_14px_rgba(0,113,227,0.35)] transition-all active:translate-y-0.5 cursor-pointer"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-xs font-semibold shadow-[0_2px_10px_rgba(0,113,227,0.25)] hover:shadow-[0_4px_14px_rgba(0,113,227,0.35)] transition-all active:translate-y-0.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                 >
                   <Download className="w-3.5 h-3.5" />
-                  <span>Download Site KML (4 Points + Boundary)</span>
+                  <span>Download site KML (4 points + boundary)</span>
                 </button>
               </div>
 
@@ -429,11 +429,13 @@ ${placemarks}
               </div>
 
               {/* Satellite Footer Note */}
-              <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500 pt-1">
-                <span className="flex items-center gap-1.5">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                  Placemarks include real ellipsoidal heights (<code className="text-slate-700 bg-slate-100 px-1 py-0.5 rounded font-mono text-[10px]">relativeToGround</code>) for 3D extrusion in Google Earth.
-                </span>
+              <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center justify-between gap-2 sm:gap-3 text-xs text-slate-500 pt-1">
+                <p className="flex items-start sm:items-center gap-1.5 leading-relaxed">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-px sm:mt-0" />
+                  <span>
+                    Placemarks carry real heights (<code className="text-slate-700 bg-slate-100 px-1 py-0.5 rounded font-mono text-[10px]">relativeToGround</code>) for 3D extrusion in Google Earth.
+                  </span>
+                </p>
                 <span className="text-slate-400 font-mono text-[11px]">
                   ESRI World Imagery + OpenStreetMap
                 </span>
@@ -449,8 +451,8 @@ ${placemarks}
               {/* Controls Header */}
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-slate-100">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">Region:</span>
-                  <div className="flex flex-wrap gap-1.5">
+                  <span id="region-label" className="text-xs font-bold text-slate-700 uppercase tracking-wider">Region:</span>
+                  <div role="group" aria-labelledby="region-label" className="flex flex-wrap gap-1.5">
                     {Object.entries(DATASETS).map(([key, data]) => (
                       <button
                         key={key}
@@ -458,7 +460,8 @@ ${placemarks}
                           setSelectedDatasetKey(key);
                           setSearchFilter("");
                         }}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                        aria-pressed={selectedDatasetKey === key}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                           selectedDatasetKey === key
                             ? "bg-[#0071e3] text-white shadow-xs"
                             : "bg-slate-100 text-slate-700 hover:bg-slate-200"
@@ -470,23 +473,24 @@ ${placemarks}
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2.5">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2.5">
                   {/* Search box */}
                   <div className="relative">
-                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" aria-hidden />
                     <input
-                      type="text"
+                      type="search"
+                      aria-label="Filter survey points by ID, name or code"
                       placeholder="Filter points or code..."
                       value={searchFilter}
                       onChange={(e) => setSearchFilter(e.target.value)}
-                      className="pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 font-mono w-[180px] sm:w-[220px]"
+                      className="pl-8 pr-3 py-2 sm:py-1.5 text-base sm:text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 font-mono w-full sm:w-[220px]"
                     />
                   </div>
 
                   {/* Download KML button */}
                   <button
                     onClick={() => handleDownloadDatasetKml(currentDataset.name, currentDataset.points)}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-xs font-semibold shadow-[0_2px_10px_rgba(0,113,227,0.25)] hover:shadow-[0_4px_14px_rgba(0,113,227,0.35)] transition-all active:translate-y-0.5 cursor-pointer whitespace-nowrap"
+                    className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 sm:py-2 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-xs font-semibold shadow-[0_2px_10px_rgba(0,113,227,0.25)] hover:shadow-[0_4px_14px_rgba(0,113,227,0.35)] transition-all active:translate-y-0.5 cursor-pointer whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                   >
                     <Download className="w-3.5 h-3.5" />
                     <span>Export {currentDataset.points.length} Points to KML</span>
@@ -496,14 +500,14 @@ ${placemarks}
 
               {/* Dataset Info Strip */}
               <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs">
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-slate-900">{currentDataset.flag} {currentDataset.country}</span>
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                  <span className="font-bold text-slate-900 whitespace-nowrap">{currentDataset.flag} {currentDataset.country}</span>
                   <span className="text-slate-300">·</span>
-                  <span className="text-slate-600 font-mono">Grid: <b className="text-slate-900">{currentDataset.grid}</b></span>
-                  <span className="text-slate-300">·</span>
-                  <span className="text-slate-500 font-sans">{currentDataset.datum}</span>
+                  <span className="text-slate-600 font-mono whitespace-nowrap">Grid: <b className="text-slate-900">{currentDataset.grid}</b></span>
+                  <span className="text-slate-300 hidden sm:inline">·</span>
+                  <span className="text-slate-500 font-sans w-full sm:w-auto">{currentDataset.datum}</span>
                 </div>
-                <div className="text-[11px] font-mono text-slate-500">
+                <div className="text-[11px] font-mono text-slate-500" aria-live="polite">
                   {filteredPoints.length} of {currentDataset.points.length} survey rows
                 </div>
               </div>
@@ -511,8 +515,11 @@ ${placemarks}
               {/* Data Table */}
               <div className="overflow-x-auto rounded-2xl border border-slate-200 shadow-2xs">
                 <table className="w-full text-left border-collapse text-xs">
+                  <caption className="sr-only">
+                    {currentDataset.name} survey points with grid and WGS84 coordinates
+                  </caption>
                   <thead>
-                    <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider text-[10px]">
+                    <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider text-[10px] whitespace-nowrap">
                       <th className="px-4 py-3">Point ID</th>
                       <th className="px-4 py-3 font-sans">Feature Name</th>
                       <th className="px-4 py-3 font-mono">Easting (m)</th>
@@ -526,9 +533,9 @@ ${placemarks}
                   </thead>
                   <tbody className="divide-y divide-slate-100 font-mono">
                     {filteredPoints.map((row) => (
-                      <tr key={row.id} className="hover:bg-blue-50/30 transition-colors">
-                        <td className="px-4 py-3 font-bold text-slate-900">{row.id}</td>
-                        <td className="px-4 py-3 font-sans font-medium text-slate-700">{row.name}</td>
+                      <tr key={row.id} className="hover:bg-blue-50/30 transition-colors [&>td]:whitespace-nowrap [&>td:nth-child(2)]:whitespace-normal">
+                        <th scope="row" className="px-4 py-3 font-bold text-slate-900 text-left whitespace-nowrap">{row.id}</th>
+                        <td className="px-4 py-3 font-sans font-medium text-slate-700 min-w-[170px]">{row.name}</td>
                         <td className="px-4 py-3 text-slate-800">{row.easting.toFixed(3)}</td>
                         <td className="px-4 py-3 text-slate-800">{row.northing.toFixed(3)}</td>
                         <td className="px-4 py-3 text-slate-700">+{row.elev.toFixed(2)}</td>
@@ -537,8 +544,8 @@ ${placemarks}
                             {row.code}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-blue-700 font-semibold">{row.lat.toFixed(6)}° N</td>
-                        <td className="px-4 py-3 text-blue-700 font-semibold">{row.lon.toFixed(6)}° {row.lon >= 0 ? "E" : "W"}</td>
+                        <td className="px-4 py-3 text-blue-700 font-semibold">{Math.abs(row.lat).toFixed(6)}° {row.lat >= 0 ? "N" : "S"}</td>
+                        <td className="px-4 py-3 text-blue-700 font-semibold">{Math.abs(row.lon).toFixed(6)}° {row.lon >= 0 ? "E" : "W"}</td>
                         <td className="px-4 py-3 text-right font-sans">
                           <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
