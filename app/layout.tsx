@@ -53,12 +53,13 @@ export const metadata: Metadata = {
   applicationName: SITE_NAME,
   category: "technology",
   manifest: "/site.webmanifest",
+  // /favicon.ico comes from app/favicon.ico (16–256 px). Google needs a square icon of 48 px or more.
   icons: {
     icon: [
-      { url: "/assets/favicon.ico" },
-      { url: "/assets/icon.png", sizes: "192x192", type: "image/png" },
+      { url: "/assets/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/assets/icon-512.png", sizes: "512x512", type: "image/png" },
     ],
-    apple: [{ url: "/assets/icon-512.png", sizes: "512x512", type: "image/png" }],
+    apple: [{ url: "/assets/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
   // Each indexable page sets its own canonical; pages without one (sign-in etc.) are noindex
   robots: {

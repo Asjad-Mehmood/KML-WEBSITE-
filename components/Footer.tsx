@@ -105,7 +105,20 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
 
         {/* Bottom Copyright Strip */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-          <p className="text-center sm:text-left">Copyright &copy; {new Date().getFullYear()} Excel to KML Pro. Open-source geomatics software.</p>
+          <p className="text-center sm:text-left">
+            Copyright &copy; {new Date().getFullYear()} Excel to KML Pro. Open-source geomatics software.
+            <span className="block sm:inline sm:ml-1.5 mt-1 sm:mt-0">
+              Managed by{" "}
+              <a
+                href="https://github.com/Chaudaryabdullah89"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-slate-700 hover:text-blue-600 underline underline-offset-2 decoration-slate-300 hover:decoration-blue-600 transition-colors"
+              >
+                Abdullah
+              </a>
+            </span>
+          </p>
           <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-slate-600">
             <a href="https://github.com/chaudaryyabdullah03-collab/kml-convertor" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 transition-colors">GitHub</a>
             <button onClick={onDownloadClick} className="hover:text-blue-600 transition-colors cursor-pointer">Download</button>
