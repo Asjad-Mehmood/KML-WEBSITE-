@@ -1,28 +1,24 @@
 import type { Metadata } from "next";
+import { BreadcrumbStructuredData, FaqStructuredData } from "../../components/StructuredData";
+import { openGraphFor } from "@/lib/site";
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://exceltokml.pro";
+const TITLE = "Survey Coordinate & Google Earth KML FAQ";
+const DESCRIPTION =
+  "Answers on finding your EPSG grid, site calibration, importing total station CSV files, 3D elevations and boundaries in Google Earth, and data privacy.";
 
 export const metadata: Metadata = {
-  title: "Surveyor FAQ & Geodetic Coordinate Guide",
-  description:
-    "Common questions on EPSG coordinate systems, total station CSV formatting, Helmert 2D site calibration, and 3D elevation extrusions in Google Earth Pro.",
-  alternates: {
-    canonical: `${baseUrl}/faq`,
-  },
-  openGraph: {
-    title: "Surveyor FAQ & Geodetic Guide | Excel to KML Pro",
-    description:
-      "Answers to top geomatics questions: EPSG map grids, total station CSV formatting, Helmert 2D transformations, and 3D elevation extrusions.",
-    url: `${baseUrl}/faq`,
-    type: "website",
-    images: ["/assets/hero_geospatial.jpg"],
-  },
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: "/faq" },
+  openGraph: openGraphFor("/faq", `${TITLE} | Excel to KML Pro`, DESCRIPTION),
 };
 
-export default function FaqLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return <>{children}</>;
+export default function FaqLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <>
+      <FaqStructuredData />
+      <BreadcrumbStructuredData name="FAQ" path="/faq" />
+      {children}
+    </>
+  );
 }

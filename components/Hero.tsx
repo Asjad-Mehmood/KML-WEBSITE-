@@ -68,6 +68,7 @@ export default function Hero({ versionTag, fileSizeText, onDownloadClick }: Hero
                 <span className="whitespace-nowrap">Google Earth 3D</span>{" "}
                 <span className="whitespace-nowrap">KML &amp; KMZ &amp; DXF</span>
               </span>
+              <span className="sr-only"> — </span>
               <span className="block mt-3 text-lg sm:text-xl lg:text-[22px] font-bold tracking-normal text-slate-600 leading-snug">
                 Complete with Site Photos &amp; Comprehensive Reports
               </span>

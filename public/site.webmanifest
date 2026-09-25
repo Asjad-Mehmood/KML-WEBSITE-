@@ -1,7 +1,7 @@
 {
   "name": "Excel to KML Pro — Survey Benchmark Converter",
   "short_name": "Excel to KML Pro",
-  "description": "Convert Excel & CSV survey coordinates to Google Earth 3D KML & KMZ with 6,864 EPSG datums. 100% offline.",
+  "description": "Convert Excel & CSV survey coordinates to Google Earth KML, KMZ & DXF on 5,800+ EPSG grids.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
