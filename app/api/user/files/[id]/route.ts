@@ -12,13 +12,13 @@ export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
 }
 
-function getAuthUser(req: NextRequest) {
+async function getAuthUser(req: NextRequest) {
   const token =
     req.cookies.get("surveyor_auth_token")?.value ||
     req.cookies.get("surveyor_session")?.value ||
     req.headers.get("authorization")?.replace("Bearer ", "");
   if (!token) return null;
-  const sessionData = db.validateSession(token);
+  const sessionData = await db.validateSession(token);
   return sessionData?.user || null;
 }
 
@@ -29,14 +29,14 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const fileData = db.getFileForDownload(id);
+    const fileData = await db.getFileForDownload(id);
 
     if (!fileData) {
       return NextResponse.json({ error: "File not found" }, { status: 404, headers: CORS_HEADERS });
     }
 
     const { record, buffer } = fileData;
-    const user = getAuthUser(req);
+    const user = await getAuthUser(req);
     const admin = await getAdminSession(req);
 
     // Verify access: allowed if admin, or owner, or if file was uploaded unauthenticated
@@ -82,12 +82,12 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const fileData = db.getFileForDownload(id);
+    const fileData = await db.getFileForDownload(id);
     if (!fileData) {
       return NextResponse.json({ error: "File not found" }, { status: 404, headers: CORS_HEADERS });
     }
 
-    const user = getAuthUser(req);
+    const user = await getAuthUser(req);
     const admin = await getAdminSession(req);
     const isOwner = user && user.id === fileData.record.userId;
     const isAdmin = Boolean(admin);
@@ -99,7 +99,7 @@ export async function DELETE(
       );
     }
 
-    db.deleteUserFile(id);
+    await db.deleteUserFile(id);
     return NextResponse.json({ success: true, message: "File removed successfully" }, { headers: CORS_HEADERS });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Error deleting file";

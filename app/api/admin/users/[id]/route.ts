@@ -13,17 +13,17 @@ export async function GET(
 
   try {
     const { id } = await params;
-    const user = db.findUserById(id) || db.findUserByEmail(id);
+    const user = (await db.findUserById(id)) || (await db.findUserByEmail(id));
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     const sanitized = db.sanitizeUser(user);
-    const stats = db.getUserStats(user.id);
-    const activities = db.getUserActivities(user.id, 150);
+    const stats = await db.getUserStats(user.id);
+    const activities = await db.getUserActivities(user.id, 150);
 
     // Filter downloads for this specific user
-    const allDownloads = db.getAllDownloads();
+    const allDownloads = await db.getAllDownloads();
     const downloads = allDownloads.filter(
       (d) =>
         (d.userId && d.userId === user.id) ||
@@ -31,7 +31,8 @@ export async function GET(
     );
 
     // Stored files imported or exported by this user
-    const files = db.getUserFiles(user.id, 150).map((f) => {
+    const userFiles = await db.getUserFiles(user.id, 150);
+    const files = userFiles.map((f) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { contentBase64, storedFilePath, ...rest } = f;
       return {
@@ -66,7 +67,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await req.json();
-    const updated = db.updateUser(id, body);
+    const updated = await db.updateUser(id, body);
 
     return NextResponse.json({
       success: true,
@@ -90,7 +91,7 @@ export async function DELETE(
 
   try {
     const { id } = await params;
-    db.deleteUser(id);
+    await db.deleteUser(id);
     return NextResponse.json({ success: true, message: "User deleted successfully" });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Failed to delete user";

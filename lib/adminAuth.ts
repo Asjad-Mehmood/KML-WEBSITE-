@@ -62,7 +62,7 @@ export async function getAdminSession(req?: NextRequest | Request) {
 
     if (!token) return null;
 
-    const sessionData = db.validateSession(token);
+    const sessionData = await db.validateSession(token);
     if (!sessionData) return null;
 
     if (!db.isAdmin(sessionData.user)) {

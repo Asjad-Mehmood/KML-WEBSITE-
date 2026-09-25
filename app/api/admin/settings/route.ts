@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized: Admin privileges required" }, { status: 401 });
   }
 
-  const settings = db.getSettings();
+  const settings = await db.getSettings();
   return NextResponse.json({ success: true, settings });
 }
 
@@ -20,7 +20,7 @@ export async function PUT(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const updated = db.updateSettings(body);
+    const updated = await db.updateSettings(body);
     return NextResponse.json({
       success: true,
       settings: updated,

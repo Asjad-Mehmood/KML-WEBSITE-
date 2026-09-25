@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const sessionData = db.validateSession(token);
+    const sessionData = await db.validateSession(token);
     if (!sessionData) {
       return NextResponse.json(
         {
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     const userAgent = req.headers.get("user-agent") || "Browser Client";
 
     // Record the download in database
-    const record = db.recordDownload({
+    const record = await db.recordDownload({
       userId: sessionData.user.id,
       userEmail: sessionData.user.email,
       userName: sessionData.user.name,

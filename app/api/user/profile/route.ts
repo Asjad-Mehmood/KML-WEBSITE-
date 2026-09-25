@@ -14,25 +14,25 @@ export async function OPTIONS() {
   });
 }
 
-function getAuthUser(req: NextRequest) {
+async function getAuthUser(req: NextRequest) {
   const token =
     req.cookies.get("surveyor_auth_token")?.value ||
     req.headers.get("authorization")?.replace("Bearer ", "");
   if (!token) return null;
-  const sessionData = db.validateSession(token);
+  const sessionData = await db.validateSession(token);
   return sessionData?.user || null;
 }
 
 // GET: Retrieve user profile + aggregated stats + recent activities
 export async function GET(req: NextRequest) {
   try {
-    const user = getAuthUser(req);
+    const user = await getAuthUser(req);
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: CORS_HEADERS });
     }
 
-    const stats = db.getUserStats(user.id);
-    const recentActivities = db.getUserActivities(user.id, 15);
+    const stats = await db.getUserStats(user.id);
+    const recentActivities = await db.getUserActivities(user.id, 15);
 
     return NextResponse.json(
       {
@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
 // PATCH: Update user profile (name, organization, password)
 export async function PATCH(req: NextRequest) {
   try {
-    const user = getAuthUser(req);
+    const user = await getAuthUser(req);
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: CORS_HEADERS });
     }
@@ -66,10 +66,10 @@ export async function PATCH(req: NextRequest) {
       updates.password = password.trim();
     }
 
-    const updated = db.updateUser(user.id, updates);
+    const updated = await db.updateUser(user.id, updates);
 
     // Record activity for profile update
-    db.recordActivity({
+    await db.recordActivity({
       userId: user.id,
       userEmail: user.email,
       userName: updated.name,

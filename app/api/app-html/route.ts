@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 const GITHUB_RAW_URL =
   "https://raw.githubusercontent.com/chaudaryyabdullah03-collab/kml-convertor/main/app/index.html";
 
-function applyWebRestrictions(html: string, req: NextRequest): string {
+async function applyWebRestrictions(html: string, req: NextRequest): Promise<string> {
   try {
     const token =
       req.cookies.get("surveyor_auth_token")?.value ||
@@ -16,7 +16,7 @@ function applyWebRestrictions(html: string, req: NextRequest): string {
 
     let user = null;
     if (token) {
-      const sessionData = db.validateSession(token);
+      const sessionData = await db.validateSession(token);
       if (sessionData) {
         user = sessionData.user;
       }
@@ -30,7 +30,7 @@ function applyWebRestrictions(html: string, req: NextRequest): string {
       userAgent.includes("WindowsApp") ||
       userAgent.includes("Go-http-client");
 
-    const settings = db.getSettings();
+    const settings = await db.getSettings();
     const isAdmin = db.isAdmin(user);
     const hasFullAccess =
       isWindowsAppReq ||
@@ -458,7 +458,7 @@ export async function GET(req: NextRequest) {
         }
       }
 
-      const protectedContent = applyWebRestrictions(rawContent, req);
+      const protectedContent = await applyWebRestrictions(rawContent, req);
 
       return new NextResponse(protectedContent, {
         status: 200,
@@ -474,30 +474,22 @@ export async function GET(req: NextRequest) {
     console.warn("GitHub fetch failed or timed out, loading local copy:", err);
   }
 
-  // 2. Fallback to local copy if offline or GitHub is unreachable
-  const fallbackCandidates = [
-    path.resolve(process.cwd(), "public/app.html"),
-    path.resolve(process.cwd(), "../ExcelToKML-Pro-src/app/index.html"),
-    path.resolve(process.cwd(), "../kml-convertor/app/index.html"),
-    "C:\\Users\\hp\\Downloads\\ExcelToKML-Pro-src\\app\\index.html",
-  ];
-
-  for (const candidate of fallbackCandidates) {
-    try {
-      if (fs.existsSync(candidate)) {
-        const rawContent = await fs.promises.readFile(candidate, "utf-8");
-        const protectedContent = applyWebRestrictions(rawContent, req);
-        return new NextResponse(protectedContent, {
-          status: 200,
-          headers: {
-            "Content-Type": "text/html; charset=utf-8",
-            "Cache-Control": "no-cache, no-store, must-revalidate",
-          },
-        });
-      }
-    } catch {
-      // try next
+  // 2. Fallback to local copy in public/app.html if offline or GitHub is unreachable
+  try {
+    const localFilePath = path.join(process.cwd(), "public", "app.html");
+    if (fs.existsSync(localFilePath)) {
+      const rawContent = await fs.promises.readFile(localFilePath, "utf-8");
+      const protectedContent = await applyWebRestrictions(rawContent, req);
+      return new NextResponse(protectedContent, {
+        status: 200,
+        headers: {
+          "Content-Type": "text/html; charset=utf-8",
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+        },
+      });
     }
+  } catch (err) {
+    console.warn("Failed reading local public/app.html:", err);
   }
 
   return new NextResponse("Error: Web app file could not be loaded.", {

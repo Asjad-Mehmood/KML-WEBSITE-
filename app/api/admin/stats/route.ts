@@ -9,11 +9,12 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized: Admin privileges required" }, { status: 401 });
     }
 
-    const users = db.getAllUsers();
-    const downloads = db.getAllDownloads();
-    const conversions = db.getAllConversions();
-    const activities = db.getAllActivities(200);
-    const settings = db.getSettings();
+    const users = await db.getAllUsers();
+    const downloads = await db.getAllDownloads();
+    const conversions = await db.getAllConversions();
+    const activities = await db.getAllActivities(200);
+    const settings = await db.getSettings();
+    const allFiles = await db.getAllFiles();
 
     // Breakdown by role
     const roleCounts: Record<string, number> = {};
@@ -50,7 +51,7 @@ export async function GET(req: NextRequest) {
         totalDownloads: downloads.length,
         totalConversions: conversions.length,
         totalActivities: activities.length,
-        totalFilesStored: db.getAllFiles().length,
+        totalFilesStored: allFiles.length,
         totalPointsProcessed,
         roleCounts,
         assetCounts,

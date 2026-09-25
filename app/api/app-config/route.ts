@@ -12,13 +12,13 @@ export async function GET(req: NextRequest) {
 
     let user = null;
     if (token) {
-      const sessionData = db.validateSession(token);
+      const sessionData = await db.validateSession(token);
       if (sessionData) {
         user = db.sanitizeUser(sessionData.user);
       }
     }
 
-    const settings = db.getSettings();
+    const settings = await db.getSettings();
 
     const isAdmin = db.isAdmin(user);
     const hasFullAccess =

@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url);
   const query = searchParams.get("query") || "";
-  const users = db.getAllUsers(query);
+  const users = await db.getAllUsers(query);
 
   return NextResponse.json({ success: true, users });
 }
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     const clientIp = getClientIp(req);
     const geo = await getIpGeoLocation(clientIp, req);
 
-    const newUser = db.createUser({
+    const newUser = await db.createUser({
       name,
       email,
       password: password || "surveyor2026!",

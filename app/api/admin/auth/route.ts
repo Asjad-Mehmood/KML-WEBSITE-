@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
     }
 
-    const user = db.findUserByEmail(email);
+    const user = await db.findUserByEmail(email);
     if (!user) {
       return NextResponse.json({ error: "Invalid admin credentials" }, { status: 401 });
     }
@@ -41,8 +41,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Create session
-    const session = db.createSession(user.id);
-    db.touchUserLogin(user.id);
+    const session = await db.createSession(user.id);
+    await db.touchUserLogin(user.id);
 
     const response = NextResponse.json({
       success: true,
@@ -78,7 +78,7 @@ export async function DELETE(req: NextRequest) {
       req.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
 
     if (token) {
-      db.destroySession(token);
+      await db.destroySession(token);
     }
 
     const response = NextResponse.json({

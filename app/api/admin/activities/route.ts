@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
   const actionFilter = searchParams.get("action");
   const userFilter = searchParams.get("userId");
 
-  let activities = db.getAllActivities(limit);
+  let activities = await db.getAllActivities(limit);
 
   if (actionFilter && actionFilter !== "all") {
     activities = activities.filter((a) => a.action === actionFilter);
@@ -44,7 +44,7 @@ export async function DELETE(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const userId = searchParams.get("userId") || undefined;
 
-  db.clearActivities(userId);
+  await db.clearActivities(userId);
 
   return NextResponse.json({
     success: true,

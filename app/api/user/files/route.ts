@@ -12,35 +12,35 @@ export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
 }
 
-function getAuthUser(req: NextRequest) {
+async function getAuthUser(req: NextRequest) {
   const token =
     req.cookies.get("surveyor_auth_token")?.value ||
     req.cookies.get("surveyor_session")?.value ||
     req.headers.get("authorization")?.replace("Bearer ", "");
   if (!token) return null;
-  const sessionData = db.validateSession(token);
+  const sessionData = await db.validateSession(token);
   return sessionData?.user || null;
 }
 
 // GET: Retrieve list of files for the authenticated user (or all if admin)
 export async function GET(req: NextRequest) {
   try {
-    const user = getAuthUser(req);
+    const user = await getAuthUser(req);
     const admin = await getAdminSession(req);
     const { searchParams } = new URL(req.url);
     const limit = parseInt(searchParams.get("limit") || "100", 10);
     const userParam = searchParams.get("userId");
     const direction = searchParams.get("direction") || undefined;
 
-    let files = [];
+    let files: any[] = [];
     if (admin && userParam) {
-      files = db.getUserFiles(userParam, limit);
+      files = await db.getUserFiles(userParam, limit);
     } else if (admin && searchParams.get("all") === "true") {
-      files = db.getAllFiles(limit, direction);
+      files = await db.getAllFiles(limit, direction);
     } else if (user) {
-      files = db.getUserFiles(user.id, limit);
+      files = await db.getUserFiles(user.id, limit);
     } else if (userParam) {
-      files = db.getUserFiles(userParam, limit);
+      files = await db.getUserFiles(userParam, limit);
     } else {
       return NextResponse.json({ files: [] }, { headers: CORS_HEADERS });
     }
@@ -66,7 +66,7 @@ export async function GET(req: NextRequest) {
 // POST: Save an imported or exported file into the database & file vault
 export async function POST(req: NextRequest) {
   try {
-    const user = getAuthUser(req);
+    const user = await getAuthUser(req);
     const contentType = req.headers.get("content-type") || "";
     const platformHeader = req.headers.get("x-app-platform") || undefined;
 
@@ -145,7 +145,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "fileName is required" }, { status: 400, headers: CORS_HEADERS });
     }
 
-    const savedRecord = db.saveUserFile({
+    const savedRecord = await db.saveUserFile({
       userId: user ? user.id : clientUserId,
       userEmail: user ? user.email : clientUserEmail,
       userName: user ? user.name : clientUserName,

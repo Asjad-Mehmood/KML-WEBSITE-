@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
   const direction = searchParams.get("direction") || undefined;
   const userParam = searchParams.get("userId");
 
-  let files = db.getAllFiles(limit, direction);
+  let files = await db.getAllFiles(limit, direction);
 
   if (userParam) {
     const uLower = userParam.toLowerCase();
@@ -53,6 +53,6 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: "File ID is required" }, { status: 400 });
   }
 
-  db.deleteUserFile(fileId);
+  await db.deleteUserFile(fileId);
   return NextResponse.json({ success: true, message: "File removed from vault" });
 }

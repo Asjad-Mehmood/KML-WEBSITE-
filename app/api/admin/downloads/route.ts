@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url);
   const format = searchParams.get("format");
-  const downloads = db.getAllDownloads();
+  const downloads = await db.getAllDownloads();
 
   if (format === "csv") {
     // Generate CSV string
@@ -51,7 +51,7 @@ export async function DELETE(req: NextRequest) {
   const id = searchParams.get("id");
 
   if (id) {
-    const deleted = db.deleteDownload(id);
+    const deleted = await db.deleteDownload(id);
     if (!deleted) {
       return NextResponse.json({ error: "Download record not found" }, { status: 404 });
     }
@@ -59,6 +59,6 @@ export async function DELETE(req: NextRequest) {
   }
 
   // Clear all
-  db.clearDownloads();
+  await db.clearDownloads();
   return NextResponse.json({ success: true, message: "All download records cleared" });
 }

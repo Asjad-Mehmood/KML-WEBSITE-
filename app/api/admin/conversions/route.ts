@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized: Admin privileges required" }, { status: 401 });
   }
 
-  const conversions = db.getAllConversions();
+  const conversions = await db.getAllConversions();
   return NextResponse.json({ success: true, conversions });
 }
 
@@ -18,6 +18,6 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized: Admin privileges required" }, { status: 401 });
   }
 
-  db.clearConversions();
+  await db.clearConversions();
   return NextResponse.json({ success: true, message: "Conversion log cleared" });
 }

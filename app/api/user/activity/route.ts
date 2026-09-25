@@ -14,31 +14,31 @@ export async function OPTIONS() {
   });
 }
 
-function getAuthUser(req: NextRequest) {
+async function getAuthUser(req: NextRequest) {
   const token =
     req.cookies.get("surveyor_auth_token")?.value ||
     req.headers.get("authorization")?.replace("Bearer ", "");
   if (!token) return null;
-  const sessionData = db.validateSession(token);
+  const sessionData = await db.validateSession(token);
   return sessionData?.user || null;
 }
 
 // GET: Retrieve activity list for the current user
 export async function GET(req: NextRequest) {
   try {
-    const user = getAuthUser(req);
+    const user = await getAuthUser(req);
     const { searchParams } = new URL(req.url);
     const limit = parseInt(searchParams.get("limit") || "50", 10);
     const userParam = searchParams.get("userId");
 
     // If admin is requesting a specific user, or admin querying all
-    let activities = [];
+    let activities: unknown[] = [];
     if (user && db.isAdmin(user) && userParam) {
-      activities = db.getUserActivities(userParam, limit);
+      activities = await db.getUserActivities(userParam, limit);
     } else if (user) {
-      activities = db.getUserActivities(user.id, limit);
+      activities = await db.getUserActivities(user.id, limit);
     } else if (userParam) {
-      activities = db.getUserActivities(userParam, limit);
+      activities = await db.getUserActivities(userParam, limit);
     } else {
       // Guest or unauthenticated - return empty or recent general
       return NextResponse.json({ activities: [] }, { headers: CORS_HEADERS });
@@ -54,7 +54,7 @@ export async function GET(req: NextRequest) {
 // POST: Record a user activity
 export async function POST(req: NextRequest) {
   try {
-    const user = getAuthUser(req);
+    const user = await getAuthUser(req);
     const body = await req.json().catch(() => ({}));
 
     const {
@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
       undefined;
     const userAgent = req.headers.get("user-agent") || undefined;
 
-    const record = db.recordActivity({
+    const record = await db.recordActivity({
       userId: user ? user.id : (clientUserId || null),
       userEmail: user ? user.email : (clientEmail || null),
       userName: user ? user.name : (clientName || null),
@@ -120,12 +120,12 @@ export async function POST(req: NextRequest) {
 // DELETE: Clear activities
 export async function DELETE(req: NextRequest) {
   try {
-    const user = getAuthUser(req);
+    const user = await getAuthUser(req);
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: CORS_HEADERS });
     }
 
-    db.clearActivities(user.id);
+    await db.clearActivities(user.id);
     return NextResponse.json({ success: true }, { headers: CORS_HEADERS });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Internal Server Error";
