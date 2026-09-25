@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export function middleware(req: NextRequest) {
+  // The raw web app file must not be reachable directly: /app checks sign-in first
+  if (req.nextUrl.pathname === "/app.html") {
+    return NextResponse.redirect(new URL("/app", req.url));
+  }
+
   const origin = req.headers.get("origin");
 
   if (req.method === "OPTIONS") {
@@ -34,5 +39,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: "/api/:path*",
+  matcher: ["/api/:path*", "/app.html"],
 };
