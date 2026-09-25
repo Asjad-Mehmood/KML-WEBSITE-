@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Check if user already exists
-    const existing = db.findUserByEmail(email);
+    const existing = await db.findUserByEmail(email);
     if (existing) {
       return NextResponse.json(
         { error: "An account with this email already exists. Please sign in." },
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     const geo = await getIpGeoLocation(clientIp, req);
 
     // Create user with IP and Location
-    const user = db.createUser({
+    const user = await db.createUser({
       name,
       email,
       password,
@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
     });
 
     // Create session
-    const session = db.createSession(user.id);
+    const session = await db.createSession(user.id);
     const sanitized = db.sanitizeUser(user);
 
     const response = NextResponse.json({

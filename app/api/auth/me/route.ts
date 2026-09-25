@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ user: null });
     }
 
-    const sessionData = db.validateSession(token);
+    const sessionData = await db.validateSession(token);
     if (!sessionData) {
       return NextResponse.json({ user: null });
     }

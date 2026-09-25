@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
       req.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
 
     if (token) {
-      db.destroySession(token);
+      await db.destroySession(token);
     }
 
     const response = NextResponse.json({ success: true });

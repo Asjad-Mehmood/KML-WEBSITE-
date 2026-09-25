@@ -95,7 +95,7 @@ export default function AuthModal() {
             )}
 
             <button type="submit" disabled={submitting}
-              className="w-full mt-2 py-3.5 text-[15px] font-medium text-white bg-[#0071e3] hover:bg-[#0077ed] active:scale-[0.98] rounded-full transition-all disabled:opacity-60 shadow-sm"
+              className="w-full mt-2 py-3.5 text-[15px] font-medium text-white bg-[#0071e3] hover:bg-[#0077ed] active:scale-[0.98] rounded-full transition-all disabled:opacity-60 shadow-sm cursor-pointer"
             >
               {submitting ? "Processing…" : authModalMode === "register" ? "Create Account & Download" : "Sign In & Continue"}
             </button>

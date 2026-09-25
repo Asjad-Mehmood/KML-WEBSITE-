@@ -8,20 +8,26 @@ datasource db {
 }
 
 model User {
-  id            String     @id @default(cuid())
-  name          String
-  email         String     @unique
-  passwordHash  String
-  salt          String
-  organization  String?    @default("Independent Surveyor")
-  role          String?    @default("Cadastral Surveyor")
-  downloadCount Int        @default(0)
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-  lastLoginAt   DateTime   @default(now())
+  id              String     @id @default(cuid())
+  name            String
+  email           String     @unique
+  passwordHash    String
+  salt            String
+  organization    String?    @default("Independent Surveyor")
+  role            String?    @default("Cadastral Surveyor")
+  downloadCount   Int        @default(0)
+  ipAddress       String?
+  location        String?
+  hasFullAccess   Boolean?   @default(false)
+  customMaxPoints Int?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  lastLoginAt     DateTime   @default(now())
 
-  sessions      Session[]
-  downloads     Download[]
+  sessions        Session[]
+  downloads       Download[]
+  activities      Activity[]
+  files           UserFile[]
 
   @@map("users")
 }
@@ -48,6 +54,7 @@ model Download {
   fileName  String
   version   String   @default("v3.5.5")
   ipAddress String?
+  location  String?
   userAgent String?
   timestamp DateTime @default(now())
 
@@ -70,4 +77,72 @@ model Conversion {
   timestamp   DateTime @default(now())
 
   @@map("conversions")
+}
+
+model Activity {
+  id            String   @id @default(cuid())
+  userId        String?
+  userEmail     String?
+  userName      String?
+  action        String
+  title         String
+  details       String?
+  fileName      String?
+  fileSize      String?
+  pointsCount   Int?
+  linesCount    Int?
+  polygonsCount Int?
+  crs           String?
+  exportFormat  String?
+  photosCount   Int?
+  durationMs    Int?
+  status        String?  @default("success")
+  ipAddress     String?
+  userAgent     String?
+  timestamp     DateTime @default(now())
+
+  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("activities")
+}
+
+model UserFile {
+  id                String   @id @default(cuid())
+  userId            String?
+  userEmail         String?
+  userName          String?
+  direction         String   @default("import")
+  fileName          String
+  fileSize          Int      @default(0)
+  fileSizeFormatted String   @default("0 B")
+  mimeType          String   @default("application/octet-stream")
+  contentBase64     String?  @db.Text
+  pointsCount       Int?
+  crs               String?
+  action            String?
+  platform          String?  @default("windows_app")
+  ipAddress         String?
+  userAgent         String?
+  timestamp         DateTime @default(now())
+
+  user              User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("user_files")
+}
+
+model AppSettings {
+  id                    Int     @id @default(1)
+  appVersion            String  @default("v3.5.7")
+  installerFileName     String  @default("ExcelToKMLPro-Lite-Setup.exe")
+  installerFileSize     String  @default("3.2 MB")
+  requireAuthForDownload Boolean @default(true)
+  maintenanceMode       Boolean @default(false)
+  announcementBanner    String  @default("")
+  announcementActive    Boolean @default(false)
+  webAppRestricted      Boolean @default(true)
+  webMaxPoints          Int     @default(50)
+  webWatermarkKml       Boolean @default(true)
+  webDisableReports     Boolean @default(true)
+
+  @@map("app_settings")
 }

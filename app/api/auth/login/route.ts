@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const user = db.findUserByEmail(email);
+    const user = await db.findUserByEmail(email);
     if (!user) {
       return NextResponse.json(
         { error: "Invalid email or password." },
@@ -30,10 +30,10 @@ export async function POST(req: NextRequest) {
     }
 
     // Touch login date
-    db.touchUserLogin(user.id);
+    await db.touchUserLogin(user.id);
 
     // Create session
-    const session = db.createSession(user.id);
+    const session = await db.createSession(user.id);
     const sanitized = db.sanitizeUser(user);
 
     const response = NextResponse.json({
