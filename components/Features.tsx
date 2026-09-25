@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useEffect, useState } from "react";
+import FeatureDetailDialog, { type DialogTheme } from "./FeatureDetailDialog";
 import {
   Globe,
   Layers,
@@ -11,6 +12,7 @@ import {
   Sparkles,
   Search,
   CheckCircle2,
+  Info,
 } from "lucide-react";
 
 interface FeatureCard {
@@ -37,7 +39,7 @@ const FEATURES: FeatureCard[] = [
     badge: "Global Coverage",
     title: "Official Regional Map Grids",
     desc: "Works with government coordinate grids across UAE, Qatar, Pakistan, Saudi Arabia, the UK, and 5,800+ other coordinate systems worldwide.",
-    chips: ["Dubai DLTM", "Qatar QNG", "Pakistan UTM", "Saudi KSA"],
+    chips: ["Dubai DLTM", "Qatar National Grid", "Pakistan UTM 42N", "Saudi Arabia UTM 38N"],
     layout: "wide",
     preview: "grids",
   },
@@ -47,10 +49,10 @@ const FEATURES: FeatureCard[] = [
     accentLight: "bg-indigo-50",
     accentBorder: "border-indigo-200/70",
     accentBar: "bg-indigo-500",
-    badge: "3D Visuals",
-    title: "3D Elevations & Heights",
-    desc: "Shows survey pegs with vertical lines rising from ground level, making slopes, cut-and-fill, and terrain heights easy to inspect.",
-    chips: ["Vertical Pins", "Ground Anchors", "Elevation Tags"],
+    badge: "Levels",
+    title: "Elevations & Levels",
+    desc: "Pins sit on Google Earth's terrain with each point's measured level in its balloon, plus level profiles and checks that catch a level that jumps.",
+    chips: ["Ground Pins", "Elevation in Balloons", "Level Profile"],
   },
   {
     icon: FileSpreadsheet,
@@ -107,29 +109,38 @@ const GRID_PREVIEW = [
   { name: "Saudi Arabia UTM 38N", epsg: "EPSG:32638" },
 ];
 
-function GridsPreview() {
+function GridsPreview({ onOpen }: { onOpen: (name: string) => void }) {
   return (
-    <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 overflow-hidden" aria-hidden>
-      <div className="flex items-center gap-2 px-3.5 py-2 border-b border-slate-200/70 bg-white">
+    <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 overflow-hidden">
+      <div aria-hidden className="flex items-center gap-2 px-3.5 py-2 border-b border-slate-200/70 bg-white">
         <Search className="w-3.5 h-3.5 text-slate-400" />
         <span className="text-[11px] text-slate-500">Search grid or EPSG code…</span>
       </div>
       <ul className="divide-y divide-slate-200/60">
         {GRID_PREVIEW.map((g, i) => (
-          <li
-            key={g.epsg}
-            className={`flex items-center justify-between gap-3 px-3.5 py-2 text-[12px] ${i === 0 ? "bg-blue-50/70" : ""}`}
-          >
-            <span className={`flex items-center gap-2 ${i === 0 ? "text-blue-800 font-semibold" : "text-slate-700"}`}>
-              {i === 0 ? <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" /> : <span className="w-3.5" />}
-              {g.name}
-            </span>
-            <span className="font-mono text-[10.5px] font-semibold text-blue-600">{g.epsg}</span>
+          <li key={g.epsg}>
+            <button
+              type="button"
+              onClick={() => onOpen(g.name)}
+              aria-haspopup="dialog"
+              className={`group/row w-full flex items-center justify-between gap-3 px-3.5 py-2 text-[12px] text-left cursor-pointer transition-colors hover:bg-blue-50 focus-visible:outline-none focus-visible:bg-blue-50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500 ${
+                i === 0 ? "bg-blue-50/70" : ""
+              }`}
+            >
+              <span className={`flex items-center gap-2 ${i === 0 ? "text-blue-800 font-semibold" : "text-slate-700"}`}>
+                {i === 0 ? <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" /> : <span className="w-3.5" />}
+                {g.name}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="font-mono text-[10.5px] font-semibold text-blue-600">{g.epsg}</span>
+                <Info className="w-3.5 h-3.5 text-slate-400 group-hover/row:text-blue-600 transition-colors" aria-hidden />
+              </span>
+            </button>
           </li>
         ))}
       </ul>
       <div className="px-3.5 py-2 text-[11px] font-semibold text-slate-500 border-t border-slate-200/70">
-        + 6,860 more worldwide
+        5,800+ coordinate systems worldwide · select a grid for details
       </div>
     </div>
   );
@@ -152,7 +163,7 @@ function PhotoPreview() {
   );
 }
 
-function FeatureItem({ f, idx }: { f: FeatureCard; idx: number }) {
+function FeatureItem({ f, idx, onOpen }: { f: FeatureCard; idx: number; onOpen: (chip: string) => void }) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
 
@@ -230,17 +241,21 @@ function FeatureItem({ f, idx }: { f: FeatureCard; idx: number }) {
             {/* The grids preview already lists these names */}
             <div className={`mt-auto flex-wrap gap-1.5 ${f.preview === "grids" ? "hidden" : "flex"}`}>
               {f.chips.map((chip) => (
-                <span
+                <button
                   key={chip}
-                  className="text-[11px] font-medium px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200/80 text-slate-600"
+                  type="button"
+                  onClick={() => onOpen(chip)}
+                  aria-haspopup="dialog"
+                  className="group/chip inline-flex items-center gap-1 text-[11px] font-medium pl-2.5 pr-2 py-1 rounded-lg bg-slate-50 border border-slate-200/80 text-slate-600 cursor-pointer transition-colors hover:bg-white hover:border-slate-300 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                 >
                   {chip}
-                </span>
+                  <Info className="w-3 h-3 text-slate-400 transition-colors group-hover/chip:text-slate-700" aria-hidden />
+                </button>
               ))}
             </div>
           </div>
 
-          {f.preview === "grids" && <GridsPreview />}
+          {f.preview === "grids" && <GridsPreview onOpen={onOpen} />}
           {f.preview === "photo" && (
             <div className="md:max-w-[340px] md:justify-self-end w-full">
               <PhotoPreview />
@@ -253,6 +268,13 @@ function FeatureItem({ f, idx }: { f: FeatureCard; idx: number }) {
 }
 
 export default function Features() {
+  // Which tag's popup is open, and on which card
+  const [open, setOpen] = useState<{ item: string; card: number } | null>(null);
+  const card = open ? FEATURES[open.card] : null;
+  const theme: DialogTheme | null = card
+    ? { icon: card.icon, badge: card.badge, accent: card.accent, accentLight: card.accentLight, accentBorder: card.accentBorder }
+    : null;
+
   return (
     <section
       id="features"
@@ -288,9 +310,17 @@ export default function Features() {
         {/* Bento Feature Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
           {FEATURES.map((f, idx) => (
-            <FeatureItem key={f.title} f={f} idx={idx} />
+            <FeatureItem key={f.title} f={f} idx={idx} onOpen={(item) => setOpen({ item, card: idx })} />
           ))}
         </div>
+
+        <FeatureDetailDialog
+          item={open?.item ?? null}
+          siblings={card?.chips ?? []}
+          theme={theme}
+          onSelect={(item) => setOpen((o) => (o ? { ...o, item } : o))}
+          onClose={() => setOpen(null)}
+        />
       </div>
     </section>
   );
