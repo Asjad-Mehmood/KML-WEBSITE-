@@ -155,6 +155,24 @@ export default function SurveyorDetailModal({
   });
   const [savingSettings, setSavingSettings] = useState(false);
 
+  const getStoredToken = () => {
+    if (typeof window === "undefined") return "";
+    return localStorage.getItem("surveyor_session") || localStorage.getItem("surveyor_auth_token") || "";
+  };
+
+  const adminFetch = (url: string, options: RequestInit = {}) => {
+    const token = getStoredToken();
+    const headers = new Headers(options.headers || {});
+    if (token && !headers.has("Authorization")) {
+      headers.set("Authorization", `Bearer ${token}`);
+    }
+    return fetch(url, {
+      ...options,
+      credentials: "include",
+      headers,
+    });
+  };
+
   useEffect(() => {
     if (isOpen && userId) {
       fetchUserDetails(userId);
@@ -166,7 +184,7 @@ export default function SurveyorDetailModal({
   const fetchUserDetails = async (id: string) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/users/${id}`);
+      const res = await adminFetch(`/api/admin/users/${id}`);
       if (!res.ok) {
         throw new Error("Failed to load user intelligence profile");
       }
@@ -209,7 +227,7 @@ export default function SurveyorDetailModal({
         payload.password = editForm.password.trim();
       }
 
-      const res = await fetch(`/api/admin/users/${userId}`, {
+      const res = await adminFetch(`/api/admin/users/${userId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -236,7 +254,7 @@ export default function SurveyorDetailModal({
     }
 
     try {
-      const res = await fetch(`/api/admin/activities?userId=${encodeURIComponent(userId)}`, {
+      const res = await adminFetch(`/api/admin/activities?userId=${encodeURIComponent(userId)}`, {
         method: "DELETE",
       });
       if (res.ok) {
@@ -253,7 +271,7 @@ export default function SurveyorDetailModal({
   const handleDeleteStoredFile = async (fileId: string, fileName: string) => {
     if (!confirm(`Delete stored file "${fileName}" from the database vault?`)) return;
     try {
-      const res = await fetch(`/api/user/files/${fileId}`, { method: "DELETE" });
+      const res = await adminFetch(`/api/user/files/${fileId}`, { method: "DELETE" });
       if (res.ok) {
         onToast(`Deleted file ${fileName}`);
         if (userId) fetchUserDetails(userId);

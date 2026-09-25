@@ -105,7 +105,7 @@ BLDG-C2,513620.000,2787440.000,15.15,STRUCTURE,Building Column Corner B
             <span>Download &amp; Installation</span>
           </div>
           <h2 className="text-2xl sm:text-3xl lg:text-[34px] font-bold tracking-tight text-slate-900 mb-2.5">
-            Download Excel to KML Pro
+            Download Excel to KML Pro — Free Windows Survey Converter
           </h2>
           <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
             Install the native Windows desktop application or download our sample survey dataset to test coordinate conversion.

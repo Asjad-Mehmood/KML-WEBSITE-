@@ -6,7 +6,8 @@ export async function GET(req: NextRequest) {
     // Check cookie or Authorization header
     const token =
       req.cookies.get("surveyor_auth_token")?.value ||
-      req.headers.get("authorization")?.replace("Bearer ", "");
+      req.cookies.get("surveyor_session")?.value ||
+      req.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
 
     if (!token) {
       return NextResponse.json({ user: null });

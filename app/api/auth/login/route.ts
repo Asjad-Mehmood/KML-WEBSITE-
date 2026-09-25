@@ -42,14 +42,20 @@ export async function POST(req: NextRequest) {
       token: session.token,
     });
 
-    // Set cookie
-    response.cookies.set("surveyor_auth_token", session.token, {
+    const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: "lax" as const,
       maxAge: 30 * 24 * 60 * 60, // 30 days
       path: "/",
-    });
+    };
+
+    // Set cookie
+    response.cookies.set("surveyor_auth_token", session.token, cookieOptions);
+
+    if (db.isAdmin(user)) {
+      response.cookies.set("surveyor_session", session.token, cookieOptions);
+    }
 
     return response;
   } catch (err: unknown) {

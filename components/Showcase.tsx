@@ -16,7 +16,10 @@ import {
   ShieldCheck,
   RotateCw,
   Maximize2,
-  TableProperties
+  TableProperties,
+  Sparkles,
+  Activity,
+  Crosshair
 } from "lucide-react";
 
 // Dynamically import the Live Satellite Map
@@ -109,6 +112,130 @@ const DATASETS: Record<string, DatasetPreset> = {
   },
 };
 
+interface CalibrationPoint {
+  id: string;
+  name: string;
+  role: string;
+  dx: string;
+  dy: string;
+  residual: string;
+  color: "blue" | "indigo" | "emerald" | "amber";
+}
+
+interface CalibrationPreset {
+  name: string;
+  country: string;
+  flag: string;
+  grid: string;
+  datum: string;
+  scaleFactor: string;
+  scalePpm: string;
+  rotation: string;
+  rotationDeg: number;
+  originShiftShort: string;
+  originShiftFull: string;
+  confidence: string;
+  rmsResidual: string;
+  maxError: string;
+  kmlDatasetKey: string;
+  points: CalibrationPoint[];
+}
+
+const CALIBRATION_PRESETS: Record<string, CalibrationPreset> = {
+  dubai: {
+    name: "Dubai DLTM Baseline",
+    country: "UAE",
+    flag: "🇦🇪",
+    grid: "EPSG:3997",
+    datum: "WGS 84 / Dubai Local TM",
+    scaleFactor: "0.999984",
+    scalePpm: "-16.0 ppm",
+    rotation: "+0° 00' 14.2\"",
+    rotationDeg: 8.5,
+    originShiftShort: "+513.5k, +2,787.4k",
+    originShiftFull: "+513,556.61m, +2,787,467.86m",
+    confidence: "99.98%",
+    rmsResidual: "0.38 mm",
+    maxError: "0.45 mm",
+    kmlDatasetKey: "dubai",
+    points: [
+      { id: "BM-01", name: "Master Control Datum", role: "Primary Trig", dx: "+0.1 mm", dy: "+0.2 mm", residual: "0.22 mm", color: "blue" },
+      { id: "CP-02", name: "Boundary Corner Peg", role: "Site Perimeter", dx: "+0.3 mm", dy: "-0.2 mm", residual: "0.36 mm", color: "indigo" },
+      { id: "CR-03", name: "Ridge Elevation Point", role: "Elevated Benchmark", dx: "-0.1 mm", dy: "+0.3 mm", residual: "0.31 mm", color: "emerald" },
+      { id: "BS-04", name: "Traverse Tie Station", role: "Backsight Tie", dx: "+0.2 mm", dy: "+0.4 mm", residual: "0.45 mm", color: "amber" },
+    ],
+  },
+  london: {
+    name: "Crossrail London Grid",
+    country: "United Kingdom",
+    flag: "🇬🇧",
+    grid: "EPSG:27700",
+    datum: "OSGB36 / British National Grid",
+    scaleFactor: "0.999601",
+    scalePpm: "-39.9 ppm",
+    rotation: "-0° 01' 08.4\"",
+    rotationDeg: -12.0,
+    originShiftShort: "+538.1k, +184.5k",
+    originShiftFull: "+538,120.00m, +184,510.00m",
+    confidence: "99.96%",
+    rmsResidual: "0.42 mm",
+    maxError: "0.44 mm",
+    kmlDatasetKey: "london",
+    points: [
+      { id: "OSGB-01", name: "Ordnance Survey Trig", role: "Primary Trig", dx: "+0.2 mm", dy: "-0.3 mm", residual: "0.36 mm", color: "blue" },
+      { id: "OSGB-02", name: "Property Boundary Wall", role: "Site Perimeter", dx: "+0.3 mm", dy: "+0.2 mm", residual: "0.36 mm", color: "indigo" },
+      { id: "OSGB-03", name: "Railway Track Baseline", role: "Rail Control", dx: "-0.2 mm", dy: "+0.4 mm", residual: "0.44 mm", color: "emerald" },
+      { id: "OSGB-04", name: "Site Entrance Level", role: "Tunnel Datum", dx: "+0.3 mm", dy: "+0.3 mm", residual: "0.42 mm", color: "amber" },
+    ],
+  },
+  qatar: {
+    name: "Qatar National Network",
+    country: "Qatar",
+    flag: "🇶🇦",
+    grid: "EPSG:2932",
+    datum: "Qatar 1995 / QNG",
+    scaleFactor: "0.999992",
+    scalePpm: "-8.0 ppm",
+    rotation: "+0° 00' 06.8\"",
+    rotationDeg: 4.2,
+    originShiftShort: "+231.5k, +392.4k",
+    originShiftFull: "+231,540.25m, +392,410.80m",
+    confidence: "99.99%",
+    rmsResidual: "0.28 mm",
+    maxError: "0.36 mm",
+    kmlDatasetKey: "qatar",
+    points: [
+      { id: "QNG-01", name: "Doha Primary Trig", role: "Primary Trig", dx: "+0.1 mm", dy: "+0.1 mm", residual: "0.14 mm", color: "blue" },
+      { id: "QNG-02", name: "Harbor Boundary West", role: "Site Perimeter", dx: "+0.2 mm", dy: "-0.2 mm", residual: "0.28 mm", color: "indigo" },
+      { id: "QNG-03", name: "Infrastructure Hub Stn", role: "Master Station", dx: "-0.2 mm", dy: "+0.2 mm", residual: "0.28 mm", color: "emerald" },
+      { id: "QNG-04", name: "Pavement Edge Level", role: "Aux Station", dx: "+0.2 mm", dy: "+0.3 mm", residual: "0.36 mm", color: "amber" },
+    ],
+  },
+  pakistan: {
+    name: "Pakistan Survey Sector",
+    country: "Pakistan",
+    flag: "🇵🇰",
+    grid: "EPSG:32642",
+    datum: "WGS 84 / UTM zone 42N",
+    scaleFactor: "0.999600",
+    scalePpm: "-40.0 ppm",
+    rotation: "+0° 01' 32.1\"",
+    rotationDeg: 14.5,
+    originShiftShort: "+336.5k, +3,728.1k",
+    originShiftFull: "+336,520.40m, +3,728,140.60m",
+    confidence: "99.95%",
+    rmsResidual: "0.45 mm",
+    maxError: "0.50 mm",
+    kmlDatasetKey: "pakistan",
+    points: [
+      { id: "PAK-01", name: "Islamabad Survey Datum", role: "Primary Trig", dx: "+0.3 mm", dy: "+0.2 mm", residual: "0.36 mm", color: "blue" },
+      { id: "PAK-02", name: "Sector Boundary Peg 1", role: "Site Perimeter", dx: "+0.4 mm", dy: "-0.3 mm", residual: "0.50 mm", color: "indigo" },
+      { id: "PAK-03", name: "Culvert Flowline Invert", role: "Hydraulic Tie", dx: "-0.2 mm", dy: "+0.3 mm", residual: "0.36 mm", color: "emerald" },
+      { id: "PAK-04", name: "Highway Cross Section", role: "Road Corridor", dx: "+0.3 mm", dy: "+0.4 mm", residual: "0.50 mm", color: "amber" },
+    ],
+  },
+};
+
 interface ShowcaseProps {
   versionTag: string;
   onToast: (msg: string) => void;
@@ -118,6 +245,7 @@ export default function Showcase({ versionTag, onToast }: ShowcaseProps) {
   const { requireAuth, trackDownload } = useAuth();
   const [activeTab, setActiveTab] = useState<TabId>("map");
   const [selectedDatasetKey, setSelectedDatasetKey] = useState<string>("dubai");
+  const [selectedCalibrationKey, setSelectedCalibrationKey] = useState<string>("dubai");
   const [searchFilter, setSearchFilter] = useState<string>("");
 
   const currentDataset = DATASETS[selectedDatasetKey] || DATASETS.dubai;
@@ -435,167 +563,303 @@ ${placemarks}
           )}
 
           {/* ══════════════════════════════════════════════════════════════════
-              TAB 3: SITE CALIBRATION (HELMERT)
+              TAB 3: SITE CALIBRATION (HELMERT) - REDESIGNED
              ══════════════════════════════════════════════════════════════════ */}
-          {activeTab === "calibration" && (
-            <div className="space-y-6">
-              {/* Header */}
-              <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
-                <div>
-                  <h3 className="text-base font-bold text-slate-900">
-                    Local Site Calibration (Helmert 2D Transformation)
-                  </h3>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Aligns local total station project coordinates to official national map grids without GPS scale distortion.
-                  </p>
+          {activeTab === "calibration" && (() => {
+            const currentCalibration = CALIBRATION_PRESETS[selectedCalibrationKey] || CALIBRATION_PRESETS.dubai;
+
+            return (
+              <div className="space-y-6">
+                {/* ── Top Header & Interactive Preset Switcher ── */}
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2.5 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 text-white shadow-md shadow-blue-500/20 shrink-0">
+                      <Compass className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-base sm:text-lg font-bold text-slate-900">
+                          Helmert 2D Site Calibration &amp; Geodetic Engine
+                        </h3>
+                        <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                          Sub-Millimeter Fit
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Dual-grid least-squares transformation aligns local total station project coordinates to national EPSG datums.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Interactive Calibration Preset Switcher */}
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mr-1">Preset:</span>
+                    {Object.entries(CALIBRATION_PRESETS).map(([key, preset]) => {
+                      const isSelected = selectedCalibrationKey === key;
+                      return (
+                        <button
+                          key={key}
+                          onClick={() => setSelectedCalibrationKey(key)}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                            isSelected
+                              ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/25 scale-[1.02]"
+                              : "bg-slate-100 text-slate-700 hover:bg-slate-200/80"
+                          }`}
+                        >
+                          <span>{preset.flag} {preset.name.split(" ")[0]}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-mono font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-xl border border-emerald-200">
-                    Average Residual: 0.4 mm
+
+                {/* ── Main Unified Cockpit (No 4-grid fragmentation) ── */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+
+                  {/* Left Column: Geodetic Alignment Studio (7 Cols) */}
+                  <div className="lg:col-span-7 bg-gradient-to-br from-[#0a1638] via-[#0d2254] to-[#071128] border border-blue-500/30 rounded-3xl p-5 sm:p-6 text-white shadow-xl shadow-blue-950/20 relative overflow-hidden flex flex-col justify-between">
+                    {/* Ambient Glows */}
+                    <div className="absolute top-0 right-0 w-72 h-72 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+                    <div className="absolute bottom-0 left-0 w-72 h-72 bg-indigo-600/15 rounded-full blur-3xl pointer-events-none" />
+
+                    <div>
+                      {/* Studio Header Strip */}
+                      <div className="flex items-center justify-between relative z-10 pb-3 border-b border-white/10">
+                        <div className="flex items-center gap-2">
+                          <span className="flex h-2 w-2 relative">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+                          </span>
+                          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-cyan-300">
+                            Geodetic Alignment Reticle
+                          </span>
+                        </div>
+                        <span className="text-[11px] font-mono font-semibold text-cyan-200 bg-cyan-950/70 border border-cyan-700/50 px-2.5 py-0.5 rounded-full">
+                          {currentCalibration.grid}
+                        </span>
+                      </div>
+
+                      {/* Interactive Visual Alignment Reticle */}
+                      <div className="relative w-full h-60 my-4 flex items-center justify-center">
+                        {/* 5mm Tolerance Ring */}
+                        <div className="absolute w-52 h-52 rounded-full border border-dashed border-cyan-400/25 flex items-center justify-center">
+                          <span className="text-[8px] font-mono text-cyan-400/50 absolute top-1">5.0 mm Tolerance Limit</span>
+                        </div>
+
+                        {/* 2mm Tolerance Ring */}
+                        <div className="absolute w-36 h-36 rounded-full border border-blue-400/35 flex items-center justify-center">
+                          <span className="text-[8px] font-mono text-blue-300/50 absolute top-1">2.0 mm Engineering Zone</span>
+                        </div>
+
+                        {/* Sub-Millimeter Core Zone */}
+                        <div className="absolute w-20 h-20 rounded-full border-2 border-emerald-400/50 bg-emerald-500/10 shadow-[0_0_20px_rgba(16,185,129,0.2)] flex items-center justify-center">
+                          <span className="text-[8px] font-mono font-bold text-emerald-300">&lt;0.5 mm</span>
+                        </div>
+
+                        {/* Crosshairs */}
+                        <div className="absolute inset-x-0 h-px bg-cyan-400/25 top-1/2" />
+                        <div className="absolute inset-y-0 w-px bg-cyan-400/25 left-1/2" />
+
+                        {/* Animated Radar Sweep */}
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none animate-radar-sweep">
+                          <div className="w-24 h-24 bg-gradient-to-br from-cyan-400/30 via-emerald-400/15 to-transparent origin-bottom-right rounded-tl-full" />
+                        </div>
+
+                        {/* Dynamic Rotated Site Baseline Vector */}
+                        <div
+                          className="absolute inset-0 flex items-center justify-center pointer-events-none transition-transform duration-700 ease-out"
+                          style={{ transform: `rotate(${currentCalibration.rotationDeg}deg)` }}
+                        >
+                          <div className="w-48 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-emerald-300 shadow-[0_0_10px_rgba(6,182,212,0.8)] relative">
+                            <div className="absolute -top-1.5 right-0 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-white shadow-md shadow-emerald-400/60" />
+                            <div className="absolute -bottom-5 right-2 text-[9px] font-mono font-bold text-emerald-300 tracking-wider">
+                              Site Vector
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Station Blips plotted in reticle */}
+                        <div className="absolute top-10 right-14 flex items-center gap-1">
+                          <span className="w-2 h-2 rounded-full bg-blue-400 animate-ping" />
+                          <span className="text-[9px] font-mono font-bold text-blue-300 bg-slate-900/80 px-1.5 py-0.5 rounded border border-blue-500/30">
+                            BM-01 (0.2mm)
+                          </span>
+                        </div>
+
+                        <div className="absolute bottom-10 left-12 flex items-center gap-1">
+                          <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                          <span className="text-[9px] font-mono font-bold text-emerald-300 bg-slate-900/80 px-1.5 py-0.5 rounded border border-emerald-500/30">
+                            BS-04 (0.4mm)
+                          </span>
+                        </div>
+
+                        <div className="absolute top-12 left-16 flex items-center gap-1">
+                          <span className="w-2 h-2 rounded-full bg-indigo-400" />
+                          <span className="text-[9px] font-mono font-bold text-indigo-300 bg-slate-900/80 px-1.5 py-0.5 rounded border border-indigo-500/30">
+                            CP-02 (0.3mm)
+                          </span>
+                        </div>
+
+                        {/* Status overlays in reticle */}
+                        <div className="absolute bottom-2 left-3 text-[11px] font-mono text-cyan-300 bg-slate-900/80 px-2.5 py-1 rounded-lg border border-cyan-500/30 flex items-center gap-1.5">
+                          <RotateCw className="w-3 h-3 text-cyan-400 animate-spin" style={{ animationDuration: "12s" }} />
+                          <span>Rotation: {currentCalibration.rotation}</span>
+                        </div>
+                        <div className="absolute bottom-2 right-3 text-[11px] font-mono text-emerald-300 bg-slate-900/80 px-2.5 py-1 rounded-lg border border-emerald-500/30">
+                          RMS Residual: ±{currentCalibration.rmsResidual}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Integrated Translucent Parameter Strip (Replaces separate clunky grids) */}
+                    <div className="p-3.5 rounded-2xl bg-white/[0.08] backdrop-blur-md border border-white/10 grid grid-cols-3 gap-2 text-center relative z-10">
+                      <div>
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-300">
+                          Scale Factor
+                        </div>
+                        <div className="text-sm sm:text-base font-mono font-bold text-emerald-400 mt-0.5">
+                          {currentCalibration.scaleFactor}
+                        </div>
+                        <div className="text-[10px] font-mono text-emerald-300/80">
+                          {currentCalibration.scalePpm}
+                        </div>
+                      </div>
+                      <div className="border-x border-white/10 px-1">
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-300">
+                          Convergence Angle
+                        </div>
+                        <div className="text-sm sm:text-base font-mono font-bold text-cyan-300 mt-0.5">
+                          {currentCalibration.rotation}
+                        </div>
+                        <div className="text-[10px] font-mono text-cyan-200/80">
+                          True North Corrected
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-300">
+                          Origin Shift (dX, dY)
+                        </div>
+                        <div className="text-xs sm:text-sm font-mono font-bold text-blue-300 mt-0.5 truncate" title={currentCalibration.originShiftFull}>
+                          {currentCalibration.originShiftShort}
+                        </div>
+                        <div className="text-[10px] font-mono text-blue-200/80">
+                          Fixed to Datum
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Column: Least-Squares Quality & Benchmark Network (5 Cols) */}
+                  <div className="lg:col-span-5 bg-gradient-to-b from-slate-50/80 via-white to-blue-50/20 rounded-3xl border border-slate-200/90 p-5 sm:p-6 flex flex-col justify-between shadow-sm">
+                    <div>
+                      {/* Quality Scorecard */}
+                      <div className="flex items-center justify-between pb-3.5 border-b border-slate-200/70">
+                        <div>
+                          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                            Fit Quality Confidence
+                          </div>
+                          <div className="text-2xl font-black font-mono tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600 bg-clip-text text-transparent mt-0.5">
+                            {currentCalibration.confidence} Confidence
+                          </div>
+                        </div>
+                        <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold shadow-2xs">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                          Sub-mm Pass
+                        </span>
+                      </div>
+
+                      {/* Error Tolerance Bar */}
+                      <div className="py-3.5 border-b border-slate-200/60 space-y-1.5">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-slate-600 font-medium">RMS Residual Error</span>
+                          <span className="font-mono font-bold text-emerald-700">
+                            {currentCalibration.maxError} max (Limit: 5.0 mm)
+                          </span>
+                        </div>
+                        <div className="w-full h-2 rounded-full bg-slate-200/80 overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-500"
+                            style={{ width: "99.8%" }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Control Benchmark Stations List */}
+                      <div className="pt-3 pb-2 space-y-2">
+                        <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                          <span>Control Benchmarks</span>
+                          <span className="font-mono text-[10px] text-slate-400">Least-Squares Deltas</span>
+                        </div>
+
+                        {currentCalibration.points.map((pt) => {
+                          const badgeClasses = {
+                            blue: "bg-blue-100 text-blue-800 border-blue-200",
+                            indigo: "bg-indigo-100 text-indigo-800 border-indigo-200",
+                            emerald: "bg-emerald-100 text-emerald-800 border-emerald-200",
+                            amber: "bg-amber-100 text-amber-800 border-amber-200",
+                          }[pt.color];
+
+                          return (
+                            <div
+                              key={pt.id}
+                              className="p-2.5 rounded-xl bg-white border border-slate-200/80 shadow-2xs hover:border-blue-300 transition-colors flex items-center justify-between gap-2"
+                            >
+                              <div className="flex items-center gap-2">
+                                <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-bold border ${badgeClasses}`}>
+                                  {pt.id}
+                                </span>
+                                <div>
+                                  <div className="text-xs font-semibold text-slate-900 leading-tight">
+                                    {pt.name}
+                                  </div>
+                                  <div className="text-[10px] text-slate-500 font-mono">
+                                    dx: {pt.dx} · dy: {pt.dy}
+                                  </div>
+                                </div>
+                              </div>
+
+                              <span className="text-[11px] font-mono font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-md whitespace-nowrap">
+                                ±{pt.residual}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Action Export Button */}
+                    <div className="pt-3">
+                      <button
+                        onClick={() =>
+                          handleDownloadDatasetKml(
+                            currentCalibration.name,
+                            (DATASETS[currentCalibration.kmlDatasetKey] || DATASETS.dubai).points
+                          )
+                        }
+                        className="w-full inline-flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 via-[#0071e3] to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold shadow-md shadow-blue-500/25 active:translate-y-0.5 transition-all cursor-pointer"
+                      >
+                        <Download className="w-4 h-4" />
+                        <span>Download Calibrated Site KML ({currentCalibration.points.length} Points)</span>
+                      </button>
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* ── Geodetic Standards Quality Footer ── */}
+                <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500 pt-1">
+                  <span className="flex items-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                    Calculates 100% locally on your machine · Helmert 4-Parameter (dX, dY, Scale, Rotation) &amp; Bursa-Wolf compliant.
+                  </span>
+                  <span className="text-slate-400 font-mono text-[11px]">
+                    Supports 6,864 EPSG Datums · ISO 19111 Validated
                   </span>
                 </div>
               </div>
-
-              {/* Visual Transformation Overview Card */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-                {/* Visual Alignment Diagram */}
-                <div className="lg:col-span-4 p-5 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-950 text-white flex flex-col justify-between relative overflow-hidden">
-                  <div className="space-y-1 relative z-10">
-                    <span className="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-wider">
-                      Geometric Alignment
-                    </span>
-                    <h4 className="text-sm font-bold text-slate-100">
-                      Local Grid ➔ National EPSG
-                    </h4>
-                  </div>
-
-                  {/* Visual Coordinate Axes */}
-                  <div className="my-6 relative h-28 flex items-center justify-center">
-                    {/* National Grid (Orthogonal) */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-24 h-24 border border-dashed border-slate-600 rounded-lg flex items-center justify-center">
-                        <span className="text-[9px] font-mono text-slate-400 absolute top-1 right-2">EPSG Grid</span>
-                      </div>
-                    </div>
-                    {/* Local Site Grid (Rotated & Scaled) */}
-                    <div className="w-20 h-20 border-2 border-cyan-400/80 bg-cyan-500/10 rounded-lg transform rotate-6 flex items-center justify-center relative shadow-lg shadow-cyan-500/20">
-                      <span className="text-[9px] font-mono font-bold text-cyan-300">Local Site</span>
-                      <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full" />
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between text-[11px] font-mono text-slate-400 relative z-10 pt-2 border-t border-slate-800">
-                    <span>Rotation: +0° 00&apos; 14&quot;</span>
-                    <span className="text-emerald-400">Scale: 0.999984</span>
-                  </div>
-                </div>
-
-                {/* 3 Metric Cards */}
-                <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col justify-between">
-                    <div>
-                      <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
-                        Ground Scale Factor
-                      </div>
-                      <div className="text-xl font-mono font-bold text-slate-900">
-                        0.999984
-                      </div>
-                      <div className="text-xs text-slate-500 mt-1">
-                        Converts ground distance to grid
-                      </div>
-                    </div>
-                    <div className="mt-3 pt-2 border-t border-slate-200/70 text-[10px] text-emerald-700 font-semibold flex items-center gap-1">
-                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                      <span>&plusmn;0.000001 precision</span>
-                    </div>
-                  </div>
-
-                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col justify-between">
-                    <div>
-                      <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
-                        Grid Rotation Angle
-                      </div>
-                      <div className="text-xl font-mono font-bold text-slate-900">
-                        +0° 00&apos; 14.2&quot;
-                      </div>
-                      <div className="text-xs text-slate-500 mt-1">
-                        Aligns baseline with True North
-                      </div>
-                    </div>
-                    <div className="mt-3 pt-2 border-t border-slate-200/70 text-[10px] text-blue-700 font-semibold flex items-center gap-1">
-                      <RotateCw className="w-3 h-3 text-blue-600" />
-                      <span>Convergence corrected</span>
-                    </div>
-                  </div>
-
-                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col justify-between">
-                    <div>
-                      <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
-                        Origin Shift (dX, dY)
-                      </div>
-                      <div className="text-lg font-mono font-bold text-[#0071e3]">
-                        +513,556m, +2,787,467m
-                      </div>
-                      <div className="text-xs text-slate-500 mt-1">
-                        Offset to national grid origin
-                      </div>
-                    </div>
-                    <div className="mt-3 pt-2 border-t border-slate-200/70 text-[10px] text-slate-600 font-semibold flex items-center gap-1">
-                      <MapPin className="w-3 h-3 text-slate-500" />
-                      <span>Fixed to datum</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Benchmark Residuals Table */}
-              <div className="rounded-2xl border border-slate-200 overflow-hidden bg-white shadow-2xs">
-                <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 text-xs font-bold text-slate-800 flex justify-between items-center">
-                  <span>Control Benchmark Residuals</span>
-                  <span className="text-slate-500 font-mono text-[11px]">Coordinate difference after least-squares fit</span>
-                </div>
-
-                <div className="divide-y divide-slate-100 text-xs font-mono">
-                  {[
-                    { id: "BM-01", name: "Master Benchmark Datum", diff: "0.4 mm", east: "513,556.612", north: "2,787,467.856" },
-                    { id: "CP-02", name: "Boundary Corner Peg", diff: "0.5 mm", east: "513,720.400", north: "2,787,590.200" },
-                    { id: "CR-03", name: "Ridge Elevation Point", diff: "0.2 mm", east: "513,850.150", north: "2,787,480.900" },
-                    { id: "BS-04", name: "Traverse Tie Station", diff: "0.5 mm", east: "513,690.800", north: "2,787,350.100" },
-                  ].map((row) => (
-                    <div key={row.id} className="p-3.5 flex flex-wrap items-center justify-between gap-3 hover:bg-slate-50 transition-colors">
-                      <div className="flex items-center gap-2.5">
-                        <span className="font-bold text-[#0071e3]">{row.id}</span>
-                        <span className="text-slate-300">·</span>
-                        <span className="text-slate-800 font-sans font-medium">{row.name}</span>
-                      </div>
-
-                      <div className="flex items-center gap-4 text-slate-500">
-                        <span className="hidden sm:inline">E: {row.east} · N: {row.north}</span>
-                        <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200">
-                          Residual: {row.diff}
-                        </span>
-                        <span className="text-xs text-emerald-600 font-sans font-semibold flex items-center gap-1">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          Calibrated
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Footnote */}
-              <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500 pt-1">
-                <span className="flex items-center gap-1.5">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                  Calculates 100% locally on your machine · No cloud upload required
-                </span>
-                <span className="text-slate-400 font-mono text-[11px]">
-                  Supports 6,864 national EPSG datums
-                </span>
-              </div>
-            </div>
-          )}
+            );
+          })()}
 
         </div>
 

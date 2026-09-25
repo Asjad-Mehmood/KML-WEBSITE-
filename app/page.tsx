@@ -122,49 +122,52 @@ export default function Home() {
       {/* Navigation */}
       <Navbar onDownloadClick={handleDownloadApp} />
 
-      {/* Hero */}
-      <Hero
-        versionTag={versionTag}
-        fileSizeText={fileSizeText}
-        onDownloadClick={handleDownloadApp}
-      />
+      {/* Main Content Landmark for Search Engine Crawlers & Accessibility */}
+      <main id="main-content">
+        {/* Hero */}
+        <Hero
+          versionTag={versionTag}
+          fileSizeText={fileSizeText}
+          onDownloadClick={handleDownloadApp}
+        />
 
-      {/* Showcase Window */}
-      <Showcase versionTag={versionTag} onToast={showToast} />
+        {/* Showcase Window */}
+        <Showcase versionTag={versionTag} onToast={showToast} />
 
-      {/* Metrics Ribbon */}
-      <MetricsRibbon />
+        {/* Metrics Ribbon */}
+        <MetricsRibbon />
 
-      {/* Key Features */}
-      <Features />
+        {/* Key Features */}
+        <Features />
 
-      {/* 3-Step Workflow */}
-      <Workflow />
+        {/* 3-Step Workflow */}
+        <Workflow />
 
-      {/* Download Hub */}
-      <DownloadHub
-        versionTag={versionTag}
-        downloadUrl={downloadUrl}
-        releaseNotesUrl={releaseNotesUrl}
-        fileSizeText={fileSizeText}
-        bytesText={bytesText}
-        releaseDateText={releaseDateText}
-        sha256Hash={sha256Hash}
-        onToast={showToast}
-      />
+        {/* Download Hub */}
+        <DownloadHub
+          versionTag={versionTag}
+          downloadUrl={downloadUrl}
+          releaseNotesUrl={releaseNotesUrl}
+          fileSizeText={fileSizeText}
+          bytesText={bytesText}
+          releaseDateText={releaseDateText}
+          sha256Hash={sha256Hash}
+          onToast={showToast}
+        />
 
-      {/* Technical Specifications */}
-      <SpecsTable />
+        {/* Technical Specifications */}
+        <SpecsTable />
 
-      {/* FAQ */}
-      <Faq />
+        {/* FAQ */}
+        <Faq />
 
-      {/* Bottom CTA Banner */}
-      <CtaBanner
-        versionTag={versionTag}
-        fileSizeText={fileSizeText}
-        onDownloadClick={handleDownloadApp}
-      />
+        {/* Bottom CTA Banner */}
+        <CtaBanner
+          versionTag={versionTag}
+          fileSizeText={fileSizeText}
+          onDownloadClick={handleDownloadApp}
+        />
+      </main>
 
       {/* Footer */}
       <Footer

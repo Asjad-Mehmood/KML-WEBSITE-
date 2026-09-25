@@ -26,7 +26,7 @@ function getAuthUser(req: NextRequest) {
 export async function GET(req: NextRequest) {
   try {
     const user = getAuthUser(req);
-    const admin = await getAdminSession();
+    const admin = await getAdminSession(req);
     const { searchParams } = new URL(req.url);
     const limit = parseInt(searchParams.get("limit") || "100", 10);
     const userParam = searchParams.get("userId");

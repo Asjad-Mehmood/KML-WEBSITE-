@@ -37,7 +37,7 @@ export async function GET(
 
     const { record, buffer } = fileData;
     const user = getAuthUser(req);
-    const admin = await getAdminSession();
+    const admin = await getAdminSession(req);
 
     // Verify access: allowed if admin, or owner, or if file was uploaded unauthenticated
     const isOwner =
@@ -88,7 +88,7 @@ export async function DELETE(
     }
 
     const user = getAuthUser(req);
-    const admin = await getAdminSession();
+    const admin = await getAdminSession(req);
     const isOwner = user && user.id === fileData.record.userId;
     const isAdmin = Boolean(admin);
 

@@ -76,7 +76,7 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 pl-2 pr-4 py-1 group rounded-full hover:bg-black/[0.04] transition-colors">
             <div className="relative w-8 h-8 rounded-full overflow-hidden bg-gradient-to-tr from-slate-800 to-slate-950 shadow-inner flex items-center justify-center group-hover:scale-105 group-hover:shadow-[0_0_15px_rgba(0,0,0,0.1)] transition-all">
-              <Image src="/assets/icon.png" alt="Logo" width={32} height={32} className="w-full h-full object-contain p-0.5" />
+              <Image src="/assets/icon.png" alt="Excel to KML Pro — Survey Coordinate & Benchmark Converter" width={32} height={32} className="w-full h-full object-contain p-0.5" priority />
             </div>
             <span className="font-extrabold text-[15px] tracking-tight text-slate-900 hidden sm:block">
               KML<span className="text-[#0071e3]">Pro</span>

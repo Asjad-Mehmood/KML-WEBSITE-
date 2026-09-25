@@ -38,7 +38,7 @@ export default function AuthModal() {
         <div className="flex items-center justify-between px-6 pt-6 pb-5 border-b border-[#e8e8ed]">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-[11px] bg-[#0071e3] flex items-center justify-center">
-              <Image src="/assets/icon.png" alt="KML Pro" width={22} height={22} className="object-contain" />
+              <Image src="/assets/icon.png" alt="Excel to KML Pro Surveyor Account" width={22} height={22} className="object-contain" />
             </div>
             <div>
               <p className="text-[15px] font-semibold text-[#1d1d1f]">Excel to KML Pro</p>

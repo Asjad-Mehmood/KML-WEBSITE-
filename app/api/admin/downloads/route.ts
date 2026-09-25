@@ -3,7 +3,7 @@ import { getAdminSession } from "@/lib/adminAuth";
 import { db } from "@/lib/db";
 
 export async function GET(req: NextRequest) {
-  const admin = await getAdminSession();
+  const admin = await getAdminSession(req);
   if (!admin) {
     return NextResponse.json({ error: "Unauthorized: Admin privileges required" }, { status: 401 });
   }
@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
 
     const csvContent = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
 
-    return new Response(csvContent, {
+    return new NextResponse(csvContent, {
       status: 200,
       headers: {
         "Content-Type": "text/csv; charset=utf-8",
@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const admin = await getAdminSession();
+  const admin = await getAdminSession(req);
   if (!admin) {
     return NextResponse.json({ error: "Unauthorized: Admin privileges required" }, { status: 401 });
   }

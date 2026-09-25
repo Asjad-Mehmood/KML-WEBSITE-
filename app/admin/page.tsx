@@ -240,11 +240,29 @@ export default function AdminPage() {
     return { text: trimmed, flag };
   };
 
+  const getStoredToken = () => {
+    if (typeof window === "undefined") return "";
+    return localStorage.getItem("surveyor_session") || localStorage.getItem("surveyor_auth_token") || "";
+  };
+
+  const adminFetch = useCallback((url: string, options: RequestInit = {}) => {
+    const token = getStoredToken();
+    const headers = new Headers(options.headers || {});
+    if (token && !headers.has("Authorization")) {
+      headers.set("Authorization", `Bearer ${token}`);
+    }
+    return fetch(url, {
+      ...options,
+      credentials: "include",
+      headers,
+    });
+  }, []);
+
   // Check Admin session
   const verifyAuth = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/admin/auth");
+      const res = await adminFetch("/api/admin/auth");
       if (res.ok) {
         const data = await res.json();
         if (data.isAdmin) {
@@ -260,7 +278,7 @@ export default function AdminPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [adminFetch]);
 
   useEffect(() => {
     verifyAuth();
@@ -270,7 +288,7 @@ export default function AdminPage() {
   const loadDashboardData = async () => {
     try {
       // Load stats
-      const statsRes = await fetch("/api/admin/stats");
+      const statsRes = await adminFetch("/api/admin/stats");
       if (statsRes.ok) {
         const data = await statsRes.json();
         setStats(data.stats);
@@ -286,14 +304,14 @@ export default function AdminPage() {
       loadActivities();
 
       // Load downloads
-      const dlRes = await fetch("/api/admin/downloads");
+      const dlRes = await adminFetch("/api/admin/downloads");
       if (dlRes.ok) {
         const data = await dlRes.json();
         setDownloads(data.downloads || []);
       }
 
       // Load conversions
-      const convRes = await fetch("/api/admin/conversions");
+      const convRes = await adminFetch("/api/admin/conversions");
       if (convRes.ok) {
         const data = await convRes.json();
         setConversions(data.conversions || []);
@@ -306,7 +324,7 @@ export default function AdminPage() {
   const loadUsers = async (query = "") => {
     setUsersLoading(true);
     try {
-      const res = await fetch(`/api/admin/users?query=${encodeURIComponent(query)}`);
+      const res = await adminFetch(`/api/admin/users?query=${encodeURIComponent(query)}`);
       if (res.ok) {
         const data = await res.json();
         setUsers(data.users || []);
@@ -319,7 +337,7 @@ export default function AdminPage() {
   const loadActivities = async () => {
     setActivitiesLoading(true);
     try {
-      const res = await fetch("/api/admin/activities?limit=200");
+      const res = await adminFetch("/api/admin/activities?limit=200");
       if (res.ok) {
         const data = await res.json();
         setAllActivities(data.activities || []);
@@ -339,12 +357,22 @@ export default function AdminPage() {
       const res = await fetch("/api/admin/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ email: loginEmail, password: loginPassword }),
       });
 
       const data = await res.json();
       if (!res.ok) {
         throw new Error(data.error || "Login failed");
+      }
+
+      if (data.token) {
+        try {
+          localStorage.setItem("surveyor_session", data.token);
+          localStorage.setItem("surveyor_auth_token", data.token);
+        } catch {
+          // ignore
+        }
       }
 
       setIsAdminAuthenticated(true);
@@ -360,7 +388,18 @@ export default function AdminPage() {
   };
 
   const handleAdminLogout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
+    try {
+      await adminFetch("/api/admin/auth", { method: "DELETE" });
+      await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+    } catch {
+      // ignore
+    }
+    try {
+      localStorage.removeItem("surveyor_session");
+      localStorage.removeItem("surveyor_auth_token");
+    } catch {
+      // ignore
+    }
     setIsAdminAuthenticated(false);
     setAdminUser(null);
   };
@@ -381,7 +420,7 @@ export default function AdminPage() {
 
       if (editingUser) {
         // Update user
-        const res = await fetch(`/api/admin/users/${editingUser.id}`, {
+        const res = await adminFetch(`/api/admin/users/${editingUser.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -391,7 +430,7 @@ export default function AdminPage() {
         showToast("User updated successfully");
       } else {
         // Create user
-        const res = await fetch("/api/admin/users", {
+        const res = await adminFetch("/api/admin/users", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -420,7 +459,7 @@ export default function AdminPage() {
 
   const handleToggleUserFullAccess = async (userId: string, grant: boolean) => {
     try {
-      const res = await fetch(`/api/admin/users/${userId}`, {
+      const res = await adminFetch(`/api/admin/users/${userId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ hasFullAccess: grant }),
@@ -442,7 +481,7 @@ export default function AdminPage() {
       return;
     }
     try {
-      const res = await fetch(`/api/admin/users/${id}`, { method: "DELETE" });
+      const res = await adminFetch(`/api/admin/users/${id}`, { method: "DELETE" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to delete user");
       showToast("User deleted successfully");
@@ -457,7 +496,7 @@ export default function AdminPage() {
   const handleDeleteDownload = async (id: string) => {
     if (!confirm("Delete this download log entry?")) return;
     try {
-      const res = await fetch(`/api/admin/downloads?id=${id}`, { method: "DELETE" });
+      const res = await adminFetch(`/api/admin/downloads?id=${id}`, { method: "DELETE" });
       if (res.ok) {
         setDownloads((prev) => prev.filter((d) => d.id !== id));
         showToast("Download log entry removed");
@@ -471,7 +510,7 @@ export default function AdminPage() {
   const handleClearDownloads = async () => {
     if (!confirm("Are you sure you want to clear ALL download logs?")) return;
     try {
-      const res = await fetch("/api/admin/downloads", { method: "DELETE" });
+      const res = await adminFetch("/api/admin/downloads", { method: "DELETE" });
       if (res.ok) {
         setDownloads([]);
         showToast("All download logs cleared");
@@ -485,7 +524,7 @@ export default function AdminPage() {
   const handleClearActivities = async () => {
     if (!confirm("Are you sure you want to clear ALL application activity telemetry?")) return;
     try {
-      const res = await fetch("/api/admin/activities", { method: "DELETE" });
+      const res = await adminFetch("/api/admin/activities", { method: "DELETE" });
       if (res.ok) {
         setAllActivities([]);
         showToast("Application telemetry logs cleared");
@@ -500,7 +539,7 @@ export default function AdminPage() {
   const handleClearConversions = async () => {
     if (!confirm("Are you sure you want to clear all conversion telemetry?")) return;
     try {
-      const res = await fetch("/api/admin/conversions", { method: "DELETE" });
+      const res = await adminFetch("/api/admin/conversions", { method: "DELETE" });
       if (res.ok) {
         setConversions([]);
         showToast("Conversion history cleared");
@@ -514,7 +553,7 @@ export default function AdminPage() {
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch("/api/admin/settings", {
+      const res = await adminFetch("/api/admin/settings", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(settingsForm),

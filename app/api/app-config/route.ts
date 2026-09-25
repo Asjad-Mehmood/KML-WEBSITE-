@@ -7,7 +7,8 @@ export async function GET(req: NextRequest) {
   try {
     const token =
       req.cookies.get("surveyor_auth_token")?.value ||
-      req.headers.get("authorization")?.replace("Bearer ", "");
+      req.cookies.get("surveyor_session")?.value ||
+      req.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
 
     let user = null;
     if (token) {

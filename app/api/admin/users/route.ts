@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { getClientIp, getIpGeoLocation } from "@/lib/geo";
 
 export async function GET(req: NextRequest) {
-  const admin = await getAdminSession();
+  const admin = await getAdminSession(req);
   if (!admin) {
     return NextResponse.json({ error: "Unauthorized: Admin privileges required" }, { status: 401 });
   }
@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const admin = await getAdminSession();
+  const admin = await getAdminSession(req);
   if (!admin) {
     return NextResponse.json({ error: "Unauthorized: Admin privileges required" }, { status: 401 });
   }

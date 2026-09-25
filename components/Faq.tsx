@@ -99,7 +99,7 @@ export default function Faq() {
             <span>Help &amp; Answers</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 mb-3 leading-tight">
-            Frequently Asked Questions
+            Frequently Asked Questions — Coordinate Conversion &amp; Google Earth KML
           </h2>
           <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
             Everything you need to know about coordinate systems, exports, data security, and troubleshooting.

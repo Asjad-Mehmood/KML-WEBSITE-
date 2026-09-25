@@ -62,7 +62,7 @@ export default function Hero({ versionTag, fileSizeText, onDownloadClick }: Hero
             <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-bold tracking-tight text-slate-900 leading-[1.16] mb-4">
               Convert Survey Spreadsheets into{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0071e3] via-[#0284c7] to-[#0ea5e9]">
-                Google Earth 3D Models
+                Google Earth 3D KML &amp; KMZ
               </span>
             </h1>
 
