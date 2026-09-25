@@ -421,7 +421,7 @@ function SystemPicker({ value, onChange }: { value: CoordSystem; onChange: (sys:
 
   let index = -1;
   return (
-    <div ref={rootRef}>
+    <div ref={rootRef} className="relative">
       <button
         type="button"
         id="hc-system"
@@ -443,7 +443,7 @@ function SystemPicker({ value, onChange }: { value: CoordSystem; onChange: (sys:
 
       {open && (
         <div
-          className="mt-1.5 rounded-lg overflow-hidden"
+          className="absolute left-0 right-0 top-full mt-1.5 z-30 rounded-lg overflow-hidden shadow-[0_16px_40px_rgba(0,0,0,0.55)]"
           style={{ background: "#041528", border: "1px solid rgba(0, 180, 255, 0.2)" }}
         >
           <div className="flex items-center gap-2 px-3 py-2" style={{ borderBottom: "1px solid rgba(0, 180, 255, 0.12)" }}>
@@ -466,7 +466,7 @@ function SystemPicker({ value, onChange }: { value: CoordSystem; onChange: (sys:
             />
           </div>
 
-          <ul ref={listRef} id="hc-system-list" role="listbox" aria-label="Coordinate systems" className="max-h-60 overflow-y-auto py-1">
+          <ul ref={listRef} id="hc-system-list" role="listbox" aria-label="Coordinate systems" className="max-h-56 overflow-y-auto py-1">
             {groups.map((grp) => (
               <React.Fragment key={grp.label || "results"}>
                 {grp.label && (
@@ -639,7 +639,7 @@ Datum: ${current.datum}]]></description>
   return (
     <div className="w-full max-w-[640px] mx-auto lg:mx-0">
       <div
-        className="rounded-2xl overflow-hidden"
+        className="rounded-2xl"
         style={{
           background: "rgba(3, 14, 30, 0.95)",
           border: "1px solid rgba(0, 180, 255, 0.12)",
