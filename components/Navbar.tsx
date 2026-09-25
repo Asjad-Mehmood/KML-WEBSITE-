@@ -169,9 +169,6 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
                 <ChevronDown className="w-6 h-6 -rotate-90 opacity-0 group-hover:opacity-100 group-hover:translate-x-2 transition-all text-[#0071e3]" />
               </a>
             ))}
-            <a href="/admin" onClick={() => setMobileMenuOpen(false)} className="text-xl font-bold text-blue-600 tracking-tight flex items-center gap-2 pt-4 border-t border-black/5">
-              <Shield className="w-5 h-5 text-blue-600" /> Admin Portal
-            </a>
           </nav>
           <div className="mt-8 flex flex-col gap-4">
             {!user ? (

@@ -110,7 +110,6 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
             <a href="https://github.com/chaudaryyabdullah03-collab/kml-convertor" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 transition-colors">GitHub</a>
             <button onClick={onDownloadClick} className="hover:text-blue-600 transition-colors cursor-pointer">Download</button>
             <a href="/app" className="hover:text-blue-600 transition-colors">Web App</a>
-            <a href="/admin" className="hover:text-blue-600 transition-colors">Admin</a>
           </div>
         </div>
 
