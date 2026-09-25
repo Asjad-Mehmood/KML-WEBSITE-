@@ -67,8 +67,8 @@ export default function Hero({ versionTag, fileSizeText, onDownloadClick }: Hero
             </h1>
 
             {/* Subtitle */}
-            <p className="text-base text-slate-600 leading-relaxed mb-8 max-w-[460px]">
-              Turn raw Excel and CSV coordinates into georeferenced KML &amp; KMZ files. Built with 6,864 national EPSG datums, Helmert 2D transformation, and custom elevation extrusion.
+            <p className="text-base text-slate-600 leading-relaxed mb-8 max-w-[480px]">
+              Convert survey coordinates directly from Excel or CSV into ready-to-view Google Earth files. Visualize points, boundaries, and 3D elevations in seconds—no complex GIS software required.
             </p>
 
             {/* Action Buttons with subtle modern polish */}
