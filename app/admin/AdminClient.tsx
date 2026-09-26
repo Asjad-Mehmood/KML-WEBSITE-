@@ -36,7 +36,7 @@ import {
   Loader2,
 } from "lucide-react";
 import SurveyorDetailModal from "@/components/admin/SurveyorDetailModal";
-import FileViewer, { type ViewerFile } from "@/components/admin/FileViewer";
+import FileViewer, { type ViewerFile } from "@/components/FileViewer";
 
 interface UserItem {
   id: string;

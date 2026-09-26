@@ -4,7 +4,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Download, FileWarning, Loader2, X } from "lucide-react";
 
 /**
- * Shows a stored file on the admin page, without downloading it.
+ * Shows a stored file on the page, without downloading it: in the admin page, and for
+ * surveyors in their dashboard.
  *
  * The file is fetched and drawn here: PDFs in the browser's PDF viewer, pictures as
  * pictures, CSV and Excel sheets as tables, KML, KMZ, GPX and GeoJSON as their points
@@ -254,8 +255,8 @@ async function buildView(file: ViewerFile, buf: ArrayBuffer): Promise<View> {
   return { kind: "none", why: `There is no preview for .${e} files.` };
 }
 
-/** The admin's own session: the cookie, and the token the admin page keeps. */
-function adminGet(url: string) {
+/** The visitor's own session: the cookie, and the token the admin page keeps. */
+function sessionGet(url: string) {
   const token = typeof window === "undefined" ? "" : localStorage.getItem("surveyor_session") || localStorage.getItem("surveyor_auth_token") || "";
   return fetch(url, { credentials: "include", headers: token ? { Authorization: `Bearer ${token}` } : {} });
 }
@@ -273,7 +274,7 @@ function ViewerBody({ file, onClose }: { file: ViewerFile; onClose: () => void }
   useEffect(() => {
     let alive = true;
     let made: string | null = null;
-    adminGet(file.url)
+    sessionGet(file.url)
       .then(async (r) => {
         if (!r.ok) throw new Error(r.status === 404 ? "No copy of this file is stored: it was too big, so only its name and size were kept." : `The file could not be fetched (${r.status}).`);
         const v = await buildView(file, await r.arrayBuffer());
