@@ -1,13 +1,15 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "../../context/AuthContext";
+import { WEB_APP_LOGIN_URL } from "@/lib/authRedirect";
 import { RotateCw, Maximize2, Minimize2, ArrowLeft, Download, Loader2 } from "lucide-react";
 
 export default function WebAppClient() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
+  const frameRef = useRef<HTMLIFrameElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [reloadKey, setReloadKey] = useState(() => Date.now());
   const [isLoading, setIsLoading] = useState(true);
@@ -43,6 +45,30 @@ export default function WebAppClient() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [isFullscreen]);
 
+  // The iframe's load event can fire before React attaches onLoad (a slow
+  // phone often finishes the frame first), and it also waits for every map
+  // tile. So also watch the frame's document and hide the overlay as soon as
+  // the app has been parsed, with a timeout as a last resort.
+  useEffect(() => {
+    const done = () => {
+      setIsLoading(false);
+      setIsReloading(false);
+    };
+    const check = setInterval(() => {
+      try {
+        const doc = frameRef.current?.contentDocument;
+        if (doc && doc.URL !== "about:blank" && doc.readyState !== "loading" && doc.body?.childElementCount) done();
+      } catch {
+        // not readable (shouldn't happen, same origin): leave it to onLoad
+      }
+    }, 250);
+    const giveUp = setTimeout(done, 15000);
+    return () => {
+      clearInterval(check);
+      clearTimeout(giveUp);
+    };
+  }, [reloadKey]);
+
   const handleReload = () => {
     setIsReloading(true);
     setIsLoading(true);
@@ -50,23 +76,24 @@ export default function WebAppClient() {
   };
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-white text-slate-900 font-sans">
+    <div className="flex flex-col h-screen h-dvh w-screen overflow-hidden bg-white text-slate-900 font-sans">
       {/* Top App Bar */}
       {!isFullscreen && (
-        <header className="flex-none h-14 bg-white border-b border-slate-200 px-4 flex items-center justify-between z-30 shadow-2xs">
-          <div className="flex items-center gap-3">
+        <header className="flex-none h-14 bg-white border-b border-slate-200 px-2 sm:px-4 flex items-center justify-between gap-2 z-30 shadow-2xs">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <Link
               href="/"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-blue-600 px-2.5 py-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+              aria-label="Back to website"
+              className="inline-flex items-center gap-1.5 whitespace-nowrap text-xs font-semibold text-slate-600 hover:text-blue-600 px-2 sm:px-2.5 py-1.5 rounded-lg hover:bg-slate-100 transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Back to Website</span>
+              <span className="hidden sm:inline">Back to Website</span>
             </Link>
 
-            <div className="h-4 w-px bg-slate-200" />
+            <div className="hidden sm:block h-4 w-px bg-slate-200" />
 
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-blue-50 border border-blue-200 flex items-center justify-center p-1">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="shrink-0 w-7 h-7 rounded-lg bg-blue-50 border border-blue-200 flex items-center justify-center p-1">
                 <Image
                   src="/assets/icon.png"
                   alt="Excel to KML Pro"
@@ -75,7 +102,7 @@ export default function WebAppClient() {
                   className="object-contain"
                 />
               </div>
-              <span className="font-extrabold text-sm text-slate-900 tracking-tight">
+              <span className="hidden sm:inline whitespace-nowrap font-extrabold text-sm text-slate-900 tracking-tight">
                 Excel to KML <span className="text-blue-600">PRO</span>
               </span>
               {appConfig && (
@@ -94,7 +121,7 @@ export default function WebAppClient() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
             {/* Refresh Button */}
             <button
               onClick={handleReload}
@@ -110,10 +137,10 @@ export default function WebAppClient() {
                 <span className="font-semibold text-slate-800">{user.name}</span>
                 <span className="text-slate-400">({user.role || "Surveyor"})</span>
               </div>
-            ) : (
+            ) : authLoading ? null : (
               <Link
-                href="/login"
-                className="text-xs font-semibold text-blue-600 hover:text-blue-700 px-2.5 py-1.5 rounded-lg hover:bg-blue-50 transition-colors"
+                href={WEB_APP_LOGIN_URL}
+                className="whitespace-nowrap text-xs font-semibold text-blue-600 hover:text-blue-700 px-2.5 py-1.5 rounded-lg hover:bg-blue-50 transition-colors"
               >
                 Sign In
               </Link>
@@ -130,10 +157,12 @@ export default function WebAppClient() {
 
             <Link
               href="/#download"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-semibold rounded-lg shadow-xs transition-all"
+              aria-label="Get the Windows desktop app"
+              className="whitespace-nowrap inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-semibold rounded-lg shadow-xs transition-all"
             >
               <Download className="w-3.5 h-3.5" />
-              <span>Get Desktop .EXE</span>
+              <span className="hidden sm:inline">Get Desktop .EXE</span>
+              <span className="sm:hidden">.EXE</span>
             </Link>
           </div>
         </header>
@@ -153,13 +182,14 @@ export default function WebAppClient() {
       {/* Main Web App Frame */}
       <main className="flex-1 w-full h-full relative overflow-hidden bg-slate-50">
         {isLoading && (
-          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-50/90 backdrop-blur-2xs gap-3">
+          <div className="app-loader absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-50/90 backdrop-blur-2xs gap-3">
             <Loader2 className="w-7 h-7 text-blue-600 animate-spin" />
             <span className="text-xs font-medium text-slate-600">Loading web app...</span>
           </div>
         )}
         <iframe
           key={reloadKey}
+          ref={frameRef}
           src={`/api/app-html?v=${reloadKey}`}
           title="Excel to KML Pro"
           className="w-full h-full border-0 absolute inset-0"
