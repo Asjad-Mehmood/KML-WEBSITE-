@@ -45,7 +45,7 @@ export default function AuthModal() {
             <div className="w-9 h-9 rounded-[11px] bg-[#0071e3] flex items-center justify-center">
               <Image src="/assets/icon.png" alt="" width={22} height={22} className="object-contain" />
             </div>
-            <p className="text-[15px] font-semibold text-[#1d1d1f]">Excel to KML Pro</p>
+            <p className="text-[15px] font-semibold text-[#1d1d1f]">Excel to KML</p>
           </div>
           <button onClick={() => setAuthModalOpen(false)}
             className="w-7 h-7 flex items-center justify-center rounded-full bg-[#f5f5f7] hover:bg-[#e8e8ed] text-[#6e6e73] transition-colors"

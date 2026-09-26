@@ -15,9 +15,9 @@ function siteUrl(): string {
 
 export const SITE_URL = siteUrl();
 
-export const SITE_NAME = "Excel to KML Pro";
+export const SITE_NAME = "Excel to KML";
 
-export const DEFAULT_TITLE = "Excel to KML Pro — Survey Coordinates to KML, KMZ & DXF";
+export const DEFAULT_TITLE = "Excel to KML — Survey Coordinates to KML, KMZ & DXF";
 
 export const SITE_DESCRIPTION =
   "Convert Excel & CSV survey coordinates on 5,800+ EPSG grids into Google Earth KML, KMZ and DXF, with site photos and PDF reports. Free for Windows and the web.";
@@ -26,7 +26,7 @@ export const OG_IMAGE = {
   url: "/assets/og-image.png",
   width: 1200,
   height: 630,
-  alt: "Excel to KML Pro: convert geospatial coordinate tables into Google Earth KML, KMZ and DXF",
+  alt: "Excel to KML: convert geospatial coordinate tables into Google Earth KML, KMZ and DXF",
 };
 
 /**

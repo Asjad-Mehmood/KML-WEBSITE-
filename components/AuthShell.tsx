@@ -9,10 +9,10 @@ export default function AuthShell({ title, subtitle, children }: { title: string
       <div className="max-w-7xl mx-auto w-full flex items-center justify-between py-2">
         <Link href="/" className="flex items-center gap-3 group">
           <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center p-1.5 shadow-xs transition-transform group-hover:scale-105">
-            <Image src="/assets/icon.png" alt="Excel to KML Pro" width={32} height={32} className="object-contain" />
+            <Image src="/assets/icon.png" alt="Excel to KML" width={32} height={32} className="object-contain" />
           </div>
           <span className="font-extrabold text-lg tracking-tight text-slate-900">
-            Excel to KML <span className="bg-blue-600 text-white text-[11px] font-bold px-1.5 py-0.5 rounded tracking-wider">PRO</span>
+            Excel to KML
           </span>
         </Link>
         <Link href="/login" className="text-xs font-bold text-slate-600 hover:text-blue-600 px-3 py-1.5 rounded-lg hover:bg-slate-100 transition-colors">
@@ -29,7 +29,7 @@ export default function AuthShell({ title, subtitle, children }: { title: string
       </main>
 
       <div className="text-center text-xs text-slate-500 py-4">
-        &copy; {new Date().getFullYear()} Excel to KML Pro
+        &copy; {new Date().getFullYear()} Excel to KML
       </div>
     </div>
   );

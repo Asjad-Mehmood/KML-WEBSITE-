@@ -57,7 +57,7 @@ export default function LoginPage() {
           <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center p-1.5 shadow-xs transition-transform group-hover:scale-105">
             <Image
               src="/assets/icon.png"
-              alt="Excel to KML Pro"
+              alt="Excel to KML"
               width={32}
               height={32}
               className="object-contain"
@@ -67,9 +67,6 @@ export default function LoginPage() {
             <div className="flex items-center gap-1.5">
               <span className="font-extrabold text-lg tracking-tight text-slate-900">
                 Excel to KML
-              </span>
-              <span className="bg-blue-600 text-white text-[11px] font-bold px-1.5 py-0.5 rounded tracking-wider shadow-xs">
-                PRO
               </span>
             </div>
           </div>
@@ -161,7 +158,7 @@ export default function LoginPage() {
 
       {/* Footer */}
       <div className="text-center text-xs text-slate-400 py-4">
-        &copy; 2026 Excel to KML Pro
+        &copy; 2026 Excel to KML
       </div>
     </div>
   );

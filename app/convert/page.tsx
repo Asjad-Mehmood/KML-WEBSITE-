@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: "/convert" },
-  openGraph: openGraphFor("/convert", `${TITLE} | Excel to KML Pro`, DESCRIPTION),
+  openGraph: openGraphFor("/convert", `${TITLE} | Excel to KML`, DESCRIPTION),
 };
 
 export default function ConvertIndex() {

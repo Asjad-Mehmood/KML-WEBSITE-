@@ -4,26 +4,26 @@ import LegalShell from "../../components/LegalShell";
 import { GITHUB_REPO_URL, LEGAL_UPDATED, SUPPORT_EMAIL, openGraphFor } from "@/lib/site";
 
 const TITLE = "Terms of Use";
-const DESCRIPTION = "The terms for using the Excel to KML Pro website, web app and Windows app.";
+const DESCRIPTION = "The terms for using the Excel to KML website, web app and Windows app.";
 
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: "/terms" },
-  openGraph: openGraphFor("/terms", `${TITLE} | Excel to KML Pro`, DESCRIPTION),
+  openGraph: openGraphFor("/terms", `${TITLE} | Excel to KML`, DESCRIPTION),
 };
 
 export default function TermsPage() {
   return (
     <LegalShell title={TITLE} updated={LEGAL_UPDATED}>
       <p>
-        These terms apply when you use the Excel to KML Pro website, web app and Windows app (together, &ldquo;the
+        These terms apply when you use the Excel to KML website, web app and Windows app (together, &ldquo;the
         service&rdquo;). By using the service you agree to them. If you don&apos;t agree, please don&apos;t use it.
       </p>
 
       <h2>The software</h2>
       <p>
-        Excel to KML Pro, including the website, the web app, the Windows app and the Android app, is owned by Asjad
+        Excel to KML, including the website, the web app, the Windows app and the Android app, is owned by Asjad
         Mehmood, who keeps all rights in it. You may use it, free of charge unless stated otherwise, but you may not copy,
         change, resell or redistribute it, or try to take it apart to reach its code, except where the law allows this
         anyway. Downloads and release notes are published on{" "}

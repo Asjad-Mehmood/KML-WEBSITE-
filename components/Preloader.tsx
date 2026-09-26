@@ -32,7 +32,7 @@ export default function Preloader() {
       <div className="relative animate-pulse flex items-center justify-center">
         <Image
           src="/assets/icon.png"
-          alt="Excel to KML Pro"
+          alt="Excel to KML"
           width={54}
           height={54}
           className="object-contain"

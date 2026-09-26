@@ -96,7 +96,7 @@ export default function FeatureDetailDialog({ item, siblings, theme, onSelect, o
 
             <div>
               <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2.5">
-                How it works in Excel to KML Pro
+                How it works in Excel to KML
               </h4>
               <ul className="space-y-2.5">
                 {detail.points.map((p) => (

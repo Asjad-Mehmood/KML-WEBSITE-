@@ -846,7 +846,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
                     {pointRows.length < pointsTotal && <> · showing the newest {num(pointRows.length)}</>}
                   </p>
                   <button
-                    onClick={() => downloadText(pointsCsv(pointGroups.flatMap((g) => g.rows)), "Excel to KML Pro points.csv")}
+                    onClick={() => downloadText(pointsCsv(pointGroups.flatMap((g) => g.rows)), "Excel to KML points.csv")}
                     disabled={!pointRows.length}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-[12px] font-semibold text-slate-700 hover:border-blue-200 hover:text-[#0071e3] cursor-pointer disabled:opacity-50 self-start"
                   >

@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
     default: DEFAULT_TITLE,
-    template: "%s | Excel to KML Pro",
+    template: "%s | Excel to KML",
   },
   description: SITE_DESCRIPTION,
   keywords: [

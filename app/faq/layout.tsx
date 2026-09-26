@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: "/faq" },
-  openGraph: openGraphFor("/faq", `${TITLE} | Excel to KML Pro`, DESCRIPTION),
+  openGraph: openGraphFor("/faq", `${TITLE} | Excel to KML`, DESCRIPTION),
 };
 
 export default function FaqLayout({ children }: { children: React.ReactNode }) {

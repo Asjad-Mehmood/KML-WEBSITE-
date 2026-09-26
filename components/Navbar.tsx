@@ -118,7 +118,7 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
           {/* Logo */}
           <Link
             href="/"
-            aria-label="Excel to KML Pro — home"
+            aria-label="Excel to KML — home"
             className="flex items-center pl-1.5 pr-3 sm:pr-4 py-1 rounded-full hover:bg-black/[0.04] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           >
             <span className="relative w-8 h-8 shrink-0 rounded-full overflow-hidden bg-gradient-to-tr from-slate-800 to-slate-950 shadow-inner flex items-center justify-center">
@@ -126,7 +126,6 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
             </span>
             <span className="ml-2.5 hidden sm:inline-flex items-center gap-1.5 whitespace-nowrap">
               <span className="font-extrabold text-[15px] tracking-tight text-slate-900">Excel to KML</span>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-[#0071e3] px-1.5 py-0.5 rounded-md leading-none">Pro</span>
             </span>
           </Link>
 
@@ -155,7 +154,7 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
               href="https://github.com/Asjad-Mehmood/kml-convertor/releases"
               target="_blank"
               rel="noreferrer"
-              aria-label="Excel to KML Pro releases on GitHub"
+              aria-label="Excel to KML releases on GitHub"
               title="Releases on GitHub"
               className="w-9 h-9 items-center justify-center rounded-full hover:bg-black/5 text-slate-500 hover:text-slate-900 transition-colors hidden sm:flex md:hidden lg:flex"
             >

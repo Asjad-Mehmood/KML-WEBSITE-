@@ -144,7 +144,7 @@ BLDG-C2,513620.000,2787440.000,15.15,STRUCTURE,Building Column Corner B
       title: "Launch & convert",
       body: (
         <>
-          Open <b className="text-slate-800">Excel to KML Pro</b> from the Start Menu, drop in your survey CSV or Excel sheet, pick a grid, and export 3D KML to Google Earth.
+          Open <b className="text-slate-800">Excel to KML</b> from the Start Menu, drop in your survey CSV or Excel sheet, pick a grid, and export 3D KML to Google Earth.
         </>
       ),
       done: true,
@@ -175,7 +175,7 @@ BLDG-C2,513620.000,2787440.000,15.15,STRUCTURE,Building Column Corner B
             id="download-heading"
             className="text-2xl sm:text-3xl lg:text-[36px] font-extrabold tracking-tight text-slate-900 mb-4 leading-[1.15]"
           >
-            Get Excel to KML Pro for Windows
+            Get Excel to KML for Windows
           </h2>
           <p className="text-sm sm:text-[15px] text-slate-500 leading-relaxed max-w-[500px] mx-auto">
             A free, fully offline survey converter. Install in under two minutes, or grab the sample dataset to try a conversion first.

@@ -52,7 +52,7 @@ export default function Hero({ versionTag, fileSizeText, onDownloadClick }: Hero
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-[#0071e3]"></span>
               </span>
               <span className="text-xs font-semibold text-slate-800">
-                Excel to KML Pro <span className="text-[#0071e3] font-bold">{versionTag}</span>
+                Excel to KML <span className="text-[#0071e3] font-bold">{versionTag}</span>
               </span>
               <span className="text-slate-300">·</span>
               <span className="text-xs font-medium text-slate-500 flex items-center gap-1">
