@@ -38,8 +38,10 @@ export default function LoginPage() {
 
     const result = await login(email, password);
     if (result.ok) {
-      // Back to where the visitor was headed (e.g. /app or /dashboard), else home
-      router.push(safeNextPath(new URLSearchParams(window.location.search).get("next")));
+      // Back to where the visitor was headed (e.g. /app or /dashboard); otherwise
+      // admins go to the admin dashboard and everyone else to the home page
+      const next = new URLSearchParams(window.location.search).get("next");
+      router.push(next ? safeNextPath(next) : result.isAdmin ? "/admin" : "/");
     } else {
       setError(result.error);
     }

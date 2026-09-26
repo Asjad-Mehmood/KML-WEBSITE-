@@ -40,7 +40,7 @@ interface AuthContextType {
 }
 
 /** ok, or the reason to show the visitor (from the server when it gave one) */
-export type AuthResult = { ok: true } | { ok: false; error: string };
+export type AuthResult = { ok: true; isAdmin?: boolean } | { ok: false; error: string };
 
 const NETWORK_ERROR = "Couldn't reach the server. Check your connection and try again.";
 
@@ -102,7 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }, 150);
       }
 
-      return { ok: true };
+      return { ok: true, isAdmin: /admin/i.test(data.user?.role ?? "") };
     } catch (err) {
       console.error(err);
       return { ok: false, error: NETWORK_ERROR };
