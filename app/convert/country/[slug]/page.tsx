@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import PageShell from "../../../../components/PageShell";
 import SystemList from "../../../../components/SystemList";
+import GridSearch from "../../../../components/GridSearch";
 import { BIG_COUNTRY, countries, countryBySlug, countryRegions } from "@/lib/epsgCatalog";
 import { SITE_URL, jsonLd, openGraphFor } from "@/lib/site";
 
@@ -63,6 +64,10 @@ export default async function CountryPage({ params }: { params: Promise<{ slug: 
             ? `Choose a ${c.name === "World" ? "datum" : "state or region"} to see its systems.`
             : "Pick one to open a converter already set to it, with its parameters and area of use."}
         </p>
+
+        <div className="mt-6 max-w-xl">
+          <GridSearch id="grid-search" />
+        </div>
 
         <div className="mt-8">
           {big ? (

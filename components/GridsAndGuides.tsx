@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, BookOpen, MapPin, Search } from "lucide-react";
+import { ArrowRight, BookOpen, MapPin } from "lucide-react";
+import GridSearch from "./GridSearch";
 import { GRID_PAGES } from "@/lib/gridPages";
 import { GUIDES } from "@/lib/guides";
 
@@ -30,24 +31,10 @@ export default function GridsAndGuides() {
             <h3 className="flex items-center gap-2 text-[17px] font-bold text-slate-900">
               <MapPin className="w-5 h-5 text-[#0071e3]" aria-hidden /> Coordinate system converters
             </h3>
-            <p className="mt-1.5 text-[13.5px] text-slate-500">Enter an EPSG code, or pick a popular grid.</p>
-            <form action="/convert/find" method="get" className="mt-4 flex gap-2">
-              <label htmlFor="home-epsg" className="sr-only">EPSG or Esri code</label>
-              <div className="relative flex-1 min-w-0">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" aria-hidden />
-                <input
-                  id="home-epsg"
-                  name="code"
-                  required
-                  inputMode="numeric"
-                  placeholder="EPSG code, e.g. 32642"
-                  className="w-full h-11 pl-9 pr-3 rounded-xl border border-slate-200 bg-white text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <button type="submit" className="h-11 px-5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-[14px] font-semibold cursor-pointer">
-                Go
-              </button>
-            </form>
+            <p className="mt-1.5 text-[13.5px] text-slate-500">Search by name, country or EPSG code, or pick a popular grid.</p>
+            <div className="mt-4">
+              <GridSearch id="home-epsg" tone="white" placeholder="Grid name, country or EPSG code" />
+            </div>
             <ul className="mt-5 flex flex-wrap gap-2">
               {grids.map((g) => (
                 <li key={g.slug}>

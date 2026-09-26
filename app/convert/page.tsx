@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import PageShell from "../../components/PageShell";
+import GridSearch from "../../components/GridSearch";
 import { GRID_PAGES, GRID_REGIONS } from "@/lib/gridPages";
 import { countries } from "@/lib/epsgCatalog";
 import { openGraphFor } from "@/lib/site";
@@ -26,6 +27,9 @@ export default function ConvertIndex() {
           Pick your grid to open the converter already set to it, with the grid&apos;s parameters and tips. Popular grids are
           below; every other EPSG system is listed by country further down.
         </p>
+        <div className="mt-6 max-w-xl">
+          <GridSearch id="grid-search" />
+        </div>
         <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {GRID_REGIONS.map((region) => {
             const grids = GRID_PAGES.filter((g) => g.region === region);
@@ -57,22 +61,11 @@ export default function ConvertIndex() {
           <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">Every coordinate system</h2>
           <p className="mt-2 text-[15px] text-slate-600">
             All {countries().reduce((n, c) => n + c.count, 0).toLocaleString("en-US")} supported coordinate systems (EPSG and Esri
-            codes) have their own page. Go straight to one by its code, or browse by country.
+            codes) have their own page. Search by name, country or code, or browse by country.
           </p>
-          <form action="/convert/find" method="get" className="mt-4 flex gap-2 max-w-md">
-            <label htmlFor="epsg-code" className="sr-only">EPSG or Esri code</label>
-            <input
-              id="epsg-code"
-              name="code"
-              inputMode="numeric"
-              required
-              placeholder="EPSG or Esri code, e.g. 32639"
-              className="flex-1 min-w-0 h-11 px-4 rounded-xl border border-slate-200 bg-slate-50 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
-            />
-            <button type="submit" className="h-11 px-5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-[14px] font-semibold cursor-pointer">
-              Go
-            </button>
-          </form>
+          <div className="mt-4 max-w-xl">
+            <GridSearch id="grid-search-all" />
+          </div>
           <ul className="mt-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-1.5 text-[13.5px]">
             {countries().map((c) => (
               <li key={c.slug}>
