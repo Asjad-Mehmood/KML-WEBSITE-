@@ -1,6 +1,7 @@
 import Link from "next/link";
 import GuideLayout from "../../../components/GuideLayout";
 import { guideMetadata } from "@/lib/guideMeta";
+import WebAppLink from "@/components/WebAppLink";
 
 const SLUG = "total-station-csv-to-kmz-with-photos";
 export const metadata = guideMetadata(SLUG);
@@ -25,7 +26,7 @@ export default function Guide() {
 
       <h2>3. Open the file and set the grid</h2>
       <p>
-        Open the CSV in the <Link href="/app">web app</Link> or the Windows app and choose the coordinate system under{" "}
+        Open the CSV in the <WebAppLink>web app</WebAppLink> or the Windows app and choose the coordinate system under{" "}
         <strong>Coordinate system</strong>. Not sure which one? See the <Link href="/convert">grid pages</Link>.
       </p>
 

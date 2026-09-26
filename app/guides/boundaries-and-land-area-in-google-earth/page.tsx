@@ -1,6 +1,6 @@
-import Link from "next/link";
 import GuideLayout from "../../../components/GuideLayout";
 import { guideMetadata } from "@/lib/guideMeta";
+import WebAppLink from "@/components/WebAppLink";
 
 const SLUG = "boundaries-and-land-area-in-google-earth";
 export const metadata = guideMetadata(SLUG);
@@ -16,7 +16,7 @@ export default function Guide() {
 
       <h2>2. Join the points</h2>
       <p>
-        Open the sheet in the <Link href="/app">web app</Link> or the Windows app, choose the coordinate system, then open{" "}
+        Open the sheet in the <WebAppLink>web app</WebAppLink> or the Windows app, choose the coordinate system, then open{" "}
         <strong>Lines and areas</strong>. Under <strong>Join the points</strong>, pick:
       </p>
       <ul>

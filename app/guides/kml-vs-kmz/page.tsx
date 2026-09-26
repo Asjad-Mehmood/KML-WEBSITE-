@@ -1,6 +1,7 @@
 import Link from "next/link";
 import GuideLayout from "../../../components/GuideLayout";
 import { guideMetadata } from "@/lib/guideMeta";
+import WebAppLink from "@/components/WebAppLink";
 
 const SLUG = "kml-vs-kmz";
 export const metadata = guideMetadata(SLUG);
@@ -33,7 +34,7 @@ export default function Guide() {
 
       <h2>How to save each one</h2>
       <p>
-        In the <Link href="/app">web app</Link> and the Windows app, <strong>Save KML</strong> writes a KML, and <strong>Save KMZ</strong>{" "}
+        In the <WebAppLink>web app</WebAppLink> and the Windows app, <strong>Save KML</strong> writes a KML, and <strong>Save KMZ</strong>{" "}
         writes a KMZ with any photos packed inside. Photos are shrunk as they&apos;re packed to keep the file small. See{" "}
         <Link href="/guides/total-station-csv-to-kmz-with-photos">Total station CSV to KMZ with site photos</Link> for attaching them.
       </p>
