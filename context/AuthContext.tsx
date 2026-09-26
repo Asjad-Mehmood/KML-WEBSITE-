@@ -17,14 +17,14 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<AuthResult>;
   register: (data: {
     name: string;
     email: string;
     password?: string;
     organization?: string;
     role?: string;
-  }) => Promise<boolean>;
+  }) => Promise<AuthResult>;
   logout: () => Promise<void>;
   trackDownload: (assetType: string, fileName: string, version: string) => Promise<boolean>;
   // Modal control for gated downloads
@@ -38,6 +38,11 @@ interface AuthContextType {
   setPendingDownloadAction: (action: (() => void) | null) => void;
   requireAuth: (action: () => void, intentReason?: string) => void;
 }
+
+/** ok, or the reason to show the visitor (from the server when it gave one) */
+export type AuthResult = { ok: true } | { ok: false; error: string };
+
+const NETWORK_ERROR = "Couldn't reach the server. Check your connection and try again.";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -73,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkSession();
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<AuthResult> => {
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
@@ -81,9 +86,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error(data.error || "Login failed");
+        return { ok: false, error: data.error || "Sign-in failed. Please try again." };
       }
 
       setUser(data.user);
@@ -97,10 +102,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }, 150);
       }
 
-      return true;
+      return { ok: true };
     } catch (err) {
       console.error(err);
-      return false;
+      return { ok: false, error: NETWORK_ERROR };
     }
   };
 
@@ -110,7 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     password?: string;
     organization?: string;
     role?: string;
-  }): Promise<boolean> => {
+  }): Promise<AuthResult> => {
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
@@ -118,9 +123,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify(data),
       });
 
-      const resData = await res.json();
+      const resData = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error(resData.error || "Registration failed");
+        return { ok: false, error: resData.error || "Couldn't create your account. Please try again." };
       }
 
       setUser(resData.user);
@@ -134,10 +139,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }, 150);
       }
 
-      return true;
+      return { ok: true };
     } catch (err) {
       console.error(err);
-      return false;
+      return { ok: false, error: NETWORK_ERROR };
     }
   };
 

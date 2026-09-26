@@ -36,12 +36,12 @@ export default function LoginPage() {
       return;
     }
 
-    const success = await login(email, password);
-    if (success) {
-      // Back to where the visitor was headed (e.g. /app), else the download section
+    const result = await login(email, password);
+    if (result.ok) {
+      // Back to where the visitor was headed (e.g. /app), else the dashboard
       router.push(safeNextPath(new URLSearchParams(window.location.search).get("next")));
     } else {
-      setError("Login failed. Please check credentials.");
+      setError(result.error);
     }
     setIsSubmitting(false);
   };

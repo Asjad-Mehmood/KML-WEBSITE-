@@ -59,7 +59,11 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Internal Server Error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    // Details go to the server log only: database errors can name hosts and settings
+    console.error("Sign-in failed:", err);
+    return NextResponse.json(
+      { error: "Sign-in is temporarily unavailable. Please try again in a few minutes." },
+      { status: 500 }
+    );
   }
 }

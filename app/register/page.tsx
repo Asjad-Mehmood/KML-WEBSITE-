@@ -56,7 +56,7 @@ export default function RegisterPage() {
       return;
     }
 
-    const success = await register({
+    const result = await register({
       name,
       email,
       password,
@@ -64,11 +64,11 @@ export default function RegisterPage() {
       role,
     });
 
-    if (success) {
-      // Back to where the visitor was headed (e.g. /app), else the download section
+    if (result.ok) {
+      // Back to where the visitor was headed (e.g. /app), else the dashboard
       router.push(safeNextPath(new URLSearchParams(window.location.search).get("next")));
     } else {
-      setError("Registration failed. Please try again.");
+      setError(result.error);
     }
     setIsSubmitting(false);
   };

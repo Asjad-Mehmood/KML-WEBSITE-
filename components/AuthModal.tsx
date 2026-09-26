@@ -21,10 +21,10 @@ export default function AuthModal() {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
-    const ok = authModalMode === "register"
+    const result = authModalMode === "register"
       ? await register({ name, email, password, organization, role })
       : await login(email, password);
-    if (!ok) setError(authModalMode === "register" ? "Failed to create account. Please try again." : "Invalid email or password.");
+    if (!result.ok) setError(result.error);
     setSubmitting(false);
   };
 
