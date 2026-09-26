@@ -37,10 +37,8 @@ export async function GET(req: NextRequest) {
       activities = await db.getUserActivities(userParam, limit);
     } else if (user) {
       activities = await db.getUserActivities(user.id, limit);
-    } else if (userParam) {
-      activities = await db.getUserActivities(userParam, limit);
     } else {
-      // Guest or unauthenticated - return empty or recent general
+      // Signed out: nobody else's history, whatever userId is asked for
       return NextResponse.json({ activities: [] }, { headers: CORS_HEADERS });
     }
 
@@ -71,9 +69,6 @@ export async function POST(req: NextRequest) {
       photosCount,
       durationMs,
       status,
-      userEmail: clientEmail,
-      userId: clientUserId,
-      userName: clientName,
     } = body;
 
     if (!action || !title) {
@@ -89,10 +84,13 @@ export async function POST(req: NextRequest) {
       undefined;
     const userAgent = req.headers.get("user-agent") || undefined;
 
+    // Only a valid session decides whose account this goes into. A userId or
+    // email in the body is ignored, or anyone could write into another
+    // user's dashboard; signed-out activity is kept without an owner.
     const record = await db.recordActivity({
-      userId: user ? user.id : (clientUserId || null),
-      userEmail: user ? user.email : (clientEmail || null),
-      userName: user ? user.name : (clientName || null),
+      userId: user ? user.id : null,
+      userEmail: user ? user.email : null,
+      userName: user ? user.name : null,
       action,
       title,
       details,
