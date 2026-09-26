@@ -3,24 +3,25 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, Lightbulb } from "lucide-react";
 import PageShell from "../../components/PageShell";
+import WebAppLink from "@/components/WebAppLink";
 import { MAIN_STEPS, MORE_FEATURES } from "@/lib/tutorial";
 import { SITE_URL, jsonLd, openGraphFor } from "@/lib/site";
 
 const TITLE = "App Tutorial: Excel Survey Points to Google Earth";
 const DESCRIPTION =
-  "A step-by-step walkthrough of Excel to KML Pro with screenshots: load your points, choose the grid, prove it with a known mark and save KMZ, KML, Excel, PDF or DXF.";
+  "A step-by-step walkthrough of Excel to KML with screenshots: load your points, choose the grid, prove it with a known mark and save KMZ, KML, Excel, PDF or DXF.";
 
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: "/tutorial" },
-  openGraph: openGraphFor("/tutorial", `${TITLE} | Excel to KML Pro`, DESCRIPTION),
+  openGraph: openGraphFor("/tutorial", `${TITLE} | Excel to KML`, DESCRIPTION),
 };
 
 const howTo = {
   "@context": "https://schema.org",
   "@type": "HowTo",
-  name: "Convert Excel survey points to Google Earth with Excel to KML Pro",
+  name: "Convert Excel survey points to Google Earth with Excel to KML",
   description: DESCRIPTION,
   step: MAIN_STEPS.map((s, i) => ({
     "@type": "HowToStep",
@@ -63,7 +64,7 @@ export default function TutorialPage() {
 
         <header className="max-w-3xl">
           <h1 className="text-[30px] sm:text-[42px] font-extrabold tracking-tight text-slate-900 leading-[1.1]">
-            How to use Excel to KML Pro
+            How to use Excel to KML
           </h1>
           <p className="mt-4 text-[16px] sm:text-[17px] text-slate-600 leading-relaxed">
             From a survey spreadsheet to a file that opens in the right place in Google Earth, in four steps. The screenshots use the
@@ -71,10 +72,10 @@ export default function TutorialPage() {
             same way.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <Link href="/app" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-sm font-semibold">
+            <WebAppLink className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-sm font-semibold">
               Open the web app <ArrowRight className="w-4 h-4" aria-hidden />
-            </Link>
-            <Link href="/#download" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50">
+            </WebAppLink>
+            <Link href="/download" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50">
               Get the Windows app
             </Link>
           </div>
@@ -173,9 +174,9 @@ export default function TutorialPage() {
               <Link href="/convert" className="text-[#0071e3] hover:underline">grid pages</Link> for every coordinate system.
             </p>
           </div>
-          <Link href="/app" className="shrink-0 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-sm font-semibold">
+          <WebAppLink className="shrink-0 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-sm font-semibold">
             Open the web app <ArrowRight className="w-4 h-4" aria-hidden />
-          </Link>
+          </WebAppLink>
         </div>
       </div>
     </PageShell>

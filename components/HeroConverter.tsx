@@ -761,7 +761,7 @@ export default function HeroConverter({ initialSystemId, initialRow }: { initial
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>
     <name>${current.station} - Survey Benchmark</name>
-    <description><![CDATA[Converted via Excel to KML Pro
+    <description><![CDATA[Converted via Excel to KML
 Grid: ${current.name} (${current.grid})
 Easting: ${easting} m
 Northing: ${northing} m

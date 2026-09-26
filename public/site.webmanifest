@@ -1,6 +1,6 @@
 {
-  "name": "Excel to KML Pro — Survey Benchmark Converter",
-  "short_name": "Excel to KML Pro",
+  "name": "Excel to KML — Survey Benchmark Converter",
+  "short_name": "Excel to KML",
   "description": "Convert Excel & CSV survey coordinates to Google Earth KML, KMZ & DXF on 5,800+ EPSG grids.",
   "start_url": "/",
   "display": "standalone",

@@ -87,7 +87,7 @@ export default async function GridPage({ params }: { params: Promise<{ slug: str
               <WebAppLink className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-[14px] font-semibold">
                 Convert a spreadsheet <ArrowRight className="w-4 h-4" aria-hidden />
               </WebAppLink>
-              <Link href="/#download" className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-[14px] font-semibold">
+              <Link href="/download" className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-[14px] font-semibold">
                 <Download className="w-4 h-4" aria-hidden /> Windows app
               </Link>
             </div>

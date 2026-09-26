@@ -13,11 +13,11 @@ export function downloadThanksEmail(name: string, version: string) {
     ["Web app", `${SITE_URL}/app`, "Convert in your browser, no install"],
     ["Your dashboard", `${SITE_URL}/dashboard`, "Your downloads, files and history"],
   ];
-  const subject = "Thanks for downloading Excel to KML Pro";
+  const subject = "Thanks for downloading Excel to KML";
   const text = [
     `Hi ${first},`,
     "",
-    `Thanks for downloading Excel to KML Pro${version ? ` ${version}` : ""}!`,
+    `Thanks for downloading Excel to KML${version ? ` ${version}` : ""}!`,
     "",
     "Getting started:",
     "1. Run ExcelToKMLPro-Lite-Setup.exe and follow the installer.",
@@ -28,16 +28,16 @@ export function downloadThanksEmail(name: string, version: string) {
     "",
     `Questions or ideas? Just reply, or write to ${SUPPORT_EMAIL}.`,
     "",
-    "— The Excel to KML Pro team",
+    "— The Excel to KML team",
     SITE_URL,
   ].join("\n");
   const html = `<!doctype html><html><body style="margin:0;background:#f5f7fa;font-family:Segoe UI,Arial,sans-serif;color:#0f172a">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:24px 12px">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:14px;border:1px solid #e2e8f0">
 <tr><td style="padding:28px 28px 8px">
-<p style="margin:0 0 4px;font-size:13px;font-weight:700;color:#0071e3;letter-spacing:.04em;text-transform:uppercase">Excel to KML Pro</p>
+<p style="margin:0 0 4px;font-size:13px;font-weight:700;color:#0071e3;letter-spacing:.04em;text-transform:uppercase">Excel to KML</p>
 <h1 style="margin:0 0 12px;font-size:22px">Thanks for downloading, ${esc(first)}!</h1>
-<p style="margin:0 0 16px;font-size:15px;line-height:1.55;color:#334155">You've got Excel to KML Pro${version ? ` ${esc(version)}` : ""} — survey coordinates from Excel to Google Earth KML, KMZ and DXF, on any grid.</p>
+<p style="margin:0 0 16px;font-size:15px;line-height:1.55;color:#334155">You've got Excel to KML${version ? ` ${esc(version)}` : ""} — survey coordinates from Excel to Google Earth KML, KMZ and DXF, on any grid.</p>
 <h2 style="margin:20px 0 8px;font-size:16px">Getting started</h2>
 <ol style="margin:0 0 8px;padding-left:20px;font-size:14.5px;line-height:1.6;color:#334155">
 <li>Run <b>ExcelToKMLPro-Lite-Setup.exe</b> and follow the installer.</li>
@@ -53,7 +53,7 @@ ${links
   .join("")}
 <p style="margin:18px 0 0;font-size:14.5px;line-height:1.55;color:#334155">Questions or ideas? Just reply, or write to <a href="mailto:${SUPPORT_EMAIL}" style="color:#0071e3">${SUPPORT_EMAIL}</a>.</p>
 </td></tr>
-<tr><td style="padding:18px 28px 26px;font-size:12.5px;color:#94a3b8">— The Excel to KML Pro team · <a href="${SITE_URL}" style="color:#94a3b8">${SITE_URL.replace(/^https?:\/\//, "")}</a><br>You're getting this one-time email because you downloaded the app with your account.</td></tr>
+<tr><td style="padding:18px 28px 26px;font-size:12.5px;color:#94a3b8">— The Excel to KML team · <a href="${SITE_URL}" style="color:#94a3b8">${SITE_URL.replace(/^https?:\/\//, "")}</a><br>You're getting this one-time email because you downloaded the app with your account.</td></tr>
 </table></td></tr></table></body></html>`;
   return { subject, text, html };
 }

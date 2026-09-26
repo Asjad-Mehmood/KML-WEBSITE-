@@ -38,6 +38,8 @@ interface DownloadHubProps {
   releaseDateText: string;
   sha256Hash: string;
   onToast: (msg: string) => void;
+  /** On the download page this section is the page's heading (h1) */
+  asPage?: boolean;
 }
 
 const INSTALLER_NAME = "ExcelToKMLPro-Lite-Setup.exe";
@@ -58,7 +60,9 @@ export default function DownloadHub({
   releaseDateText,
   sha256Hash,
   onToast,
+  asPage = false,
 }: DownloadHubProps) {
+  const HeadingTag = asPage ? "h1" : "h2";
   const { requireAuth, trackDownload } = useAuth();
   const router = useRouter();
   const [copied, setCopied] = useState<"hash" | "command" | null>(null);
@@ -143,7 +147,7 @@ BLDG-C2,513620.000,2787440.000,15.15,STRUCTURE,Building Column Corner B
       title: "Launch & convert",
       body: (
         <>
-          Open <b className="text-slate-800">Excel to KML Pro</b> from the Start Menu, drop in your survey CSV or Excel sheet, pick a grid, and export 3D KML to Google Earth.
+          Open <b className="text-slate-800">Excel to KML</b> from the Start Menu, drop in your survey CSV or Excel sheet, pick a grid, and export 3D KML to Google Earth.
         </>
       ),
       done: true,
@@ -152,7 +156,7 @@ BLDG-C2,513620.000,2787440.000,15.15,STRUCTURE,Building Column Corner B
 
   return (
     <section
-      className="relative py-20 lg:py-28 bg-white border-b border-slate-100 overflow-hidden"
+      className={`relative ${asPage ? "pt-2 pb-16" : "py-20 lg:py-28"} bg-white border-b border-slate-100 overflow-hidden`}
       id="download"
       aria-labelledby="download-heading"
     >
@@ -170,12 +174,12 @@ BLDG-C2,513620.000,2787440.000,15.15,STRUCTURE,Building Column Corner B
             <Download className="w-3.5 h-3.5 text-blue-500" />
             <span>Download &amp; Installation</span>
           </div>
-          <h2
+          <HeadingTag
             id="download-heading"
             className="text-2xl sm:text-3xl lg:text-[36px] font-extrabold tracking-tight text-slate-900 mb-4 leading-[1.15]"
           >
-            Get Excel to KML Pro for Windows
-          </h2>
+            {asPage ? "Download Excel to KML" : "Get Excel to KML for Windows"}
+          </HeadingTag>
           <p className="text-sm sm:text-[15px] text-slate-500 leading-relaxed max-w-[500px] mx-auto">
             A free, fully offline survey converter. Install in under two minutes, or grab the sample dataset to try a conversion first.
           </p>
@@ -215,7 +219,7 @@ BLDG-C2,513620.000,2787440.000,15.15,STRUCTURE,Building Column Corner B
               <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 mb-7">
                 {[
                   { icon: WifiOff, text: "Runs 100% offline" },
-                  { icon: ShieldCheck, text: "Digitally signed binary" },
+                  { icon: ShieldCheck, text: "Updates checked by SHA-256" },
                   { icon: CheckCircle2, text: "No admin rights needed" },
                   { icon: CheckCircle2, text: "Free for registered users" },
                 ].map(({ icon: Icon, text }) => (
@@ -285,10 +289,11 @@ BLDG-C2,513620.000,2787440.000,15.15,STRUCTURE,Building Column Corner B
 
                 <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl pl-3 pr-1.5 py-1.5 mb-2">
                   <code className="flex-1 min-w-0 text-[11px] font-mono text-slate-700 truncate select-all">
-                    {sha256Hash}
+                    {sha256Hash || "Listed with the release on GitHub"}
                   </code>
                   <button
                     onClick={() => handleCopy("hash")}
+                    disabled={!sha256Hash}
                     className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-white rounded-lg transition-colors cursor-pointer shrink-0"
                     title="Copy SHA-256 hash"
                     aria-label="Copy SHA-256 hash"
@@ -440,7 +445,7 @@ BLDG-C2,513620.000,2787440.000,15.15,STRUCTURE,Building Column Corner B
                 </span>
               </div>
               <p className="text-[13px] text-slate-600 leading-relaxed">
-                Changelogs, commit signatures, and previous builds.
+                What changed in each version, and earlier installers.
               </p>
             </div>
             <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-slate-700 group-hover:translate-x-0.5 transition-all shrink-0 mt-1" />

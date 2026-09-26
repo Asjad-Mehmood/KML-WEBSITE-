@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     c.name === "World" ? "used world-wide, such as UTM zones" : `used in ${c.name}`
   }, each with a free converter to latitude, longitude and Google Earth KML.`;
   const path = `/convert/country/${slug}`;
-  return { title, description, alternates: { canonical: path }, openGraph: openGraphFor(path, `${title} | Excel to KML Pro`, description) };
+  return { title, description, alternates: { canonical: path }, openGraph: openGraphFor(path, `${title} | Excel to KML`, description) };
 }
 
 export default async function CountryPage({ params }: { params: Promise<{ slug: string }> }) {

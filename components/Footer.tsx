@@ -23,10 +23,10 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
           <div className="col-span-2 md:col-span-3 lg:col-span-2 space-y-3.5">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center shadow-xs">
-                <Image src="/assets/icon.png" alt="Excel to KML Pro — Geomatics Coordinate Software" width={20} height={20} className="object-contain" />
+                <Image src="/assets/icon.png" alt="Excel to KML — Geomatics Coordinate Software" width={20} height={20} className="object-contain" />
               </div>
               <span className="text-base font-bold text-slate-900">
-                Excel to KML <span className="text-blue-600">Pro</span>
+                Excel to KML
               </span>
             </div>
             <p className="text-xs sm:text-sm text-slate-500 leading-relaxed max-w-[300px]">
@@ -41,7 +41,7 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
           <nav aria-label="Product">
             <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3.5">Product</h2>
             <ul className="space-y-2.5 text-xs sm:text-sm text-slate-600">
-              {["/#showcase:Live Map Demo", "/#features:Features", "/#workflow:How It Works", "/#specs:Specifications"].map((item) => {
+              {["/features:Features", "/how-it-works:How It Works", "/formats:File Formats", "/whats-new:What's New"].map((item) => {
                 const [href, label] = item.split(":");
                 return (
                   <li key={label}>
@@ -73,8 +73,8 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
                 </a>
               </li>
               <li>
-                <Link href="/#download" className="hover:text-blue-600 transition-colors">
-                  Sample Survey CSV
+                <Link href="/download" className="hover:text-blue-600 transition-colors">
+                  All Downloads (Windows, Android)
                 </Link>
               </li>
             </ul>
@@ -91,6 +91,8 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
                 ["/tutorial", "App Tutorial"],
                 ["/guides", "Guides"],
                 ["/faq", "Common Questions"],
+                ["/about", "About"],
+                ["/contact", "Contact & Support"],
                 ["https://epsg.io", "EPSG Geodetic Registry"],
               ].map(([href, label]) => (
                 <li key={label}>

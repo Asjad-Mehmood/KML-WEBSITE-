@@ -15,9 +15,9 @@ function siteUrl(): string {
 
 export const SITE_URL = siteUrl();
 
-export const SITE_NAME = "Excel to KML Pro";
+export const SITE_NAME = "Excel to KML";
 
-export const DEFAULT_TITLE = "Excel to KML Pro — Survey Coordinates to KML, KMZ & DXF";
+export const DEFAULT_TITLE = "Excel to KML — Survey Coordinates to KML, KMZ & DXF";
 
 export const SITE_DESCRIPTION =
   "Convert Excel & CSV survey coordinates on 5,800+ EPSG grids into Google Earth KML, KMZ and DXF, with site photos and PDF reports. Free for Windows and the web.";
@@ -26,7 +26,7 @@ export const OG_IMAGE = {
   url: "/assets/og-image.png",
   width: 1200,
   height: 630,
-  alt: "Excel to KML Pro: convert geospatial coordinate tables into Google Earth KML, KMZ and DXF",
+  alt: "Excel to KML: convert geospatial coordinate tables into Google Earth KML, KMZ and DXF",
 };
 
 /**
@@ -34,6 +34,9 @@ export const OG_IMAGE = {
  * the private repository Asjad-Mehmood/kml-convertor-src; each release is published here, and
  * installed copies update from here.
  */
+/** The newest release, shown until the live release details load. */
+export const LATEST_VERSION = "v4.2.1";
+
 export const GITHUB_REPO_URL = "https://github.com/Asjad-Mehmood/kml-convertor";
 /** The latest release, read by the home page for its version, size and SHA-256. */
 export const RELEASES_API_URL = "https://api.github.com/repos/Asjad-Mehmood/kml-convertor/releases/latest";

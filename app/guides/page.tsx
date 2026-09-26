@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: "/guides" },
-  openGraph: openGraphFor("/guides", `${TITLE} | Excel to KML Pro`, DESCRIPTION),
+  openGraph: openGraphFor("/guides", `${TITLE} | Excel to KML`, DESCRIPTION),
 };
 
 const ICONS: Record<GuideCategory, React.ElementType> = {

@@ -30,7 +30,7 @@ import {
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import { useAuth } from "../../context/AuthContext";
-import { GITHUB_REPO_URL } from "@/lib/site";
+import { GITHUB_REPO_URL, LATEST_VERSION } from "@/lib/site";
 import FileViewer, { type ViewerFile } from "@/components/FileViewer";
 
 export interface DashboardData {
@@ -484,7 +484,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
 
   return (
     <div className="min-h-screen bg-[#fafbfc] text-slate-900">
-      <Navbar onDownloadClick={() => router.push("/#download")} />
+      <Navbar onDownloadClick={() => router.push("/download")} />
 
       <main id="main-content" className="pt-24 sm:pt-28 pb-16">
         <div className="max-w-[1140px] mx-auto px-4 sm:px-8">
@@ -530,7 +530,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
                 Open web app <ArrowRight className="w-4 h-4" aria-hidden />
               </Link>
               <Link
-                href="/#download"
+                href="/download"
                 className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-[13px] font-semibold"
               >
                 <Download className="w-4 h-4" aria-hidden /> Windows app
@@ -846,7 +846,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
                     {pointRows.length < pointsTotal && <> · showing the newest {num(pointRows.length)}</>}
                   </p>
                   <button
-                    onClick={() => downloadText(pointsCsv(pointGroups.flatMap((g) => g.rows)), "Excel to KML Pro points.csv")}
+                    onClick={() => downloadText(pointsCsv(pointGroups.flatMap((g) => g.rows)), "Excel to KML points.csv")}
                     disabled={!pointRows.length}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-[12px] font-semibold text-slate-700 hover:border-blue-200 hover:text-[#0071e3] cursor-pointer disabled:opacity-50 self-start"
                   >
@@ -984,7 +984,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
                     <p className="font-semibold text-slate-800">No downloads yet</p>
                     <p className="text-[13px] text-slate-500 mt-1">Installer downloads made while signed in are listed here.</p>
                     <Link
-                      href="/#download"
+                      href="/download"
                       className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-[13px] font-semibold"
                     >
                       <Download className="w-4 h-4" aria-hidden /> Get the Windows app
@@ -1134,10 +1134,10 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
 
       <FileViewer file={viewing} onClose={() => setViewing(null)} />
       <Footer
-        versionTag="v3.6.2"
+        versionTag={LATEST_VERSION}
         downloadUrl={`${GITHUB_REPO_URL}/releases/latest`}
         releaseNotesUrl={`${GITHUB_REPO_URL}/releases/latest`}
-        onDownloadClick={() => router.push("/#download")}
+        onDownloadClick={() => router.push("/download")}
       />
     </div>
   );

@@ -20,7 +20,7 @@ interface FormatItem {
 }
 
 const INPUT_FORMATS: FormatItem[] = [
-  { name: "Excel workbook", ext: ".xlsx / .xls" },
+  { name: "Excel workbook", ext: ".xlsx / .xlsm" },
   { name: "Comma-separated values", ext: ".csv" },
   { name: "Tab-separated values", ext: ".tsv" },
   { name: "Space-delimited text", ext: ".txt" },

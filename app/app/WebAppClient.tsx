@@ -96,14 +96,14 @@ export default function WebAppClient() {
               <div className="shrink-0 w-7 h-7 rounded-lg bg-blue-50 border border-blue-200 flex items-center justify-center p-1">
                 <Image
                   src="/assets/icon.png"
-                  alt="Excel to KML Pro"
+                  alt="Excel to KML"
                   width={20}
                   height={20}
                   className="object-contain"
                 />
               </div>
               <span className="hidden sm:inline whitespace-nowrap font-extrabold text-sm text-slate-900 tracking-tight">
-                Excel to KML <span className="text-blue-600">PRO</span>
+                Excel to KML
               </span>
               {appConfig && (
                 appConfig.isRestricted ? (
@@ -114,7 +114,7 @@ export default function WebAppClient() {
                 ) : (
                   <span className="hidden xl:inline-flex whitespace-nowrap items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-300">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                    Full Pro Access
+                    Full access
                   </span>
                 )
               )}
@@ -156,7 +156,7 @@ export default function WebAppClient() {
             </button>
 
             <Link
-              href="/#download"
+              href="/download"
               aria-label="Get the Windows desktop app"
               className="whitespace-nowrap inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-semibold rounded-lg shadow-xs transition-all"
             >
@@ -191,7 +191,7 @@ export default function WebAppClient() {
           key={reloadKey}
           ref={frameRef}
           src={`/api/app-html?v=${reloadKey}`}
-          title="Excel to KML Pro"
+          title="Excel to KML"
           className="w-full h-full border-0 absolute inset-0"
           allow="clipboard-read; clipboard-write; geolocation"
           onLoad={() => {

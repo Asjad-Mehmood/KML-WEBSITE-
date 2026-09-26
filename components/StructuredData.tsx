@@ -46,7 +46,7 @@ export function HomeStructuredData() {
             applicationSubCategory: "GIS / Surveying",
             operatingSystem: "Windows 10, Windows 11",
             downloadUrl: INSTALLER_URL,
-            installUrl: `${SITE_URL}/#download`,
+            installUrl: `${SITE_URL}/download`,
             screenshot: `${SITE_URL}/assets/hero_geospatial.jpg`,
             image: `${SITE_URL}/assets/icon-512.png`,
             softwareVersion: "3.6.2",

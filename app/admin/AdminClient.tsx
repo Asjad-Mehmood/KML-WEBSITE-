@@ -785,7 +785,7 @@ export default function AdminClient() {
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2 whitespace-nowrap">
-              <span className="font-extrabold text-[15px] tracking-tight text-white">Excel to KML Pro</span>
+              <span className="font-extrabold text-[15px] tracking-tight text-white">Excel to KML</span>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-500/20 text-blue-400 border border-blue-500/30">
                 Admin
               </span>

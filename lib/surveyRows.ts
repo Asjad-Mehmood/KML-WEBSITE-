@@ -145,7 +145,7 @@ export function buildKml(
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>
     <name>${escapeXml(meta.title)}</name>
-    <description>${points.length} survey points converted from ${escapeXml(meta.gridLabel)} with Excel to KML Pro</description>
+    <description>${points.length} survey points converted from ${escapeXml(meta.gridLabel)} with Excel to KML</description>
     <Style id="surveyPoint">
       <IconStyle>
         <color>ff00e6ff</color>

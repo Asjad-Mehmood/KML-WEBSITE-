@@ -4,20 +4,20 @@ import LegalShell from "../../components/LegalShell";
 import { LEGAL_UPDATED, SUPPORT_EMAIL, openGraphFor } from "@/lib/site";
 
 const TITLE = "Privacy Policy";
-const DESCRIPTION = "How Excel to KML Pro handles your information, the choices you have, and how to delete your account.";
+const DESCRIPTION = "How Excel to KML handles your information, the choices you have, and how to delete your account.";
 
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: "/privacy" },
-  openGraph: openGraphFor("/privacy", `${TITLE} | Excel to KML Pro`, DESCRIPTION),
+  openGraph: openGraphFor("/privacy", `${TITLE} | Excel to KML`, DESCRIPTION),
 };
 
 export default function PrivacyPage() {
   return (
     <LegalShell title={TITLE} updated={LEGAL_UPDATED}>
       <p>
-        This policy explains how Excel to KML Pro (&ldquo;we&rdquo;, &ldquo;us&rdquo;) handles information when you use this
+        This policy explains how Excel to KML (&ldquo;we&rdquo;, &ldquo;us&rdquo;) handles information when you use this
         website, the web app and the Windows app.
       </p>
 

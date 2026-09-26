@@ -50,8 +50,8 @@ export default function ThanksClient() {
           </h1>
           <p className="mt-3 text-[16px] text-slate-600 leading-relaxed max-w-xl mx-auto">
             {started
-              ? "Your download of Excel to KML Pro has started. It's a small installer — about 3 MB."
-              : "Get the Excel to KML Pro installer for Windows — about 3 MB."}{" "}
+              ? "Your download of Excel to KML has started. It's a small installer — about 3 MB."
+              : "Get the Excel to KML installer for Windows — about 3 MB."}{" "}
             We hope it saves you hours on every job.
           </p>
           <a

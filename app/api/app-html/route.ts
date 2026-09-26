@@ -82,7 +82,7 @@ async function applyWebRestrictions(html: string, req: NextRequest): Promise<str
       Boolean(window.KMLHost && window.KMLHost.isWindows);
 
     if (isDesktopApp) {
-      console.log("Excel to KML Pro: Running in Windows Desktop App - All usage limits removed!");
+      console.log("Excel to KML: Running in Windows Desktop App - All usage limits removed!");
       window.__APP_RESTRICTIONS__ = {
         isRestricted: false,
         hasFullAccess: true,
@@ -140,7 +140,7 @@ async function applyWebRestrictions(html: string, req: NextRequest): Promise<str
         banner.style.backgroundColor = "rgba(16, 185, 129, 0.15)";
         banner.style.color = "#34d399";
         banner.style.border = "1px solid rgba(16, 185, 129, 0.35)";
-        banner.innerHTML = '✨ <span class="arb-long">Full Pro Access (Unlimited)</span><span class="arb-short">Pro</span>';
+        banner.innerHTML = '✨ <span class="arb-long">Full access (unlimited)</span><span class="arb-short">Full</span>';
       }
       titlebar.insertBefore(banner, aboutBtn);
     } else {
@@ -155,7 +155,7 @@ async function applyWebRestrictions(html: string, req: NextRequest): Promise<str
         banner.style.backgroundColor = "#ecfdf5";
         banner.style.color = "#065f46";
         banner.style.border = "1px solid #a7f3d0";
-        banner.innerHTML = '✨ Full Pro Access (Unlimited Points)';
+        banner.innerHTML = '✨ Full access (unlimited points)';
       }
       document.body.appendChild(banner);
     }
@@ -163,8 +163,8 @@ async function applyWebRestrictions(html: string, req: NextRequest): Promise<str
     const dlBtn = document.getElementById("btn-download-desktop");
     if (dlBtn) {
       dlBtn.onclick = function() {
-        if (window.top) window.top.location.href = "/#download";
-        else window.location.href = "/#download";
+        if (window.top) window.top.location.href = "/download";
+        else window.location.href = "/download";
       };
     }
 
@@ -189,8 +189,8 @@ async function applyWebRestrictions(html: string, req: NextRequest): Promise<str
         document.body.appendChild(modal);
 
         document.getElementById("btn-modal-download").onclick = function() {
-          if (window.top) window.top.location.href = "/#download";
-          else window.location.href = "/#download";
+          if (window.top) window.top.location.href = "/download";
+          else window.location.href = "/download";
         };
       }
 
@@ -298,8 +298,8 @@ async function applyWebRestrictions(html: string, req: NextRequest): Promise<str
         '</div>';
         document.body.appendChild(modal);
         document.getElementById("btn-desktop-dl").onclick = function() {
-          if (window.top) window.top.location.href = "/#download";
-          else window.location.href = "/#download";
+          if (window.top) window.top.location.href = "/download";
+          else window.location.href = "/download";
         };
         document.getElementById("btn-desktop-close").onclick = function() { modal.style.display = "none"; };
       }
@@ -313,7 +313,7 @@ async function applyWebRestrictions(html: string, req: NextRequest): Promise<str
         e.preventDefault();
         e.stopImmediatePropagation();
         showDesktopOnly("Batch conversion is a desktop feature",
-          "Converting many sheets at once is available in the Excel to KML Pro Windows desktop app, with no point limit. In the web demo, convert one sheet of up to " + config.maxPoints + " points at a time.");
+          "Converting many sheets at once is available in the Excel to KML Windows desktop app, with no point limit. In the web demo, convert one sheet of up to " + config.maxPoints + " points at a time.");
       }
     }, true);
 
@@ -330,15 +330,15 @@ async function applyWebRestrictions(html: string, req: NextRequest): Promise<str
             modal.style.cssText = "position:fixed;inset:0;background:rgba(15,23,42,0.65);backdrop-filter:blur(4px);z-index:999999;display:flex;align-items:center;justify-content:center;padding:16px;font-family:system-ui,-apple-system,sans-serif;";
             modal.innerHTML = '<div style="background:#fff;border-radius:16px;max-width:400px;width:100%;padding:24px;box-shadow:0 20px 40px rgba(0,0,0,0.2);text-align:center;">' +
               '<div style="width:48px;height:48px;border-radius:12px;background:#eff6ff;color:#2563eb;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:24px;">📄</div>' +
-              '<h3 style="font-size:17px;font-weight:800;color:#0f172a;margin:0 0 8px;">Desktop Pro Feature</h3>' +
-              '<p style="font-size:13px;color:#475569;line-height:1.5;margin:0 0 20px;">PDF Cadastral & Survey Reports are available exclusively in the <strong>Excel to KML Pro Desktop Edition</strong>.</p>' +
+              '<h3 style="font-size:17px;font-weight:800;color:#0f172a;margin:0 0 8px;">Desktop feature</h3>' +
+              '<p style="font-size:13px;color:#475569;line-height:1.5;margin:0 0 20px;">PDF Cadastral & Survey Reports are available exclusively in the <strong>Excel to KML Windows app</strong>.</p>' +
               '<button id="btn-rep-dl" style="width:100%;padding:10px 16px;background:#2563eb;color:#fff;font-weight:700;font-size:13px;border-radius:10px;border:none;cursor:pointer;margin-bottom:8px;">Download Windows Desktop App</button>' +
               '<button id="btn-rep-close" style="width:100%;padding:8px 16px;background:#f8fafc;color:#64748b;font-weight:600;font-size:12px;border-radius:10px;border:1px solid #e2e8f0;cursor:pointer;">Dismiss</button>' +
             '</div>';
             document.body.appendChild(modal);
             document.getElementById("btn-rep-dl").onclick = function() {
-              if (window.top) window.top.location.href = "/#download";
-              else window.location.href = "/#download";
+              if (window.top) window.top.location.href = "/download";
+              else window.location.href = "/download";
             };
             document.getElementById("btn-rep-close").onclick = function() {
               modal.style.display = "none";
@@ -581,17 +581,17 @@ async function applyWebRestrictions(html: string, req: NextRequest): Promise<str
 // Shown inside the /app frame if the session is missing or expired
 const SIGN_IN_REQUIRED_HTML = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sign in required — Excel to KML Pro</title></head>
+<title>Sign in required — Excel to KML</title></head>
 <body style="margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:system-ui,-apple-system,sans-serif;background:#f8fafc;color:#0f172a">
 <main style="max-width:380px;padding:32px;text-align:center">
 <h1 style="font-size:20px;margin:0 0 8px">Sign in to use the web app</h1>
-<p style="font-size:14px;color:#475569;line-height:1.5;margin:0 0 20px">The Excel to KML Pro web app is available to signed-in users. Creating an account is free.</p>
+<p style="font-size:14px;color:#475569;line-height:1.5;margin:0 0 20px">The Excel to KML web app is available to signed-in users. Creating an account is free.</p>
 <a href="${WEB_APP_LOGIN_URL}" target="_top" style="display:inline-block;padding:10px 20px;border-radius:10px;background:#0071e3;color:#fff;font-weight:600;font-size:14px;text-decoration:none">Sign in</a>
 </main></body></html>`;
 
 const MAINTENANCE_HTML = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Maintenance — Excel to KML Pro</title></head>
+<title>Maintenance — Excel to KML</title></head>
 <body style="margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:system-ui,-apple-system,sans-serif;background:#f8fafc;color:#0f172a">
 <main style="max-width:380px;padding:32px;text-align:center">
 <h1 style="font-size:20px;margin:0 0 8px">The web app is down for maintenance</h1>

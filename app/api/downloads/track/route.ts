@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { LATEST_VERSION } from "@/lib/site";
 import { getClientIp, getIpGeoLocation } from "@/lib/geo";
 import { prisma } from "@/lib/prisma";
 import { isMailConfigured, sendMail } from "@/lib/mailer";
@@ -36,7 +37,7 @@ export async function POST(req: NextRequest) {
     const {
       assetType = "windows_installer",
       fileName = "ExcelToKMLPro-Lite-Setup.exe",
-      version = "v3.6.2",
+      version = LATEST_VERSION,
     } = body;
 
     const clientIp = getClientIp(req);

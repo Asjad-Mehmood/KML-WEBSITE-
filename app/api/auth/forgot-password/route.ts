@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
       const link = `${base}/reset-password?token=${encodeURIComponent(createResetToken(user))}`;
       await sendMail({
         to: user.email,
-        subject: "Reset your Excel to KML Pro password",
+        subject: "Reset your Excel to KML password",
         text: `Hi ${user.name},\n\nUse this link to choose a new password (valid for 1 hour):\n${link}\n\nIf you didn't ask for this, you can ignore this email — your password won't change.`,
         html: `<div style="font-family:system-ui,sans-serif;font-size:15px;color:#0f172a;line-height:1.5">
 <p>Hi ${user.name.replace(/[<>&"]/g, "")},</p>

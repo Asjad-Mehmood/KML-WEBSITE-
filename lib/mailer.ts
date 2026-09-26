@@ -5,7 +5,7 @@ import nodemailer from "nodemailer";
 //   SMTP_PORT   587 (STARTTLS, default) or 465 (TLS)
 //   SMTP_USER   the mailbox login
 //   SMTP_PASS   its password (for Gmail: an App Password)
-//   MAIL_FROM   optional, e.g. "Excel to KML Pro <no-reply@exceltokml.com>" (defaults to SMTP_USER)
+//   MAIL_FROM   optional, e.g. "Excel to KML <no-reply@exceltokml.com>" (defaults to SMTP_USER)
 
 export function isMailConfigured(): boolean {
   return Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);

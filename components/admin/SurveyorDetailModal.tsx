@@ -1118,7 +1118,7 @@ export default function SurveyorDetailModal({
                         <div className="text-sm font-bold text-white flex items-center gap-2">
                           <span>Grant Full Unrestricted Web Access</span>
                           <span className="text-[10px] px-2 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                            Pro Surveyor
+                            Full access
                           </span>
                         </div>
                         <div className="text-xs text-slate-400 mt-1">

@@ -4,12 +4,12 @@ import React from "react";
 import Navbar from "../../components/Navbar";
 import Faq from "../../components/Faq";
 import CtaBanner from "../../components/CtaBanner";
-import { GITHUB_REPO_URL } from "@/lib/site";
+import { GITHUB_REPO_URL, LATEST_VERSION } from "@/lib/site";
 import Footer from "../../components/Footer";
 
 export default function FaqPage() {
   const handleDownload = () => {
-    window.location.href = "/#download";
+    window.location.href = "/download";
   };
 
   return (
@@ -18,13 +18,13 @@ export default function FaqPage() {
       <main id="main-content" className="pt-20">
         <Faq headingLevel="h1" />
         <CtaBanner
-          versionTag="v3.6.2"
+          versionTag={LATEST_VERSION}
           fileSizeText="3.15 MB"
           onDownloadClick={handleDownload}
         />
       </main>
       <Footer
-        versionTag="v3.6.2"
+        versionTag={LATEST_VERSION}
         downloadUrl={`${GITHUB_REPO_URL}/releases/latest`}
         releaseNotesUrl={`${GITHUB_REPO_URL}/releases/latest`}
         onDownloadClick={handleDownload}

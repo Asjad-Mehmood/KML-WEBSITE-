@@ -5,7 +5,7 @@
 export interface FeatureDetail {
   title: string;
   summary: string;
-  /** How it works in Excel to KML Pro */
+  /** How it works in Excel to KML */
   points: string[];
   /** Optional key facts, shown as a small table */
   specs?: [string, string][];

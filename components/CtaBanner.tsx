@@ -25,7 +25,7 @@ export default function CtaBanner({ versionTag, onDownloadClick }: CtaBannerProp
         </h2>
 
         <p className="text-sm sm:text-base text-slate-600 mb-8 max-w-[540px] mx-auto leading-relaxed">
-          Download Excel to KML Pro {versionTag} for Windows. Free to use for field surveyors, civil engineers, and GIS specialists.
+          Download Excel to KML {versionTag} for Windows. Free to use for field surveyors, civil engineers, and GIS specialists.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5">
