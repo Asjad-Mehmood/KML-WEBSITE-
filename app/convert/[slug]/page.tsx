@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ArrowRight, CheckCircle2, Download, Lightbulb, MapPin } from "lucide-react";
 import PageShell from "../../../components/PageShell";
 import GridConverter from "../../../components/GridConverter";
+import GridSearch from "../../../components/GridSearch";
 import { GRID_PAGES, gridBySlug } from "@/lib/gridPages";
 import { systemByCode } from "@/lib/epsgCatalog";
 import { areaBox, gridParameterRows, unitLabel } from "@/lib/gridParams";
@@ -151,6 +152,10 @@ export default async function GridPage({ params }: { params: Promise<{ slug: str
                 Also known as: {g.aka.join(" · ")}
               </p>
             )}
+            <section>
+              <h2 className="text-[14px] font-bold text-slate-900 mb-2">Find another grid</h2>
+              <GridSearch id="grid-search" placeholder="Name, country or code" />
+            </section>
             {related.length > 0 && (
               <section>
                 <h2 className="text-[14px] font-bold text-slate-900 mb-2">More {g.region} grids</h2>

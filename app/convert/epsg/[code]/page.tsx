@@ -4,6 +4,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { ArrowRight, CheckCircle2, Download, Info, MapPin } from "lucide-react";
 import PageShell from "../../../../components/PageShell";
 import GridConverter from "../../../../components/GridConverter";
+import GridSearch from "../../../../components/GridSearch";
 import { GRID_PAGES } from "@/lib/gridPages";
 import { BIG_COUNTRY, codeLabel, countryBySlug, countryRegions, regionOf, systemByCode, toRow } from "@/lib/epsgCatalog";
 import { epsgDescription, epsgLead, epsgNotes, epsgTitle, hasWestSouthAxes } from "@/lib/epsgPageText";
@@ -158,6 +159,10 @@ export default async function EpsgPage({ params }: { params: Promise<{ code: str
                   <dd className="font-medium text-slate-800">{areaBox(s.bbox)}</dd>
                 </div>
               </dl>
+            </section>
+            <section>
+              <h2 className="text-[14px] font-bold text-slate-900 mb-2">Find another grid</h2>
+              <GridSearch id="grid-search" placeholder="Name, country or code" />
             </section>
             {related.length > 0 && (
               <section>

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import PageShell from "../../../../../components/PageShell";
 import SystemList from "../../../../../components/SystemList";
+import GridSearch from "../../../../../components/GridSearch";
 import { BIG_COUNTRY, countries, countryBySlug, countryRegions } from "@/lib/epsgCatalog";
 import { SITE_URL, jsonLd, openGraphFor } from "@/lib/site";
 
@@ -72,6 +73,10 @@ export default async function RegionPage({ params }: { params: Promise<{ slug: s
           {d.region.systems.length} EPSG coordinate {d.region.systems.length === 1 ? "system" : "systems"}. Pick one to open a
           converter already set to it, with its parameters and area of use.
         </p>
+        <div className="mt-6 max-w-xl">
+          <GridSearch id="grid-search" />
+        </div>
+
         <div className="mt-8">
           <SystemList systems={d.region.systems} />
         </div>
