@@ -1,5 +1,5 @@
 // How-to guides at /guides/<slug> (the page files live in app/guides/<slug>/page.tsx)
-export type GuideCategory = "Getting started" | "Coordinates" | "Deliverables";
+export type GuideCategory = "Getting started" | "Coordinates" | "Checking the work" | "Deliverables";
 
 export interface Guide {
   slug: string;
@@ -9,7 +9,7 @@ export interface Guide {
   published: string; // ISO date
 }
 
-export const GUIDE_CATEGORIES: GuideCategory[] = ["Getting started", "Coordinates", "Deliverables"];
+export const GUIDE_CATEGORIES: GuideCategory[] = ["Getting started", "Coordinates", "Checking the work", "Deliverables"];
 
 export const GUIDES: Guide[] = [
   {
@@ -73,6 +73,126 @@ export const GUIDES: Guide[] = [
     title: "Export Survey Points to DXF for AutoCAD",
     description:
       "Save your points as a DXF drawing with 3D points, name labels and a layer for each code, on the grid your drawing uses.",
+    category: "Deliverables",
+    published: "2026-09-26",
+  },
+  {
+    slug: "prepare-survey-spreadsheet",
+    title: "How to Lay Out a Survey Spreadsheet for Conversion",
+    description:
+      "Which headings are recognised, what to do with a sheet that has no heading row, and the small layout habits that stop points going missing.",
+    category: "Getting started",
+    published: "2026-09-26",
+  },
+  {
+    slug: "convert-many-sheets-at-once",
+    title: "Convert Many Survey Sheets to Google Earth at Once",
+    description:
+      "Batch conversion: turn a folder of CSV and Excel sheets into one Google Earth file each, with a summary of what every sheet held.",
+    category: "Getting started",
+    published: "2026-09-26",
+  },
+  {
+    slug: "save-survey-jobs",
+    title: "Keep a Survey Job and Carry On Later",
+    description:
+      "Save the whole job — points, grid, symbols, photos and settings — under a name, open it on another computer, or send it to a colleague.",
+    category: "Getting started",
+    published: "2026-09-26",
+  },
+  {
+    slug: "latitude-longitude-to-utm",
+    title: "How to Convert Latitude and Longitude to UTM",
+    description:
+      "Turn a sheet of latitude and longitude into UTM or national grid eastings and northings, and save them to Excel, CSV or DXF.",
+    category: "Coordinates",
+    published: "2026-09-26",
+  },
+  {
+    slug: "convert-between-coordinate-systems",
+    title: "Convert Coordinates from One Grid to Another",
+    description:
+      "Move eastings and northings from an old national grid to UTM, or between any two grids, without losing the original values.",
+    category: "Coordinates",
+    published: "2026-09-26",
+  },
+  {
+    slug: "dms-to-decimal-degrees",
+    title: "Degrees, Minutes and Seconds to Decimal Degrees in Excel",
+    description:
+      "Convert coordinates like 25°12'30.5\"N to 25.208472 with one Excel formula, and why a DMS column must be converted before mapping.",
+    category: "Coordinates",
+    published: "2026-09-26",
+  },
+  {
+    slug: "kml-to-excel",
+    title: "Convert KML or KMZ to Excel with Coordinates",
+    description:
+      "Get the placemarks out of a Google Earth file into a table of names, latitude, longitude and height, and onto your own grid.",
+    category: "Coordinates",
+    published: "2026-09-26",
+  },
+  {
+    slug: "survey-quality-checks",
+    title: "Check a Survey for Duplicate Points and Level Busts",
+    description:
+      "Catch the mistakes that survive a visual check before you send the file: points shot twice, points on top of each other, levels that jump.",
+    category: "Checking the work",
+    published: "2026-09-26",
+  },
+  {
+    slug: "compare-survey-with-design",
+    title: "Compare As-Built Survey Points with Design Coordinates",
+    description:
+      "Match what was shot against the design sheet station by station, flag anything outside tolerance, and save the comparison.",
+    category: "Checking the work",
+    published: "2026-09-26",
+  },
+  {
+    slug: "setting-out-bearing-and-distance",
+    title: "Bearing and Distance from a Setup Point: a Setting-Out Sheet",
+    description:
+      "Set up on any point and list every other point by bearing, distance and level difference, then save the list as a setting-out sheet.",
+    category: "Checking the work",
+    published: "2026-09-26",
+  },
+  {
+    slug: "survey-points-to-shapefile-qgis-arcgis",
+    title: "Survey Points to Shapefile and GeoJSON for QGIS and ArcGIS",
+    description:
+      "Save survey points, lines and areas as a zipped Shapefile or a GeoJSON file with every column kept, ready to open in GIS.",
+    category: "Deliverables",
+    published: "2026-09-26",
+  },
+  {
+    slug: "survey-points-to-gpx",
+    title: "Survey Points to GPX for a Handheld GPS",
+    description:
+      "Put your control points and boundaries on a handheld GPS as waypoints and routes, with levels, to find them in the field.",
+    category: "Deliverables",
+    published: "2026-09-26",
+  },
+  {
+    slug: "points-to-total-station-leica-trimble",
+    title: "Send Points to a Total Station: Leica GSI and Trimble Files",
+    description:
+      "Save design or control points as a Leica GSI-16 file or a Trimble comma file to upload to the instrument for setting out.",
+    category: "Deliverables",
+    published: "2026-09-26",
+  },
+  {
+    slug: "point-codes-and-symbols-in-google-earth",
+    title: "Colour-Coded Markers by Point Code in Google Earth",
+    description:
+      "Give trees, manholes, benchmarks and every other code its own marker and folder, and keep the choices for every job.",
+    category: "Deliverables",
+    published: "2026-09-26",
+  },
+  {
+    slug: "chainage-offset-and-level-profile",
+    title: "Chainage, Offset and Level Profile Along a Centreline",
+    description:
+      "Give every point its chainage along a road, pipe or kerb line and its offset left or right, and save a level profile with grades.",
     category: "Deliverables",
     published: "2026-09-26",
   },

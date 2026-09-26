@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, BookOpen, Compass, FileOutput } from "lucide-react";
+import { ArrowRight, BookOpen, Compass, FileOutput, ShieldCheck } from "lucide-react";
 import PageShell from "../../components/PageShell";
 import { GUIDES, GUIDE_CATEGORIES, type GuideCategory } from "@/lib/guides";
 import { openGraphFor } from "@/lib/site";
@@ -19,6 +19,7 @@ export const metadata: Metadata = {
 const ICONS: Record<GuideCategory, React.ElementType> = {
   "Getting started": BookOpen,
   Coordinates: Compass,
+  "Checking the work": ShieldCheck,
   Deliverables: FileOutput,
 };
 
