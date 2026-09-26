@@ -83,6 +83,8 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
               {[
                 ["https://github.com/Asjad-Mehmood/kml-convertor", "GitHub Repository"],
                 ["https://github.com/Asjad-Mehmood/kml-convertor/issues", "Issue Tracker"],
+                ["/convert", "Grid Converters"],
+                ["/guides", "Guides"],
                 ["/faq", "Common Questions"],
                 ["https://epsg.io", "EPSG Geodetic Registry"],
               ].map(([href, label]) => (

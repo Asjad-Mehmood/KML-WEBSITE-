@@ -133,7 +133,7 @@ const OCEANIA_AFRICA_SYSTEMS: CoordSystem[] = [
   // → -23.5538, -46.6518
   { id: "brazil-utm23s", code: 31983, grid: "EPSG:31983", name: "Brazil São Paulo / Rio (UTM 23S)", flag: "🇧🇷", station: "BRA-SAO-01", datum: "SIRGAS 2000", accuracy: "< 1 mm", def: "+proj=utm +zone=23 +south +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m", unit: "m", defaultE: 331400, defaultN: 7394200, defaultZ: 760 },
   // → -33.8949, 18.5330
-  { id: "safrica-lo19", code: 2048, grid: "EPSG:2048", name: "South Africa Cape Town (Lo 19)", flag: "🇿🇦", station: "ZAF-CPT-01", datum: "Hartebeesthoek94", accuracy: "< 1 mm", def: "+proj=tmerc +axis=wsu +lat_0=0 +lon_0=19 +k=1 +x_0=0 +y_0=0 +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +units=m", unit: "m", defaultE: -43200, defaultN: -3752100, defaultZ: 18 },
+  { id: "safrica-lo19", code: 2048, grid: "EPSG:2048", name: "South Africa Cape Town (Lo 19)", flag: "🇿🇦", station: "ZAF-CPT-01", datum: "Hartebeesthoek94", accuracy: "< 1 mm", def: "+proj=tmerc +axis=wsu +lat_0=0 +lon_0=19 +k=1 +x_0=0 +y_0=0 +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +units=m", unit: "m", defaultE: 43200, defaultN: 3752100, defaultZ: 18 },
 ];
 
 const CURATED_GROUPS: { label: string; systems: CoordSystem[] }[] = [
@@ -146,6 +146,16 @@ const CURATED_GROUPS: { label: string; systems: CoordSystem[] }[] = [
 ];
 const CURATED: CoordSystem[] = CURATED_GROUPS.flatMap((g) => g.systems);
 
+/* proj4js ignores +axis. The southern African "Lo" grids count positive to the
+   west and south (+axis=wsu / swu), so real Y/X values would land in the wrong
+   hemisphere: flip those directions here. Easting field = Y (westing),
+   northing field = X (southing), as surveyors there enter them. */
+function axisSigns(def: string): [number, number] {
+  const axis = /\+axis=(\w{3})/.exec(def)?.[1];
+  if (!axis) return [1, 1];
+  return [axis.includes("w") ? -1 : 1, axis.includes("s") ? -1 : 1];
+}
+
 /* Turn an EPSG index row into a usable system, with a sample point at the
    centre of the system's area of use. */
 function systemFromRow([code, name, def, bbox, unit]: EpsgRow): CoordSystem {
@@ -156,7 +166,9 @@ function systemFromRow([code, name, def, bbox, unit]: EpsgRow): CoordSystem {
   let defaultE = 0;
   let defaultN = 0;
   try {
-    [defaultE, defaultN] = proj4("WGS84", def, [lon, lat]).map((v) => Number(v.toFixed(3)));
+    const [sx, sy] = axisSigns(def);
+    const [e, n] = proj4("WGS84", def, [lon, lat]);
+    [defaultE, defaultN] = [e * sx, n * sy].map((v) => Number(v.toFixed(3)));
   } catch {
     // keep 0, 0 — the user can type their own coordinates
   }
@@ -181,11 +193,12 @@ function systemFromRow([code, name, def, bbox, unit]: EpsgRow): CoordSystem {
 function gridToWgs84(sys: CoordSystem, easting: number, northing: number): { lat: number; lon: number } | null {
   if (!Number.isFinite(easting) || !Number.isFinite(northing)) return null;
   try {
-    const [lon, lat] = proj4(sys.def, "WGS84", [easting, northing]);
+    const [sx, sy] = axisSigns(sys.def);
+    const [lon, lat] = proj4(sys.def, "WGS84", [easting * sx, northing * sy]);
     if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) return null;
     // Far outside a projection's domain the inverse returns garbage; it must round-trip
     const [e2, n2] = proj4("WGS84", sys.def, [lon, lat]);
-    if (Math.hypot(e2 - easting, n2 - northing) > 1) return null;
+    if (Math.hypot(e2 * sx - easting, n2 * sy - northing) > 1) return null;
     return { lat, lon };
   } catch {
     return null;
@@ -694,8 +707,11 @@ function BatchPanel({ sys }: { sys: CoordSystem }) {
   );
 }
 
-export default function HeroConverter() {
-  const [current, setCurrent] = useState<CoordSystem>(POPULAR_SYSTEMS[0]);
+/** initialSystemId: start on one of the curated systems (used by the grid landing pages) */
+export default function HeroConverter({ initialSystemId }: { initialSystemId?: string } = {}) {
+  const [current, setCurrent] = useState<CoordSystem>(
+    () => CURATED.find((s) => s.id === initialSystemId) ?? POPULAR_SYSTEMS[0]
+  );
   const [mode, setMode] = useState<"single" | "batch">("single");
 
   const [easting, setEasting] = useState<number>(current.defaultE);

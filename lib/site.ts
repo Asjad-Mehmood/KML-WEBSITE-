@@ -23,10 +23,10 @@ export const SITE_DESCRIPTION =
   "Convert Excel & CSV survey coordinates on 5,800+ EPSG grids into Google Earth KML, KMZ and DXF, with site photos and PDF reports. Free for Windows and the web.";
 
 export const OG_IMAGE = {
-  url: "/assets/hero_geospatial.jpg",
+  url: "/assets/og-image.png",
   width: 1200,
   height: 630,
-  alt: "Excel to KML Pro converting survey coordinates into Google Earth placemarks",
+  alt: "Excel to KML Pro: convert geospatial coordinate tables into Google Earth KML, KMZ and DXF",
 };
 
 export const GITHUB_REPO_URL = "https://github.com/Asjad-Mehmood/kml-convertor";
