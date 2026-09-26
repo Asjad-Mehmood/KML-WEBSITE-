@@ -21,10 +21,10 @@ export default function AuthModal() {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
-    const ok = authModalMode === "register"
+    const result = authModalMode === "register"
       ? await register({ name, email, password, organization, role })
       : await login(email, password);
-    if (!ok) setError(authModalMode === "register" ? "Failed to create account. Please try again." : "Invalid email or password.");
+    if (!result.ok) setError(result.error);
     setSubmitting(false);
   };
 
@@ -38,12 +38,9 @@ export default function AuthModal() {
         <div className="flex items-center justify-between px-6 pt-6 pb-5 border-b border-[#e8e8ed]">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-[11px] bg-[#0071e3] flex items-center justify-center">
-              <Image src="/assets/icon.png" alt="Excel to KML Pro Surveyor Account" width={22} height={22} className="object-contain" />
+              <Image src="/assets/icon.png" alt="" width={22} height={22} className="object-contain" />
             </div>
-            <div>
-              <p className="text-[15px] font-semibold text-[#1d1d1f]">Excel to KML Pro</p>
-              <p className="text-[11px] text-[#6e6e73]">Surveyor Access</p>
-            </div>
+            <p className="text-[15px] font-semibold text-[#1d1d1f]">Excel to KML Pro</p>
           </div>
           <button onClick={() => setAuthModalOpen(false)}
             className="w-7 h-7 flex items-center justify-center rounded-full bg-[#f5f5f7] hover:bg-[#e8e8ed] text-[#6e6e73] transition-colors"
@@ -100,10 +97,6 @@ export default function AuthModal() {
               {submitting ? "Processing…" : authModalMode === "register" ? "Create Account & Download" : "Sign In & Continue"}
             </button>
           </form>
-
-          <p className="text-center text-[12px] text-[#aeaeb2] mt-5">
-            🔒 Free forever · Zero spam · Access 5,800+ EPSG grids
-          </p>
         </div>
       </div>
     </div>

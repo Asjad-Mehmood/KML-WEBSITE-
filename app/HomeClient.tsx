@@ -107,7 +107,7 @@ export default function HomeClient() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-    }, "Surveyor Authentication Required: Please create a free account or sign in to download the Windows Installer.");
+    }, "Sign in or create a free account to download the Windows app.");
   };
 
   return (

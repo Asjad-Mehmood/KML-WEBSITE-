@@ -435,6 +435,79 @@ export const db = {
     }));
   },
 
+  /**
+   * A user's own activity for their dashboard. Matched on the verified user id
+   * only (not email), newest first, without request metadata.
+   */
+  async getOwnActivities(userId: string, limit = 1000) {
+    return prisma.activity.findMany({
+      where: { userId },
+      orderBy: { timestamp: "desc" },
+      take: limit,
+      select: {
+        id: true,
+        action: true,
+        title: true,
+        fileName: true,
+        pointsCount: true,
+        crs: true,
+        exportFormat: true,
+        status: true,
+        timestamp: true,
+      },
+    });
+  },
+
+  /**
+   * A user's own saved files for their dashboard, matched on user id only.
+   * File contents are not loaded; hasContent says whether one can be downloaded.
+   */
+  async getOwnFileList(userId: string, limit = 500) {
+    const [rows, withContent] = await Promise.all([
+      prisma.userFile.findMany({
+        where: { userId },
+        orderBy: { timestamp: "desc" },
+        take: limit,
+        select: {
+          id: true,
+          direction: true,
+          fileName: true,
+          fileSizeFormatted: true,
+          pointsCount: true,
+          crs: true,
+          platform: true,
+          timestamp: true,
+        },
+      }),
+      prisma.userFile.findMany({
+        where: { userId, contentBase64: { not: null } },
+        select: { id: true },
+        take: limit,
+      }),
+    ]);
+    const stored = new Set(withContent.map((r) => r.id));
+    return rows.map((r) => ({ ...r, hasContent: stored.has(r.id) }));
+  },
+
+  /** One user's own downloads, newest first (for their dashboard). */
+  async getUserDownloads(userId: string, limit = 50): Promise<DownloadRecord[]> {
+    const rows = await prisma.download.findMany({
+      where: { userId },
+      orderBy: { timestamp: "desc" },
+      take: limit,
+    });
+    return rows.map((d) => ({
+      id: d.id,
+      userId: d.userId,
+      userEmail: d.userEmail,
+      userName: d.userName,
+      assetType: d.assetType as DownloadRecord["assetType"],
+      fileName: d.fileName,
+      version: d.version,
+      timestamp: d.timestamp.toISOString(),
+    }));
+  },
+
   async deleteDownload(id: string): Promise<boolean> {
     try {
       await prisma.download.delete({ where: { id } });

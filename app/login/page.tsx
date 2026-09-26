@@ -36,12 +36,12 @@ export default function LoginPage() {
       return;
     }
 
-    const success = await login(email, password);
-    if (success) {
-      // Back to where the visitor was headed (e.g. /app), else the download section
+    const result = await login(email, password);
+    if (result.ok) {
+      // Back to where the visitor was headed (e.g. /app), else the dashboard
       router.push(safeNextPath(new URLSearchParams(window.location.search).get("next")));
     } else {
-      setError("Login failed. Please check credentials.");
+      setError(result.error);
     }
     setIsSubmitting(false);
   };
@@ -70,9 +70,6 @@ export default function LoginPage() {
                 PRO
               </span>
             </div>
-            <p className="text-[11px] font-medium text-slate-500 uppercase">
-              Survey Benchmark Engine
-            </p>
           </div>
         </Link>
 
@@ -87,16 +84,9 @@ export default function LoginPage() {
       {/* Main Login Card */}
       <div className="max-w-md w-full mx-auto my-12 bg-white rounded-3xl border border-slate-200 shadow-xl shadow-slate-200/60 p-8 sm:p-10">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-800 text-xs font-semibold mb-3">
-            <span className="w-2 h-2 rounded-full bg-blue-600 inline-block" />
-            <span>Surveyor Portal</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight mb-2">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight">
             Welcome Back
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-            Sign in to download Excel to KML Pro, access offline EPSG databases, and export survey coordinates.
-          </p>
           {nextParam === "/app" && (
             <p role="status" className="mt-3 text-xs sm:text-sm font-medium text-blue-800 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
               Sign in or create a free account to use the web app.
@@ -151,7 +141,7 @@ export default function LoginPage() {
             disabled={isSubmitting}
             className="w-full py-3.5 px-4 bg-blue-600 hover:bg-blue-700 active:scale-98 text-white font-bold text-sm rounded-xl shadow-lg shadow-blue-500/25 transition-all flex items-center justify-center gap-2 mt-2"
           >
-            {isSubmitting ? "Authenticating..." : "Sign In & Access Downloads"}
+            {isSubmitting ? "Signing in…" : "Sign In"}
           </button>
         </form>
 
@@ -169,7 +159,7 @@ export default function LoginPage() {
 
       {/* Footer */}
       <div className="text-center text-xs text-slate-400 py-4">
-        &copy; 2026 Excel to KML Pro &bull; Open-source survey benchmark coordinate engine
+        &copy; 2026 Excel to KML Pro
       </div>
     </div>
   );

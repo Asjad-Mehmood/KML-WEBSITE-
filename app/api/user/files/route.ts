@@ -39,9 +39,8 @@ export async function GET(req: NextRequest) {
       files = await db.getAllFiles(limit, direction);
     } else if (user) {
       files = await db.getUserFiles(user.id, limit);
-    } else if (userParam) {
-      files = await db.getUserFiles(userParam, limit);
     } else {
+      // Signed out: no file lists for any userId
       return NextResponse.json({ files: [] }, { headers: CORS_HEADERS });
     }
 
@@ -88,9 +87,6 @@ export async function POST(req: NextRequest) {
         : "web_app";
     let fileBuffer: Buffer | undefined = undefined;
     let contentBase64: string | undefined = undefined;
-    let clientUserId: string | null = null;
-    let clientUserEmail: string | null = null;
-    let clientUserName: string | null = null;
 
     if (contentType.includes("multipart/form-data")) {
       const formData = await req.formData();
@@ -109,10 +105,6 @@ export async function POST(req: NextRequest) {
       const plat = formData.get("platform");
       if (plat === "windows_app" || plat === "web_app") platform = plat;
 
-      clientUserId = (formData.get("userId") as string) || null;
-      clientUserEmail = (formData.get("userEmail") as string) || null;
-      clientUserName = (formData.get("userName") as string) || null;
-
       const arrayBuf = await file.arrayBuffer();
       fileBuffer = Buffer.from(arrayBuf);
     } else {
@@ -127,9 +119,6 @@ export async function POST(req: NextRequest) {
       if (body.platform === "windows_app" || body.platform === "web_app") {
         platform = body.platform;
       }
-      clientUserId = body.userId || null;
-      clientUserEmail = body.userEmail || null;
-      clientUserName = body.userName || null;
 
       if (body.contentBase64) {
         contentBase64 = body.contentBase64;
@@ -145,10 +134,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "fileName is required" }, { status: 400, headers: CORS_HEADERS });
     }
 
+    // Only a valid session decides whose account a file belongs to; a userId or
+    // email sent in the request is ignored so nobody can plant files in
+    // another user's dashboard. Signed-out uploads are kept without an owner.
     const savedRecord = await db.saveUserFile({
-      userId: user ? user.id : clientUserId,
-      userEmail: user ? user.email : clientUserEmail,
-      userName: user ? user.name : clientUserName,
+      userId: user ? user.id : null,
+      userEmail: user ? user.email : null,
+      userName: user ? user.name : null,
       direction,
       fileName,
       fileBuffer,

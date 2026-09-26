@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -12,6 +12,7 @@ import {
   ChevronDown,
   LogOut,
   Shield,
+  LayoutDashboard,
 } from "lucide-react";
 
 function GithubIcon({ className }: { className?: string }) {
@@ -89,9 +90,17 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Sign in goes to the login page, which returns the visitor here afterwards
   const pathname = usePathname();
-  const loginHref = pathname && pathname !== "/login" ? `/login?next=${encodeURIComponent(pathname)}` : "/login";
+  const router = useRouter();
+  // Leaving a signed-in-only page after signing out
+  const signOut = async () => {
+    await logout();
+    if (pathname?.startsWith("/dashboard")) router.push("/");
+  };
+
+  // Sign in goes to the login page, which returns the visitor here afterwards
+  // (from the home page it goes to the dashboard, the default after sign-in)
+  const loginHref = pathname && pathname !== "/login" && pathname !== "/" ? `/login?next=${encodeURIComponent(pathname)}` : "/login";
 
   const initials = user ? user.name.substring(0, 2).toUpperCase() : "";
 
@@ -170,6 +179,13 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
                       <p className="text-xs text-slate-500 mt-0.5 truncate">{user.email}</p>
                     </div>
                     <div className="p-2 space-y-1">
+                      <Link
+                        href="/dashboard"
+                        onClick={() => setDropdownOpen(false)}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 rounded-xl transition-colors"
+                      >
+                        <LayoutDashboard className="w-4 h-4 text-slate-500" /> My Dashboard
+                      </Link>
                       {user.role === "ADMIN" && (
                         <Link
                           href="/admin"
@@ -179,7 +195,7 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
                           <Shield className="w-4 h-4 text-blue-600" /> Admin Panel
                         </Link>
                       )}
-                      <button onClick={() => { logout(); setDropdownOpen(false); }} className="w-full flex items-center gap-2 px-3 py-2 text-sm font-semibold text-rose-600 hover:bg-rose-50 rounded-xl transition-colors">
+                      <button onClick={() => { signOut(); setDropdownOpen(false); }} className="w-full flex items-center gap-2 px-3 py-2 text-sm font-semibold text-rose-600 hover:bg-rose-50 rounded-xl transition-colors">
                         <LogOut className="w-4 h-4" /> Sign Out
                       </button>
                     </div>
@@ -239,6 +255,13 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
               <div className="bg-white rounded-2xl p-4 border border-black/[0.08] shadow-sm">
                 <p className="text-sm text-slate-500 mb-1">Signed in as</p>
                 <p className="font-bold text-slate-900 text-lg mb-2">{user.name}</p>
+                <Link
+                  href="/dashboard"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full py-2.5 mb-2 rounded-xl bg-slate-100 text-slate-900 font-bold flex items-center justify-center gap-2"
+                >
+                  <LayoutDashboard className="w-4 h-4" /> My Dashboard
+                </Link>
                 {user.role === "ADMIN" && (
                   <Link
                     href="/admin"
@@ -248,7 +271,7 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
                     <Shield className="w-4 h-4" /> Go to Admin Panel
                   </Link>
                 )}
-                <button onClick={() => { logout(); setMobileMenuOpen(false); }} className="w-full py-3 rounded-xl bg-rose-50 text-rose-600 font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform">
+                <button onClick={() => { signOut(); setMobileMenuOpen(false); }} className="w-full py-3 rounded-xl bg-rose-50 text-rose-600 font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform">
                   <LogOut className="w-5 h-5" /> Sign Out
                 </button>
               </div>
