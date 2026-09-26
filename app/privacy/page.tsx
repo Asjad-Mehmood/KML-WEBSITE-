@@ -44,7 +44,8 @@ export default function PrivacyPage() {
           coordinate system and format); the files you open or save in the web app or the Windows app, up to 4 MB each and
           200 MB in all (a bigger file is listed by name and size only); and the points in each saved file (station, code,
           grid coordinates, latitude and longitude, and the coordinate system), so you can find and download them again from
-          your dashboard.
+          your dashboard. Jobs you keep in the app (their points, settings and photos, up to 4 MB each) are kept too, so they
+          open on any computer where you sign in; files and jobs together count towards the 200 MB.
         </li>
         <li>
           <strong>Downloads:</strong> which version of the Windows app you downloaded, and when.

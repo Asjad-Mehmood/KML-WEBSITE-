@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/adminAuth";
 import { db } from "@/lib/db";
 
+// GET: every account's files, newest first.
+// ?q= (file, surveyor or grid) &direction=import|export &platform=web_app|windows_app &page= &size=
 export async function GET(req: NextRequest) {
   const admin = await getAdminSession(req);
   if (!admin) {
@@ -9,34 +11,23 @@ export async function GET(req: NextRequest) {
   }
 
   const { searchParams } = new URL(req.url);
-  const limit = parseInt(searchParams.get("limit") || "150", 10);
-  const direction = searchParams.get("direction") || undefined;
-  const userParam = searchParams.get("userId");
-
-  let files = await db.getAllFiles(limit, direction);
-
-  if (userParam) {
-    const uLower = userParam.toLowerCase();
-    files = files.filter(
-      (f) =>
-        (f.userId && f.userId.toLowerCase() === uLower) ||
-        (f.userEmail && f.userEmail.toLowerCase() === uLower)
-    );
-  }
-
-  const sanitized = files.map((f) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { contentBase64, storedFilePath, ...rest } = f;
-    return {
-      ...rest,
-      downloadUrl: `/api/user/files/${f.id}`,
-    };
+  const size = Math.min(200, Math.max(1, parseInt(searchParams.get("size") || "50", 10) || 50));
+  const page = Math.max(0, parseInt(searchParams.get("page") || "0", 10) || 0);
+  const r = await db.searchAllFiles({
+    q: (searchParams.get("q") || searchParams.get("userId") || "").slice(0, 200),
+    direction: searchParams.get("direction") || undefined,
+    platform: searchParams.get("platform") || undefined,
+    skip: page * size,
+    take: size,
   });
 
   return NextResponse.json({
     success: true,
-    files: sanitized,
-    total: sanitized.length,
+    files: r.files.map((f) => ({ ...f, downloadUrl: `/api/user/files/${f.id}` })),
+    total: r.total,
+    bytes: r.bytes,
+    page,
+    size,
   });
 }
 

@@ -28,6 +28,7 @@ model User {
   downloads       Download[]
   activities      Activity[]
   files           UserFile[]
+  jobs            UserJob[]
 
   @@map("users")
 }
@@ -128,6 +129,31 @@ model UserFile {
   user              User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@map("user_files")
+}
+
+/// A job kept in the app, carried to the account so it opens on any computer.
+/// `state` is the job as the app exports it (JSON, photos as base64).
+/// The API creates this table on first use if `prisma db push` has not been run.
+model UserJob {
+  id            String   @id @default(cuid())
+  userId        String
+  jobId         String
+  name          String
+  points        Int      @default(0)
+  photos        Int      @default(0)
+  photosLeft    Int      @default(0)
+  grid          String   @default("")
+  size          Int      @default(0)
+  state         String   @db.Text
+  clientUpdated BigInt   @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, jobId])
+  @@index([userId])
+  @@map("user_jobs")
 }
 
 model AppSettings {

@@ -30,3 +30,9 @@ export function formatBytes(n: number): string {
   if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
   return `${(n / (1024 * 1024)).toFixed(1)} MB`;
 }
+
+/** Largest job the app may keep in the account (its JSON, photos as base64). */
+export const MAX_JOB_BYTES = 4 * 1024 * 1024;
+
+/** Jobs one account may keep. */
+export const MAX_USER_JOBS = 200;
