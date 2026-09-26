@@ -99,7 +99,7 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
   };
 
   // Sign in goes to the login page, which returns the visitor here afterwards
-  // (from the home page it goes to the dashboard, the default after sign-in)
+  // (from the home page no ?next= is needed: home is the default after sign-in)
   const loginHref = pathname && pathname !== "/login" && pathname !== "/" ? `/login?next=${encodeURIComponent(pathname)}` : "/login";
 
   const initials = user ? user.name.substring(0, 2).toUpperCase() : "";
