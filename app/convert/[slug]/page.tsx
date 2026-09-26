@@ -5,7 +5,7 @@ import { ArrowRight, CheckCircle2, Download, Lightbulb, MapPin } from "lucide-re
 import PageShell from "../../../components/PageShell";
 import GridConverter from "../../../components/GridConverter";
 import { GRID_PAGES, gridBySlug } from "@/lib/gridPages";
-import { epsgRow } from "@/lib/epsgIndex";
+import { systemByCode } from "@/lib/epsgCatalog";
 import { areaBox, gridParameterRows, unitLabel } from "@/lib/gridParams";
 import { SITE_URL, jsonLd, openGraphFor } from "@/lib/site";
 
@@ -34,9 +34,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function GridPage({ params }: { params: Promise<{ slug: string }> }) {
   const g = gridBySlug((await params).slug);
   if (!g) notFound();
-  const row = epsgRow(g.code);
-  if (!row) notFound();
-  const [, epsgName, def, bbox] = row;
+  const sys = systemByCode(g.code);
+  if (!sys) notFound();
+  const { name: epsgName, def, bbox } = sys;
   const related = GRID_PAGES.filter((o) => o.region === g.region && o.slug !== g.slug).slice(0, 6);
   const feet = unitLabel(def) !== "metres";
 

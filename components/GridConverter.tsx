@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { Globe } from "lucide-react";
+import type { EpsgRow } from "@/lib/epsgCatalog";
 
 // The quick converter, opened on one grid (browser-only: it uses canvas and proj4)
 const HeroConverter = dynamic(() => import("./HeroConverter"), {
@@ -14,6 +15,7 @@ const HeroConverter = dynamic(() => import("./HeroConverter"), {
   ),
 });
 
-export default function GridConverter({ presetId }: { presetId: string }) {
-  return <HeroConverter initialSystemId={presetId} />;
+// presetId: one of the curated systems; row: any EPSG system from the catalogue
+export default function GridConverter({ presetId, row }: { presetId?: string; row?: EpsgRow }) {
+  return <HeroConverter initialSystemId={presetId} initialRow={row} />;
 }

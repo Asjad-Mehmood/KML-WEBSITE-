@@ -34,7 +34,7 @@ interface CoordSystem {
 
 /* A row of public/data/epsg-projected.json: [code, name, proj4, [N, W, S, E] area of use, unit].
    Generated from the EPSG registry by scripts/build-epsg-index.mjs. */
-type EpsgRow = [number, string, string, [number, number, number, number], string];
+export type EpsgRow = [number, string, string, [number, number, number, number], string];
 
 /* ─── Curated systems (proj4 definitions from the EPSG registry) ───
    Each sample point is a real benchmark location; the comment gives its WGS84 lat, lon. */
@@ -707,10 +707,14 @@ function BatchPanel({ sys }: { sys: CoordSystem }) {
   );
 }
 
-/** initialSystemId: start on one of the curated systems (used by the grid landing pages) */
-export default function HeroConverter({ initialSystemId }: { initialSystemId?: string } = {}) {
+/** Start on a curated system (initialSystemId) or any EPSG system (initialRow),
+    as the grid landing pages do; otherwise on the first popular system. */
+export default function HeroConverter({ initialSystemId, initialRow }: { initialSystemId?: string; initialRow?: EpsgRow } = {}) {
   const [current, setCurrent] = useState<CoordSystem>(
-    () => CURATED.find((s) => s.id === initialSystemId) ?? POPULAR_SYSTEMS[0]
+    () =>
+      (initialRow ? systemFromRow(initialRow) : undefined) ??
+      CURATED.find((s) => s.id === initialSystemId) ??
+      POPULAR_SYSTEMS[0]
   );
   const [mode, setMode] = useState<"single" | "batch">("single");
 

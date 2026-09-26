@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/site";
 import { GRID_PAGES } from "@/lib/gridPages";
 import { GUIDES } from "@/lib/guides";
+import { BIG_COUNTRY, allSystems, countries, countryRegions } from "@/lib/epsgCatalog";
 
 // Public, indexable pages only (the web app and dashboard need a sign-in, so they are left out)
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -15,6 +16,31 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly" as const,
       priority: 0.7,
     })),
+    ...countries().map((c) => ({
+      url: `${SITE_URL}/convert/country/${c.slug}`,
+      lastModified,
+      changeFrequency: "monthly" as const,
+      priority: 0.5,
+    })),
+    ...countries()
+      .filter((c) => c.count > BIG_COUNTRY)
+      .flatMap((c) =>
+        countryRegions(c.slug).map((r) => ({
+          url: `${SITE_URL}/convert/country/${c.slug}/${r.slug}`,
+          lastModified,
+          changeFrequency: "monthly" as const,
+          priority: 0.4,
+        }))
+      ),
+    // Every EPSG system, except those with a hand-written page (they redirect there)
+    ...allSystems()
+      .filter((s) => !GRID_PAGES.some((g) => g.code === s.code))
+      .map((s) => ({
+        url: `${SITE_URL}/convert/epsg/${s.code}`,
+        lastModified,
+        changeFrequency: "yearly" as const,
+        priority: 0.4,
+      })),
     { url: `${SITE_URL}/guides`, lastModified, changeFrequency: "monthly", priority: 0.7 },
     ...GUIDES.map((g) => ({
       url: `${SITE_URL}/guides/${g.slug}`,
