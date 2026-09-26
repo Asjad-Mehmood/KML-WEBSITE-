@@ -9,6 +9,7 @@ import {
   MAX_USER_STORAGE_BYTES,
   formatBytes,
 } from "@/lib/uploadLimits";
+import { pointsFromExport } from "@/lib/exportPoints";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -114,6 +115,9 @@ export async function POST(req: NextRequest) {
     let metaOnly = false;
     let metaSize = 0;
     let logActivity = true;
+    // The app sends a saved file's points to /api/user/conversions itself;
+    // for older builds the server reads them from the exported file.
+    let pointsSeparately = false;
 
     if (contentType.includes("multipart/form-data")) {
       const formData = await req.formData();
@@ -126,6 +130,7 @@ export async function POST(req: NextRequest) {
       mimeType = file.type || "application/octet-stream";
       direction = formData.get("direction") === "export" ? "export" : "import";
       if (formData.get("logActivity") === "false") logActivity = false;
+      if (formData.get("pointsSeparately") === "true") pointsSeparately = true;
       action = (formData.get("action") as string) || "";
       crs = (formData.get("crs") as string) || undefined;
       const pts = formData.get("pointsCount");
@@ -148,6 +153,7 @@ export async function POST(req: NextRequest) {
         platform = body.platform;
       }
       if (body.logActivity === false) logActivity = false;
+      if (body.pointsSeparately === true) pointsSeparately = true;
 
       if (body.metaOnly === true) {
         metaOnly = true;
@@ -208,6 +214,14 @@ export async function POST(req: NextRequest) {
       metaSize,
       logActivity,
     });
+
+    // Keep each converted point from an exported KML / KMZ / CSV, unless the app sends them itself
+    if (direction === "export" && fileBuffer && !metaOnly && !pointsSeparately) {
+      const points = pointsFromExport(fileName, fileBuffer);
+      await db
+        .recordConversions({ userId: user.id, fileId: savedRecord.id, coordSystem: crs || "", offset: 0, points })
+        .catch((e) => console.warn("Saving conversions failed:", e));
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { contentBase64: _discard, ...cleanRecord } = savedRecord;
