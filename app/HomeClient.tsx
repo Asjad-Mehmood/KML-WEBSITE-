@@ -15,12 +15,13 @@ import GridsAndGuides from "../components/GridsAndGuides";
 import CtaBanner from "../components/CtaBanner";
 import Footer from "../components/Footer";
 import { useAuth } from "../context/AuthContext";
+import { LATEST_VERSION } from "@/lib/site";
 
 export default function HomeClient() {
   const { requireAuth, trackDownload } = useAuth();
 
   // Dynamic GitHub Release details
-  const [versionTag, setVersionTag] = useState("v3.6.2");
+  const [versionTag, setVersionTag] = useState(LATEST_VERSION);
   const [downloadUrl, setDownloadUrl] = useState(
     "https://github.com/Asjad-Mehmood/kml-convertor/releases/latest/download/ExcelToKMLPro-Lite-Setup.exe"
   );
