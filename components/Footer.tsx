@@ -40,7 +40,7 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
           <nav aria-label="Product">
             <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3.5">Product</h2>
             <ul className="space-y-2.5 text-xs sm:text-sm text-slate-600">
-              {["/#showcase:Live Map Demo", "/#features:Features", "/#workflow:How It Works", "/#specs:Specifications", "/app:Web App"].map((item) => {
+              {["/features:Features", "/how-it-works:How It Works", "/formats:File Formats", "/whats-new:What's New", "/app:Web App"].map((item) => {
                 const [href, label] = item.split(":");
                 return (
                   <li key={label}>
@@ -69,8 +69,8 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
                 </a>
               </li>
               <li>
-                <Link href="/#download" className="hover:text-blue-600 transition-colors">
-                  Sample Survey CSV
+                <Link href="/download" className="hover:text-blue-600 transition-colors">
+                  All Downloads (Windows, Android)
                 </Link>
               </li>
             </ul>
@@ -86,6 +86,8 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
                 ["/convert", "Grid Converters"],
                 ["/guides", "Guides"],
                 ["/faq", "Common Questions"],
+                ["/about", "About"],
+                ["/contact", "Contact & Support"],
                 ["https://epsg.io", "EPSG Geodetic Registry"],
               ].map(([href, label]) => (
                 <li key={label}>

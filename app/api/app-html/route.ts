@@ -163,8 +163,8 @@ async function applyWebRestrictions(html: string, req: NextRequest): Promise<str
     const dlBtn = document.getElementById("btn-download-desktop");
     if (dlBtn) {
       dlBtn.onclick = function() {
-        if (window.top) window.top.location.href = "/#download";
-        else window.location.href = "/#download";
+        if (window.top) window.top.location.href = "/download";
+        else window.location.href = "/download";
       };
     }
 
@@ -189,8 +189,8 @@ async function applyWebRestrictions(html: string, req: NextRequest): Promise<str
         document.body.appendChild(modal);
 
         document.getElementById("btn-modal-download").onclick = function() {
-          if (window.top) window.top.location.href = "/#download";
-          else window.location.href = "/#download";
+          if (window.top) window.top.location.href = "/download";
+          else window.location.href = "/download";
         };
       }
 
@@ -298,8 +298,8 @@ async function applyWebRestrictions(html: string, req: NextRequest): Promise<str
         '</div>';
         document.body.appendChild(modal);
         document.getElementById("btn-desktop-dl").onclick = function() {
-          if (window.top) window.top.location.href = "/#download";
-          else window.location.href = "/#download";
+          if (window.top) window.top.location.href = "/download";
+          else window.location.href = "/download";
         };
         document.getElementById("btn-desktop-close").onclick = function() { modal.style.display = "none"; };
       }
@@ -337,8 +337,8 @@ async function applyWebRestrictions(html: string, req: NextRequest): Promise<str
             '</div>';
             document.body.appendChild(modal);
             document.getElementById("btn-rep-dl").onclick = function() {
-              if (window.top) window.top.location.href = "/#download";
-              else window.location.href = "/#download";
+              if (window.top) window.top.location.href = "/download";
+              else window.location.href = "/download";
             };
             document.getElementById("btn-rep-close").onclick = function() {
               modal.style.display = "none";

@@ -156,7 +156,7 @@ export default function WebAppClient() {
             </button>
 
             <Link
-              href="/#download"
+              href="/download"
               aria-label="Get the Windows desktop app"
               className="whitespace-nowrap inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-semibold rounded-lg shadow-xs transition-all"
             >

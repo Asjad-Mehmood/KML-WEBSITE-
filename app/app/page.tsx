@@ -31,7 +31,7 @@ function Maintenance() {
           <Link href="/" className="px-5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50">
             Back to website
           </Link>
-          <Link href="/#download" className="px-5 py-2.5 rounded-xl bg-[#0071e3] text-white text-sm font-semibold hover:bg-[#0077ed]">
+          <Link href="/download" className="px-5 py-2.5 rounded-xl bg-[#0071e3] text-white text-sm font-semibold hover:bg-[#0077ed]">
             Get the Windows app
           </Link>
         </div>

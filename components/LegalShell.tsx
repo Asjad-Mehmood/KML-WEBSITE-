@@ -9,7 +9,7 @@ import { GITHUB_REPO_URL, LATEST_VERSION } from "@/lib/site";
 // Page frame for the Privacy Policy and Terms: site navbar and footer around readable text
 export default function LegalShell({ title, updated, children }: { title: string; updated: string; children: React.ReactNode }) {
   const router = useRouter();
-  const toDownload = () => router.push("/#download");
+  const toDownload = () => router.push("/download");
   return (
     <div className="min-h-screen bg-white text-slate-900">
       <Navbar onDownloadClick={toDownload} />

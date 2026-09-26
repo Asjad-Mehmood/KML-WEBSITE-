@@ -9,7 +9,7 @@ import Footer from "../../components/Footer";
 
 export default function FaqPage() {
   const handleDownload = () => {
-    window.location.href = "/#download";
+    window.location.href = "/download";
   };
 
   return (

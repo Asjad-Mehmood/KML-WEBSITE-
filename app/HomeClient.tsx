@@ -1,7 +1,7 @@
 "use client";
 
-import { loadPublicSettings } from "@/lib/publicSettings";
-import React, { useState, useEffect } from "react";
+import { useLatestRelease } from "@/lib/useLatestRelease";
+import React, { useState } from "react";
 import Navbar from "../components/Navbar";
 import Hero from "../components/Hero";
 import Showcase from "../components/Showcase";
@@ -15,25 +15,13 @@ import GridsAndGuides from "../components/GridsAndGuides";
 import CtaBanner from "../components/CtaBanner";
 import Footer from "../components/Footer";
 import { useAuth } from "../context/AuthContext";
-import { LATEST_VERSION } from "@/lib/site";
 
 export default function HomeClient() {
   const { requireAuth, trackDownload } = useAuth();
 
-  // Dynamic GitHub Release details
-  const [versionTag, setVersionTag] = useState(LATEST_VERSION);
-  const [downloadUrl, setDownloadUrl] = useState(
-    "https://github.com/Asjad-Mehmood/kml-convertor/releases/latest/download/ExcelToKMLPro-Lite-Setup.exe"
-  );
-  const [releaseNotesUrl, setReleaseNotesUrl] = useState(
-    "https://github.com/Asjad-Mehmood/kml-convertor/releases/latest"
-  );
-  const [fileSizeText, setFileSizeText] = useState("3.15 MB");
-  const [bytesText, setBytesText] = useState("3.15 MB (3,305,002 bytes)");
-  const [releaseDateText, setReleaseDateText] = useState("Release Build: Sep 25, 2026");
-  const [sha256Hash, setSha256Hash] = useState(
-    "70b6f5638be6231b651b65a4af8815d3cab1c006f4822481878f5b75fb0c77e2"
-  );
+  // The latest release (lib/useLatestRelease.ts): shared with the download page
+  const { versionTag, downloadUrl, fileName, releaseNotesUrl, fileSizeText, bytesText, releaseDateText, sha256Hash } =
+    useLatestRelease();
 
   // Toast Notification
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -45,79 +33,14 @@ export default function HomeClient() {
     }, 3800);
   };
 
-  // Fetch latest GitHub release details
-  useEffect(() => {
-    async function loadRelease() {
-      // Admin settings (version, installer file and size) are the fallback;
-      // GitHub's latest release, when it answers, is the source of truth
-      const settings = await loadPublicSettings();
-      if (settings?.appVersion) setVersionTag(settings.appVersion);
-      if (settings?.installerFileSize) {
-        setFileSizeText(settings.installerFileSize);
-        setBytesText(settings.installerFileSize);
-      }
-      if (settings?.installerFileName && /^[\w.-]+\.exe$/i.test(settings.installerFileName)) {
-        setDownloadUrl(`https://github.com/Asjad-Mehmood/kml-convertor/releases/latest/download/${settings.installerFileName}`);
-      }
-      try {
-        const res = await fetch(
-          "https://api.github.com/repos/Asjad-Mehmood/kml-convertor/releases/latest"
-        );
-        if (!res.ok) return;
-        const data = await res.json();
-        const tag = data.tag_name || data.name;
-        if (tag) {
-          setVersionTag(tag);
-        }
-        if (data.html_url) {
-          setReleaseNotesUrl(data.html_url);
-        }
-        if (data.published_at) {
-          const pubDate = new Date(data.published_at);
-          setReleaseDateText(
-            `Release Build: ${pubDate.toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            })}`
-          );
-        }
-        if (data.assets && Array.isArray(data.assets) && data.assets.length > 0) {
-          const exeAsset =
-            data.assets.find((a: { name?: string }) => a.name && a.name.endsWith(".exe")) ||
-            data.assets[0];
-          if (exeAsset) {
-            if (exeAsset.browser_download_url) {
-              setDownloadUrl(exeAsset.browser_download_url);
-            }
-            if (exeAsset.size) {
-              const mb = (exeAsset.size / (1024 * 1024)).toFixed(2) + " MB";
-              setFileSizeText(mb);
-              setBytesText(`${mb} (${exeAsset.size.toLocaleString()} bytes)`);
-            }
-            if (exeAsset.digest && exeAsset.digest.startsWith("sha256:")) {
-              setSha256Hash(exeAsset.digest.replace("sha256:", ""));
-            } else if (data.body) {
-              const match = data.body.match(/[a-fA-F0-9]{64}/);
-              if (match) setSha256Hash(match[0]);
-            }
-          }
-        }
-      } catch {
-        // Fallback pre-populated
-      }
-    }
-    loadRelease();
-  }, []);
-
   // Gated download handler used across buttons
   const handleDownloadApp = () => {
     requireAuth(() => {
-      trackDownload("windows_installer", "ExcelToKMLPro-Lite-Setup.exe", versionTag);
-      showToast(`🚀 Starting download for ExcelToKMLPro-Lite-Setup.exe (${versionTag})`);
+      trackDownload("windows_installer", fileName, versionTag);
+      showToast(`Starting download for ${fileName} (${versionTag})`);
       const link = document.createElement("a");
       link.href = downloadUrl;
-      link.download = "ExcelToKMLPro-Lite-Setup.exe";
+      link.download = fileName;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

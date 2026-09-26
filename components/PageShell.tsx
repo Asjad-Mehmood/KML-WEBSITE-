@@ -9,7 +9,7 @@ import { GITHUB_REPO_URL, LATEST_VERSION } from "@/lib/site";
 // Site navbar and footer around a content page (grid pages, guides)
 export default function PageShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const toDownload = () => router.push("/#download");
+  const toDownload = () => router.push("/download");
   return (
     <div className="min-h-screen bg-white text-slate-900">
       <Navbar onDownloadClick={toDownload} />

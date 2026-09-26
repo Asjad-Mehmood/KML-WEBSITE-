@@ -66,7 +66,7 @@ export default function Guide() {
         <li><strong>A few metres out, consistently:</strong> a datum difference or a site grid; calibrate on known control points.</li>
       </ul>
       <p>
-        The free web app converts up to 50 points per file; the <Link href="/#download">Windows app</Link> has no limit.
+        The free web app converts up to 50 points per file; the <Link href="/download">Windows app</Link> has no limit.
       </p>
     </GuideLayout>
   );

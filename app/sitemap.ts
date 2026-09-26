@@ -9,6 +9,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date();
   return [
     { url: SITE_URL, lastModified, changeFrequency: "weekly", priority: 1 },
+    ...["/features", "/how-it-works", "/formats", "/download", "/whats-new", "/about", "/contact"].map((p) => ({
+      url: `${SITE_URL}${p}`,
+      lastModified,
+      changeFrequency: (p === "/whats-new" ? "weekly" : "monthly") as "weekly" | "monthly",
+      priority: p === "/download" || p === "/features" ? 0.9 : 0.7,
+    })),
     { url: `${SITE_URL}/convert`, lastModified, changeFrequency: "monthly", priority: 0.8 },
     ...GRID_PAGES.map((g) => ({
       url: `${SITE_URL}/convert/${g.slug}`,

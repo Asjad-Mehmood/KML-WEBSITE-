@@ -30,8 +30,9 @@ function GithubIcon({ className }: { className?: string }) {
 // Absolute paths so the links also work from /faq and other pages
 // id: a home-page section (highlighted while in view); path: a page section of its own
 const NAV_LINKS: { label: string; href: string; id?: string; path?: string }[] = [
-  { label: "Features", href: "/#features", id: "features" },
-  { label: "Demo", href: "/#showcase", id: "showcase" },
+  { label: "Features", href: "/features", path: "/features" },
+  { label: "How it works", href: "/how-it-works", path: "/how-it-works" },
+  { label: "Formats", href: "/formats", path: "/formats" },
   { label: "Grids", href: "/convert", path: "/convert" },
   { label: "Guides", href: "/guides", path: "/guides" },
 ];
