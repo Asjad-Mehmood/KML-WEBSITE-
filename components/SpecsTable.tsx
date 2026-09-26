@@ -29,7 +29,7 @@ const INPUT_FORMATS: FormatItem[] = [
 const OUTPUT_FORMATS: FormatItem[] = [
   { name: "OGC KML 2.2 standard", ext: ".kml" },
   { name: "Compressed KMZ archive", ext: ".kmz" },
-  { name: "3D extruded geometry", ext: "Extrude to elevation" },
+  { name: "AutoCAD drawing exchange", ext: ".dxf" },
   { name: "Photo inspection balloons", ext: "Embedded media" },
   { name: "Survey boundary polygons", ext: "Closed parcels" },
 ];
@@ -241,7 +241,7 @@ export default function SpecsTable() {
             </p>
             <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-lg">
               <CheckCircle2 className="w-3.5 h-3.5" />
-              Zero external server transmission
+              Coordinates never leave your PC
             </span>
           </SpecBlock>
         </div>

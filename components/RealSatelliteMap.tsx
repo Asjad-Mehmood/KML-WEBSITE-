@@ -6,6 +6,17 @@ import { Layers, MapPin, CheckCircle2, Globe } from "lucide-react";
 import MapSearchBar, { type MapTarget } from "./MapSearchBar";
 import { formatLatLng, toDltm } from "@/lib/mapSearch";
 
+// Credit lines the tile providers require on the map
+const SATELLITE_URL = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+const STREET_URL = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+const SATELLITE_ATTRIBUTION = "Imagery &copy; Esri, Maxar, Earthstar Geographics";
+const STREET_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors';
+const tileOptions = (type: "satellite" | "street") => ({
+  maxZoom: 19,
+  subdomains: ["a", "b", "c"],
+  attribution: type === "satellite" ? SATELLITE_ATTRIBUTION : STREET_ATTRIBUTION,
+});
+
 // Search results come from outside (OpenStreetMap), so escape them before they go into popup HTML
 const esc = (s: string) =>
   s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] as string);
@@ -105,16 +116,9 @@ export default function RealSatelliteMap() {
 
       // Add Zoom control at top-right
       L.control.zoom({ position: "topright" }).addTo(map);
+      L.control.attribution({ position: "bottomright", prefix: false }).addTo(map);
 
-      // Tile URLs
-      const satelliteUrl =
-        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
-      const streetUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
-
-      const tileLayer = L.tileLayer(mapType === "satellite" ? satelliteUrl : streetUrl, {
-        maxZoom: 19,
-        subdomains: ["a", "b", "c"],
-      }).addTo(map);
+      const tileLayer = L.tileLayer(mapType === "satellite" ? SATELLITE_URL : STREET_URL, tileOptions(mapType)).addTo(map);
 
       currentTileLayerRef.current = tileLayer;
 
@@ -196,15 +200,9 @@ export default function RealSatelliteMap() {
 
     mapInstanceRef.current.removeLayer(currentTileLayerRef.current);
 
-    const newUrl =
-      type === "satellite"
-        ? "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-        : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
-
-    const newLayer = L.tileLayer(newUrl, {
-      maxZoom: 19,
-      subdomains: ["a", "b", "c"],
-    }).addTo(mapInstanceRef.current);
+    const newLayer = L.tileLayer(type === "satellite" ? SATELLITE_URL : STREET_URL, tileOptions(type)).addTo(
+      mapInstanceRef.current
+    );
 
     currentTileLayerRef.current = newLayer;
 
@@ -356,7 +354,7 @@ export default function RealSatelliteMap() {
         </div>
 
         {/* Live Datum Tag */}
-        <div className="absolute bottom-3 right-3 z-[1000] bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-md border border-slate-200/80 shadow-xs font-mono text-[11px] text-slate-600 hidden sm:block">
+        <div className="absolute bottom-8 right-3 z-[1000] bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-md border border-slate-200/80 shadow-xs font-mono text-[11px] text-slate-600 hidden sm:block">
           EPSG:3997 DLTM ➔ WGS84
         </div>
       </div>
