@@ -1,6 +1,6 @@
-import Link from "next/link";
 import GuideLayout from "../../../components/GuideLayout";
 import { guideMetadata } from "@/lib/guideMeta";
+import WebAppLink from "@/components/WebAppLink";
 
 const SLUG = "survey-points-to-dxf-autocad";
 export const metadata = guideMetadata(SLUG);
@@ -21,7 +21,7 @@ export default function Guide() {
       <h2>Step by step</h2>
       <ol>
         <li>
-          Open your sheet in the <Link href="/app">web app</Link> or the Windows app and choose the coordinate system.
+          Open your sheet in the <WebAppLink>web app</WebAppLink> or the Windows app and choose the coordinate system.
         </li>
         <li>
           Check <strong>Grid for exported coordinates</strong>. A drawing needs grid coordinates, so points that came in as latitude

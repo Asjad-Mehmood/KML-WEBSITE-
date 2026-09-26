@@ -10,6 +10,7 @@ import { BIG_COUNTRY, codeLabel, countryBySlug, countryRegions, regionOf, system
 import { epsgDescription, epsgLead, epsgNotes, epsgTitle, hasWestSouthAxes } from "@/lib/epsgPageText";
 import { areaBox, gridParameterRows } from "@/lib/gridParams";
 import { SITE_URL, jsonLd, openGraphFor } from "@/lib/site";
+import WebAppLink from "@/components/WebAppLink";
 
 // One page per EPSG system (5,800+). Rendered on first visit, then cached;
 // grids with a hand-written page redirect there.
@@ -100,9 +101,9 @@ export default async function EpsgPage({ params }: { params: Promise<{ code: str
             </ul>
             {!axes && (
               <div className="mt-6 flex flex-wrap gap-2.5">
-                <Link href="/app" className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-[14px] font-semibold">
+                <WebAppLink className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-[14px] font-semibold">
                   Convert a spreadsheet <ArrowRight className="w-4 h-4" aria-hidden />
-                </Link>
+                </WebAppLink>
                 <Link href="/#download" className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-[14px] font-semibold">
                   <Download className="w-4 h-4" aria-hidden /> Windows app
                 </Link>
@@ -134,7 +135,7 @@ export default async function EpsgPage({ params }: { params: Promise<{ code: str
               </p>
             ) : (
               <ol className="list-decimal pl-5 space-y-2">
-                <li>Open the <Link href="/app" className="text-[#0071e3] font-medium hover:underline">web app</Link> or the Windows app, and paste your rows from Excel or open a CSV file.</li>
+                <li>Open the <WebAppLink className="text-[#0071e3] font-medium hover:underline">web app</WebAppLink> or the Windows app, and paste your rows from Excel or open a CSV file.</li>
                 <li>Under <strong className="text-slate-900">Coordinate system</strong>, search for &ldquo;{s.code}&rdquo; and pick <em>{s.name}</em>.</li>
                 <li>Check one point you know on the map, then press <strong className="text-slate-900">Save KML</strong> or <strong className="text-slate-900">Save KMZ</strong> and open it in Google Earth.</li>
               </ol>

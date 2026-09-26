@@ -4,6 +4,7 @@ import { ArrowRight } from "lucide-react";
 import LegalShell from "./LegalShell";
 import { GUIDES, guideBySlug } from "@/lib/guides";
 import { SITE_NAME, SITE_URL, jsonLd } from "@/lib/site";
+import WebAppLink from "./WebAppLink";
 
 const fmt = (iso: string) =>
   new Date(iso + "T00:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
@@ -32,9 +33,9 @@ export default function GuideLayout({ slug, children }: { slug: string; children
       <div className="not-prose mt-12 rounded-2xl bg-slate-50 border border-slate-200 p-6">
         <p className="!mb-3 font-semibold text-slate-900">Try it with your own sheet</p>
         <div className="flex flex-wrap gap-2.5">
-          <Link href="/app" className="!no-underline inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] !text-white text-[14px] font-semibold">
+          <WebAppLink className="!no-underline inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] !text-white text-[14px] font-semibold">
             Open the web app <ArrowRight className="w-4 h-4" aria-hidden />
-          </Link>
+          </WebAppLink>
           <Link href="/convert" className="!no-underline inline-flex items-center px-5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 !text-slate-700 text-[14px] font-semibold">
             Find your grid
           </Link>

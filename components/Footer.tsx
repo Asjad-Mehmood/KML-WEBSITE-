@@ -4,6 +4,7 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
+import WebAppLink from "./WebAppLink";
 
 interface FooterProps {
   versionTag: string;
@@ -40,7 +41,7 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
           <nav aria-label="Product">
             <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3.5">Product</h2>
             <ul className="space-y-2.5 text-xs sm:text-sm text-slate-600">
-              {["/#showcase:Live Map Demo", "/#features:Features", "/#workflow:How It Works", "/#specs:Specifications", "/app:Web App"].map((item) => {
+              {["/#showcase:Live Map Demo", "/#features:Features", "/#workflow:How It Works", "/#specs:Specifications"].map((item) => {
                 const [href, label] = item.split(":");
                 return (
                   <li key={label}>
@@ -50,6 +51,9 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
                   </li>
                 );
               })}
+              <li>
+                <WebAppLink className="hover:text-blue-600 transition-colors">Web App</WebAppLink>
+              </li>
             </ul>
           </nav>
 
@@ -125,7 +129,7 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
           <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-slate-600">
             <a href="https://github.com/Asjad-Mehmood/kml-convertor/releases" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 transition-colors">Releases</a>
             <button onClick={onDownloadClick} className="hover:text-blue-600 transition-colors cursor-pointer">Download</button>
-            <a href="/app" className="hover:text-blue-600 transition-colors">Web App</a>
+            <WebAppLink className="hover:text-blue-600 transition-colors">Web App</WebAppLink>
             <Link href="/privacy" className="hover:text-blue-600 transition-colors">Privacy</Link>
             <Link href="/terms" className="hover:text-blue-600 transition-colors">Terms</Link>
           </div>

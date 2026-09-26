@@ -27,6 +27,7 @@ import {
   ArrowRight,
   MapPinned,
 } from "lucide-react";
+import WebAppLink from "./WebAppLink";
 
 interface DownloadHubProps {
   versionTag: string;
@@ -246,9 +247,9 @@ BLDG-C2,513620.000,2787440.000,15.15,STRUCTURE,Building Column Corner B
 
               <p className="text-[11px] text-slate-500 mt-3">
                 Free account required · Web version available at{" "}
-                <a href="/app" className="text-slate-500 underline underline-offset-2 hover:text-[#0071e3]">
+                <WebAppLink className="text-slate-500 underline underline-offset-2 hover:text-[#0071e3]">
                   /app
-                </a>
+                </WebAppLink>
               </p>
             </div>
 
@@ -402,8 +403,7 @@ BLDG-C2,513620.000,2787440.000,15.15,STRUCTURE,Building Column Corner B
 
         {/* ── Secondary Options (Web App & GitHub) ── */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-          <a
-            href="/app"
+          <WebAppLink
             className="group p-6 rounded-2xl bg-white border border-slate-200/90 shadow-xs hover:border-blue-200 hover:shadow-[0_8px_24px_-12px_rgba(0,113,227,0.25)] transition-all flex items-start gap-4"
           >
             <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#0071e3] flex items-center justify-center shrink-0">
@@ -421,7 +421,7 @@ BLDG-C2,513620.000,2787440.000,15.15,STRUCTURE,Building Column Corner B
               </p>
             </div>
             <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-[#0071e3] group-hover:translate-x-0.5 transition-all shrink-0 mt-1" />
-          </a>
+          </WebAppLink>
 
           <a
             href={releaseNotesUrl}
