@@ -677,6 +677,27 @@ export const db = {
     return mapUser(u);
   },
 
+  /**
+   * A user closing their own account: their files, activity history and
+   * conversions go, download records are kept as anonymous counts, and the
+   * user row goes last (sessions cascade). All in one transaction.
+   */
+  async deleteOwnAccount(userId: string): Promise<void> {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) return;
+    const mine = { OR: [{ userId }, { userEmail: user.email.toLowerCase() }] };
+    await prisma.$transaction([
+      prisma.userFile.deleteMany({ where: mine }),
+      prisma.activity.deleteMany({ where: mine }),
+      prisma.conversion.deleteMany({ where: { userId } }),
+      prisma.download.updateMany({
+        where: mine,
+        data: { userId: null, userEmail: null, userName: null, ipAddress: null, location: null, userAgent: null },
+      }),
+      prisma.user.delete({ where: { id: userId } }),
+    ]);
+  },
+
   async deleteUser(id: string): Promise<boolean> {
     const target = await prisma.user.findUnique({ where: { id } });
     if (!target) return false;

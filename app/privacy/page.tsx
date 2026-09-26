@@ -1,0 +1,124 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import LegalShell from "../../components/LegalShell";
+import { LEGAL_UPDATED, SUPPORT_EMAIL, openGraphFor } from "@/lib/site";
+
+const TITLE = "Privacy Policy";
+const DESCRIPTION = "How Excel to KML Pro handles your information, the choices you have, and how to delete your account.";
+
+export const metadata: Metadata = {
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: "/privacy" },
+  openGraph: openGraphFor("/privacy", `${TITLE} | Excel to KML Pro`, DESCRIPTION),
+};
+
+export default function PrivacyPage() {
+  return (
+    <LegalShell title={TITLE} updated={LEGAL_UPDATED}>
+      <p>
+        This policy explains how Excel to KML Pro (&ldquo;we&rdquo;, &ldquo;us&rdquo;) handles information when you use this
+        website, the web app and the Windows app.
+      </p>
+
+      <h2>The short version</h2>
+      <ul>
+        <li>Converting coordinates happens on your own computer or in your browser.</li>
+        <li>We keep only what we need to run your account and improve the service.</li>
+        <li>We don&apos;t sell your information or use it for advertising.</li>
+        <li>You can delete your saved files, or your whole account, from your dashboard at any time.</li>
+      </ul>
+
+      <h2>Information we keep</h2>
+      <ul>
+        <li>
+          <strong>Account details</strong> you give us when you sign up: your name, email address, organization and role. Your
+          password is stored in a protected form that we can&apos;t read.
+        </li>
+        <li>
+          <strong>Your work while signed in:</strong> a record of your conversions and exports (such as file name, number of points,
+          coordinate system and format), and the files you open or save in the web app, so you can find and download them again
+          from your dashboard.
+        </li>
+        <li>
+          <strong>Downloads:</strong> which version of the Windows app you downloaded, and when.
+        </li>
+        <li>
+          <strong>Technical information</strong> that browsers send to every website, such as your IP address, the approximate
+          area it comes from, and your browser and device type.
+        </li>
+      </ul>
+
+      <h2>How we use it</h2>
+      <ul>
+        <li>To run your account and show your history and files in your dashboard.</li>
+        <li>To send emails you ask for, such as a password reset link.</li>
+        <li>To keep the service secure and prevent misuse.</li>
+        <li>To understand how the tools are used, so we can improve them.</li>
+        <li>To apply the web app&apos;s usage limits to the right account.</li>
+      </ul>
+
+      <h2>Services we rely on</h2>
+      <p>
+        Like most websites, we use trusted providers to run the service: website hosting, a database, email delivery for password
+        resets, and a lookup service that turns an IP address into an approximate city and country. They only receive what they
+        need to do that job.
+      </p>
+      <p>
+        The maps on this site load imagery from Esri and OpenStreetMap, and place names you type into the map search are looked up
+        with OpenStreetMap. The Windows installer is hosted on GitHub. These services have their own privacy policies.
+      </p>
+
+      <h2>Cookies</h2>
+      <p>
+        We use one cookie to keep you signed in. We don&apos;t use advertising or tracking cookies. The web app may also remember
+        your settings in your browser so they&apos;re there next time.
+      </p>
+
+      <h2>How long we keep it</h2>
+      <ul>
+        <li>Account details are kept while your account exists.</li>
+        <li>Saved files and your activity history are kept until you delete them or your account.</li>
+        <li>
+          When you delete your account, your details, files and history are removed. Download counts are kept without anything
+          that identifies you.
+        </li>
+        <li>Technical information is kept only as long as needed for security and to run the service.</li>
+      </ul>
+
+      <h2>Your choices</h2>
+      <ul>
+        <li>
+          See and update your details in your <Link href="/dashboard">dashboard</Link>.
+        </li>
+        <li>Delete any saved file from the dashboard&apos;s Files tab.</li>
+        <li>
+          Delete your whole account from <strong>Dashboard → Account → Delete account</strong>.
+        </li>
+        <li>
+          For a copy of your information, or any other request, email <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>.
+        </li>
+      </ul>
+
+      <h2>Security</h2>
+      <p>
+        The site uses encrypted connections, passwords are stored in protected form, and access to stored information is limited.
+        No online service can be completely secure, so please use a password you don&apos;t use anywhere else.
+      </p>
+
+      <h2>Children</h2>
+      <p>The service is meant for professionals and isn&apos;t aimed at children under 16. We don&apos;t knowingly keep their information.</p>
+
+      <h2>Changes to this policy</h2>
+      <p>
+        If we change this policy we&apos;ll update the date at the top, and point out important changes on the site.
+      </p>
+
+      <h2>Contact</h2>
+      <p>
+        Questions about privacy: <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>. See also our{" "}
+        <Link href="/terms">Terms of Use</Link>.
+      </p>
+    </LegalShell>
+  );
+}
