@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 import { db } from "@/lib/db";
-import { isWindowsAppRequest, sessionForToken, tokenFromRequest } from "@/lib/serverSession";
+import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
 import { WEB_APP_LOGIN_URL } from "@/lib/authRedirect";
 
 export const dynamic = "force-dynamic";
@@ -24,18 +24,11 @@ async function applyWebRestrictions(html: string, req: NextRequest): Promise<str
       }
     }
 
-    const userAgent = req.headers.get("user-agent") || "";
-    const isWindowsAppReq =
-      req.headers.get("x-app-platform") === "windows" ||
-      req.nextUrl.searchParams.get("platform") === "windows" ||
-      userAgent.includes("ExcelToKML") ||
-      userAgent.includes("WindowsApp") ||
-      userAgent.includes("Go-http-client");
-
     const settings = await db.getSettings();
     const isAdmin = db.isAdmin(user);
+    // The Windows app carries its own copy of the app and never loads this
+    // route, so a "windows" header, query or user agent grants nothing here.
     const hasFullAccess =
-      isWindowsAppReq ||
       !settings.webAppRestricted ||
       isAdmin ||
       Boolean(user?.hasFullAccess);
@@ -71,7 +64,6 @@ async function applyWebRestrictions(html: string, req: NextRequest): Promise<str
       navigator.userAgent.includes("ExcelToKML") ||
       navigator.userAgent.includes("WindowsApp") ||
       navigator.userAgent.includes("Electron") ||
-      window.location.search.includes("platform=windows") ||
       Boolean(window.bm2kmlSave) ||
       Boolean(window.KMLHost && window.KMLHost.isWindows);
 
@@ -580,8 +572,8 @@ const SIGN_IN_REQUIRED_HTML = `<!doctype html>
 </main></body></html>`;
 
 export async function GET(req: NextRequest) {
-  // 0. Web app is for signed-in users only (the Windows desktop app loads it without a browser session)
-  if (!isWindowsAppRequest(req) && !(await sessionForToken(tokenFromRequest(req)))) {
+  // 0. Web app is for signed-in users only
+  if (!(await sessionForToken(tokenFromRequest(req)))) {
     return new NextResponse(SIGN_IN_REQUIRED_HTML, {
       status: 401,
       headers: {

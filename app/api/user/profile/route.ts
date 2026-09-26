@@ -57,12 +57,20 @@ export async function PATCH(req: NextRequest) {
     }
 
     const body = await req.json().catch(() => ({}));
-    const { name, organization, password } = body;
+    const { name, organization, password, currentPassword } = body;
 
     const updates: { name?: string; organization?: string; password?: string } = {};
     if (typeof name === "string" && name.trim()) updates.name = name.trim();
     if (typeof organization === "string") updates.organization = organization.trim();
-    if (typeof password === "string" && password.trim().length >= 6) {
+    if (password !== undefined) {
+      // A new password needs the current one, so a borrowed or stolen
+      // session alone can't take over the account
+      if (typeof password !== "string" || password.trim().length < 8) {
+        return NextResponse.json({ error: "Use at least 8 characters." }, { status: 400, headers: CORS_HEADERS });
+      }
+      if (typeof currentPassword !== "string" || !currentPassword || !db.verifyPassword(user, currentPassword)) {
+        return NextResponse.json({ error: "Your current password isn't right." }, { status: 403, headers: CORS_HEADERS });
+      }
       updates.password = password.trim();
     }
 
