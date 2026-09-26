@@ -1,6 +1,6 @@
-import Link from "next/link";
 import GuideLayout from "../../../components/GuideLayout";
 import { guideMetadata } from "@/lib/guideMeta";
+import WebAppLink from "@/components/WebAppLink";
 
 const SLUG = "site-calibration-local-grid";
 export const metadata = guideMetadata(SLUG);
@@ -35,7 +35,7 @@ export default function Guide() {
       <h2>Step by step</h2>
       <ol>
         <li>
-          Open your sheet in the <Link href="/app">web app</Link> or the Windows app.
+          Open your sheet in the <WebAppLink>web app</WebAppLink> or the Windows app.
         </li>
         <li>
           Under <strong>Coordinate system</strong>, choose the map grid the control coordinates are on (for example Dubai DLTM or a UTM
