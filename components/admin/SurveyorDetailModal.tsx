@@ -28,7 +28,9 @@ import {
   MapPinned,
   FileText,
   Search,
+  Eye as EyeIcon,
 } from "lucide-react";
+import FileViewer, { type ViewerFile } from "@/components/admin/FileViewer";
 
 export interface UserItem {
   id: string;
@@ -158,6 +160,7 @@ export default function SurveyorDetailModal({
 
   // Files filter & search
   const [fileFilter, setFileFilter] = useState<"all" | "import" | "export">("all");
+  const [viewing, setViewing] = useState<ViewerFile | null>(null);
   const [fileSearch, setFileSearch] = useState("");
 
   // Form state for permissions & profile edits
@@ -662,6 +665,13 @@ export default function SurveyorDetailModal({
                               </div>
                             </div>
 
+                            <div className="flex items-center gap-2 shrink-0">
+                            <button
+                              onClick={() => setViewing({ fileName: f.fileName, url: f.downloadUrl, size: f.fileSizeFormatted })}
+                              className="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+                            >
+                              <EyeIcon className="w-3.5 h-3.5" /> View
+                            </button>
                             <a
                               href={f.downloadUrl}
                               download={f.fileName}
@@ -669,6 +679,7 @@ export default function SurveyorDetailModal({
                             >
                               <Download className="w-3.5 h-3.5" /> Download
                             </a>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -788,6 +799,13 @@ export default function SurveyorDetailModal({
                                 </td>
                                 <td className="px-4 py-3 text-right">
                                   <div className="inline-flex items-center gap-2">
+                                    <button
+                                      onClick={() => setViewing({ fileName: f.fileName, url: f.downloadUrl, size: f.fileSizeFormatted })}
+                                      className="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+                                      title="View the file here"
+                                    >
+                                      <EyeIcon className="w-3.5 h-3.5" /> View
+                                    </button>
                                     <a
                                       href={f.downloadUrl}
                                       download={f.fileName}
@@ -1240,6 +1258,7 @@ export default function SurveyorDetailModal({
           )}
         </div>
       </div>
+      <FileViewer file={viewing} onClose={() => setViewing(null)} />
     </div>
   );
 }

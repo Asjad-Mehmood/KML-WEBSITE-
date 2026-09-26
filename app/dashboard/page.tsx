@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { sessionForToken } from "@/lib/serverSession";
+import { listJobs } from "@/lib/userJobs";
 import DashboardClient, { type DashboardData } from "./DashboardClient";
 
 // Checked on every request: each visitor only ever sees their own account
@@ -19,12 +20,13 @@ export default async function DashboardPage() {
   if (!session) redirect("/login?next=%2Fdashboard");
 
   const { user } = session;
-  const [activities, files, downloads, settings, points] = await Promise.all([
+  const [activities, files, downloads, settings, points, jobs] = await Promise.all([
     db.getOwnActivities(user.id),
     db.getOwnFileList(user.id),
     db.getUserDownloads(user.id),
     db.getSettings(),
     db.getUserConversions(user.id, { limit: 5000 }),
+    listJobs(user.id).catch(() => []),
   ]);
 
   const isAdmin = db.isAdmin(user);
@@ -94,6 +96,7 @@ export default async function DashboardPage() {
       hasContent: f.hasContent,
       timestamp: f.timestamp.toISOString(),
     })),
+    jobs,
     points: {
       total: points.total,
       rows: points.conversions.map((c) => ({

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import {
   Activity as ActivityIcon,
   ArrowRight,
+  Briefcase,
   CheckCircle2,
   Download,
   FileDown,
@@ -72,6 +73,18 @@ export interface DashboardData {
     timestamp: string;
   }[];
   downloads: { id: string; assetType: string; fileName: string; version: string; timestamp: string }[];
+  /** Jobs kept from the app, newest first. */
+  jobs: {
+    jobId: string;
+    name: string;
+    points: number;
+    photos: number;
+    photosLeft: number;
+    grid: string;
+    size: number;
+    updated: number;
+    keptAt: string;
+  }[];
   /** Converted points of the files saved while signed in, newest first. */
   points: {
     total: number;
@@ -136,7 +149,7 @@ function downloadText(text: string, name: string) {
   setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
 
-type Tab = "overview" | "files" | "points" | "activity" | "downloads" | "account";
+type Tab = "overview" | "jobs" | "files" | "points" | "activity" | "downloads" | "account";
 
 const ACTION_LABEL: Record<string, string> = {
   conversion: "Conversion",
@@ -156,6 +169,8 @@ const ASSET_LABEL: Record<string, string> = {
 };
 
 const num = (n: number) => n.toLocaleString("en-US");
+const fmtJobBytes = (n: number) =>
+  n < 1024 * 1024 ? `${Math.max(1, Math.round(n / 1024))} KB` : `${(n / (1024 * 1024)).toFixed(1)} MB`;
 
 // Dates: the server renders a fixed UTC date so the first client render
 // matches; after hydration the visitor's own time zone and "x ago" take over.
@@ -335,6 +350,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
   const { logout } = useAuth();
   const [tab, setTab] = useState<Tab>("overview");
   const [files, setFiles] = useState(data.files);
+  const [jobs, setJobs] = useState(data.jobs);
   const [pointRows, setPointRows] = useState(data.points.rows);
   const [pointsTotal, setPointsTotal] = useState(data.points.total);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
@@ -392,6 +408,20 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
     setDeleting(null);
   };
 
+  const deleteJob = async (jobId: string, jobName: string) => {
+    if (!window.confirm(`Delete the job “${jobName}” from your account? Copies already on a computer stay there.`)) return;
+    setDeleting(jobId);
+    try {
+      const res = await fetch(`/api/user/jobs/${encodeURIComponent(jobId)}`, { method: "DELETE" });
+      if (!res.ok) throw new Error();
+      setJobs((js) => js.filter((j) => j.jobId !== jobId));
+      setNotice({ ok: true, text: `Deleted the job ${jobName}.` });
+    } catch {
+      setNotice({ ok: false, text: `Couldn't delete ${jobName}. Please try again.` });
+    }
+    setDeleting(null);
+  };
+
   const saveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -441,6 +471,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
 
   const TABS: { id: Tab; label: string; icon: React.ElementType; count?: number }[] = [
     { id: "overview", label: "Overview", icon: Sparkles },
+    { id: "jobs", label: "Jobs", icon: Briefcase, count: jobs.length },
     { id: "files", label: "Files", icon: Files, count: files.length },
     { id: "points", label: "Points", icon: MapPinned, count: pointsTotal },
     { id: "activity", label: "Activity", icon: ActivityIcon, count: activities.length },
@@ -658,6 +689,58 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
                   </section>
                 </div>
               </div>
+            )}
+
+            {/* Jobs */}
+            {tab === "jobs" && (
+              <section className="bg-white rounded-2xl border border-slate-200/80 overflow-hidden">
+                <div className="p-4 sm:p-5 border-b border-slate-100">
+                  <p className="text-[13px] text-slate-600">
+                    Jobs you keep in the app while signed in are copied here, so they open on any computer. Sign in to
+                    the app on another computer and they appear in its <b>Jobs</b> list.
+                  </p>
+                </div>
+                {jobs.length === 0 ? (
+                  <Empty icon={Briefcase} title="No jobs in your account yet" text="In the app, open Jobs and press Keep as a job while signed in. The job and every change you make to it are kept here." />
+                ) : (
+                  <ul className="divide-y divide-slate-100">
+                    {jobs.map((j) => (
+                      <li key={j.jobId} className="px-4 sm:px-5 py-3.5 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[13.5px] font-semibold text-slate-900 break-all">{j.name}</p>
+                          <p className="text-[11.5px] text-slate-500 mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                            <span>{j.points ? `${num(j.points)} points` : "no points yet"}</span>
+                            {j.photos > 0 && <span>· {num(j.photos)} photo{j.photos === 1 ? "" : "s"}</span>}
+                            {j.photosLeft > 0 && <span className="text-amber-700">· photos too large, kept on the computer only</span>}
+                            {j.grid && <span>· {j.grid}</span>}
+                            <span>· {fmtJobBytes(j.size)}</span>
+                            <span>
+                              · <When iso={new Date(j.updated || Date.parse(j.keptAt)).toISOString()} />
+                            </span>
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <a
+                            href={`/api/user/jobs/${encodeURIComponent(j.jobId)}?download=1`}
+                            download
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-[12px] font-semibold text-slate-700 hover:border-blue-200 hover:text-[#0071e3]"
+                          >
+                            <Download className="w-3.5 h-3.5" aria-hidden /> Download
+                          </a>
+                          <button
+                            onClick={() => deleteJob(j.jobId, j.name)}
+                            disabled={deleting === j.jobId}
+                            aria-label={`Delete ${j.name}`}
+                            className="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:border-rose-200 cursor-pointer disabled:opacity-50"
+                          >
+                            {deleting === j.jobId ? <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden /> : <Trash2 className="w-3.5 h-3.5" aria-hidden />}
+                          </button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
             )}
 
             {/* Files */}

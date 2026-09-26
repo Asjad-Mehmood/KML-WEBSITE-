@@ -1,5 +1,7 @@
 import crypto from "crypto";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { jobBytes } from "@/lib/userJobs";
 
 /* ==========================================================================
    TYPE INTERFACES  (kept identical so callers don't break)
@@ -1111,13 +1113,16 @@ export const db = {
     return { files, stored: agg._count._all, bytes: agg._sum.fileSize ?? 0 };
   },
 
-  /** Bytes of files an account keeps, for the storage limit. */
+  /** Bytes of files and jobs an account keeps, for the storage limit. */
   async getUserStorageBytes(userId: string): Promise<number> {
-    const r = await prisma.userFile.aggregate({
-      where: { userId, contentBase64: { not: null } },
-      _sum: { fileSize: true },
-    });
-    return r._sum.fileSize ?? 0;
+    const [r, jobs] = await Promise.all([
+      prisma.userFile.aggregate({
+        where: { userId, contentBase64: { not: null } },
+        _sum: { fileSize: true },
+      }),
+      jobBytes(userId).catch(() => 0),
+    ]);
+    return (r._sum.fileSize ?? 0) + jobs;
   },
 
   async getUserFiles(identifier: string, limit = 100): Promise<UserFileRecord[]> {
@@ -1145,6 +1150,65 @@ export const db = {
       platform: (f.platform as "windows_app" | "web_app") ?? "windows_app",
       timestamp: f.timestamp.toISOString(),
     }));
+  },
+
+  /** Every account's files for the admin page: searched and paged here, without the contents. */
+  async searchAllFiles(opts: { q?: string; direction?: string; platform?: string; skip?: number; take?: number }) {
+    const q = (opts.q || "").trim();
+    const where: Prisma.UserFileWhereInput = {
+      ...(opts.direction === "import" || opts.direction === "export" ? { direction: opts.direction } : {}),
+      ...(opts.platform === "web_app" || opts.platform === "windows_app" ? { platform: opts.platform } : {}),
+      ...(q
+        ? {
+            OR: [
+              { fileName: { contains: q, mode: "insensitive" } },
+              { userEmail: { contains: q, mode: "insensitive" } },
+              { userName: { contains: q, mode: "insensitive" } },
+              { crs: { contains: q, mode: "insensitive" } },
+            ],
+          }
+        : {}),
+    };
+    const [total, rows, agg] = await Promise.all([
+      prisma.userFile.count({ where }),
+      prisma.userFile.findMany({
+        where,
+        orderBy: { timestamp: "desc" },
+        skip: Math.max(0, opts.skip || 0),
+        take: Math.min(200, Math.max(1, opts.take || 50)),
+        select: {
+          id: true, userId: true, userEmail: true, userName: true, direction: true, fileName: true, fileSize: true,
+          fileSizeFormatted: true, pointsCount: true, crs: true, platform: true, timestamp: true,
+          contentBase64: false,
+        },
+      }),
+      prisma.userFile.aggregate({ where, _sum: { fileSize: true } }),
+    ]);
+    // which of these have a stored copy, without reading the copies
+    const ids = rows.map((r) => r.id);
+    const withCopy = ids.length
+      ? await prisma.userFile.findMany({ where: { id: { in: ids }, contentBase64: { not: null } }, select: { id: true } })
+      : [];
+    const has = new Set(withCopy.map((r) => r.id));
+    return {
+      total,
+      bytes: agg._sum.fileSize ?? 0,
+      files: rows.map((f) => ({
+        id: f.id,
+        userId: f.userId,
+        userEmail: f.userEmail,
+        userName: f.userName ?? null,
+        direction: f.direction === "export" ? "export" : "import",
+        fileName: f.fileName,
+        fileSize: f.fileSize,
+        size: f.fileSizeFormatted,
+        pointsCount: f.pointsCount ?? null,
+        crs: f.crs ?? null,
+        platform: f.platform === "web_app" ? "web_app" : "windows_app",
+        hasContent: has.has(f.id),
+        timestamp: f.timestamp.toISOString(),
+      })),
+    };
   },
 
   async getAllFiles(limit = 200, direction?: string): Promise<UserFileRecord[]> {
