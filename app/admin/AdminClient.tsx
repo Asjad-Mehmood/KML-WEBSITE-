@@ -63,6 +63,8 @@ interface DownloadItem {
 
 interface ConversionItem {
   id: string;
+  userEmail?: string | null;
+  fileName?: string | null;
   station: string;
   featureCode: string;
   easting: number;
@@ -111,6 +113,65 @@ interface AppSettings {
   webDisableReports: boolean;
 }
 
+function fmtBytes(n: number) {
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
+  if (n < 1024 * 1024 * 1024) return `${(n / (1024 * 1024)).toFixed(1)} MB`;
+  return `${(n / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+}
+
+/** Share of a total as a bar width: nothing shows as an empty bar. */
+function barWidth(n: number, total: number) {
+  return `${total > 0 && n > 0 ? Math.max(4, Math.min(100, (n / total) * 100)) : 0}%`;
+}
+
+/** Page buttons under a long table */
+function Pager({
+  page,
+  total,
+  size,
+  onPage,
+  noun,
+}: {
+  page: number;
+  total: number;
+  size: number;
+  onPage: (p: number) => void;
+  noun: string;
+}) {
+  if (total <= size) return null;
+  const pages = Math.ceil(total / size);
+  const from = page * size + 1;
+  const to = Math.min(total, (page + 1) * size);
+  const btn =
+    "px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-700 text-slate-300 hover:bg-slate-800 disabled:opacity-40 disabled:hover:bg-transparent cursor-pointer disabled:cursor-default";
+  return (
+    <div className="flex items-center justify-between gap-3 px-4 py-3 border-t border-slate-800 text-xs text-slate-400">
+      <span>
+        {from.toLocaleString()}–{to.toLocaleString()} of {total.toLocaleString()} {noun}
+      </span>
+      <div className="flex items-center gap-2">
+        <button className={btn} disabled={page === 0} onClick={() => onPage(page - 1)}>
+          Previous
+        </button>
+        <span className="tabular-nums">
+          {page + 1} / {pages}
+        </span>
+        <button className={btn} disabled={page >= pages - 1} onClick={() => onPage(page + 1)}>
+          Next
+        </button>
+      </div>
+    </div>
+  );
+}
+
+const ASSET_NAME: Record<string, string> = {
+  windows_installer: "Windows installer",
+  sample_csv: "Sample CSV",
+  test_kml: "Test KML",
+  web_app: "Web app",
+};
+
 export default function AdminClient() {
   const [activeTab, setActiveTab] = useState<
     "overview" | "users" | "activities" | "downloads" | "conversions" | "settings"
@@ -132,6 +193,10 @@ export default function AdminClient() {
     totalConversions: number;
     totalActivities?: number;
     totalPointsProcessed?: number;
+    totalPointsKept?: number;
+    totalFilesStored?: number;
+    totalFilesWithCopy?: number;
+    totalStorageBytes?: number;
     roleCounts: Record<string, number>;
     assetCounts: Record<string, number>;
     locationCounts?: Record<string, number>;
@@ -163,6 +228,7 @@ export default function AdminClient() {
   const [activityFilter, setActivityFilter] = useState("all");
   const [activitySearch, setActivitySearch] = useState("");
   const [activitiesLoading, setActivitiesLoading] = useState(false);
+  const [actPage, setActPage] = useState(0);
 
   // Downloads state
   const [downloads, setDownloads] = useState<DownloadItem[]>([]);
@@ -170,6 +236,10 @@ export default function AdminClient() {
 
   // Conversions state
   const [conversions, setConversions] = useState<ConversionItem[]>([]);
+  const [conversionsTotal, setConversionsTotal] = useState(0);
+  const [convSearch, setConvSearch] = useState("");
+  const [convPage, setConvPage] = useState(0);
+  const [convLimit, setConvLimit] = useState(1000);
 
   // Settings state
   const [settingsForm, setSettingsForm] = useState<AppSettings>({
@@ -308,10 +378,11 @@ export default function AdminClient() {
       }
 
       // Load conversions
-      const convRes = await adminFetch("/api/admin/conversions");
+      const convRes = await adminFetch(`/api/admin/conversions?limit=${convLimit}`);
       if (convRes.ok) {
         const data = await convRes.json();
         setConversions(data.conversions || []);
+        setConversionsTotal(data.total ?? (data.conversions || []).length);
       }
     } catch (err) {
       console.error("Dashboard data load error", err);
@@ -478,22 +549,58 @@ export default function AdminClient() {
 
   // Clear all application activities
   const handleClearActivities = async () => {
-    if (!confirm("Are you sure you want to clear ALL application activity telemetry?")) return;
+    if (!confirm("Clear the whole activity log for every surveyor? This cannot be undone.")) return;
     try {
       const res = await adminFetch("/api/admin/activities", { method: "DELETE" });
       if (res.ok) {
         setAllActivities([]);
-        showToast("Application telemetry logs cleared");
+        showToast("Activity log cleared");
         loadDashboardData();
       }
     } catch {
-      showToast("Failed to clear telemetry logs", "error");
+      showToast("Could not clear the activity log", "error");
     }
   };
 
   // Clear conversions
+  const loadConversions = async (limit: number) => {
+    try {
+      const res = await adminFetch(`/api/admin/conversions?limit=${limit}`);
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setConversions(data.conversions || []);
+      setConversionsTotal(data.total ?? (data.conversions || []).length);
+      setConvLimit(limit);
+    } catch {
+      showToast("Couldn't load more points", "error");
+    }
+  };
+
+  const exportConversionsCsv = () => {
+    const q = (v: unknown) => {
+      const s = String(v ?? "");
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const head = ["SAVED", "SURVEYOR", "FILE", "STATION", "CODE", "GRID", "EASTING", "NORTHING", "ELEVATION", "LATITUDE", "LONGITUDE"];
+    const rows = filteredConversions.map((c) =>
+      [c.timestamp, c.userEmail, c.fileName, c.station, c.featureCode, c.coordSystem, c.easting, c.northing, c.elevation, c.lat, c.lon]
+        .map(q)
+        .join(",")
+    );
+    const url = URL.createObjectURL(
+      new Blob(["\ufeff" + [head.join(","), ...rows].join("\r\n") + "\r\n"], { type: "text/csv;charset=utf-8" })
+    );
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "Converted points.csv";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  };
+
   const handleClearConversions = async () => {
-    if (!confirm("Are you sure you want to clear all conversion telemetry?")) return;
+    if (!confirm("Delete every converted point for every surveyor? The files stay. This cannot be undone.")) return;
     try {
       const res = await adminFetch("/api/admin/conversions", { method: "DELETE" });
       if (res.ok) {
@@ -562,6 +669,20 @@ export default function AdminClient() {
       (act.crs && act.crs.toLowerCase().includes(q))
     );
   });
+  const filteredConversions = convSearch.trim()
+    ? conversions.filter((c) =>
+        [c.userEmail, c.fileName, c.station, c.featureCode, c.coordSystem]
+          .join(" ")
+          .toLowerCase()
+          .includes(convSearch.trim().toLowerCase())
+      )
+    : conversions;
+  const CONV_PAGE = 100;
+  const convPageNow = Math.min(convPage, Math.max(0, Math.ceil(filteredConversions.length / CONV_PAGE) - 1));
+  const pagedConversions = filteredConversions.slice(convPageNow * CONV_PAGE, (convPageNow + 1) * CONV_PAGE);
+  const ACT_PAGE = 50;
+  const actPageNow = Math.min(actPage, Math.max(0, Math.ceil(filteredActivities.length / ACT_PAGE) - 1));
+  const pagedActivities = filteredActivities.slice(actPageNow * ACT_PAGE, (actPageNow + 1) * ACT_PAGE);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-blue-500/30">
@@ -580,23 +701,23 @@ export default function AdminClient() {
       )}
 
       {/* Top Navbar */}
-      <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-xl border-b border-slate-800 px-4 sm:px-8 py-3.5 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-600/30">
-            <Shield className="w-5 h-5 text-white" />
+      <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-xl border-b border-slate-800 px-4 sm:px-8 py-3 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-9 h-9 shrink-0 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-600/30">
+            <Shield className="w-4.5 h-4.5 text-white" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-extrabold text-base tracking-tight text-white">Excel to KML Pro</span>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 whitespace-nowrap">
+              <span className="font-extrabold text-[15px] tracking-tight text-white">Excel to KML Pro</span>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-500/20 text-blue-400 border border-blue-500/30">
-                Admin Control
+                Admin
               </span>
             </div>
-            <p className="text-xs text-slate-400">Full System &amp; Surveyor Intelligence Management</p>
+            <p className="hidden sm:block text-xs text-slate-400">Surveyors, their files and points, downloads and settings</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-800/80 border border-slate-700/60 text-xs">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span className="text-slate-300 font-semibold">{adminUser?.name || "Admin"}</span>
@@ -607,7 +728,7 @@ export default function AdminClient() {
             href="/"
             className="px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 transition-colors flex items-center gap-2"
           >
-            <ArrowLeft className="w-3.5 h-3.5" /> View Public Site
+            <ArrowLeft className="w-3.5 h-3.5" /> <span className="hidden sm:inline">View site</span>
           </Link>
 
           <button
@@ -623,22 +744,31 @@ export default function AdminClient() {
       {/* Main Content Area */}
       <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 py-8 flex flex-col gap-8">
         {/* Navigation Tabs */}
-        <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-slate-900 border border-slate-800 overflow-x-auto">
+        <div
+          role="tablist"
+          aria-label="Admin sections"
+          className="flex items-center gap-1 p-1.5 rounded-2xl bg-slate-900 border border-slate-800 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
           {[
-            { id: "overview", label: "Overview & Metrics", icon: BarChart3 },
-            { id: "users", label: `Registered Surveyors (${users.length})`, icon: Users },
-            { id: "activities", label: `App Activity & Telemetry (${allActivities.length})`, icon: Activity },
-            { id: "downloads", label: `Download Logs (${downloads.length})`, icon: Download },
-            { id: "conversions", label: `Conversions (${conversions.length})`, icon: Globe },
-            { id: "settings", label: "System & Release Settings", icon: Settings },
+            { id: "overview", label: "Overview", icon: BarChart3 },
+            { id: "users", label: "Surveyors", icon: Users, count: users.length },
+            { id: "activities", label: "Activity", icon: Activity, count: allActivities.length },
+            { id: "downloads", label: "Downloads", icon: Download, count: downloads.length },
+            { id: "conversions", label: "Points", icon: Globe, count: conversionsTotal },
+            { id: "settings", label: "Settings", icon: Settings },
           ].map((tab) => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
+                role="tab"
+                aria-selected={active}
+                ref={(el) => {
+                  if (el && active) el.scrollIntoView({ block: "nearest", inline: "nearest" });
+                }}
                 onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
+                className={`flex-1 min-w-max flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl text-[13px] font-bold transition-all whitespace-nowrap cursor-pointer ${
                   active
                     ? "bg-blue-600 text-white shadow-lg shadow-blue-600/30"
                     : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/60"
@@ -646,6 +776,15 @@ export default function AdminClient() {
               >
                 <Icon className="w-4 h-4" />
                 <span>{tab.label}</span>
+                {tab.count !== undefined && (
+                  <span
+                    className={`px-1.5 py-px rounded-md text-[11px] font-mono ${
+                      active ? "bg-white/20 text-white" : "bg-slate-800 text-slate-400"
+                    }`}
+                  >
+                    {tab.count.toLocaleString()}
+                  </span>
+                )}
               </button>
             );
           })}
@@ -667,7 +806,7 @@ export default function AdminClient() {
                 </div>
                 <div>
                   <div className="text-3xl font-black text-white">{stats?.totalUsers ?? users.length}</div>
-                  <p className="text-[11px] text-slate-400 mt-1">Verified user accounts</p>
+                  <p className="text-[11px] text-slate-400 mt-1">Registered accounts</p>
                 </div>
               </div>
 
@@ -680,28 +819,28 @@ export default function AdminClient() {
                 </div>
                 <div>
                   <div className="text-3xl font-black text-white">{stats?.totalDownloads ?? downloads.length}</div>
-                  <p className="text-[11px] text-slate-400 mt-1">Windows installer &amp; CSV logs</p>
+                  <p className="text-[11px] text-slate-400 mt-1">Installer and sample files</p>
                 </div>
               </div>
 
               <div className="p-5 rounded-3xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
                 <div className="flex items-center justify-between text-slate-400 mb-3">
-                  <span className="text-xs font-bold uppercase tracking-wider">Points Processed</span>
+                  <span className="text-xs font-bold uppercase tracking-wider">Points Kept</span>
                   <div className="w-8 h-8 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center">
                     <Sparkles className="w-4 h-4" />
                   </div>
                 </div>
                 <div>
                   <div className="text-3xl font-black text-cyan-400 font-mono">
-                    {stats?.totalPointsProcessed ? stats.totalPointsProcessed.toLocaleString() : "0"}
+                    {(stats?.totalPointsKept ?? conversionsTotal).toLocaleString()}
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-1">Total coordinates converted</p>
+                  <p className="text-[11px] text-slate-400 mt-1">Converted points in saved files</p>
                 </div>
               </div>
 
               <div className="p-5 rounded-3xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
                 <div className="flex items-center justify-between text-slate-400 mb-3">
-                  <span className="text-xs font-bold uppercase tracking-wider">App Telemetry</span>
+                  <span className="text-xs font-bold uppercase tracking-wider">Activity</span>
                   <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
                     <Activity className="w-4 h-4" />
                   </div>
@@ -710,23 +849,22 @@ export default function AdminClient() {
                   <div className="text-3xl font-black text-white">
                     {(stats?.totalActivities ?? allActivities.length) || conversions.length}
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-1">Total user actions logged</p>
+                  <p className="text-[11px] text-slate-400 mt-1">Conversions, saves and opens logged</p>
                 </div>
               </div>
 
               <div className="p-5 rounded-3xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
                 <div className="flex items-center justify-between text-slate-400 mb-3">
-                  <span className="text-xs font-bold uppercase tracking-wider">System Engine</span>
+                  <span className="text-xs font-bold uppercase tracking-wider">Files Stored</span>
                   <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center">
                     <Server className="w-4 h-4" />
                   </div>
                 </div>
                 <div>
-                  <div className="text-base font-black text-emerald-400 flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    Operational
-                  </div>
-                  <p className="text-[11px] text-slate-400 mt-1">Resilient local &amp; edge store</p>
+                  <div className="text-3xl font-black text-white">{(stats?.totalFilesStored ?? 0).toLocaleString()}</div>
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    {fmtBytes(stats?.totalStorageBytes ?? 0)} kept in {(stats?.totalFilesWithCopy ?? 0).toLocaleString()} copies
+                  </p>
                 </div>
               </div>
             </div>
@@ -737,7 +875,7 @@ export default function AdminClient() {
               <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-6">
                 <div className="flex items-center justify-between">
                   <h3 className="text-base font-bold text-white flex items-center gap-2">
-                    <Layers className="w-4 h-4 text-blue-400" /> Asset Distribution
+                    <Layers className="w-4 h-4 text-blue-400" /> Downloads by file
                   </h3>
                   <span className="text-xs text-slate-500">All-time downloads</span>
                 </div>
@@ -754,10 +892,7 @@ export default function AdminClient() {
                       <div
                         className="h-full bg-blue-500 rounded-full"
                         style={{
-                          width: `${Math.min(
-                            100,
-                            Math.max(10, ((stats?.assetCounts?.windows_installer || 1) / (downloads.length || 1)) * 100)
-                          )}%`,
+                          width: barWidth(stats?.assetCounts?.windows_installer ?? 0, downloads.length),
                         }}
                       />
                     </div>
@@ -772,10 +907,7 @@ export default function AdminClient() {
                       <div
                         className="h-full bg-indigo-500 rounded-full"
                         style={{
-                          width: `${Math.min(
-                            100,
-                            Math.max(10, ((stats?.assetCounts?.sample_csv || 0) / (downloads.length || 1)) * 100)
-                          )}%`,
+                          width: barWidth(stats?.assetCounts?.sample_csv ?? 0, downloads.length),
                         }}
                       />
                     </div>
@@ -790,10 +922,7 @@ export default function AdminClient() {
                       <div
                         className="h-full bg-emerald-500 rounded-full"
                         style={{
-                          width: `${Math.min(
-                            100,
-                            Math.max(10, ((stats?.assetCounts?.test_kml || 0) / (downloads.length || 1)) * 100)
-                          )}%`,
+                          width: barWidth(stats?.assetCounts?.test_kml ?? 0, downloads.length),
                         }}
                       />
                     </div>
@@ -821,10 +950,10 @@ export default function AdminClient() {
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-base font-bold text-white flex items-center gap-2">
-                      <Activity className="w-4 h-4 text-emerald-400" /> Live Application Telemetry Feed
+                      <Activity className="w-4 h-4 text-emerald-400" /> Latest activity
                     </h3>
                     <p className="text-xs text-slate-400">
-                      Real-time files converted, coordinates calculated, and exports across users
+                      Conversions, saved files and opened files, newest first
                     </p>
                   </div>
                   <button
@@ -838,7 +967,7 @@ export default function AdminClient() {
                 <div className="space-y-2.5">
                   {allActivities.length === 0 ? (
                     <div className="py-10 text-center text-slate-500 text-xs bg-slate-800/30 rounded-2xl border border-slate-800">
-                      No application activity logged yet. When surveyors convert files, telemetry events appear here.
+                      No activity yet. Conversions and saved files show up here.
                     </div>
                   ) : (
                     allActivities.slice(0, 5).map((act) => (
@@ -895,7 +1024,7 @@ export default function AdminClient() {
               <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-base font-bold text-white flex items-center gap-2">
-                    <Globe className="w-4 h-4 text-emerald-400" /> Geographic Origin Breakdown
+                    <Globe className="w-4 h-4 text-emerald-400" /> Where downloads come from
                   </h3>
                   <span className="text-xs text-slate-500">Top user locations</span>
                 </div>
@@ -939,7 +1068,7 @@ export default function AdminClient() {
               <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-base font-bold text-white flex items-center gap-2">
-                    <Download className="w-4 h-4 text-blue-400" /> Latest Download IP Logs
+                    <Download className="w-4 h-4 text-blue-400" /> Latest downloads
                   </h3>
                   <button
                     onClick={() => setActiveTab("downloads")}
@@ -1044,39 +1173,38 @@ export default function AdminClient() {
                 <table className="w-full text-left text-sm">
                   <thead className="bg-slate-800/60 border-b border-slate-800 text-xs font-bold text-slate-400 uppercase tracking-wider">
                     <tr>
-                      <th className="px-6 py-4">Surveyor / User</th>
-                      <th className="px-6 py-4">Organization</th>
-                      <th className="px-6 py-4">Role</th>
-                      <th className="px-6 py-4">Registration IP &amp; Origin</th>
-                      <th className="px-6 py-4">Web Access Tier</th>
-                      <th className="px-6 py-4">Downloads</th>
-                      <th className="px-6 py-4">Registered</th>
-                      <th className="px-6 py-4 text-right">Actions</th>
+                      <th className="px-4 py-3.5">Surveyor</th>
+                      <th className="px-4 py-3.5">Organization</th>
+                      <th className="px-4 py-3.5 hidden xl:table-cell">Signed up from</th>
+                      <th className="px-4 py-3.5">Web access</th>
+                      <th className="px-4 py-3.5 text-right">Downloads</th>
+                      <th className="px-4 py-3.5 hidden md:table-cell">Joined</th>
+                      <th className="px-4 py-3.5 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800/60">
                     {users.length === 0 ? (
                       <tr>
-                        <td colSpan={8} className="px-6 py-12 text-center text-slate-500">
+                        <td colSpan={7} className="px-4 py-12 text-center text-slate-500">
                           No users found matching query
                         </td>
                       </tr>
                     ) : (
                       users.map((u) => (
                         <tr key={u.id} className="hover:bg-slate-800/30 transition-colors">
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-3">
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-3 min-w-[200px]">
                               <button
                                 onClick={() => {
                                   setDetailUserId(u.id);
                                   setDetailModalOpen(true);
                                 }}
                                 className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center font-bold text-xs text-white shadow-md hover:scale-105 transition-transform cursor-pointer shrink-0"
-                                title="Click to view full surveyor intelligence & telemetry"
+                                title="Open this surveyor"
                               >
                                 {u.name.charAt(0)}
                               </button>
-                              <div>
+                              <div className="min-w-0">
                                 <button
                                   onClick={() => {
                                     setDetailUserId(u.id);
@@ -1091,71 +1219,67 @@ export default function AdminClient() {
                                     </span>
                                   )}
                                 </button>
-                                <div className="text-xs text-slate-400">{u.email}</div>
+                                <div className="text-xs text-slate-400 truncate max-w-[240px]">{u.email}</div>
                               </div>
                             </div>
                           </td>
-                          <td className="px-6 py-4 text-slate-300 text-xs">{u.organization || "—"}</td>
-                          <td className="px-6 py-4">
-                            <span className="px-2 py-1 rounded-md text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700">
-                              {u.role}
-                            </span>
+                          <td className="px-4 py-3 text-xs">
+                            <div className="text-slate-200 max-w-[200px] truncate" title={u.organization || ""}>
+                              {u.organization || "—"}
+                            </div>
+                            <div className="text-slate-500 max-w-[200px] truncate">{u.role}</div>
                           </td>
-                          <td className="px-6 py-4">
+                          <td className="px-4 py-3 hidden xl:table-cell">
                             {(() => {
                               const loc = formatLocationDisplay(u.location);
                               return (
-                                <div className="flex flex-col gap-1">
-                                  <div className="flex items-center gap-1.5 text-xs text-white font-medium">
-                                    <span className="text-sm shrink-0">{loc.flag}</span>
-                                    <span className="truncate max-w-[180px]">{loc.text}</span>
+                                <div className="flex flex-col gap-0.5 whitespace-nowrap">
+                                  <div className="flex items-center gap-1.5 text-xs text-slate-200">
+                                    <span className="shrink-0">{loc.flag}</span>
+                                    <span className="truncate max-w-[160px]">{loc.text}</span>
                                   </div>
-                                  <div>
-                                    <span className="font-mono text-[11px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">
-                                      {u.ipAddress || "127.0.0.1"}
-                                    </span>
-                                  </div>
+                                  <span className="font-mono text-[11px] text-slate-500">{u.ipAddress || "—"}</span>
                                 </div>
                               );
                             })()}
                           </td>
-                          <td className="px-6 py-4">
+                          <td className="px-4 py-3">
                             {u.hasFullAccess || u.role === "ADMIN" ? (
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2 whitespace-nowrap">
                                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-                                  <ShieldCheck className="w-3.5 h-3.5" /> Full Pro Access
+                                  <ShieldCheck className="w-3.5 h-3.5" /> Full access
                                 </span>
                                 {u.role !== "ADMIN" && (
                                   <button
                                     onClick={() => handleToggleUserFullAccess(u.id, false)}
-                                    className="text-[11px] text-slate-400 hover:text-amber-400 underline decoration-dotted transition-colors cursor-pointer"
-                                    title="Click to apply web demo point limit"
+                                    className="px-2 py-1 rounded-lg text-[11px] font-semibold text-slate-400 hover:text-amber-300 hover:bg-amber-500/10 border border-slate-700 transition-colors cursor-pointer"
+                                    title="Apply the web point limit"
                                   >
                                     Restrict
                                   </button>
                                 )}
                               </div>
                             ) : (
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2 whitespace-nowrap">
                                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                                  <Lock className="w-3.5 h-3.5" /> Demo ({u.customMaxPoints ? `${u.customMaxPoints} pts` : `${settingsForm.webMaxPoints || 50} pts`})
+                                  <Lock className="w-3.5 h-3.5" /> Demo · {u.customMaxPoints || settingsForm.webMaxPoints || 50} pts
                                 </span>
                                 <button
                                   onClick={() => handleToggleUserFullAccess(u.id, true)}
-                                  className="text-[11px] text-slate-400 hover:text-emerald-400 underline decoration-dotted transition-colors cursor-pointer"
-                                  title="Click to grant full web access"
+                                  className="px-2 py-1 rounded-lg text-[11px] font-semibold text-slate-400 hover:text-emerald-300 hover:bg-emerald-500/10 border border-slate-700 transition-colors cursor-pointer"
+                                  title="Grant full web access"
                                 >
-                                  Grant Full
+                                  Grant full
                                 </button>
                               </div>
                             )}
                           </td>
-                          <td className="px-6 py-4 font-bold text-blue-400">{u.downloadCount}</td>
-                          <td className="px-6 py-4 text-xs text-slate-400">
+                          <td className="px-4 py-3 font-bold text-blue-400 text-right">{u.downloadCount}</td>
+                          <td className="px-4 py-3 text-xs text-slate-400 whitespace-nowrap hidden md:table-cell">
                             {new Date(u.createdAt).toLocaleDateString()}
                           </td>
-                          <td className="px-6 py-4 text-right">
-                            <div className="inline-flex items-center gap-2">
+                          <td className="px-4 py-3 text-right">
+                            <div className="inline-flex items-center gap-1.5 whitespace-nowrap">
                               {/* Deep-dive individual person details */}
                               <button
                                 onClick={() => {
@@ -1163,7 +1287,7 @@ export default function AdminClient() {
                                   setDetailModalOpen(true);
                                 }}
                                 className="p-2 rounded-lg bg-blue-600/15 hover:bg-blue-600/25 text-blue-400 hover:text-blue-300 transition-colors border border-blue-500/20 cursor-pointer"
-                                title="View Complete Individual Person Details & Telemetry"
+                                title="Open this surveyor's files, points and activity"
                               >
                                 <Eye className="w-3.5 h-3.5" />
                               </button>
@@ -1216,7 +1340,7 @@ export default function AdminClient() {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="flex flex-wrap items-center gap-2">
                 {[
-                  { id: "all", label: "All Telemetry" },
+                  { id: "all", label: "All" },
                   { id: "conversion", label: "Conversions" },
                   { id: "export", label: "Exports" },
                   { id: "file_upload", label: "File Uploads" },
@@ -1225,7 +1349,10 @@ export default function AdminClient() {
                 ].map((item) => (
                   <button
                     key={item.id}
-                    onClick={() => setActivityFilter(item.id)}
+                    onClick={() => {
+                      setActivityFilter(item.id);
+                      setActPage(0);
+                    }}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                       activityFilter === item.id
                         ? "bg-blue-600 text-white"
@@ -1244,7 +1371,10 @@ export default function AdminClient() {
                     type="text"
                     placeholder="Search file, surveyor, CRS..."
                     value={activitySearch}
-                    onChange={(e) => setActivitySearch(e.target.value)}
+                    onChange={(e) => {
+                      setActivitySearch(e.target.value);
+                      setActPage(0);
+                    }}
                     className="w-full pl-9 pr-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
                   />
                 </div>
@@ -1271,32 +1401,30 @@ export default function AdminClient() {
                 <table className="w-full text-left text-xs">
                   <thead className="bg-slate-800/60 border-b border-slate-800 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                     <tr>
-                      <th className="px-6 py-4">Timestamp</th>
-                      <th className="px-6 py-4">Surveyor</th>
-                      <th className="px-6 py-4">Action</th>
-                      <th className="px-6 py-4">Operation / File</th>
-                      <th className="px-6 py-4">Points</th>
-                      <th className="px-6 py-4">Coordinate System</th>
-                      <th className="px-6 py-4">Format</th>
-                      <th className="px-6 py-4">Duration</th>
-                      <th className="px-6 py-4">IP Address</th>
-                      <th className="px-6 py-4 text-right">Surveyor Profile</th>
+                      <th className="px-4 py-3.5">When</th>
+                      <th className="px-4 py-3.5">Surveyor</th>
+                      <th className="px-4 py-3.5">Action</th>
+                      <th className="px-4 py-3.5">What</th>
+                      <th className="px-4 py-3.5 text-right">Points</th>
+                      <th className="px-4 py-3.5 hidden lg:table-cell">Grid</th>
+                      <th className="px-4 py-3.5">Format</th>
+                      <th className="px-4 py-3.5 hidden 2xl:table-cell">IP address</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800/60">
                     {filteredActivities.length === 0 ? (
                       <tr>
-                        <td colSpan={10} className="px-6 py-12 text-center text-slate-500">
-                          No application telemetry records logged matching criteria
+                        <td colSpan={8} className="px-4 py-12 text-center text-slate-500">
+                          No activity matches
                         </td>
                       </tr>
                     ) : (
-                      filteredActivities.map((act) => (
+                      pagedActivities.map((act) => (
                         <tr key={act.id} className="hover:bg-slate-800/30 transition-colors">
-                          <td className="px-6 py-4 text-slate-400 whitespace-nowrap">
+                          <td className="px-4 py-3 text-slate-400 whitespace-nowrap">
                             {new Date(act.timestamp).toLocaleString()}
                           </td>
-                          <td className="px-6 py-4">
+                          <td className="px-4 py-3 whitespace-nowrap">
                             {act.userId ? (
                               <button
                                 onClick={() => {
@@ -1311,26 +1439,26 @@ export default function AdminClient() {
                             ) : (
                               <span className="text-slate-400">{act.userName || act.userEmail || "Anonymous"}</span>
                             )}
-                            <div className="text-[11px] text-slate-500">{act.userEmail || "—"}</div>
+                            <div className="text-[11px] text-slate-500 truncate max-w-[200px]">{act.userEmail || "—"}</div>
                           </td>
-                          <td className="px-6 py-4">
+                          <td className="px-4 py-3">
                             <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-blue-500/10 text-blue-400 border border-blue-500/20 whitespace-nowrap">
-                              {act.action.replace("_", " ")}
+                              {act.action.replace(/_/g, " ")}
                             </span>
                           </td>
-                          <td className="px-6 py-4">
-                            <div className="font-semibold text-white max-w-[200px] truncate" title={act.title}>
+                          <td className="px-4 py-3">
+                            <div className="font-semibold text-white max-w-[220px] truncate" title={act.title}>
                               {act.title}
                             </div>
                             {act.fileName && (
-                              <div className="text-[11px] text-slate-400 font-mono flex items-center gap-1">
-                                <span className="truncate max-w-[150px]">{act.fileName}</span>
+                              <div className="text-[11px] text-slate-400 font-mono flex items-center gap-1 whitespace-nowrap">
+                                <span className="truncate max-w-[170px]">{act.fileName}</span>
                                 {act.fileSize && <span className="text-slate-500">({act.fileSize})</span>}
                               </div>
                             )}
                           </td>
-                          <td className="px-6 py-4">
-                            {act.pointsCount !== undefined ? (
+                          <td className="px-4 py-3 text-right whitespace-nowrap">
+                            {act.pointsCount !== undefined && act.pointsCount !== null ? (
                               <span className="font-mono font-bold text-cyan-400">
                                 {act.pointsCount.toLocaleString()} pts
                               </span>
@@ -1338,16 +1466,16 @@ export default function AdminClient() {
                               <span className="text-slate-500">—</span>
                             )}
                           </td>
-                          <td className="px-6 py-4">
+                          <td className="px-4 py-3 hidden lg:table-cell">
                             {act.crs ? (
-                              <span className="font-mono text-[11px] text-amber-300 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
+                              <span className="block max-w-[190px] truncate text-[11px] text-amber-300" title={act.crs}>
                                 {act.crs}
                               </span>
                             ) : (
                               <span className="text-slate-500">—</span>
                             )}
                           </td>
-                          <td className="px-6 py-4">
+                          <td className="px-4 py-3">
                             {act.exportFormat ? (
                               <span className="font-bold text-emerald-400 uppercase text-[10px] bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
                                 {act.exportFormat}
@@ -1356,26 +1484,8 @@ export default function AdminClient() {
                               <span className="text-slate-500">—</span>
                             )}
                           </td>
-                          <td className="px-6 py-4 text-slate-400 font-mono">
-                            {act.durationMs ? `${act.durationMs}ms` : "—"}
-                          </td>
-                          <td className="px-6 py-4 font-mono text-slate-400">
-                            {act.ipAddress || "127.0.0.1"}
-                          </td>
-                          <td className="px-6 py-4 text-right">
-                            {act.userId ? (
-                              <button
-                                onClick={() => {
-                                  setDetailUserId(act.userId);
-                                  setDetailModalOpen(true);
-                                }}
-                                className="px-2.5 py-1 rounded-lg bg-blue-600/15 hover:bg-blue-600/25 text-blue-400 text-xs font-semibold transition-colors border border-blue-500/20 cursor-pointer inline-flex items-center gap-1"
-                              >
-                                <Eye className="w-3 h-3" /> Profile
-                              </button>
-                            ) : (
-                              <span className="text-slate-600 text-xs">—</span>
-                            )}
+                          <td className="px-4 py-3 font-mono text-slate-500 hidden 2xl:table-cell">
+                            {act.ipAddress || "—"}
                           </td>
                         </tr>
                       ))
@@ -1383,6 +1493,7 @@ export default function AdminClient() {
                   </tbody>
                 </table>
               </div>
+              <Pager page={actPageNow} total={filteredActivities.length} size={ACT_PAGE} onPage={setActPage} noun="entries" />
             </div>
           </div>
         )}
@@ -1471,7 +1582,7 @@ export default function AdminClient() {
                           </td>
                           <td className="px-6 py-4">
                             <span className="px-2 py-0.5 rounded text-[11px] font-bold uppercase bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                              {dl.assetType}
+                              {ASSET_NAME[dl.assetType] || dl.assetType}
                             </span>
                           </td>
                           <td className="px-6 py-4">
@@ -1517,66 +1628,117 @@ export default function AdminClient() {
         {/* TAB 5: CONVERSIONS AUDIT */}
         {/* ================================================================== */}
         {activeTab === "conversions" && (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
+          <div className="space-y-5">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
               <div>
-                <h3 className="text-base font-bold text-white">Live Benchmark Conversion Audit</h3>
-                <p className="text-xs text-slate-400">Real-time coordinates verified across survey grids</p>
+                <h3 className="text-base font-bold text-white">Converted points</h3>
+                <p className="text-xs text-slate-400">
+                  Every point in the files surveyors saved while signed in, newest first.{" "}
+                  {conversions.length < conversionsTotal
+                    ? `Showing the newest ${conversions.length.toLocaleString()} of ${conversionsTotal.toLocaleString()}.`
+                    : `${conversionsTotal.toLocaleString()} points.`}
+                </p>
               </div>
-
-              <button
-                onClick={handleClearConversions}
-                className="px-4 py-2 rounded-xl bg-rose-600/20 text-rose-400 hover:bg-rose-600/30 text-xs font-bold transition-colors flex items-center gap-2 border border-rose-500/30 cursor-pointer"
-              >
-                <Trash2 className="w-4 h-4" /> Clear Conversions
-              </button>
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="relative">
+                  <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="search"
+                    value={convSearch}
+                    onChange={(e) => {
+                      setConvSearch(e.target.value);
+                      setConvPage(0);
+                    }}
+                    placeholder="Surveyor, file, station, code or grid"
+                    className="w-64 max-w-full pl-9 pr-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-base sm:text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                {conversions.length < conversionsTotal && (
+                  <button
+                    onClick={() => loadConversions(Math.min(5000, convLimit + 1000))}
+                    disabled={convLimit >= 5000}
+                    className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    Load 1,000 more
+                  </button>
+                )}
+                <button
+                  onClick={exportConversionsCsv}
+                  disabled={!filteredConversions.length}
+                  className="px-3.5 py-2 rounded-xl bg-emerald-600/15 text-emerald-400 hover:bg-emerald-600/25 text-xs font-bold transition-colors flex items-center gap-2 border border-emerald-500/30 cursor-pointer disabled:opacity-50"
+                >
+                  <FileSpreadsheet className="w-4 h-4" /> Export CSV
+                </button>
+                <button
+                  onClick={handleClearConversions}
+                  className="px-3.5 py-2 rounded-xl bg-rose-600/15 text-rose-400 hover:bg-rose-600/25 text-xs font-bold transition-colors flex items-center gap-2 border border-rose-500/30 cursor-pointer"
+                >
+                  <Trash2 className="w-4 h-4" /> Clear all
+                </button>
+              </div>
             </div>
 
             <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-slate-800/60 border-b border-slate-800 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-800/60 border-b border-slate-800 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                     <tr>
-                      <th className="px-6 py-4">Timestamp</th>
-                      <th className="px-6 py-4">Station ID</th>
-                      <th className="px-6 py-4">Feature Code</th>
-                      <th className="px-6 py-4">Grid System</th>
-                      <th className="px-6 py-4">Easting / Northing</th>
-                      <th className="px-6 py-4">WGS84 Lat/Lon</th>
+                      <th className="px-4 py-3.5 hidden 2xl:table-cell">Saved</th>
+                      <th className="px-4 py-3.5">Surveyor</th>
+                      <th className="px-4 py-3.5">File</th>
+                      <th className="px-4 py-3.5">Station</th>
+                      <th className="px-4 py-3.5 hidden xl:table-cell">Code</th>
+                      <th className="px-4 py-3.5 hidden lg:table-cell">Grid</th>
+                      <th className="px-4 py-3.5 text-right">Easting</th>
+                      <th className="px-4 py-3.5 text-right">Northing</th>
+                      <th className="px-4 py-3.5 text-right hidden xl:table-cell">Elevation</th>
+                      <th className="px-4 py-3.5 text-right">Latitude</th>
+                      <th className="px-4 py-3.5 text-right">Longitude</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/60">
-                    {conversions.length === 0 ? (
+                  <tbody className="divide-y divide-slate-800/60 font-mono">
+                    {filteredConversions.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
-                          No conversion records logged yet
+                        <td colSpan={11} className="px-4 py-12 text-center text-slate-500 font-sans">
+                          {conversions.length ? "No points match" : "No converted points yet"}
                         </td>
                       </tr>
                     ) : (
-                      conversions.map((conv) => (
-                        <tr key={conv.id} className="hover:bg-slate-800/30 transition-colors">
-                          <td className="px-6 py-4 text-xs text-slate-400">
-                            {new Date(conv.timestamp).toLocaleString()}
-                          </td>
-                          <td className="px-6 py-4 font-mono font-bold text-white text-xs">{conv.station}</td>
-                          <td className="px-6 py-4">
-                            <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 text-slate-300 border border-slate-700">
-                              {conv.featureCode}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-xs text-blue-400 font-semibold">{conv.coordSystem}</td>
-                          <td className="px-6 py-4 font-mono text-xs text-slate-300">
-                            E: {conv.easting.toFixed(3)} | N: {conv.northing.toFixed(3)}
-                          </td>
-                          <td className="px-6 py-4 font-mono text-xs text-emerald-400">
-                            {conv.lat}, {conv.lon}
-                          </td>
-                        </tr>
-                      ))
+                      pagedConversions.map((conv) => {
+                        const noGrid = !conv.easting && !conv.northing;
+                        return (
+                          <tr key={conv.id} className="hover:bg-slate-800/30 transition-colors whitespace-nowrap">
+                            <td className="px-4 py-2.5 text-slate-400 font-sans hidden 2xl:table-cell">{new Date(conv.timestamp).toLocaleString()}</td>
+                            <td className="px-4 py-2.5 font-sans">
+                              <span className="block max-w-[180px] truncate text-slate-200" title={conv.userEmail || ""}>
+                                {conv.userEmail || "—"}
+                              </span>
+                            </td>
+                            <td className="px-4 py-2.5">
+                              <span className="block max-w-[160px] truncate text-slate-300" title={conv.fileName || ""}>
+                                {conv.fileName || "—"}
+                              </span>
+                            </td>
+                            <td className="px-4 py-2.5 font-bold text-white">{conv.station}</td>
+                            <td className="px-4 py-2.5 text-slate-300 hidden xl:table-cell">{conv.featureCode || "—"}</td>
+                            <td className="px-4 py-2.5 hidden lg:table-cell font-sans">
+                              <span className="block max-w-[170px] truncate text-blue-400" title={conv.coordSystem}>
+                                {conv.coordSystem}
+                              </span>
+                            </td>
+                            <td className="px-4 py-2.5 text-right text-slate-300">{noGrid ? "—" : conv.easting.toFixed(3)}</td>
+                            <td className="px-4 py-2.5 text-right text-slate-300">{noGrid ? "—" : conv.northing.toFixed(3)}</td>
+                            <td className="px-4 py-2.5 text-right text-slate-300 hidden xl:table-cell">{conv.elevation.toFixed(3)}</td>
+                            <td className="px-4 py-2.5 text-right text-emerald-400">{Number(conv.lat).toFixed(7)}</td>
+                            <td className="px-4 py-2.5 text-right text-emerald-400">{Number(conv.lon).toFixed(7)}</td>
+                          </tr>
+                        );
+                      })
                     )}
                   </tbody>
                 </table>
               </div>
+              <Pager page={convPageNow} total={filteredConversions.length} size={CONV_PAGE} onPage={setConvPage} noun="points" />
             </div>
           </div>
         )}
@@ -1585,19 +1747,19 @@ export default function AdminClient() {
         {/* TAB 6: SETTINGS & RELEASE MANAGEMENT */}
         {/* ================================================================== */}
         {activeTab === "settings" && (
-          <div className="max-w-3xl space-y-6">
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl">
-              <div className="mb-6 pb-6 border-b border-slate-800 flex items-center justify-between">
+          <div className="max-w-3xl w-full mx-auto space-y-6">
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-8 shadow-xl">
+              <div className="mb-6 pb-6 border-b border-slate-800 flex items-start sm:items-center justify-between gap-3">
                 <div>
                   <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                    <Settings className="w-5 h-5 text-blue-400" /> Platform &amp; Gating Configuration
+                    <Settings className="w-5 h-5 text-blue-400" /> Settings
                   </h3>
                   <p className="text-xs text-slate-400 mt-1">
-                    Manage download gates, maintenance flags, and global restrictions
+                    The release shown on the site, who may download, maintenance, and the web app&apos;s limits
                   </p>
                 </div>
-                <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                  Global Policy
+                <span className="shrink-0 px-2.5 py-1 rounded-full text-xs font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                  Whole site
                 </span>
               </div>
 
@@ -1606,7 +1768,7 @@ export default function AdminClient() {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-                      Engine Version
+                      Current version
                     </label>
                     <input
                       type="text"
@@ -1620,7 +1782,7 @@ export default function AdminClient() {
 
                   <div>
                     <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-                      Installer Binary
+                      Installer file
                     </label>
                     <input
                       type="text"
@@ -1633,7 +1795,7 @@ export default function AdminClient() {
 
                   <div>
                     <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-                      File Size Text
+                      Installer size
                     </label>
                     <input
                       type="text"

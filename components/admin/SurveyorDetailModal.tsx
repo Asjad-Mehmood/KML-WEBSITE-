@@ -25,6 +25,7 @@ import {
   Compass,
   Cpu,
   FolderArchive,
+  MapPinned,
   FileText,
   Search,
 } from "lucide-react";
@@ -116,6 +117,22 @@ interface UserDetailResponse {
   activities: UserActivityItem[];
   downloads: UserDownloadItem[];
   files?: UserFileItem[];
+  points?: { total: number; conversions: UserPointItem[] };
+}
+
+export interface UserPointItem {
+  id: string;
+  fileId?: string | null;
+  fileName?: string | null;
+  station: string;
+  featureCode: string;
+  easting: number;
+  northing: number;
+  elevation: number;
+  coordSystem: string;
+  lat: string;
+  lon: string;
+  timestamp: string;
 }
 
 interface SurveyorDetailModalProps {
@@ -137,7 +154,7 @@ export default function SurveyorDetailModal({
 }: SurveyorDetailModalProps) {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<UserDetailResponse | null>(null);
-  const [activeTab, setActiveTab] = useState<"overview" | "files" | "activities" | "downloads" | "settings">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "files" | "points" | "activities" | "downloads" | "settings">("overview");
 
   // Files filter & search
   const [fileFilter, setFileFilter] = useState<"all" | "import" | "export">("all");
@@ -172,6 +189,16 @@ export default function SurveyorDetailModal({
       headers,
     });
   };
+
+  // Escape closes the window
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isOpen, onClose]);
 
   useEffect(() => {
     if (isOpen && userId) {
@@ -323,6 +350,8 @@ export default function SurveyorDetailModal({
   const activities = data?.activities || [];
   const downloads = data?.downloads || [];
   const files = data?.files || [];
+  const points = data?.points?.conversions || [];
+  const pointsTotal = data?.points?.total ?? points.length;
   const loc = formatLocationDisplay(user?.location);
 
   const filteredFiles = files.filter((f) => {
@@ -337,17 +366,28 @@ export default function SurveyorDetailModal({
   });
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-in fade-in duration-200">
-      <div className="relative w-full max-w-5xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden my-auto">
+    <div
+      className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center sm:p-6 animate-in fade-in duration-200"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      {/* One height for every tab, so the window does not jump; full screen on a phone */}
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={user ? `Surveyor ${user.name}` : "Surveyor"}
+        className="relative w-full max-w-6xl bg-slate-900 border border-slate-800 sm:rounded-3xl shadow-2xl flex flex-col h-full sm:h-[min(88vh,920px)] overflow-hidden"
+      >
         {/* Top Header */}
-        <div className="p-6 bg-slate-900/90 border-b border-slate-800/80 flex items-start justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 flex items-center justify-center font-black text-xl text-white shadow-lg shadow-blue-600/30 shrink-0">
+        <div className="px-4 py-4 sm:p-6 bg-slate-900/90 border-b border-slate-800/80 flex items-start justify-between gap-3 shrink-0">
+          <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+            <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 flex items-center justify-center font-black text-xl text-white shadow-lg shadow-blue-600/30 shrink-0">
               {user ? user.name.charAt(0).toUpperCase() : <User className="w-6 h-6" />}
             </div>
             <div>
               <div className="flex flex-wrap items-center gap-2 mb-1">
-                <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                <h2 className="text-lg sm:text-2xl font-black text-white tracking-tight truncate">
                   {user ? user.name : "Loading Surveyor Profile..."}
                 </h2>
                 {user?.role === "ADMIN" && (
@@ -357,21 +397,21 @@ export default function SurveyorDetailModal({
                 )}
                 {user?.hasFullAccess || user?.role === "ADMIN" ? (
                   <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-                    <ShieldCheck className="w-3.5 h-3.5" /> Full Pro Access
+                    <ShieldCheck className="w-3.5 h-3.5" /> Full access
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                    <Lock className="w-3.5 h-3.5" /> Demo Tier ({user?.customMaxPoints || globalMaxPoints} pts)
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30 whitespace-nowrap">
+                    <Lock className="w-3.5 h-3.5" /> Demo · {user?.customMaxPoints || globalMaxPoints} pts
                   </span>
                 )}
               </div>
 
-              <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400">
-                <span className="text-slate-300 font-medium">{user?.email}</span>
-                <span>•</span>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-400">
+                <span className="text-slate-300 font-medium break-all">{user?.email}</span>
+                <span className="hidden sm:inline">•</span>
                 <span>{user?.organization || "Independent Surveyor"}</span>
-                <span>•</span>
-                <span className="text-slate-400 flex items-center gap-1">
+                <span className="hidden md:inline">•</span>
+                <span className="text-slate-400 hidden md:flex items-center gap-1">
                   <span>{loc.flag}</span>
                   <span>{loc.text}</span>
                   <code className="text-[10px] text-blue-400 bg-blue-500/10 px-1.5 py-0.2 rounded ml-1">
@@ -392,21 +432,30 @@ export default function SurveyorDetailModal({
         </div>
 
         {/* Modal Navigation Tabs */}
-        <div className="flex items-center gap-2 px-6 pt-3 bg-slate-900 border-b border-slate-800/80 overflow-x-auto">
+        <div
+          role="tablist"
+          className="flex items-center gap-1 px-3 sm:px-6 pt-2 bg-slate-900 border-b border-slate-800/80 overflow-x-auto shrink-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
           {[
-            { id: "overview", label: "Overview & Analytics", icon: Activity },
-            { id: "files", label: `Stored Files Vault (${files.length})`, icon: FolderArchive },
-            { id: "activities", label: `App Activity (${activities.length})`, icon: HardDrive },
-            { id: "downloads", label: `Downloads (${downloads.length})`, icon: Download },
-            { id: "settings", label: "Access & Restrictions", icon: Lock },
+            { id: "overview", label: "Overview", icon: Activity },
+            { id: "files", label: "Files", icon: FolderArchive, count: files.length },
+            { id: "points", label: "Points", icon: MapPinned, count: pointsTotal },
+            { id: "activities", label: "Activity", icon: HardDrive, count: activities.length },
+            { id: "downloads", label: "Downloads", icon: Download, count: downloads.length },
+            { id: "settings", label: "Access", icon: Lock },
           ].map((tab) => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
+                role="tab"
+                aria-selected={active}
+                ref={(el) => {
+                  if (el && active) el.scrollIntoView({ block: "nearest", inline: "nearest" });
+                }}
                 onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                className={`flex items-center gap-2 px-4 py-3 text-xs sm:text-sm font-bold border-b-2 transition-all whitespace-nowrap cursor-pointer ${
+                className={`flex items-center gap-2 px-3.5 py-3 text-[13px] font-bold border-b-2 transition-all whitespace-nowrap cursor-pointer ${
                   active
                     ? "border-blue-500 text-blue-400 bg-blue-500/5"
                     : "border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/40"
@@ -414,13 +463,18 @@ export default function SurveyorDetailModal({
               >
                 <Icon className="w-4 h-4" />
                 <span>{tab.label}</span>
+                {tab.count !== undefined && (
+                  <span className="px-1.5 py-px rounded-md text-[11px] font-mono bg-slate-800 text-slate-400">
+                    {tab.count.toLocaleString()}
+                  </span>
+                )}
               </button>
             );
           })}
         </div>
 
         {/* Modal Body Area */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
           {loading ? (
             <div className="py-24 flex flex-col items-center justify-center gap-3 text-slate-400">
               <RefreshCw className="w-8 h-8 text-blue-500 animate-spin" />
@@ -442,17 +496,15 @@ export default function SurveyorDetailModal({
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                     <div className="p-4 rounded-2xl bg-slate-800/50 border border-slate-700/60">
                       <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                        <Sparkles className="w-3.5 h-3.5 text-blue-400" /> Points Processed
+                        <Sparkles className="w-3.5 h-3.5 text-blue-400" /> Points Kept
                       </div>
-                      <div className="text-2xl font-black text-white font-mono">
-                        {stats?.totalPointsProcessed ? stats.totalPointsProcessed.toLocaleString() : "0"}
-                      </div>
-                      <div className="text-[11px] text-slate-500 mt-1">Across total station jobs</div>
+                      <div className="text-2xl font-black text-white font-mono">{pointsTotal.toLocaleString()}</div>
+                      <div className="text-[11px] text-slate-500 mt-1">In the files this surveyor saved</div>
                     </div>
 
                     <div className="p-4 rounded-2xl bg-slate-800/50 border border-slate-700/60">
                       <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                        <FolderArchive className="w-3.5 h-3.5 text-cyan-400" /> Stored Cloud Files
+                        <FolderArchive className="w-3.5 h-3.5 text-cyan-400" /> Files Kept
                       </div>
                       <div className="text-2xl font-black text-white font-mono">
                         {files.length}
@@ -472,7 +524,7 @@ export default function SurveyorDetailModal({
 
                     <div className="p-4 rounded-2xl bg-slate-800/50 border border-slate-700/60">
                       <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                        <Compass className="w-3.5 h-3.5 text-amber-400" /> Top Used CRS
+                        <Compass className="w-3.5 h-3.5 text-amber-400" /> Most Used Grid
                       </div>
                       <div className="text-sm font-bold text-amber-300 truncate mt-1.5" title={stats?.topCrs}>
                         {stats?.topCrs || "WGS84 / UTM"}
@@ -567,7 +619,7 @@ export default function SurveyorDetailModal({
                   <div className="p-5 rounded-2xl bg-slate-800/40 border border-slate-800 space-y-3">
                     <div className="flex items-center justify-between">
                       <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                        <FolderArchive className="w-4 h-4 text-cyan-400" /> Stored Imported &amp; Exported Files
+                        <FolderArchive className="w-4 h-4 text-cyan-400" /> Latest files
                       </h4>
                       {files.length > 0 && (
                         <button
@@ -633,10 +685,10 @@ export default function SurveyorDetailModal({
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
                       <h3 className="text-base font-bold text-white flex items-center gap-2">
-                        <FolderArchive className="w-4 h-4 text-cyan-400" /> Surveyor Cloud File Vault
+                        <FolderArchive className="w-4 h-4 text-cyan-400" /> Files
                       </h3>
                       <p className="text-xs text-slate-400">
-                        Every file imported into or exported from the Windows Desktop and Web App is archived here for download
+                        Every file this surveyor opened or saved while signed in, in the web app or the Windows program
                       </p>
                     </div>
 
@@ -712,7 +764,7 @@ export default function SurveyorDetailModal({
                                 <td className="px-4 py-3 font-mono font-medium text-white max-w-[200px] truncate" title={f.fileName}>
                                   {f.fileName}
                                 </td>
-                                <td className="px-4 py-3 text-slate-300 font-mono">
+                                <td className="px-4 py-3 text-slate-300 font-mono whitespace-nowrap">
                                   {f.fileSizeFormatted}
                                 </td>
                                 <td className="px-4 py-3">
@@ -724,7 +776,7 @@ export default function SurveyorDetailModal({
                                 </td>
                                 <td className="px-4 py-3">
                                   {f.crs ? (
-                                    <span className="font-mono text-[11px] text-amber-300 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
+                                    <span className="block max-w-[200px] truncate text-[11px] text-amber-300" title={f.crs}>
                                       {f.crs}
                                     </span>
                                   ) : (
@@ -805,8 +857,7 @@ export default function SurveyorDetailModal({
                               <th className="px-4 py-3">Points &amp; Geometry</th>
                               <th className="px-4 py-3">Coordinate System (CRS)</th>
                               <th className="px-4 py-3">Format</th>
-                              <th className="px-4 py-3">Latency</th>
-                              <th className="px-4 py-3">IP Address</th>
+                              <th className="px-4 py-3 hidden xl:table-cell">IP Address</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-800/50">
@@ -842,7 +893,7 @@ export default function SurveyorDetailModal({
                                 </td>
                                 <td className="px-4 py-3">
                                   {act.crs ? (
-                                    <span className="font-mono text-[11px] text-amber-300 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
+                                    <span className="block max-w-[200px] truncate text-[11px] text-amber-300" title={act.crs}>
                                       {act.crs}
                                     </span>
                                   ) : (
@@ -858,17 +909,94 @@ export default function SurveyorDetailModal({
                                     <span className="text-slate-500">—</span>
                                   )}
                                 </td>
-                                <td className="px-4 py-3 text-slate-400 font-mono">
-                                  {act.durationMs ? `${act.durationMs}ms` : "—"}
-                                </td>
-                                <td className="px-4 py-3 font-mono text-slate-400">
-                                  {act.ipAddress || "127.0.0.1"}
+                                <td className="px-4 py-3 font-mono text-slate-400 hidden xl:table-cell">
+                                  {act.ipAddress || "—"}
                                 </td>
                               </tr>
                             ))}
                           </tbody>
                         </table>
                       </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ========================================================= */}
+              {/* CONVERTED POINTS */}
+              {/* ========================================================= */}
+              {activeTab === "points" && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-base font-bold text-white">Converted Points</h3>
+                      <p className="text-xs text-slate-400">
+                        Every point in the files this user saved while signed in, newest first
+                        {points.length < pointsTotal ? ` (showing ${points.length} of ${pointsTotal})` : ""}
+                      </p>
+                    </div>
+                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                      {pointsTotal} Points
+                    </span>
+                  </div>
+
+                  {points.length === 0 ? (
+                    <div className="py-16 text-center text-slate-500 bg-slate-800/30 rounded-2xl border border-slate-800">
+                      <MapPinned className="w-8 h-8 text-slate-600 mx-auto mb-2" />
+                      <p className="text-sm font-semibold">No converted points recorded for this user</p>
+                    </div>
+                  ) : (
+                    <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left text-xs whitespace-nowrap">
+                          <thead className="bg-slate-800/70 border-b border-slate-800 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                            <tr>
+                              <th className="px-3 py-3 hidden md:table-cell">Saved</th>
+                              <th className="px-3 py-3">File</th>
+                              <th className="px-3 py-3">Station</th>
+                              <th className="px-3 py-3 hidden sm:table-cell">Code</th>
+                              <th className="px-3 py-3 hidden lg:table-cell">Grid</th>
+                              <th className="px-3 py-3 text-right">Easting</th>
+                              <th className="px-3 py-3 text-right">Northing</th>
+                              <th className="px-3 py-3 text-right hidden lg:table-cell">Elevation</th>
+                              <th className="px-3 py-3 text-right hidden sm:table-cell">Latitude</th>
+                              <th className="px-3 py-3 text-right hidden sm:table-cell">Longitude</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-800/50 font-mono">
+                            {points.slice(0, 1000).map((pt) => {
+                              const noGrid = !pt.easting && !pt.northing;
+                              return (
+                                <tr key={pt.id} className="hover:bg-slate-800/30 transition-colors">
+                                  <td className="px-3 py-2 text-slate-400 font-sans hidden md:table-cell">{new Date(pt.timestamp).toLocaleString()}</td>
+                                  <td className="px-3 py-2">
+                                    <span className="block max-w-[150px] truncate text-slate-300" title={pt.fileName || ""}>
+                                      {pt.fileName || "—"}
+                                    </span>
+                                  </td>
+                                  <td className="px-3 py-2 font-bold text-white">{pt.station}</td>
+                                  <td className="px-3 py-2 text-slate-300 hidden sm:table-cell">{pt.featureCode || "—"}</td>
+                                  <td className="px-3 py-2 font-sans hidden lg:table-cell">
+                                    <span className="block max-w-[190px] truncate text-blue-400" title={pt.coordSystem}>
+                                      {pt.coordSystem}
+                                    </span>
+                                  </td>
+                                  <td className="px-3 py-2 text-right text-slate-300">{noGrid ? "—" : pt.easting.toFixed(3)}</td>
+                                  <td className="px-3 py-2 text-right text-slate-300">{noGrid ? "—" : pt.northing.toFixed(3)}</td>
+                                  <td className="px-3 py-2 text-right text-slate-300 hidden lg:table-cell">{pt.elevation.toFixed(3)}</td>
+                                  <td className="px-3 py-2 text-right text-emerald-400 hidden sm:table-cell">{Number(pt.lat).toFixed(7)}</td>
+                                  <td className="px-3 py-2 text-right text-emerald-400 hidden sm:table-cell">{Number(pt.lon).toFixed(7)}</td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                      {points.length > 1000 && (
+                        <div className="px-4 py-3 border-t border-slate-800 text-xs text-slate-400">
+                          Showing the newest 1,000 points. The Points tab on the main page has them all, with search and CSV export.
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

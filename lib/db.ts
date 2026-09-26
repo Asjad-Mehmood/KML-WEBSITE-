@@ -48,6 +48,9 @@ export interface DownloadRecord {
 export interface ConversionRecord {
   id: string;
   userId: string | null;
+  userEmail?: string | null;
+  fileId?: string | null;
+  fileName?: string | null;
   station: string;
   featureCode: string;
   easting: number;
@@ -555,34 +558,118 @@ export const db = {
     };
   },
 
-  /** Many converted points at once (from one exported file) */
-  async recordConversions(
-    userId: string,
-    coordSystem: string,
-    points: { station: string; featureCode: string; easting: number; northing: number; elevation: number; lat: string; lon: string }[]
-  ): Promise<number> {
-    if (!points.length) return 0;
-    const res = await prisma.conversion.createMany({
-      data: points.map((pt) => ({ id: "conv_" + crypto.randomBytes(8).toString("hex"), userId, coordSystem, ...pt })),
+  /**
+   * The points of one saved file. Each row's id carries the file it came from
+   * (cv_<fileId>_<n>), so points and file stay linked without a schema change,
+   * and sending the same points again cannot make duplicates.
+   */
+  async recordConversions(entry: {
+    userId: string;
+    fileId: string;
+    coordSystem: string;
+    offset: number;
+    points: {
+      station: string;
+      featureCode: string;
+      easting: number;
+      northing: number;
+      elevation: number;
+      lat: string;
+      lon: string;
+    }[];
+  }): Promise<number> {
+    const when = new Date();
+    const r = await prisma.conversion.createMany({
+      data: entry.points.map((pt, i) => ({
+        id: `cv_${entry.fileId}_${entry.offset + i}`,
+        userId: entry.userId,
+        coordSystem: entry.coordSystem,
+        timestamp: when,
+        ...pt,
+      })),
+      skipDuplicates: true,
     });
-    return res.count;
+    return r.count;
   },
 
-  async getAllConversions(): Promise<ConversionRecord[]> {
-    const rows = await prisma.conversion.findMany({ orderBy: { timestamp: "desc" } });
-    return rows.map((c) => ({
-      id: c.id,
-      userId: c.userId,
-      station: c.station,
-      featureCode: c.featureCode,
-      easting: c.easting,
-      northing: c.northing,
-      elevation: c.elevation,
-      coordSystem: c.coordSystem,
-      lat: c.lat,
-      lon: c.lon,
-      timestamp: c.timestamp.toISOString(),
-    }));
+  /** Joins each point row to the file it came from and, when asked, to its owner. */
+  async withConversionLinks(
+    rows: {
+      id: string; userId: string | null; station: string; featureCode: string; easting: number;
+      northing: number; elevation: number; coordSystem: string; lat: string; lon: string; timestamp: Date;
+    }[],
+    withOwner = false
+  ): Promise<ConversionRecord[]> {
+    const fileOf = (id: string) => {
+      const m = /^cv_(.+)_\d+$/.exec(id);
+      return m ? m[1] : null;
+    };
+    const fileIds = Array.from(new Set(rows.map((c) => fileOf(c.id)).filter((x): x is string => Boolean(x))));
+    const files = fileIds.length
+      ? await prisma.userFile.findMany({ where: { id: { in: fileIds } }, select: { id: true, fileName: true } })
+      : [];
+    const names = new Map(files.map((f) => [f.id, f.fileName]));
+    let owners = new Map<string, string>();
+    if (withOwner) {
+      const userIds = Array.from(new Set(rows.map((c) => c.userId).filter((x): x is string => Boolean(x))));
+      const users = userIds.length
+        ? await prisma.user.findMany({ where: { id: { in: userIds } }, select: { id: true, email: true } })
+        : [];
+      owners = new Map(users.map((u) => [u.id, u.email]));
+    }
+    // Newest save first; within a save, the points in the order of the file
+    const seq = (id: string) => parseInt(id.slice(id.lastIndexOf("_") + 1), 10) || 0;
+    const sorted = [...rows].sort(
+      (a, b) =>
+        b.timestamp.getTime() - a.timestamp.getTime() ||
+        (fileOf(a.id) || "").localeCompare(fileOf(b.id) || "") ||
+        seq(a.id) - seq(b.id)
+    );
+    return sorted.map((c) => {
+      const fileId = fileOf(c.id);
+      return {
+        id: c.id,
+        userId: c.userId,
+        userEmail: c.userId ? owners.get(c.userId) ?? null : null,
+        fileId,
+        fileName: fileId ? names.get(fileId) ?? null : null,
+        station: c.station,
+        featureCode: c.featureCode,
+        easting: c.easting,
+        northing: c.northing,
+        elevation: c.elevation,
+        coordSystem: c.coordSystem,
+        lat: c.lat,
+        lon: c.lon,
+        timestamp: c.timestamp.toISOString(),
+      };
+    });
+  },
+
+  async getUserConversions(
+    userId: string,
+    opts: { fileId?: string; limit?: number } = {}
+  ): Promise<{ total: number; conversions: ConversionRecord[] }> {
+    const where = opts.fileId ? { userId, id: { startsWith: `cv_${opts.fileId}_` } } : { userId };
+    const [total, rows] = await Promise.all([
+      prisma.conversion.count({ where }),
+      prisma.conversion.findMany({ where, orderBy: [{ timestamp: "desc" }, { id: "asc" }], take: opts.limit ?? 2000 }),
+    ]);
+    return { total, conversions: await this.withConversionLinks(rows) };
+  },
+
+  async deleteUserConversions(userId: string, fileId?: string): Promise<number> {
+    const where = fileId ? { userId, id: { startsWith: `cv_${fileId}_` } } : { userId };
+    const r = await prisma.conversion.deleteMany({ where });
+    return r.count;
+  },
+
+  async getAllConversions(limit = 1000): Promise<{ total: number; conversions: ConversionRecord[] }> {
+    const [total, rows] = await Promise.all([
+      prisma.conversion.count(),
+      prisma.conversion.findMany({ orderBy: [{ timestamp: "desc" }, { id: "asc" }], take: limit }),
+    ]);
+    return { total, conversions: await this.withConversionLinks(rows, true) };
   },
 
   async clearConversions(): Promise<void> {
@@ -717,6 +804,7 @@ export const db = {
     if (target.email === "admin@exceltokml.com") {
       throw new Error("Cannot delete master administrator account.");
     }
+    await prisma.conversion.deleteMany({ where: { userId: id } });
     await prisma.user.delete({ where: { id } });
     return true;
   },
@@ -916,6 +1004,11 @@ export const db = {
     platform?: "windows_app" | "web_app";
     ipAddress?: string;
     userAgent?: string;
+    /** Keep only the name and size: the file was too big to store. */
+    metaOnly?: boolean;
+    metaSize?: number;
+    /** false when the app has already logged this in the activity history. */
+    logActivity?: boolean;
   }): Promise<UserFileRecord> {
     let buffer: Buffer;
     if (entry.fileBuffer) {
@@ -926,16 +1019,15 @@ export const db = {
       buffer = Buffer.from("");
     }
 
-    const fileSize = buffer.length;
+    const fileSize = entry.metaOnly ? Math.max(0, Math.round(entry.metaSize || 0)) : buffer.length;
     let fileSizeFormatted = "0 B";
     if (fileSize < 1024) fileSizeFormatted = `${fileSize} B`;
     else if (fileSize < 1024 * 1024) fileSizeFormatted = `${(fileSize / 1024).toFixed(1)} KB`;
     else fileSizeFormatted = `${(fileSize / (1024 * 1024)).toFixed(1)} MB`;
 
-    const keepBase64 =
-      fileSize <= 2.5 * 1024 * 1024
-        ? (entry.contentBase64 || buffer.toString("base64"))
-        : undefined;
+    // The route has already checked the size against MAX_FILE_BYTES, so the
+    // whole file is kept and can always be downloaded again.
+    const keepBase64 = entry.metaOnly ? undefined : entry.contentBase64 || buffer.toString("base64");
 
     const f = await prisma.userFile.create({
       data: {
@@ -958,8 +1050,8 @@ export const db = {
       },
     });
 
-    // Auto-log in activities
-    try {
+    // Auto-log in activities, unless the app has logged it already
+    if (entry.logActivity !== false) try {
       await this.recordActivity({
         userId: entry.userId,
         userEmail: entry.userEmail,
@@ -1000,6 +1092,32 @@ export const db = {
       userAgent: f.userAgent ?? undefined,
       timestamp: f.timestamp.toISOString(),
     };
+  },
+
+  async countUserFiles(userId: string): Promise<number> {
+    return prisma.userFile.count({ where: { userId } });
+  },
+
+  async countUserConversions(userId: string): Promise<number> {
+    return prisma.conversion.count({ where: { userId } });
+  },
+
+  /** Files kept across all accounts, and the bytes of the copies stored. */
+  async getFileTotals(): Promise<{ files: number; stored: number; bytes: number }> {
+    const [files, agg] = await Promise.all([
+      prisma.userFile.count(),
+      prisma.userFile.aggregate({ where: { contentBase64: { not: null } }, _count: { _all: true }, _sum: { fileSize: true } }),
+    ]);
+    return { files, stored: agg._count._all, bytes: agg._sum.fileSize ?? 0 };
+  },
+
+  /** Bytes of files an account keeps, for the storage limit. */
+  async getUserStorageBytes(userId: string): Promise<number> {
+    const r = await prisma.userFile.aggregate({
+      where: { userId, contentBase64: { not: null } },
+      _sum: { fileSize: true },
+    });
+    return r._sum.fileSize ?? 0;
   },
 
   async getUserFiles(identifier: string, limit = 100): Promise<UserFileRecord[]> {
@@ -1082,6 +1200,7 @@ export const db = {
 
   async deleteUserFile(fileId: string): Promise<boolean> {
     try {
+      await prisma.conversion.deleteMany({ where: { id: { startsWith: `cv_${fileId}_` } } });
       await prisma.userFile.delete({ where: { id: fileId } });
       return true;
     } catch {

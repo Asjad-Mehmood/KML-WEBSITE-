@@ -41,6 +41,9 @@ export async function GET(
       };
     });
 
+    // Converted points of the files this user saved
+    const points = await db.getUserConversions(user.id, { limit: 2000 });
+
     return NextResponse.json({
       success: true,
       user: sanitized,
@@ -48,6 +51,7 @@ export async function GET(
       activities,
       downloads,
       files,
+      points,
     });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Failed to retrieve user details";

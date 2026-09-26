@@ -19,11 +19,12 @@ export default async function DashboardPage() {
   if (!session) redirect("/login?next=%2Fdashboard");
 
   const { user } = session;
-  const [activities, files, downloads, settings] = await Promise.all([
+  const [activities, files, downloads, settings, points] = await Promise.all([
     db.getOwnActivities(user.id),
     db.getOwnFileList(user.id),
     db.getUserDownloads(user.id),
     db.getSettings(),
+    db.getUserConversions(user.id, { limit: 5000 }),
   ]);
 
   const isAdmin = db.isAdmin(user);
@@ -93,6 +94,23 @@ export default async function DashboardPage() {
       hasContent: f.hasContent,
       timestamp: f.timestamp.toISOString(),
     })),
+    points: {
+      total: points.total,
+      rows: points.conversions.map((c) => ({
+        id: c.id,
+        fileId: c.fileId ?? null,
+        fileName: c.fileName ?? null,
+        station: c.station,
+        code: c.featureCode,
+        easting: c.easting,
+        northing: c.northing,
+        elevation: c.elevation,
+        lat: c.lat,
+        lon: c.lon,
+        grid: c.coordSystem,
+        timestamp: c.timestamp,
+      })),
+    },
     downloads: downloads.map((d) => ({
       id: d.id,
       assetType: d.assetType,

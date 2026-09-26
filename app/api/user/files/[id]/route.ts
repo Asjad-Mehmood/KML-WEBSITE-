@@ -39,10 +39,10 @@ export async function GET(
     const user = await getAuthUser(req);
     const admin = await getAdminSession(req);
 
-    // Verify access: allowed if admin, or owner, or if file was uploaded unauthenticated
+    // Verify access: only the owner or an admin. Files kept without an owner
+    // (from before uploads needed an account) are for admins only.
     const isOwner =
-      !record.userId ||
-      (user && user.id === record.userId) ||
+      (user && record.userId && user.id === record.userId) ||
       (user && record.userEmail && user.email.toLowerCase() === record.userEmail.toLowerCase());
 
     const isAdmin = Boolean(admin);
