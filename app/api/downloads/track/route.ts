@@ -1,29 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getClientIp, getIpGeoLocation } from "@/lib/geo";
-import { readSettings } from "@/lib/siteSettings";
 
 export async function POST(req: NextRequest) {
   try {
     const token =
       req.cookies.get("surveyor_auth_token")?.value ||
       req.headers.get("authorization")?.replace("Bearer ", "");
-    const sessionData = token ? await db.validateSession(token) : null;
 
-    // The admin setting "Require sign-in to download" decides whether a visitor may download signed out
+    if (!token) {
+      return NextResponse.json(
+        {
+          error: "Authentication required to download. Please sign up or log in.",
+          requiresAuth: true,
+        },
+        { status: 401 }
+      );
+    }
+
+    const sessionData = await db.validateSession(token);
     if (!sessionData) {
-      const settings = await readSettings();
-      if (settings?.requireAuthForDownload ?? true) {
-        return NextResponse.json(
-          {
-            error: token
-              ? "Session expired or invalid. Please log in again."
-              : "Authentication required to download. Please sign up or log in.",
-            requiresAuth: true,
-          },
-          { status: 401 }
-        );
-      }
+      return NextResponse.json(
+        {
+          error: "Session expired or invalid. Please log in again.",
+          requiresAuth: true,
+        },
+        { status: 401 }
+      );
     }
 
     const body = await req.json().catch(() => ({}));
@@ -39,9 +42,9 @@ export async function POST(req: NextRequest) {
 
     // Record the download in database
     const record = await db.recordDownload({
-      userId: sessionData?.user.id ?? null,
-      userEmail: sessionData?.user.email ?? null,
-      userName: sessionData?.user.name ?? null,
+      userId: sessionData.user.id,
+      userEmail: sessionData.user.email,
+      userName: sessionData.user.name,
       assetType,
       fileName,
       version,
@@ -54,7 +57,7 @@ export async function POST(req: NextRequest) {
       success: true,
       recordId: record.id,
       fileName,
-      downloadCount: sessionData ? sessionData.user.downloadCount + 1 : undefined,
+      downloadCount: sessionData.user.downloadCount + 1,
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Internal Server Error";

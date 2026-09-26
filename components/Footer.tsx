@@ -81,8 +81,8 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
             <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3.5">Resources</h2>
             <ul className="space-y-2.5 text-xs sm:text-sm text-slate-600">
               {[
-                ["https://github.com/Asjad-Mehmood/excel-to-kml-pro/releases", "Releases on GitHub"],
-                ["https://github.com/Asjad-Mehmood/excel-to-kml-pro/issues", "Report a Problem"],
+                ["https://github.com/Asjad-Mehmood/kml-convertor/releases", "Releases on GitHub"],
+                ["https://github.com/Asjad-Mehmood/kml-convertor/issues", "Report a Problem"],
                 ["/convert", "Grid Converters"],
                 ["/guides", "Guides"],
                 ["/faq", "Common Questions"],
@@ -122,7 +122,7 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
             </span>
           </p>
           <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-slate-600">
-            <a href="https://github.com/Asjad-Mehmood/excel-to-kml-pro/releases" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 transition-colors">Releases</a>
+            <a href="https://github.com/Asjad-Mehmood/kml-convertor/releases" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 transition-colors">Releases</a>
             <button onClick={onDownloadClick} className="hover:text-blue-600 transition-colors cursor-pointer">Download</button>
             <a href="/app" className="hover:text-blue-600 transition-colors">Web App</a>
             <Link href="/privacy" className="hover:text-blue-600 transition-colors">Privacy</Link>

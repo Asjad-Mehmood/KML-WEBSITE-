@@ -3,10 +3,12 @@
 import React, { useState, useId } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { X, Lock } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 export default function AuthModal() {
+  const router = useRouter();
   const { authModalOpen, setAuthModalOpen, authModalMode, setAuthModalMode, authIntentText, login, register } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -26,6 +28,8 @@ export default function AuthModal() {
       ? await register({ name, email, password, organization, role })
       : await login(email, password);
     if (!result.ok) setError(result.error);
+    // An admin signing in goes to the admin dashboard
+    else if (authModalMode !== "register" && "isAdmin" in result && result.isAdmin) router.push("/admin");
     setSubmitting(false);
   };
 

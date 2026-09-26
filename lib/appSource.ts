@@ -1,13 +1,14 @@
 /**
  * Where the web app's page comes from: app/index.html on the main branch of the program's
- * repository.
+ * code repository, Asjad-Mehmood/kml-convertor-src. (Asjad-Mehmood/kml-convertor is the public
+ * releases repository: downloads and updates only, no code.)
  *
  * The repository is private, so the page is read through the GitHub API with a read-only
  * token in APP_SOURCE_TOKEN (a fine-grained token with "Contents: read" on that one
  * repository). Without a token it is read from raw.githubusercontent.com, which works only
  * while the repository is public. Either way, public/app.html is the fallback.
  */
-export const APP_REPO = "Asjad-Mehmood/kml-convertor";
+export const APP_REPO = "Asjad-Mehmood/kml-convertor-src";
 const RAW_URL = `https://raw.githubusercontent.com/${APP_REPO}/main/app/index.html`;
 const API_URL = `https://api.github.com/repos/${APP_REPO}/contents/app/index.html?ref=main`;
 

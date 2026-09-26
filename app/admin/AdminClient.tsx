@@ -278,7 +278,7 @@ export default function AdminClient() {
 
   // Settings state
   const [settingsForm, setSettingsForm] = useState<AppSettings>({
-    appVersion: "v4.0.0",
+    appVersion: "v3.5.7",
     installerFileName: "ExcelToKMLPro-Lite-Setup.exe",
     installerFileSize: "3.2 MB",
     requireAuthForDownload: true,
@@ -2017,10 +2017,6 @@ export default function AdminClient() {
 
               <form onSubmit={handleSaveSettings} className="space-y-6">
                 {/* Application Version */}
-                <p className="text-xs text-slate-400 -mb-2">
-                  The download buttons take the installer named here from the latest GitHub release. The version and size
-                  are shown until the release details load from GitHub, and whenever GitHub can&apos;t be reached.
-                </p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
@@ -2032,7 +2028,7 @@ export default function AdminClient() {
                       value={settingsForm.appVersion}
                       onChange={(e) => setSettingsForm({ ...settingsForm, appVersion: e.target.value })}
                       className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500"
-                      placeholder="v4.0.0"
+                      placeholder="v3.5.7"
                     />
                   </div>
 
@@ -2064,14 +2060,18 @@ export default function AdminClient() {
                   </div>
                 </div>
 
+                <p className="-mt-3 text-xs text-slate-500">
+                  Shown on the download section until the latest GitHub release loads (GitHub&apos;s details win when
+                  it answers). The installer file name is also used for the download link.
+                </p>
+
                 {/* Gate & Maintenance Mode */}
                 <div className="space-y-4 pt-2">
                   <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-800/60 border border-slate-700/60">
                     <div>
-                      <div className="font-bold text-sm text-white">Require sign-in to download</div>
+                      <div className="font-bold text-sm text-white">Require Surveyor Login to Download</div>
                       <div className="text-xs text-slate-400">
-                        On: visitors sign in or create an account before the Windows app downloads. Off: anyone can
-                        download, and signed-out downloads are still counted.
+                        On: visitors sign in or register before the Windows download starts. Off: the download starts straight away.
                       </div>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
@@ -2087,11 +2087,8 @@ export default function AdminClient() {
 
                   <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-800/60 border border-slate-700/60">
                     <div>
-                      <div className="font-bold text-sm text-white">Maintenance mode</div>
-                      <div className="text-xs text-slate-400">
-                        Shows a maintenance notice on every page, pauses the web app and new sign-ups. Admins keep full
-                        access; downloads, sign-in and the Windows app keep working.
-                      </div>
+                      <div className="font-bold text-sm text-white">Maintenance Mode</div>
+                      <div className="text-xs text-slate-400">Pauses the web app for everyone except admins and shows a maintenance notice on the site. The Windows app is not affected.</div>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
@@ -2175,15 +2172,6 @@ export default function AdminClient() {
                             <span>Lock PDF &amp; Cadastral Reports on Web</span>
                           </label>
 
-                          <label className="flex items-center gap-2.5 text-xs text-slate-300 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={settingsForm.webWatermarkKml}
-                              onChange={(e) => setSettingsForm({ ...settingsForm, webWatermarkKml: e.target.checked })}
-                              className="rounded bg-slate-800 border-slate-700 text-amber-500 focus:ring-0"
-                            />
-                            <span>Add &quot;Desktop Edition&quot; Watermark in Web KML</span>
-                          </label>
                         </div>
                       </div>
                     </div>
@@ -2194,7 +2182,7 @@ export default function AdminClient() {
                 <div className="pt-4 border-t border-slate-800 space-y-3">
                   <div className="flex items-center justify-between">
                     <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                      Announcement
+                      Global Announcement Banner
                     </label>
                     <label className="inline-flex items-center gap-2 cursor-pointer text-xs text-slate-300">
                       <input
@@ -2203,7 +2191,7 @@ export default function AdminClient() {
                         onChange={(e) => setSettingsForm({ ...settingsForm, announcementActive: e.target.checked })}
                         className="rounded bg-slate-800 border-slate-700 text-blue-600 focus:ring-0"
                       />
-                      Show on every page
+                      Show on the site
                     </label>
                   </div>
                   <input
@@ -2211,13 +2199,8 @@ export default function AdminClient() {
                     value={settingsForm.announcementBanner}
                     onChange={(e) => setSettingsForm({ ...settingsForm, announcementBanner: e.target.value })}
                     className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500"
-                    maxLength={300}
-                    placeholder="e.g. Version 4.0 is out: open Excel files directly, jobs in your account"
+                    placeholder="e.g. v3.5.7 released with UK OSGB36 & Dubai DLTM improvements!"
                   />
-                  <p className="text-[11px] text-slate-500">
-                    Shown along the bottom of every page of the site (not in the admin page or inside the web app).
-                    Visitors can hide it; it shows again when you change the text. Changes reach visitors within 30 seconds.
-                  </p>
                 </div>
 
                 <div className="pt-6 flex justify-end">

@@ -1280,7 +1280,7 @@ export const db = {
       s = await prisma.appSettings.create({
         data: {
           id: 1,
-          appVersion: "v4.0.0",
+          appVersion: "v3.5.7",
           installerFileName: "ExcelToKMLPro-Lite-Setup.exe",
           installerFileSize: "3.2 MB",
           requireAuthForDownload: true,
@@ -1316,7 +1316,7 @@ export const db = {
       update: updates,
       create: {
         id: 1,
-        appVersion: updates.appVersion ?? "v4.0.0",
+        appVersion: updates.appVersion ?? "v3.5.7",
         installerFileName: updates.installerFileName ?? "ExcelToKMLPro-Lite-Setup.exe",
         installerFileSize: updates.installerFileSize ?? "3.2 MB",
         requireAuthForDownload: updates.requireAuthForDownload ?? true,

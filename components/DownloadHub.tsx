@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { useDownloadGate } from "../context/useDownloadGate";
 import {
   Download,
   FileSpreadsheet,
@@ -35,10 +34,10 @@ interface DownloadHubProps {
   bytesText: string;
   releaseDateText: string;
   sha256Hash: string;
-  /** The installer's file name, from the admin settings */
-  installerName: string;
   onToast: (msg: string) => void;
 }
+
+const INSTALLER_NAME = "ExcelToKMLPro-Lite-Setup.exe";
 
 const REQUIREMENTS = [
   { icon: Monitor, label: "Operating System", value: "Windows 10 / 11", note: "64-bit architecture" },
@@ -55,12 +54,9 @@ export default function DownloadHub({
   bytesText,
   releaseDateText,
   sha256Hash,
-  installerName,
   onToast,
 }: DownloadHubProps) {
-  const { trackDownload } = useAuth();
-  const gate = useDownloadGate();
-  const INSTALLER_NAME = installerName;
+  const { requireAuth, trackDownload } = useAuth();
   const [copied, setCopied] = useState<"hash" | "command" | null>(null);
 
   // Tag may or may not carry a leading "v" depending on the GitHub release
@@ -68,7 +64,7 @@ export default function DownloadHub({
   const verifyCommand = `Get-FileHash .\\${INSTALLER_NAME} -Algorithm SHA256`;
 
   const handleDownloadExe = () => {
-    gate(() => {
+    requireAuth(() => {
       trackDownload("windows_installer", INSTALLER_NAME, versionTag);
       onToast(`Starting download for ${INSTALLER_NAME} (${versionTag})`);
       const link = document.createElement("a");
@@ -82,7 +78,7 @@ export default function DownloadHub({
 
   const handleDownloadSampleCsv = (e: React.MouseEvent) => {
     e.preventDefault();
-    gate(() => {
+    requireAuth(() => {
       const csvData = `STATION,EASTING,NORTHING,ELEVATION,CODE,REMARKS
 TBM-01,513556.612,2787467.856,14.85,BENCHMARK,Concrete Pillar on Site Boundary
 TBM-02,513642.180,2787510.320,15.22,BENCHMARK,Brass Pin in Rock Outcrop
@@ -290,11 +286,10 @@ BLDG-C2,513620.000,2787440.000,15.15,STRUCTURE,Building Column Corner B
 
                 <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl pl-3 pr-1.5 py-1.5 mb-2">
                   <code className="flex-1 min-w-0 text-[11px] font-mono text-slate-700 truncate select-all">
-                    {sha256Hash || "Listed with the release on GitHub"}
+                    {sha256Hash}
                   </code>
                   <button
                     onClick={() => handleCopy("hash")}
-                    disabled={!sha256Hash}
                     className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-white rounded-lg transition-colors cursor-pointer shrink-0"
                     title="Copy SHA-256 hash"
                     aria-label="Copy SHA-256 hash"

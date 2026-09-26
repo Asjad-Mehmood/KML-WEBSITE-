@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { usePublicSettings } from "@/lib/publicSettings";
 
 export interface User {
   id: string;
@@ -40,7 +41,7 @@ interface AuthContextType {
 }
 
 /** ok, or the reason to show the visitor (from the server when it gave one) */
-export type AuthResult = { ok: true } | { ok: false; error: string };
+export type AuthResult = { ok: true; isAdmin?: boolean } | { ok: false; error: string };
 
 const NETWORK_ERROR = "Couldn't reach the server. Check your connection and try again.";
 
@@ -51,6 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   // Modal states for intercepting downloads
+  const publicSettings = usePublicSettings();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<"login" | "register">("register");
   const [authIntentText, setAuthIntentText] = useState(
@@ -102,7 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }, 150);
       }
 
-      return { ok: true };
+      return { ok: true, isAdmin: /admin/i.test(data.user?.role ?? "") };
     } catch (err) {
       console.error(err);
       return { ok: false, error: NETWORK_ERROR };
@@ -180,7 +182,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Guard function for downloads
   const requireAuth = (action: () => void, intentReason?: string) => {
-    if (user) {
+    // Admin setting "Require sign-in to download" switched off: no gate
+    if (user || publicSettings?.requireAuthForDownload === false) {
       action();
     } else {
       setAuthIntentText(

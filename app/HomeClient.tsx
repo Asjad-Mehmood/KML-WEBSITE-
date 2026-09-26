@@ -1,5 +1,6 @@
 "use client";
 
+import { loadPublicSettings } from "@/lib/publicSettings";
 import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import Hero from "../components/Hero";
@@ -14,23 +15,24 @@ import GridsAndGuides from "../components/GridsAndGuides";
 import CtaBanner from "../components/CtaBanner";
 import Footer from "../components/Footer";
 import { useAuth } from "../context/AuthContext";
-import { useDownloadGate } from "../context/useDownloadGate";
-import { useSiteSettings } from "../context/SiteSettings";
-import { GITHUB_REPO_URL, RELEASES_API_URL } from "@/lib/site";
-
-type ReleaseAsset = { name?: string; size?: number; browser_download_url?: string; digest?: string };
-type Release = { tag: string; url: string; date: string; assets: ReleaseAsset[]; body: string };
-
-const REPO = GITHUB_REPO_URL;
 
 export default function HomeClient() {
-  const { trackDownload } = useAuth();
-  const gate = useDownloadGate();
-  const site = useSiteSettings();
+  const { requireAuth, trackDownload } = useAuth();
 
-  // The latest GitHub release, read live; until it arrives (or if GitHub can't be reached)
-  // the version, size and file name set in the admin page are shown.
-  const [release, setRelease] = useState<Release | null>(null);
+  // Dynamic GitHub Release details
+  const [versionTag, setVersionTag] = useState("v3.6.2");
+  const [downloadUrl, setDownloadUrl] = useState(
+    "https://github.com/Asjad-Mehmood/kml-convertor/releases/latest/download/ExcelToKMLPro-Lite-Setup.exe"
+  );
+  const [releaseNotesUrl, setReleaseNotesUrl] = useState(
+    "https://github.com/Asjad-Mehmood/kml-convertor/releases/latest"
+  );
+  const [fileSizeText, setFileSizeText] = useState("3.15 MB");
+  const [bytesText, setBytesText] = useState("3.15 MB (3,305,002 bytes)");
+  const [releaseDateText, setReleaseDateText] = useState("Release Build: Sep 25, 2026");
+  const [sha256Hash, setSha256Hash] = useState(
+    "70b6f5638be6231b651b65a4af8815d3cab1c006f4822481878f5b75fb0c77e2"
+  );
 
   // Toast Notification
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -42,60 +44,83 @@ export default function HomeClient() {
     }, 3800);
   };
 
+  // Fetch latest GitHub release details
   useEffect(() => {
-    let alive = true;
-    fetch(RELEASES_API_URL)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (!alive || !data) return;
-        setRelease({
-          tag: data.tag_name || data.name || "",
-          url: data.html_url || "",
-          date: data.published_at || "",
-          assets: Array.isArray(data.assets) ? data.assets : [],
-          body: data.body || "",
-        });
-      })
-      .catch(() => {
-        // the admin settings stand in
-      });
-    return () => {
-      alive = false;
-    };
+    async function loadRelease() {
+      // Admin settings (version, installer file and size) are the fallback;
+      // GitHub's latest release, when it answers, is the source of truth
+      const settings = await loadPublicSettings();
+      if (settings?.appVersion) setVersionTag(settings.appVersion);
+      if (settings?.installerFileSize) {
+        setFileSizeText(settings.installerFileSize);
+        setBytesText(settings.installerFileSize);
+      }
+      if (settings?.installerFileName && /^[\w.-]+\.exe$/i.test(settings.installerFileName)) {
+        setDownloadUrl(`https://github.com/Asjad-Mehmood/kml-convertor/releases/latest/download/${settings.installerFileName}`);
+      }
+      try {
+        const res = await fetch(
+          "https://api.github.com/repos/Asjad-Mehmood/kml-convertor/releases/latest"
+        );
+        if (!res.ok) return;
+        const data = await res.json();
+        const tag = data.tag_name || data.name;
+        if (tag) {
+          setVersionTag(tag);
+        }
+        if (data.html_url) {
+          setReleaseNotesUrl(data.html_url);
+        }
+        if (data.published_at) {
+          const pubDate = new Date(data.published_at);
+          setReleaseDateText(
+            `Release Build: ${pubDate.toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            })}`
+          );
+        }
+        if (data.assets && Array.isArray(data.assets) && data.assets.length > 0) {
+          const exeAsset =
+            data.assets.find((a: { name?: string }) => a.name && a.name.endsWith(".exe")) ||
+            data.assets[0];
+          if (exeAsset) {
+            if (exeAsset.browser_download_url) {
+              setDownloadUrl(exeAsset.browser_download_url);
+            }
+            if (exeAsset.size) {
+              const mb = (exeAsset.size / (1024 * 1024)).toFixed(2) + " MB";
+              setFileSizeText(mb);
+              setBytesText(`${mb} (${exeAsset.size.toLocaleString()} bytes)`);
+            }
+            if (exeAsset.digest && exeAsset.digest.startsWith("sha256:")) {
+              setSha256Hash(exeAsset.digest.replace("sha256:", ""));
+            } else if (data.body) {
+              const match = data.body.match(/[a-fA-F0-9]{64}/);
+              if (match) setSha256Hash(match[0]);
+            }
+          }
+        }
+      } catch {
+        // Fallback pre-populated
+      }
+    }
+    loadRelease();
   }, []);
 
-  const installerName = site.installerFileName || "ExcelToKMLPro-Lite-Setup.exe";
-  const asset =
-    release?.assets.find((a) => a.name === installerName) ||
-    release?.assets.find((a) => a.name?.toLowerCase().endsWith(".exe")) ||
-    null;
-  const versionTag = release?.tag || site.appVersion || "v4.0.0";
-  const downloadUrl = asset?.browser_download_url || `${REPO}/releases/latest/download/${encodeURIComponent(installerName)}`;
-  const downloadName = asset?.name || installerName;
-  const releaseNotesUrl = release?.url || `${REPO}/releases/latest`;
-  const mb = asset?.size ? (asset.size / (1024 * 1024)).toFixed(2) + " MB" : "";
-  const fileSizeText = mb || site.installerFileSize || "3.2 MB";
-  const bytesText = asset?.size ? `${mb} (${asset.size.toLocaleString()} bytes)` : fileSizeText;
-  const releaseDateText = release?.date
-    ? `Release Build: ${new Date(release.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`
-    : "Latest release";
-  const sha256Hash =
-    (asset?.digest?.startsWith("sha256:") ? asset.digest.slice(7) : "") ||
-    release?.body.match(/[a-fA-F0-9]{64}/)?.[0] ||
-    "";
-
-  // Download buttons follow the admin setting "Require sign-in to download"
+  // Gated download handler used across buttons
   const handleDownloadApp = () => {
-    gate(() => {
-      trackDownload("windows_installer", downloadName, versionTag);
-      showToast(`🚀 Starting download for ${downloadName} (${versionTag})`);
+    requireAuth(() => {
+      trackDownload("windows_installer", "ExcelToKMLPro-Lite-Setup.exe", versionTag);
+      showToast(`🚀 Starting download for ExcelToKMLPro-Lite-Setup.exe (${versionTag})`);
       const link = document.createElement("a");
       link.href = downloadUrl;
-      link.download = downloadName;
+      link.download = "ExcelToKMLPro-Lite-Setup.exe";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-    });
+    }, "Sign in or create a free account to download the Windows app.");
   };
 
   return (
@@ -140,7 +165,6 @@ export default function HomeClient() {
           bytesText={bytesText}
           releaseDateText={releaseDateText}
           sha256Hash={sha256Hash}
-          installerName={downloadName}
           onToast={showToast}
         />
 

@@ -4,11 +4,25 @@ import path from "path";
 import { db } from "@/lib/db";
 import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
 import { WEB_APP_LOGIN_URL } from "@/lib/authRedirect";
-import { readSettings } from "@/lib/siteSettings";
 import { fetchAppSource } from "@/lib/appSource";
 
 export const dynamic = "force-dynamic";
 
+
+// The web app keeps its own sign-in in localStorage and can't see the site's
+// httpOnly cookie, so a signed-in visitor looked signed out inside it. Hand it
+// the same session before its scripts run: the site's sign-in wins, and
+// signing out on the site ends it here too (the session is deleted).
+function withSiteSession(html: string, token: string, user: unknown): string {
+  const json = (v: unknown) => JSON.stringify(v).replace(/</g, "\\u003c");
+  const tag =
+    "<script>try{" +
+    "localStorage.setItem('surveyor_auth_token'," + json(token) + ");" +
+    "localStorage.setItem('surveyor_user_profile'," + json(JSON.stringify(user)) + ");" +
+    "}catch(e){}</script>";
+  const m = /<head[^>]*>/i.exec(html);
+  return m ? html.slice(0, m.index + m[0].length) + tag + html.slice(m.index + m[0].length) : tag + html;
+}
 
 async function applyWebRestrictions(html: string, req: NextRequest): Promise<string> {
   try {
@@ -303,25 +317,6 @@ async function applyWebRestrictions(html: string, req: NextRequest): Promise<str
       }
     }, true);
 
-    // Admin setting "watermark": KML and KMZ from the web demo say where they were made.
-    // The app builds every Google Earth file with build(); the note goes into the
-    // document's name and its one-line summary (the Snippet shown under the name).
-    if (config.watermark && typeof window.build === "function" && !window.build.__marked) {
-      const plainBuild = window.build;
-      const MARK = "Made with the Excel to KML Pro web demo \u00b7 exceltokml.com";
-      window.build = function() {
-        let kml = plainBuild.apply(this, arguments);
-        if (typeof kml !== "string" || kml.indexOf(MARK) >= 0) return kml;
-        const doc = kml.indexOf("<Document");
-        const nameEnd = doc >= 0 ? kml.indexOf("</name>", doc) : -1;
-        if (nameEnd > 0) kml = kml.slice(0, nameEnd) + " (web demo)" + kml.slice(nameEnd);
-        const at = kml.indexOf("<description>", doc);
-        const snippet = '<Snippet maxLines="1">' + MARK + "</Snippet>";
-        return at > 0 ? kml.slice(0, at) + snippet + kml.slice(at) : kml.replace(/(<Document[^>]*>)/, "$1" + snippet);
-      };
-      window.build.__marked = true;
-    }
-
     if (config.disableReports) {
       const repBtn = document.getElementById("saveRep");
       if (repBtn) {
@@ -596,28 +591,18 @@ const SIGN_IN_REQUIRED_HTML = `<!doctype html>
 
 const MAINTENANCE_HTML = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Back soon — Excel to KML Pro</title></head>
+<title>Maintenance — Excel to KML Pro</title></head>
 <body style="margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:system-ui,-apple-system,sans-serif;background:#f8fafc;color:#0f172a">
-<main style="max-width:400px;padding:32px;text-align:center">
-<h1 style="font-size:20px;margin:0 0 8px">The web app is paused for maintenance</h1>
-<p style="font-size:14px;color:#475569;line-height:1.5;margin:0 0 20px">It will be back shortly. The Windows app works as usual, and your files and jobs are safe.</p>
-<a href="/" target="_top" style="display:inline-block;padding:10px 20px;border-radius:10px;background:#0071e3;color:#fff;font-weight:600;font-size:14px;text-decoration:none">Back to the site</a>
+<main style="max-width:380px;padding:32px;text-align:center">
+<h1 style="font-size:20px;margin:0 0 8px">The web app is down for maintenance</h1>
+<p style="font-size:14px;color:#475569;line-height:1.5;margin:0">We'll be back shortly. The Windows app keeps working as usual.</p>
 </main></body></html>`;
 
 export async function GET(req: NextRequest) {
   // 0. Web app is for signed-in users only
-  const session = await sessionForToken(tokenFromRequest(req));
-  if (session) {
-    // In maintenance mode (admin settings) only admins can open it
-    const settings = await readSettings();
-    if (settings?.maintenanceMode && !db.isAdmin(session.user)) {
-      return new NextResponse(MAINTENANCE_HTML, {
-        status: 503,
-        headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "Retry-After": "600" },
-      });
-    }
-  }
-  if (!session) {
+  const token = tokenFromRequest(req);
+  const session = await sessionForToken(token);
+  if (!session || !token) {
     return new NextResponse(SIGN_IN_REQUIRED_HTML, {
       status: 401,
       headers: {
@@ -627,7 +612,16 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  // 1. Read the page from the program's repository (lib/appSource.ts)
+  // Admin setting "Maintenance mode": paused for everyone but admins
+  const maintSettings = await db.getSettings().catch(() => null);
+  if (maintSettings?.maintenanceMode && !db.isAdmin(session.user)) {
+    return new NextResponse(MAINTENANCE_HTML, {
+      status: 503,
+      headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "Retry-After": "600" },
+    });
+  }
+
+  // 1. Fetch directly from GitHub on every open / refresh
   try {
     const res = await fetchAppSource();
 
@@ -644,7 +638,7 @@ export async function GET(req: NextRequest) {
         }
       }
 
-      const protectedContent = await applyWebRestrictions(rawContent, req);
+      const protectedContent = withSiteSession(await applyWebRestrictions(rawContent, req), token, db.sanitizeUser(session.user));
 
       return new NextResponse(protectedContent, {
         status: 200,
@@ -665,7 +659,7 @@ export async function GET(req: NextRequest) {
     const localFilePath = path.join(process.cwd(), "public", "app.html");
     if (fs.existsSync(localFilePath)) {
       const rawContent = await fs.promises.readFile(localFilePath, "utf-8");
-      const protectedContent = await applyWebRestrictions(rawContent, req);
+      const protectedContent = withSiteSession(await applyWebRestrictions(rawContent, req), token, db.sanitizeUser(session.user));
       return new NextResponse(protectedContent, {
         status: 200,
         headers: {

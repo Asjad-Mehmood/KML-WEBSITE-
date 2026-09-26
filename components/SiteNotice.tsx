@@ -1,76 +1,73 @@
 "use client";
 
-import React, { useSyncExternalStore } from "react";
+import { useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import { Megaphone, Wrench, X } from "lucide-react";
-import { useSiteSettings } from "@/context/SiteSettings";
+import { usePublicSettings } from "@/lib/publicSettings";
 
-/* a dismissed announcement stays dismissed for this visit, until its text changes */
-const KEY = "site_notice_hidden";
+const KEY = "site-notice-dismissed";
 const listeners = new Set<() => void>();
-const hiddenText = () => {
+const readDismissed = () => {
   try {
-    return sessionStorage.getItem(KEY) || "";
+    return localStorage.getItem(KEY) || "";
   } catch {
     return "";
   }
 };
-const subscribe = (fn: () => void) => {
-  listeners.add(fn);
-  return () => listeners.delete(fn);
-};
-const hide = (text: string) => {
-  try {
-    sessionStorage.setItem(KEY, text);
-  } catch {
-    // private mode: it shows again on the next page
-  }
-  listeners.forEach((fn) => fn());
-};
 
-/**
- * The announcement and the maintenance notice set in the admin page, on every page of the
- * site. It sits along the bottom, clear of the floating navigation bar.
- */
+// The admin's announcement (Settings → Announcement) and the maintenance
+// notice, as a thin bar along the bottom of public pages. A visitor can close an
+// announcement; it comes back when the text changes.
 export default function SiteNotice() {
-  const { announcement, maintenanceMode } = useSiteSettings();
-  const path = usePathname() || "/";
-  const hidden = useSyncExternalStore(subscribe, hiddenText, () => "");
-  // the admin page shows the settings themselves; the web app shows its own maintenance page
-  if (path.startsWith("/admin") || path === "/app") return null;
+  const settings = usePublicSettings();
+  const pathname = usePathname();
+  const dismissed = useSyncExternalStore(
+    (cb) => {
+      listeners.add(cb);
+      return () => listeners.delete(cb);
+    },
+    readDismissed,
+    () => ""
+  );
+  if (!settings || pathname?.startsWith("/admin") || pathname === "/app") return null;
 
-  const notices: { key: string; icon: React.ElementType; text: string; tone: string; closable: boolean }[] = [];
-  if (maintenanceMode) {
-    notices.push({
-      key: "m",
-      icon: Wrench,
-      text: "We're doing maintenance. The web app and new sign-ups are paused for a short while; downloads and the Windows app work as usual.",
-      tone: "bg-amber-50 text-amber-900 border-amber-200",
-      closable: false,
-    });
-  }
-  if (announcement && hidden !== announcement) {
-    notices.push({ key: "a", icon: Megaphone, text: announcement, tone: "bg-[#0071e3] text-white border-[#0071e3]", closable: true });
-  }
-  if (!notices.length) return null;
+  const maintenance = settings.maintenanceMode;
+  const text = maintenance
+    ? "The web app is down for maintenance for a short while. The Windows app works as usual."
+    : settings.announcement;
+  if (!text || (!maintenance && dismissed === text)) return null;
+
+  const close = () => {
+    try {
+      localStorage.setItem(KEY, text);
+    } catch {
+      // private mode: it just shows again next time
+    }
+    listeners.forEach((l) => l());
+  };
 
   return (
-    <div className="fixed bottom-3 inset-x-3 z-[60] flex flex-col items-center gap-2 pointer-events-none" role="region" aria-label="Site notices">
-      {notices.map((n) => (
-        <div
-          key={n.key}
-          role={n.key === "m" ? "alert" : "status"}
-          className={`pointer-events-auto max-w-3xl w-full flex items-start gap-3 px-4 py-3 rounded-2xl border shadow-lg text-[13px] leading-snug ${n.tone}`}
+    <div
+      role="status"
+      className={`fixed bottom-0 inset-x-0 z-[45] px-10 py-2.5 text-center text-[13px] font-medium shadow-[0_-4px_16px_rgba(0,0,0,0.08)] ${
+        maintenance ? "bg-amber-50 text-amber-900 border-t border-amber-200" : "bg-[#0071e3] text-white"
+      }`}
+    >
+      {maintenance ? (
+        <Wrench className="inline w-3.5 h-3.5 mr-1.5 -mt-0.5" aria-hidden />
+      ) : (
+        <Megaphone className="inline w-3.5 h-3.5 mr-1.5 -mt-0.5" aria-hidden />
+      )}
+      {text}
+      {!maintenance && (
+        <button
+          onClick={close}
+          aria-label="Close announcement"
+          className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md hover:bg-white/15 cursor-pointer"
         >
-          <n.icon className="w-4 h-4 mt-0.5 shrink-0" aria-hidden />
-          <p className="flex-1 min-w-0 break-words">{n.text}</p>
-          {n.closable && (
-            <button onClick={() => hide(n.text)} aria-label="Hide this notice" className="shrink-0 -m-1 p-1 rounded-lg hover:bg-white/15 cursor-pointer">
-              <X className="w-4 h-4" />
-            </button>
-          )}
-        </div>
-      ))}
+          <X className="w-3.5 h-3.5" />
+        </button>
+      )}
     </div>
   );
 }

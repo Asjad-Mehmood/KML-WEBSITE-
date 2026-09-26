@@ -11,7 +11,7 @@ const LOCAL_CANDIDATES = [
 const TARGET_PATH = path.resolve(process.cwd(), "public/app.html");
 // The program's repository is private: with APP_SOURCE_TOKEN (read-only) the page is read
 // through the GitHub API; without it, from raw.githubusercontent.com while the repo is public.
-const APP_REPO = "Asjad-Mehmood/kml-convertor";
+const APP_REPO = "Asjad-Mehmood/kml-convertor-src";
 const GITHUB_RAW_URL = `https://raw.githubusercontent.com/${APP_REPO}/main/app/index.html`;
 const GITHUB_API_URL = `https://api.github.com/repos/${APP_REPO}/contents/app/index.html?ref=main`;
 const TOKEN = (process.env.APP_SOURCE_TOKEN || "").trim();
