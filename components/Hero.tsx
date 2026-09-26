@@ -62,15 +62,26 @@ export default function Hero({ versionTag, fileSizeText, onDownloadClick }: Hero
             </a>
 
             {/* Headline */}
-            <h1 className="text-[28px] sm:text-[34px] lg:text-[38px] font-extrabold tracking-tight text-slate-900 leading-[1.15] mb-5 text-balance">
-              Convert Geospatial Coordinate Tables into{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0071e3] via-[#0284c7] to-[#0ea5e9]">
-                <span className="whitespace-nowrap">Google Earth 3D</span>{" "}
-                <span className="whitespace-nowrap">KML &amp; KMZ &amp; DXF</span>
+            <h1 className="mb-5">
+              <span className="block text-[29px] sm:text-[38px] lg:text-[42px] font-extrabold tracking-tight text-slate-900 leading-[1.12] text-balance">
+                Convert Geospatial Coordinate Tables into{" "}
+                <span className="whitespace-nowrap text-transparent bg-clip-text bg-gradient-to-r from-[#0071e3] via-[#0284c7] to-[#0ea5e9]">
+                  Google Earth 3D
+                </span>
               </span>
-              <span className="sr-only"> — </span>
-              <span className="block mt-3 text-lg sm:text-xl lg:text-[22px] font-bold tracking-normal text-slate-600 leading-snug">
-                Complete with Site Photos &amp; Comprehensive Reports
+              <span className="sr-only"> as KML, KMZ and DXF — complete with site photos and comprehensive reports</span>
+              <span aria-hidden className="mt-4 flex flex-wrap items-center gap-x-2.5 gap-y-2">
+                {["KML", "KMZ", "DXF"].map((f) => (
+                  <span
+                    key={f}
+                    className="inline-flex items-center px-2.5 py-1 rounded-lg bg-blue-50 border border-blue-100 text-[13px] sm:text-sm font-bold tracking-wide text-[#0071e3]"
+                  >
+                    {f}
+                  </span>
+                ))}
+                <span className="text-[15px] sm:text-base font-medium text-slate-500 leading-snug">
+                  with site photos &amp; comprehensive reports
+                </span>
               </span>
             </h1>
 
