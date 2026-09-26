@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { recentFromSender, saveMessage, TOPICS, type Topic } from "@/lib/contactMessages";
 import { isMailConfigured, sendMail } from "@/lib/mailer";
-import { senderAck, supportAlert } from "@/lib/contactEmail";
+import { supportAlert } from "@/lib/contactEmail";
 import { clientIp } from "@/lib/loginThrottle";
 import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
 import { SUPPORT_EMAIL } from "@/lib/site";
@@ -10,7 +10,7 @@ const EMAIL_RE = /^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,}$/;
 const DETAIL_KEYS = ["Version", "Platform", "Grid"] as const;
 
 // Contact form: saved first (so nothing is lost), then the support inbox is
-// alerted and the sender gets an acknowledgement with a reference.
+// alerted. Nothing is emailed to the sender.
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
   // Hidden field only bots fill in: pretend it worked
@@ -48,13 +48,13 @@ export async function POST(req: NextRequest) {
       userAgent: req.headers.get("user-agent")?.slice(0, 300) ?? null,
     });
 
+    // Alert the support inbox only (Reply-To is the sender); the sender gets no
+    // automatic email. A mail problem never loses the saved message.
     if (isMailConfigured()) {
       const m = { ref: saved.ref, name, email, topic, message, details };
-      // Both at once; a mail problem never loses the saved message
-      await Promise.allSettled([
-        sendMail({ to: SUPPORT_EMAIL, replyTo: `${name} <${email}>`, ...supportAlert(m) }),
-        sendMail({ to: email, ...senderAck(m) }),
-      ]).then((r) => r.forEach((x) => x.status === "rejected" && console.warn("Contact email failed:", x.reason)));
+      await sendMail({ to: SUPPORT_EMAIL, replyTo: `${name} <${email}>`, ...supportAlert(m) }).catch((e) =>
+        console.warn("Contact email failed:", e)
+      );
     }
     return NextResponse.json({ ok: true, ref: saved.ref });
   } catch (err) {
