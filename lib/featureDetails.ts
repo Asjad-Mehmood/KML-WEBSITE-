@@ -92,6 +92,54 @@ export const FEATURE_DETAILS: Record<string, FeatureDetail> = {
     ],
   },
 
+  "Offline Grid List": {
+    title: "5,800+ Coordinate Systems, Offline",
+    summary:
+      "Every coordinate system is stored inside the program — national grids, UTM zones, state planes and geographic systems — so nothing is looked up online and it works on site without a connection.",
+    points: [
+      "Search by grid name, country or EPSG code, for example “Qatar”, “British National Grid” or “32639”.",
+      "Every projection family is covered: transverse Mercator, Lambert conic, oblique Mercator, stereographic, Cassini and the rest.",
+      "The shift from the grid's own datum to WGS 84, which Google Earth uses, is applied automatically wherever one is published.",
+      "A note warns when a system's eastings and northings are not in metres, or when it is latitude and longitude rather than a grid.",
+    ],
+  },
+  "Near This Search": {
+    title: "Find a Grid by Location",
+    summary:
+      "Not sure which zone a job is in? Type a rough latitude and longitude and the list narrows to the systems whose published area of use covers that spot.",
+    specs: [["Example", "25.29, 51.53 → systems used around Doha"]],
+    points: [
+      "Uses each system's official area of use from the EPSG dataset.",
+      "Handy for picking the right UTM zone or state plane zone without looking it up.",
+    ],
+  },
+  "Accuracy Badges": {
+    title: "Accuracy Badges",
+    summary:
+      "Each system in the list shows how closely its datum is tied to WGS 84 — the datum Google Earth uses — so you know how far to trust a conversion before relying on it.",
+    specs: [
+      ["Within 1 m", "already on or aligned with WGS 84"],
+      ["1 to 2 m", "published seven-parameter shift applied"],
+      ["5 to 10 m", "published three-parameter shift applied"],
+      ["1 to 3 m", "officially needs a national grid file; a published seven-parameter shift is used instead"],
+      ["No published tie", "old local datum with no official link to WGS 84"],
+    ],
+    points: [
+      "Anything worse than a metre or two is worth proving against a known mark before you trust it.",
+      "Site calibration with your own control points can tighten a loosely tied grid for one project.",
+    ],
+  },
+  "Out-of-Area Check": {
+    title: "Out-of-Area Check",
+    summary:
+      "After converting, any point that lands outside where the chosen grid is used is counted and flagged. That is what a wrong zone or swapped easting and northing columns look like.",
+    points: [
+      "The check uses the grid's official area of use, so it works for all 5,800+ systems.",
+      "Fix the zone or the column order and convert again — nothing is saved until you choose to.",
+    ],
+    tip: "Check one mark you know before sending a file out; it catches most set-up mistakes in seconds.",
+  },
+
   // ── Elevations & Levels ───────────────────────────────────────────────
   "Ground Pins": {
     title: "Ground Pins",

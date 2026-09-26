@@ -39,7 +39,7 @@ const FEATURES: FeatureCard[] = [
     badge: "Global Coverage",
     title: "Official Regional Map Grids",
     desc: "Works with government coordinate grids across UAE, Qatar, Pakistan, Saudi Arabia, the UK, and 5,800+ other coordinate systems worldwide.",
-    chips: ["Dubai DLTM", "Qatar National Grid", "Pakistan UTM 42N", "Saudi Arabia UTM 38N"],
+    chips: ["Offline Grid List", "Near This Search", "Accuracy Badges", "Out-of-Area Check"],
     layout: "wide",
     preview: "grids",
   },
@@ -238,8 +238,7 @@ function FeatureItem({ f, idx, onOpen }: { f: FeatureCard; idx: number; onOpen: 
               {f.desc}
             </p>
 
-            {/* The grids preview already lists these names */}
-            <div className={`mt-auto flex-wrap gap-1.5 ${f.preview === "grids" ? "hidden" : "flex"}`}>
+            <div className="mt-auto flex flex-wrap gap-1.5">
               {f.chips.map((chip) => (
                 <button
                   key={chip}
@@ -316,7 +315,7 @@ export default function Features() {
 
         <FeatureDetailDialog
           item={open?.item ?? null}
-          siblings={card?.chips ?? []}
+          siblings={card ? (card.preview === "grids" ? [...GRID_PREVIEW.map((g) => g.name), ...card.chips] : card.chips) : []}
           theme={theme}
           onSelect={(item) => setOpen((o) => (o ? { ...o, item } : o))}
           onClose={() => setOpen(null)}
