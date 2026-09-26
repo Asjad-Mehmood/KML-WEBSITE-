@@ -1,5 +1,7 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { goToDownload } from "@/lib/downloadHandoff";
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -58,6 +60,7 @@ export default function DownloadHub({
   onToast,
 }: DownloadHubProps) {
   const { requireAuth, trackDownload } = useAuth();
+  const router = useRouter();
   const [copied, setCopied] = useState<"hash" | "command" | null>(null);
 
   // Tag may or may not carry a leading "v" depending on the GitHub release
@@ -66,14 +69,9 @@ export default function DownloadHub({
 
   const handleDownloadExe = () => {
     requireAuth(() => {
+      // Record it, then the thank-you page starts the file
       trackDownload("windows_installer", INSTALLER_NAME, versionTag);
-      onToast(`Starting download for ${INSTALLER_NAME} (${versionTag})`);
-      const link = document.createElement("a");
-      link.href = downloadUrl;
-      link.download = INSTALLER_NAME;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      goToDownload(router.push, downloadUrl, versionTag);
     }, "Sign in or create a free account to download the Windows app.");
   };
 

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getClientIp, getIpGeoLocation } from "@/lib/geo";
+import { prisma } from "@/lib/prisma";
+import { isMailConfigured, sendMail } from "@/lib/mailer";
+import { downloadThanksEmail } from "@/lib/downloadEmail";
 
 export async function POST(req: NextRequest) {
   try {
@@ -40,6 +43,11 @@ export async function POST(req: NextRequest) {
     const geo = await getIpGeoLocation(clientIp, req);
     const userAgent = req.headers.get("user-agent") || "Browser Client";
 
+    // First time this account downloads the app? (checked before recording)
+    const firstDownload =
+      assetType === "windows_installer" &&
+      (await prisma.download.count({ where: { userId: sessionData.user.id, assetType: "windows_installer" } }).catch(() => 1)) === 0;
+
     // Record the download in database
     const record = await db.recordDownload({
       userId: sessionData.user.id,
@@ -53,8 +61,21 @@ export async function POST(req: NextRequest) {
       userAgent,
     });
 
+    // One-time thank-you email with the getting-started links
+    let emailed = false;
+    if (firstDownload && isMailConfigured() && sessionData.user.email) {
+      try {
+        const mail = downloadThanksEmail(sessionData.user.name, String(version));
+        await sendMail({ to: sessionData.user.email, ...mail });
+        emailed = true;
+      } catch (e) {
+        console.warn("Download thank-you email failed:", e);
+      }
+    }
+
     return NextResponse.json({
       success: true,
+      emailed,
       recordId: record.id,
       fileName,
       downloadCount: sessionData.user.downloadCount + 1,
