@@ -555,6 +555,19 @@ export const db = {
     };
   },
 
+  /** Many converted points at once (from one exported file) */
+  async recordConversions(
+    userId: string,
+    coordSystem: string,
+    points: { station: string; featureCode: string; easting: number; northing: number; elevation: number; lat: string; lon: string }[]
+  ): Promise<number> {
+    if (!points.length) return 0;
+    const res = await prisma.conversion.createMany({
+      data: points.map((pt) => ({ id: "conv_" + crypto.randomBytes(8).toString("hex"), userId, coordSystem, ...pt })),
+    });
+    return res.count;
+  },
+
   async getAllConversions(): Promise<ConversionRecord[]> {
     const rows = await prisma.conversion.findMany({ orderBy: { timestamp: "desc" } });
     return rows.map((c) => ({

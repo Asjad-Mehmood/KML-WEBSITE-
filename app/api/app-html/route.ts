@@ -460,6 +460,61 @@ async function applyWebRestrictions(html: string, req: NextRequest): Promise<str
       }
     }, true);
 
+    // 2b. Hook saves made through the browser's "Save as" window
+    // (showSaveFilePicker), which Chrome and Edge use instead of a download.
+    // The app swaps window.showSaveFilePicker on and off, so the property is
+    // wrapped with a getter/setter that always hands out the archiving version.
+    try {
+      let basePicker = window.showSaveFilePicker;
+      const wrappedFor = new WeakMap();
+      const currentCrs = function() {
+        const c = window.CRSSEL && window.CRSSEL.c;
+        if (typeof c === "string") return c;
+        const sys = document.getElementById("sys");
+        return sys && sys.value ? sys.value : undefined;
+      };
+      const wrapPicker = function(fn) {
+        if (typeof fn !== "function") return fn;
+        if (wrappedFor.has(fn)) return wrappedFor.get(fn);
+        const wrapped = async function(opts) {
+          const handle = await fn.call(window, opts);
+          const name = (handle && handle.name) || (opts && opts.suggestedName) || "export";
+          if (handle && typeof handle.createWritable === "function") {
+            const origCreate = handle.createWritable.bind(handle);
+            handle.createWritable = async function(o) {
+              const w = await origCreate(o);
+              const parts = [];
+              const origWrite = w.write.bind(w);
+              const origClose = w.close.bind(w);
+              w.write = function(d) {
+                try { parts.push(d && d.type === "write" ? d.data : d); } catch (e) {}
+                return origWrite(d);
+              };
+              w.close = async function() {
+                const r = await origClose();
+                try {
+                  window.storeUserFile("export", name, new Blob(parts), "application/octet-stream", {
+                    action: "browser_export",
+                    crs: currentCrs()
+                  });
+                } catch (e) {}
+                return r;
+              };
+              return w;
+            };
+          }
+          return handle;
+        };
+        wrappedFor.set(fn, wrapped);
+        return wrapped;
+      };
+      Object.defineProperty(window, "showSaveFilePicker", {
+        configurable: true,
+        get: function() { return wrapPicker(basePicker); },
+        set: function(v) { basePicker = v; }
+      });
+    } catch (e) {}
+
     // 3. Hook standard download triggers
     document.addEventListener("click", function(e) {
       const a = e.target && e.target.closest ? e.target.closest("a[download]") : null;

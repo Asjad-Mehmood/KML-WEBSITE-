@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getAdminSession } from "@/lib/adminAuth";
+import { pointsFromExport } from "@/lib/exportPoints";
+
+// Largest file kept per upload
+const MAX_FILE_BYTES = 10 * 1024 * 1024;
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -66,6 +70,13 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const user = await getAuthUser(req);
+    if (!user) {
+      return NextResponse.json({ error: "Please sign in." }, { status: 401, headers: CORS_HEADERS });
+    }
+    const declared = Number(req.headers.get("content-length") || 0);
+    if (declared > MAX_FILE_BYTES * 1.4) {
+      return NextResponse.json({ error: "File too large (10 MB max)." }, { status: 413, headers: CORS_HEADERS });
+    }
     const contentType = req.headers.get("content-type") || "";
     const platformHeader = req.headers.get("x-app-platform") || undefined;
 
@@ -133,14 +144,17 @@ export async function POST(req: NextRequest) {
     if (!fileName) {
       return NextResponse.json({ error: "fileName is required" }, { status: 400, headers: CORS_HEADERS });
     }
+    if (fileBuffer && fileBuffer.length > MAX_FILE_BYTES) {
+      return NextResponse.json({ error: "File too large (10 MB max)." }, { status: 413, headers: CORS_HEADERS });
+    }
 
     // Only a valid session decides whose account a file belongs to; a userId or
     // email sent in the request is ignored so nobody can plant files in
-    // another user's dashboard. Signed-out uploads are kept without an owner.
+    // another user's dashboard.
     const savedRecord = await db.saveUserFile({
-      userId: user ? user.id : null,
-      userEmail: user ? user.email : null,
-      userName: user ? user.name : null,
+      userId: user.id,
+      userEmail: user.email,
+      userName: user.name,
       direction,
       fileName,
       fileBuffer,
@@ -153,6 +167,12 @@ export async function POST(req: NextRequest) {
       ipAddress,
       userAgent,
     });
+
+    // Keep each converted point from an exported KML / KMZ / CSV
+    if (direction === "export" && fileBuffer) {
+      const points = pointsFromExport(fileName, fileBuffer);
+      await db.recordConversions(user.id, crs || "", points).catch((e) => console.warn("Saving conversions failed:", e));
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { contentBase64: _discard, ...cleanRecord } = savedRecord;
