@@ -197,58 +197,119 @@ async function applyWebRestrictions(html: string, req: NextRequest): Promise<str
       };
     }
 
+    // Points the app will actually save: its own "ready" counter in the
+    // status bar, which covers typed, pasted, opened and dropped sheets alike.
+    // Falls back to counting non-empty sheet lines if the counter is missing.
+    function pointCount() {
+      const ok = document.getElementById("stOk");
+      const n = ok ? parseInt(ok.textContent || "", 10) : NaN;
+      if (!isNaN(n)) return n;
+      const dataEl = document.getElementById("data");
+      if (!dataEl || !dataEl.value) return 0;
+      const lines = dataEl.value.trim().split("\\n").filter(function(l) { return l.trim().length > 0; });
+      return Math.max(0, lines.length - 1);
+    }
+    const overLimit = function() { return pointCount() > config.maxPoints; };
+
+    // Keep the first maxPoints points: cut the sheet (header + rows) and let
+    // the app re-read it. If the sheet had no header row, one more row goes.
     function trimDataToLimit() {
       const dataEl = document.getElementById("data");
       if (!dataEl) return;
       const lines = dataEl.value.split("\\n");
-      const header = lines[0] || "";
-      const isHeader = header.toLowerCase().includes("station") || header.toLowerCase().includes("east") || header.toLowerCase().includes("x");
-      const maxLines = isHeader ? config.maxPoints + 1 : config.maxPoints;
-
-      if (lines.length > maxLines) {
-        dataEl.value = lines.slice(0, maxLines).join("\\n");
-        const chkBtn = document.getElementById("calRun") || document.getElementById("scRun");
-        if (chkBtn) chkBtn.click();
+      let keep = config.maxPoints + 1;
+      for (let tries = 0; tries < 3 && lines.length > keep - 1; tries++) {
+        dataEl.value = lines.slice(0, keep).join("\\n");
+        dataEl.dispatchEvent(new Event("input", { bubbles: true }));
+        if (!overLimit()) break;
+        keep -= 1;
       }
     }
 
+    // Warn as soon as a sheet goes over the limit (not on every keystroke
+    // after that): watch the app's "ready" counter.
+    let warnedAt = 0;
     function checkPointsLimit() {
-      const dataEl = document.getElementById("data");
-      if (!dataEl || !dataEl.value) return;
-      const lines = dataEl.value.trim().split("\\n").filter(l => l.trim().length > 0);
-      const isHeader = lines[0] && (lines[0].toLowerCase().includes("station") || lines[0].toLowerCase().includes("east") || lines[0].toLowerCase().includes("x"));
-      const pointCount = isHeader ? lines.length - 1 : lines.length;
-
-      if (pointCount > config.maxPoints) {
-        showLimitModal(pointCount);
+      const n = pointCount();
+      if (n > config.maxPoints && n !== warnedAt) {
+        warnedAt = n;
+        showLimitModal(n);
+      } else if (n <= config.maxPoints) {
+        warnedAt = 0;
       }
     }
-
+    const okEl = document.getElementById("stOk");
+    if (okEl && window.MutationObserver) {
+      new MutationObserver(function() { setTimeout(checkPointsLimit, 50); })
+        .observe(okEl, { childList: true, characterData: true, subtree: true });
+    }
     const dataEl = document.getElementById("data");
     if (dataEl) {
-      dataEl.addEventListener("change", checkPointsLimit);
-      dataEl.addEventListener("paste", function() {
-        setTimeout(checkPointsLimit, 250);
-      });
+      dataEl.addEventListener("change", function() { setTimeout(checkPointsLimit, 250); });
+      dataEl.addEventListener("paste", function() { setTimeout(checkPointsLimit, 250); });
     }
 
-    const msaveBtn = document.getElementById("msave");
-    if (msaveBtn) {
-      msaveBtn.addEventListener("click", function(e) {
-        const dataEl = document.getElementById("data");
-        if (dataEl && dataEl.value) {
-          const lines = dataEl.value.trim().split("\\n").filter(l => l.trim().length > 0);
-          const isHeader = lines[0] && (lines[0].toLowerCase().includes("station") || lines[0].toLowerCase().includes("east"));
-          const pointCount = isHeader ? lines.length - 1 : lines.length;
-          if (pointCount > config.maxPoints) {
-            e.preventDefault();
-            e.stopPropagation();
-            showLimitModal(pointCount);
-            return false;
-          }
-        }
-      }, true);
+    // Every way out of the app with converted points: file saves, the
+    // derived sheets, and copying the converted table. Blocked while the
+    // sheet is over the limit; the job file (jobSave) stays allowed.
+    const EXPORT_IDS = [
+      "save", "saveKmz", "saveCsv", "saveXlsx", "saveDxf", "saveInst", "saveMain", "readySave", "msave",
+      "radCsv", "radCopy", "chSave", "profSave", "cmpSave", "copyTbl"
+    ];
+    const EXPORT_SELECTOR = EXPORT_IDS.map(function(id) { return "#" + id; }).join(",");
+    document.addEventListener("click", function(e) {
+      const btn = e.target && e.target.closest ? e.target.closest(EXPORT_SELECTOR) : null;
+      if (btn && overLimit()) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        showLimitModal(pointCount());
+      }
+    }, true);
+
+    // Ctrl+S / Cmd+S saves straight away in the app
+    window.addEventListener("keydown", function(e) {
+      if ((e.ctrlKey || e.metaKey) && String(e.key).toLowerCase() === "s" && overLimit()) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        showLimitModal(pointCount());
+      }
+    }, true);
+
+    // Batch converts many sheets at once, so it can't be held to a per-sheet
+    // limit: it's a desktop feature in the web demo, like PDF reports.
+    function showDesktopOnly(title, text) {
+      let modal = document.getElementById("web-desktop-modal");
+      if (!modal) {
+        modal = document.createElement("div");
+        modal.id = "web-desktop-modal";
+        modal.style.cssText = "position:fixed;inset:0;background:rgba(15,23,42,0.65);backdrop-filter:blur(4px);z-index:999999;display:flex;align-items:center;justify-content:center;padding:16px;font-family:system-ui,-apple-system,sans-serif;";
+        modal.innerHTML = '<div style="background:#fff;border-radius:16px;max-width:400px;width:100%;padding:24px;box-shadow:0 20px 40px rgba(0,0,0,0.2);text-align:center;">' +
+          '<div style="width:48px;height:48px;border-radius:12px;background:#eff6ff;color:#2563eb;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:24px;">🗂️</div>' +
+          '<h3 id="web-desktop-title" style="font-size:17px;font-weight:800;color:#0f172a;margin:0 0 8px;"></h3>' +
+          '<p id="web-desktop-text" style="font-size:13px;color:#475569;line-height:1.5;margin:0 0 20px;"></p>' +
+          '<button id="btn-desktop-dl" style="width:100%;padding:10px 16px;background:#2563eb;color:#fff;font-weight:700;font-size:13px;border-radius:10px;border:none;cursor:pointer;margin-bottom:8px;">Download Windows Desktop App</button>' +
+          '<button id="btn-desktop-close" style="width:100%;padding:8px 16px;background:#f8fafc;color:#64748b;font-weight:600;font-size:12px;border-radius:10px;border:1px solid #e2e8f0;cursor:pointer;">Dismiss</button>' +
+        '</div>';
+        document.body.appendChild(modal);
+        document.getElementById("btn-desktop-dl").onclick = function() {
+          if (window.top) window.top.location.href = "/#download";
+          else window.location.href = "/#download";
+        };
+        document.getElementById("btn-desktop-close").onclick = function() { modal.style.display = "none"; };
+      }
+      document.getElementById("web-desktop-title").textContent = title;
+      document.getElementById("web-desktop-text").textContent = text;
+      modal.style.display = "flex";
     }
+    document.addEventListener("click", function(e) {
+      const btn = e.target && e.target.closest ? e.target.closest("#batchBtn") : null;
+      if (btn) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        showDesktopOnly("Batch conversion is a desktop feature",
+          "Converting many sheets at once is available in the Excel to KML Pro Windows desktop app, with no point limit. In the web demo, convert one sheet of up to " + config.maxPoints + " points at a time.");
+      }
+    }, true);
 
     if (config.disableReports) {
       const repBtn = document.getElementById("saveRep");
