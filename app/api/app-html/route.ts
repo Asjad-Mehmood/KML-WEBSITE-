@@ -101,6 +101,23 @@ async function applyWebRestrictions(html: string, req: NextRequest): Promise<str
     const banner = document.createElement("div");
     banner.id = "app-restriction-banner";
 
+    // Keep the banner from squashing or running over the app name: neither
+    // wraps nor shrinks (the job box gives way instead), and below 1400px the
+    // banner is a short "50 pts" chip (the website bar above already has a
+    // desktop-download button).
+    if (!document.getElementById("app-restriction-style")) {
+      const st = document.createElement("style");
+      st.id = "app-restriction-style";
+      st.textContent =
+        "#app-restriction-banner{flex:none;white-space:nowrap}" +
+        ".titlebar .titles{flex:none}" +
+        ".titlebar .appname{white-space:nowrap}" +
+        "#app-restriction-banner .arb-short{display:none}" +
+        "@media (max-width:1400px){#app-restriction-banner .arb-long,#app-restriction-banner #btn-download-desktop{display:none}" +
+        "#app-restriction-banner .arb-short{display:inline}#app-restriction-banner{padding:3px 7px!important;margin-right:4px!important}}";
+      document.head.appendChild(st);
+    }
+
     const titlebar = document.querySelector(".titlebar");
     const aboutBtn = document.getElementById("aboutBtn");
 
@@ -110,13 +127,14 @@ async function applyWebRestrictions(html: string, req: NextRequest): Promise<str
         banner.style.backgroundColor = "rgba(245, 158, 11, 0.15)";
         banner.style.color = "#fbbf24";
         banner.style.border = "1px solid rgba(245, 158, 11, 0.35)";
-        banner.innerHTML = '<span style="display:inline-flex;align-items:center;gap:4px;">⚠️ <span>Web Demo: <strong>' + config.maxPoints + ' Pts Limit</strong></span></span>' +
+        banner.title = "Web demo: up to " + config.maxPoints + " points per job. The desktop app has no limit.";
+        banner.innerHTML = '<span style="display:inline-flex;align-items:center;gap:4px;">⚠️ <span class="arb-long">Web Demo: <strong>' + config.maxPoints + ' Pts Limit</strong></span><strong class="arb-short">' + config.maxPoints + ' pts</strong></span>' +
           '<button id="btn-download-desktop" style="margin-left:6px;background:#2563eb;color:#fff;border:none;border-radius:4px;padding:2px 7px;font-size:10px;font-weight:700;cursor:pointer;">Get Desktop</button>';
       } else {
         banner.style.backgroundColor = "rgba(16, 185, 129, 0.15)";
         banner.style.color = "#34d399";
         banner.style.border = "1px solid rgba(16, 185, 129, 0.35)";
-        banner.innerHTML = '✨ Full Pro Access (Unlimited)';
+        banner.innerHTML = '✨ <span class="arb-long">Full Pro Access (Unlimited)</span><span class="arb-short">Pro</span>';
       }
       titlebar.insertBefore(banner, aboutBtn);
     } else {

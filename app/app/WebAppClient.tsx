@@ -107,12 +107,12 @@ export default function WebAppClient() {
               </span>
               {appConfig && (
                 appConfig.isRestricted ? (
-                  <span className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-300">
+                  <span className="hidden xl:inline-flex whitespace-nowrap items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-300">
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
                     Web Demo ({appConfig.maxPoints} Pts Limit)
                   </span>
                 ) : (
-                  <span className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-300">
+                  <span className="hidden xl:inline-flex whitespace-nowrap items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-300">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                     Full Pro Access
                   </span>
@@ -129,11 +129,11 @@ export default function WebAppClient() {
               title="Refresh"
             >
               <RotateCw className={`w-3.5 h-3.5 text-slate-600 ${isReloading ? "animate-spin" : ""}`} />
-              <span className="hidden sm:inline">Refresh</span>
+              <span className="hidden lg:inline">Refresh</span>
             </button>
 
             {user ? (
-              <div className="hidden sm:flex items-center gap-2 text-xs text-slate-600 px-2">
+              <div className="hidden lg:flex whitespace-nowrap items-center gap-2 text-xs text-slate-600 px-2">
                 <span className="font-semibold text-slate-800">{user.name}</span>
                 <span className="text-slate-400">({user.role || "Surveyor"})</span>
               </div>
@@ -152,7 +152,7 @@ export default function WebAppClient() {
               title="Toggle Fullscreen"
             >
               <Maximize2 className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Fullscreen</span>
+              <span className="hidden lg:inline">Fullscreen</span>
             </button>
 
             <Link
