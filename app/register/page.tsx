@@ -65,7 +65,7 @@ export default function RegisterPage() {
     });
 
     if (result.ok) {
-      // Back to where the visitor was headed (e.g. /app), else the dashboard
+      // Back to where the visitor was headed (e.g. /app or /dashboard), else home
       router.push(safeNextPath(new URLSearchParams(window.location.search).get("next")));
     } else {
       setError(result.error);
