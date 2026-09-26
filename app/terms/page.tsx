@@ -23,7 +23,10 @@ export default function TermsPage() {
 
       <h2>The software</h2>
       <p>
-        The service is free to use. The Windows app&apos;s source code is published on{" "}
+        Excel to KML Pro, including the website, the web app, the Windows app and the Android app, is owned by Asjad
+        Mehmood, who keeps all rights in it. You may use it, free of charge unless stated otherwise, but you may not copy,
+        change, resell or redistribute it, or try to take it apart to reach its code, except where the law allows this
+        anyway. Downloads and release notes are published on{" "}
         <a href={GITHUB_REPO_URL} target="_blank" rel="noopener noreferrer">
           GitHub
         </a>

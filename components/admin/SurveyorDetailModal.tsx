@@ -30,7 +30,7 @@ import {
   Search,
   Eye as EyeIcon,
 } from "lucide-react";
-import FileViewer, { type ViewerFile } from "@/components/admin/FileViewer";
+import FileViewer, { type ViewerFile } from "@/components/FileViewer";
 
 export interface UserItem {
   id: string;

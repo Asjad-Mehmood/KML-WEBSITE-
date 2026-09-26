@@ -9,6 +9,7 @@ import {
   Briefcase,
   CheckCircle2,
   Download,
+  Eye,
   FileDown,
   FileUp,
   Files,
@@ -30,6 +31,7 @@ import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import { useAuth } from "../../context/AuthContext";
 import { GITHUB_REPO_URL } from "@/lib/site";
+import FileViewer, { type ViewerFile } from "@/components/FileViewer";
 
 export interface DashboardData {
   user: {
@@ -351,6 +353,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
   const [tab, setTab] = useState<Tab>("overview");
   const [files, setFiles] = useState(data.files);
   const [jobs, setJobs] = useState(data.jobs);
+  const [viewing, setViewing] = useState<ViewerFile | null>(null);
   const [pointRows, setPointRows] = useState(data.points.rows);
   const [pointsTotal, setPointsTotal] = useState(data.points.total);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
@@ -798,6 +801,15 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
                           </p>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
+                          {f.hasContent && (
+                            <button
+                              onClick={() => setViewing({ fileName: f.fileName, url: `/api/user/files/${encodeURIComponent(f.id)}`, size: f.size })}
+                              aria-label={`View ${f.fileName}`}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0071e3] text-[12px] font-semibold text-white hover:bg-[#0062c4] cursor-pointer"
+                            >
+                              <Eye className="w-3.5 h-3.5" aria-hidden /> View
+                            </button>
+                          )}
                           {f.hasContent ? (
                             <a
                               href={`/api/user/files/${encodeURIComponent(f.id)}`}
@@ -1120,6 +1132,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
         </div>
       </main>
 
+      <FileViewer file={viewing} onClose={() => setViewing(null)} />
       <Footer
         versionTag="v3.6.2"
         downloadUrl={`${GITHUB_REPO_URL}/releases/latest`}

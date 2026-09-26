@@ -4,11 +4,10 @@ import path from "path";
 import { db } from "@/lib/db";
 import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
 import { WEB_APP_LOGIN_URL } from "@/lib/authRedirect";
+import { fetchAppSource } from "@/lib/appSource";
 
 export const dynamic = "force-dynamic";
 
-const GITHUB_RAW_URL =
-  "https://raw.githubusercontent.com/Asjad-Mehmood/kml-convertor/main/app/index.html";
 
 // The web app keeps its own sign-in in localStorage and can't see the site's
 // httpOnly cookie, so a signed-in visitor looked signed out inside it. Hand it
@@ -260,7 +259,7 @@ async function applyWebRestrictions(html: string, req: NextRequest): Promise<str
     // derived sheets, and copying the converted table. Blocked while the
     // sheet is over the limit; the job file (jobSave) stays allowed.
     const EXPORT_IDS = [
-      "save", "saveKmz", "saveCsv", "saveXlsx", "saveDxf", "saveInst", "saveMain", "readySave", "msave",
+      "save", "saveKmz", "saveCsv", "saveXlsx", "saveDxf", "saveGeo", "saveGpx", "saveShp", "saveInst", "saveMain", "readySave", "msave",
       "radCsv", "radCopy", "chSave", "profSave", "cmpSave", "copyTbl"
     ];
     const EXPORT_SELECTOR = EXPORT_IDS.map(function(id) { return "#" + id; }).join(",");
@@ -624,15 +623,7 @@ export async function GET(req: NextRequest) {
 
   // 1. Fetch directly from GitHub on every open / refresh
   try {
-    const timestampedUrl = `${GITHUB_RAW_URL}?t=${Date.now()}`;
-    const res = await fetch(timestampedUrl, {
-      cache: "no-store",
-      signal: AbortSignal.timeout(8000),
-      headers: {
-        "User-Agent": "KML-Website-App",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-      },
-    });
+    const res = await fetchAppSource();
 
     if (res.ok) {
       const rawContent = await res.text();
