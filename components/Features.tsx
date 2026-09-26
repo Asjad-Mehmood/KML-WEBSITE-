@@ -245,10 +245,9 @@ function FeatureItem({ f, idx, onOpen }: { f: FeatureCard; idx: number; onOpen: 
                   type="button"
                   onClick={() => onOpen(chip)}
                   aria-haspopup="dialog"
-                  className="group/chip inline-flex items-center gap-1 text-[11px] font-medium pl-2.5 pr-2 py-1 rounded-lg bg-slate-50 border border-slate-200/80 text-slate-600 cursor-pointer transition-colors hover:bg-white hover:border-slate-300 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                  className="feature-chip"
                 >
                   {chip}
-                  <Info className="w-3 h-3 text-slate-400 transition-colors group-hover/chip:text-slate-700" aria-hidden />
                 </button>
               ))}
             </div>
