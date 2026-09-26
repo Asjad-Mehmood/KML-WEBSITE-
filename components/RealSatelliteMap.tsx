@@ -3,6 +3,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import "leaflet/dist/leaflet.css";
 import { Layers, MapPin, CheckCircle2, Globe } from "lucide-react";
+import MapSearchBar, { type MapTarget } from "./MapSearchBar";
+import { formatLatLng, toDltm } from "@/lib/mapSearch";
+
+// Search results come from outside (OpenStreetMap), so escape them before they go into popup HTML
+const esc = (s: string) =>
+  s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] as string);
 
 interface SurveyMarker {
   id: string;
@@ -71,6 +77,8 @@ export default function RealSatelliteMap() {
   const [mapType, setMapType] = useState<"satellite" | "street">("satellite");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const currentTileLayerRef = useRef<any>(null);
+  const leafletRef = useRef<typeof import("leaflet") | null>(null);
+  const searchMarkerRef = useRef<import("leaflet").Marker | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -81,6 +89,7 @@ export default function RealSatelliteMap() {
 
       // Dynamic import leaflet to prevent any SSR window undefined errors
       const L = (await import("leaflet")).default;
+      leafletRef.current = L;
 
       if (!isMounted || !mapContainerRef.current) return;
 
@@ -216,6 +225,56 @@ export default function RealSatelliteMap() {
     }
   };
 
+  // Drop a highlighted pin on a search result and fly to it
+  const handleSearchTarget = (t: MapTarget) => {
+    const L = leafletRef.current;
+    const map = mapInstanceRef.current;
+    if (!L || !map) return;
+
+    searchMarkerRef.current?.remove();
+    const icon = L.divIcon({
+      html: `<div style="display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 3px 6px rgba(0,0,0,0.35))">
+        <div style="width:26px;height:26px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#f59e0b;border:2px solid #fff;display:flex;align-items:center;justify-content:center">
+          <div style="width:8px;height:8px;border-radius:50%;background:#fff"></div>
+        </div>
+      </div>`,
+      className: "!bg-transparent !border-0",
+      iconSize: [26, 30],
+      iconAnchor: [13, 30],
+      popupAnchor: [0, -28],
+    });
+
+    const grid = toDltm(t.lat, t.lng);
+    const popup = `
+      <div style="font-size:12px;line-height:1.45;color:#1e293b;min-width:180px;max-width:240px">
+        <div style="font-weight:700;color:#b45309;margin-bottom:3px;font-size:13px">${esc(t.label)}</div>
+        ${t.detail ? `<div style="color:#64748b;margin-bottom:4px">${esc(t.detail)}</div>` : ""}
+        <div style="font-family:monospace;font-size:11px;color:#475569">${formatLatLng(t.lat, t.lng)}</div>
+        ${
+          grid
+            ? `<div style="font-family:monospace;font-size:11px;color:#0071e3;margin-top:2px">DLTM E ${grid.easting.toFixed(2)} · N ${grid.northing.toFixed(2)}</div>`
+            : ""
+        }
+      </div>`;
+
+    const marker = L.marker([t.lat, t.lng], { icon, zIndexOffset: 1000, keyboard: false }).addTo(map).bindPopup(popup);
+    searchMarkerRef.current = marker;
+
+    const open = () => marker.openPopup();
+    map.once("moveend", open);
+    if (t.bounds) {
+      const [south, north, west, east] = t.bounds;
+      map.flyToBounds([[south, west], [north, east]], { maxZoom: 17, duration: 1.2 });
+    } else {
+      map.flyTo([t.lat, t.lng], Math.max(map.getZoom(), 16), { duration: 1.2 });
+    }
+  };
+
+  const handleSearchClear = () => {
+    searchMarkerRef.current?.remove();
+    searchMarkerRef.current = null;
+  };
+
   const activeStation = SURVEY_STATIONS.find((s) => s.id === activeStationId) || SURVEY_STATIONS[0];
 
   return (
@@ -260,6 +319,13 @@ export default function RealSatelliteMap() {
           </button>
         </div>
       </div>
+
+      <MapSearchBar
+        stations={SURVEY_STATIONS}
+        onStation={handleSelectStation}
+        onTarget={handleSearchTarget}
+        onClear={handleSearchClear}
+      />
 
       {/* Real Interactive Leaflet Map Container */}
       <div className="relative w-full h-[360px] sm:h-[420px] bg-slate-100">
