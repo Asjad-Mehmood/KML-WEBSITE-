@@ -1,6 +1,8 @@
 "use client";
 
 import { loadPublicSettings } from "@/lib/publicSettings";
+import { goToDownload } from "@/lib/downloadHandoff";
+import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import Hero from "../components/Hero";
@@ -19,6 +21,7 @@ import { useAuth } from "../context/AuthContext";
 
 export default function HomeClient() {
   const { requireAuth, trackDownload } = useAuth();
+  const router = useRouter();
 
   // Dynamic GitHub Release details
   const [versionTag, setVersionTag] = useState("v3.6.2");
@@ -113,14 +116,9 @@ export default function HomeClient() {
   // Gated download handler used across buttons
   const handleDownloadApp = () => {
     requireAuth(() => {
+      // Record it, then the thank-you page starts the file
       trackDownload("windows_installer", "ExcelToKMLPro-Lite-Setup.exe", versionTag);
-      showToast(`🚀 Starting download for ExcelToKMLPro-Lite-Setup.exe (${versionTag})`);
-      const link = document.createElement("a");
-      link.href = downloadUrl;
-      link.download = "ExcelToKMLPro-Lite-Setup.exe";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      goToDownload(router.push, downloadUrl, versionTag);
     }, "Sign in or create a free account to download the Windows app.");
   };
 
