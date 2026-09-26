@@ -1,9 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db, isAdminRole } from "@/lib/db";
 import { getClientIp, getIpGeoLocation } from "@/lib/geo";
+import { readSettings } from "@/lib/siteSettings";
 
 export async function POST(req: NextRequest) {
   try {
+    const settings = await readSettings();
+    if (settings?.maintenanceMode) {
+      return NextResponse.json(
+        { error: "New accounts are paused for maintenance. Please try again shortly." },
+        { status: 503 }
+      );
+    }
+
     const body = await req.json();
     const { name, email, password, organization, role } = body;
 

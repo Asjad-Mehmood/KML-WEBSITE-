@@ -4,6 +4,8 @@ import "./globals.css";
 import { AuthProvider } from "../context/AuthContext";
 import AuthModal from "../components/AuthModal";
 import Preloader from "../components/Preloader";
+import SiteNotice from "../components/SiteNotice";
+import { SiteSettingsProvider } from "../context/SiteSettings";
 import { DEFAULT_TITLE, OG_IMAGE, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 
 const geistSans = Geist({
@@ -105,10 +107,13 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-white text-[#1d1d1f] selection:bg-[#0071e3]/20 selection:text-[#0071e3]">
         <Preloader />
-        <AuthProvider>
-          {children}
-          <AuthModal />
-        </AuthProvider>
+        <SiteSettingsProvider>
+          <AuthProvider>
+            {children}
+            <AuthModal />
+            <SiteNotice />
+          </AuthProvider>
+        </SiteSettingsProvider>
       </body>
     </html>
   );

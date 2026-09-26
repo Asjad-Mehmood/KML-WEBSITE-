@@ -4,6 +4,7 @@ import path from "path";
 import { db } from "@/lib/db";
 import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
 import { WEB_APP_LOGIN_URL } from "@/lib/authRedirect";
+import { readSettings } from "@/lib/siteSettings";
 
 export const dynamic = "force-dynamic";
 
@@ -245,7 +246,7 @@ async function applyWebRestrictions(html: string, req: NextRequest): Promise<str
     // derived sheets, and copying the converted table. Blocked while the
     // sheet is over the limit; the job file (jobSave) stays allowed.
     const EXPORT_IDS = [
-      "save", "saveKmz", "saveCsv", "saveXlsx", "saveDxf", "saveInst", "saveMain", "readySave", "msave",
+      "save", "saveKmz", "saveCsv", "saveXlsx", "saveDxf", "saveGeo", "saveGpx", "saveShp", "saveInst", "saveMain", "readySave", "msave",
       "radCsv", "radCopy", "chSave", "profSave", "cmpSave", "copyTbl"
     ];
     const EXPORT_SELECTOR = EXPORT_IDS.map(function(id) { return "#" + id; }).join(",");
@@ -302,6 +303,25 @@ async function applyWebRestrictions(html: string, req: NextRequest): Promise<str
           "Converting many sheets at once is available in the Excel to KML Pro Windows desktop app, with no point limit. In the web demo, convert one sheet of up to " + config.maxPoints + " points at a time.");
       }
     }, true);
+
+    // Admin setting "watermark": KML and KMZ from the web demo say where they were made.
+    // The app builds every Google Earth file with build(); the note goes into the
+    // document's name and its one-line summary (the Snippet shown under the name).
+    if (config.watermark && typeof window.build === "function" && !window.build.__marked) {
+      const plainBuild = window.build;
+      const MARK = "Made with the Excel to KML Pro web demo \u00b7 exceltokml.com";
+      window.build = function() {
+        let kml = plainBuild.apply(this, arguments);
+        if (typeof kml !== "string" || kml.indexOf(MARK) >= 0) return kml;
+        const doc = kml.indexOf("<Document");
+        const nameEnd = doc >= 0 ? kml.indexOf("</name>", doc) : -1;
+        if (nameEnd > 0) kml = kml.slice(0, nameEnd) + " (web demo)" + kml.slice(nameEnd);
+        const at = kml.indexOf("<description>", doc);
+        const snippet = '<Snippet maxLines="1">' + MARK + "</Snippet>";
+        return at > 0 ? kml.slice(0, at) + snippet + kml.slice(at) : kml.replace(/(<Document[^>]*>)/, "$1" + snippet);
+      };
+      window.build.__marked = true;
+    }
 
     if (config.disableReports) {
       const repBtn = document.getElementById("saveRep");
@@ -575,9 +595,30 @@ const SIGN_IN_REQUIRED_HTML = `<!doctype html>
 <a href="${WEB_APP_LOGIN_URL}" target="_top" style="display:inline-block;padding:10px 20px;border-radius:10px;background:#0071e3;color:#fff;font-weight:600;font-size:14px;text-decoration:none">Sign in</a>
 </main></body></html>`;
 
+const MAINTENANCE_HTML = `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Back soon — Excel to KML Pro</title></head>
+<body style="margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:system-ui,-apple-system,sans-serif;background:#f8fafc;color:#0f172a">
+<main style="max-width:400px;padding:32px;text-align:center">
+<h1 style="font-size:20px;margin:0 0 8px">The web app is paused for maintenance</h1>
+<p style="font-size:14px;color:#475569;line-height:1.5;margin:0 0 20px">It will be back shortly. The Windows app works as usual, and your files and jobs are safe.</p>
+<a href="/" target="_top" style="display:inline-block;padding:10px 20px;border-radius:10px;background:#0071e3;color:#fff;font-weight:600;font-size:14px;text-decoration:none">Back to the site</a>
+</main></body></html>`;
+
 export async function GET(req: NextRequest) {
   // 0. Web app is for signed-in users only
-  if (!(await sessionForToken(tokenFromRequest(req)))) {
+  const session = await sessionForToken(tokenFromRequest(req));
+  if (session) {
+    // In maintenance mode (admin settings) only admins can open it
+    const settings = await readSettings();
+    if (settings?.maintenanceMode && !db.isAdmin(session.user)) {
+      return new NextResponse(MAINTENANCE_HTML, {
+        status: 503,
+        headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "Retry-After": "600" },
+      });
+    }
+  }
+  if (!session) {
     return new NextResponse(SIGN_IN_REQUIRED_HTML, {
       status: 401,
       headers: {

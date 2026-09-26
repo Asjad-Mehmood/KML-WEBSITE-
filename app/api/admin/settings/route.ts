@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/adminAuth";
 import { db } from "@/lib/db";
+import { cleanSettingsUpdate } from "@/lib/siteSettings";
 
 export async function GET(req: NextRequest) {
   const admin = await getAdminSession(req);
@@ -19,8 +20,9 @@ export async function PUT(req: NextRequest) {
   }
 
   try {
-    const body = await req.json();
-    const updated = await db.updateSettings(body);
+    const clean = cleanSettingsUpdate(await req.json().catch(() => null));
+    if (!clean.ok) return NextResponse.json({ error: clean.error }, { status: 400 });
+    const updated = await db.updateSettings(clean.value);
     return NextResponse.json({
       success: true,
       settings: updated,
