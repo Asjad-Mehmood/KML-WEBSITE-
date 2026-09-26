@@ -32,10 +32,8 @@ function GithubIcon({ className }: { className?: string }) {
 const NAV_LINKS: { label: string; href: string; id?: string; path?: string }[] = [
   { label: "Features", href: "/#features", id: "features" },
   { label: "Demo", href: "/#showcase", id: "showcase" },
-  { label: "How It Works", href: "/#workflow", id: "workflow" },
   { label: "Grids", href: "/convert", path: "/convert" },
   { label: "Guides", href: "/guides", path: "/guides" },
-  { label: "FAQ", href: "/#faq", id: "faq" },
 ];
 
 export default function Navbar({ onDownloadClick }: { onDownloadClick: () => void }) {
@@ -133,7 +131,7 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
           </Link>
 
           {/* Center Links */}
-          <nav aria-label="Main" className="hidden lg:flex items-center gap-1">
+          <nav aria-label="Main" className="hidden md:flex items-center gap-0.5 lg:gap-1">
             {NAV_LINKS.map((link) => {
               const isActive = link.path ? Boolean(pathname?.startsWith(link.path)) : activeId === link.id;
               return (
@@ -141,7 +139,7 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
                   key={link.label}
                   href={link.href}
                   aria-current={isActive ? (link.path ? "page" : "location") : undefined}
-                  className={`whitespace-nowrap px-3 xl:px-4 py-2 text-[14px] font-semibold rounded-full transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+                  className={`whitespace-nowrap px-2.5 lg:px-3 xl:px-4 py-2 text-[14px] font-semibold rounded-full transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                     isActive ? "text-slate-900 bg-black/[0.05]" : "text-slate-600 hover:text-slate-900 hover:bg-black/5"
                   }`}
                 >
@@ -159,7 +157,7 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
               rel="noreferrer"
               aria-label="Excel to KML Pro on GitHub"
               title="GitHub"
-              className="w-9 h-9 items-center justify-center rounded-full hover:bg-black/5 text-slate-500 hover:text-slate-900 transition-colors hidden sm:flex"
+              className="w-9 h-9 items-center justify-center rounded-full hover:bg-black/5 text-slate-500 hover:text-slate-900 transition-colors hidden sm:flex md:hidden lg:flex"
             >
               <GithubIcon className="w-4 h-4" />
             </a>
@@ -206,14 +204,14 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
                 )}
               </div>
             ) : (
-              <Link href={loginHref} className="hidden sm:block whitespace-nowrap px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">
+              <Link href={loginHref} className="hidden sm:block whitespace-nowrap px-3 lg:px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">
                 Sign in
               </Link>
             )}
 
             <button
               onClick={onDownloadClick}
-              className="bg-[#0071e3] text-white px-5 py-2 rounded-full text-sm font-bold shadow-md shadow-[#0071e3]/20 hover:shadow-lg hover:shadow-[#0071e3]/30 hover:-translate-y-0.5 transition-all flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+              className="bg-[#0071e3] text-white px-4 lg:px-5 py-2 rounded-full text-sm font-bold shadow-md shadow-[#0071e3]/20 hover:shadow-lg hover:shadow-[#0071e3]/30 hover:-translate-y-0.5 transition-all flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
             >
               <Download className="w-4 h-4" />
               <span>Download</span>
@@ -225,7 +223,7 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
               aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-menu"
-              className="w-10 h-10 flex lg:hidden items-center justify-center rounded-full bg-slate-100 text-slate-900 shadow-sm border border-black/5"
+              className="w-10 h-10 flex md:hidden items-center justify-center rounded-full bg-slate-100 text-slate-900 shadow-sm border border-black/5"
             >
               {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             </button>
@@ -238,7 +236,7 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
         id="mobile-menu"
         // Closed menu is invisible; inert also keeps its links out of the tab order
         inert={!mobileMenuOpen}
-        className={`fixed inset-0 z-40 bg-white transition-all duration-400 ease-in-out flex flex-col lg:hidden ${mobileMenuOpen ? "opacity-100 pointer-events-auto translate-y-0" : "opacity-0 pointer-events-none -translate-y-4"}`}
+        className={`fixed inset-0 z-40 bg-white transition-all duration-400 ease-in-out flex flex-col md:hidden ${mobileMenuOpen ? "opacity-100 pointer-events-auto translate-y-0" : "opacity-0 pointer-events-none -translate-y-4"}`}
       >
         <div className="flex-1 overflow-y-auto pt-28 px-6 pb-6 flex flex-col">
           <nav aria-label="Main" className="flex flex-col gap-6 flex-1">
