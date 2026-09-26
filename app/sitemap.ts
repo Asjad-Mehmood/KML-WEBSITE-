@@ -47,6 +47,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
         changeFrequency: "yearly" as const,
         priority: 0.4,
       })),
+    { url: `${SITE_URL}/tutorial`, lastModified, changeFrequency: "monthly", priority: 0.8 },
     { url: `${SITE_URL}/guides`, lastModified, changeFrequency: "monthly", priority: 0.7 },
     ...GUIDES.map((g) => ({
       url: `${SITE_URL}/guides/${g.slug}`,
