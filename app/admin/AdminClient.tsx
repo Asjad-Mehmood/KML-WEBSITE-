@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import AdminMessages from "../../components/admin/AdminMessages";
 import {
   Users,
   Download,
@@ -34,6 +35,7 @@ import {
   FileDown,
   FileUp,
   Loader2,
+  Inbox,
 } from "lucide-react";
 import SurveyorDetailModal from "@/components/admin/SurveyorDetailModal";
 import FileViewer, { type ViewerFile } from "@/components/FileViewer";
@@ -198,8 +200,9 @@ const ASSET_NAME: Record<string, string> = {
 
 export default function AdminClient() {
   const [activeTab, setActiveTab] = useState<
-    "overview" | "users" | "activities" | "downloads" | "files" | "conversions" | "settings"
+    "overview" | "users" | "activities" | "downloads" | "files" | "conversions" | "messages" | "settings"
   >("overview");
+  const [newMessages, setNewMessages] = useState(0);
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean | null>(null);
   const [adminUser, setAdminUser] = useState<UserItem | null>(null);
   const [loading, setLoading] = useState(true);
@@ -388,6 +391,11 @@ export default function AdminClient() {
 
   // Load Dashboard Data
   const loadDashboardData = async () => {
+    // New contact messages, for the badge on the Messages tab
+    adminFetch("/api/admin/messages?status=new")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d && setNewMessages(d.counts?.new || 0))
+      .catch(() => {});
     try {
       // Load stats
       const statsRes = await adminFetch("/api/admin/stats");
@@ -833,6 +841,7 @@ export default function AdminClient() {
             { id: "downloads", label: "Downloads", icon: Download, count: downloads.length },
             { id: "files", label: "Files", icon: Files, count: filesTotal && !fileSearch && fileDir === "all" ? filesTotal : stats?.totalFilesStored },
             { id: "conversions", label: "Points", icon: Globe, count: conversionsTotal },
+            { id: "messages", label: "Messages", icon: Inbox, count: newMessages || undefined },
             { id: "settings", label: "Settings", icon: Settings },
           ].map((tab) => {
             const Icon = tab.icon;
@@ -1998,6 +2007,10 @@ export default function AdminClient() {
         {/* ================================================================== */}
         {/* TAB 6: SETTINGS & RELEASE MANAGEMENT */}
         {/* ================================================================== */}
+        {activeTab === "messages" && (
+          <AdminMessages adminFetch={adminFetch} onToast={showToast} onCounts={setNewMessages} />
+        )}
+
         {activeTab === "settings" && (
           <div className="max-w-3xl w-full mx-auto space-y-6">
             <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-8 shadow-xl">
