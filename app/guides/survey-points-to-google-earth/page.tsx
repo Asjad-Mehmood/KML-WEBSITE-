@@ -1,6 +1,7 @@
 import Link from "next/link";
 import GuideLayout from "../../../components/GuideLayout";
 import { guideMetadata } from "@/lib/guideMeta";
+import WebAppLink from "@/components/WebAppLink";
 
 const SLUG = "survey-points-to-google-earth";
 export const metadata = guideMetadata(SLUG);
@@ -32,7 +33,7 @@ export default function Guide() {
 
       <h2>3. Load the points</h2>
       <p>
-        Open the <Link href="/app">web app</Link> (or the Windows app) and paste the rows copied from Excel, or open the CSV file. The
+        Open the <WebAppLink>web app</WebAppLink> (or the Windows app) and paste the rows copied from Excel, or open the CSV file. The
         table on the right shows exactly what was read, so you can compare it with your sheet.
       </p>
 

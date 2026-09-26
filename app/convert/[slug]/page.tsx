@@ -9,6 +9,7 @@ import { GRID_PAGES, gridBySlug } from "@/lib/gridPages";
 import { systemByCode } from "@/lib/epsgCatalog";
 import { areaBox, gridParameterRows, unitLabel } from "@/lib/gridParams";
 import { SITE_URL, jsonLd, openGraphFor } from "@/lib/site";
+import WebAppLink from "@/components/WebAppLink";
 
 // Only the grids listed in lib/gridPages.ts exist; anything else is a 404
 export const dynamicParams = false;
@@ -83,9 +84,9 @@ export default async function GridPage({ params }: { params: Promise<{ slug: str
               <li className="flex gap-2"><CheckCircle2 className="w-4 h-4 mt-0.5 text-emerald-600 shrink-0" aria-hidden /> Whole sheets with photos and boundaries in the web or Windows app</li>
             </ul>
             <div className="mt-6 flex flex-wrap gap-2.5">
-              <Link href="/app" className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-[14px] font-semibold">
+              <WebAppLink className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-[14px] font-semibold">
                 Convert a spreadsheet <ArrowRight className="w-4 h-4" aria-hidden />
-              </Link>
+              </WebAppLink>
               <Link href="/download" className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-[14px] font-semibold">
                 <Download className="w-4 h-4" aria-hidden /> Windows app
               </Link>
@@ -106,7 +107,7 @@ export default async function GridPage({ params }: { params: Promise<{ slug: str
 
             <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 mt-10 mb-3">Convert a whole spreadsheet</h2>
             <ol className="list-decimal pl-5 space-y-2">
-              <li>Open the <Link href="/app" className="text-[#0071e3] font-medium hover:underline">web app</Link> or the Windows app, and paste your rows from Excel or open a CSV file.</li>
+              <li>Open the <WebAppLink className="text-[#0071e3] font-medium hover:underline">web app</WebAppLink> or the Windows app, and paste your rows from Excel or open a CSV file.</li>
               <li>Under <strong className="text-slate-900">Coordinate system</strong>, search for &ldquo;{g.code}&rdquo; and pick <em>{epsgName}</em>.</li>
               <li>Check one point you know on the map, then press <strong className="text-slate-900">Save KML</strong> or <strong className="text-slate-900">Save KMZ</strong> (with photos) and open it in Google Earth.</li>
             </ol>

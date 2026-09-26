@@ -6,6 +6,7 @@ import GridSearch from "../../components/GridSearch";
 import { GRID_PAGES, GRID_REGIONS } from "@/lib/gridPages";
 import { countries } from "@/lib/epsgCatalog";
 import { openGraphFor } from "@/lib/site";
+import WebAppLink from "@/components/WebAppLink";
 
 const TITLE = "Survey Grid to KML Converters";
 const DESCRIPTION =
@@ -82,9 +83,9 @@ export default function ConvertIndex() {
             <strong className="text-slate-900">Converting a whole sheet?</strong> Paste rows from Excel, pick any EPSG grid and save KML,
             KMZ or DXF.
           </p>
-          <Link href="/app" className="shrink-0 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-[14px] font-semibold">
+          <WebAppLink className="shrink-0 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-[14px] font-semibold">
             Open the web app <ArrowRight className="w-4 h-4" aria-hidden />
-          </Link>
+          </WebAppLink>
         </div>
       </div>
     </PageShell>

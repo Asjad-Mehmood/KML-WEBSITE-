@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Download, ArrowRight, Sparkles } from "lucide-react";
+import WebAppLink from "./WebAppLink";
 
 interface CtaBannerProps {
   versionTag: string;
@@ -36,13 +37,12 @@ export default function CtaBanner({ versionTag, onDownloadClick }: CtaBannerProp
             <span>Download for Windows</span>
           </button>
 
-          <a 
-            href="/app"
+          <WebAppLink
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 text-sm font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 rounded-xl border border-slate-200/90 shadow-xs transition-colors"
           >
             <span>Launch Web App</span>
             <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
-          </a>
+          </WebAppLink>
         </div>
 
       </div>

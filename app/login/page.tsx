@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useId, useSyncExternalStore } from "react";
+import React, { useEffect, useRef, useState, useId, useSyncExternalStore } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -15,7 +15,16 @@ export default function LoginPage() {
     () => new URLSearchParams(window.location.search).get("next"),
     () => null
   );
-  const { login } = useAuth();
+  const { login, user, isLoading } = useAuth();
+
+  // Links to the web app send signed-out visitors here with ?next=/app. Someone
+  // who is already signed in goes straight on (decided once, when the session check ends)
+  const sessionChecked = useRef(false);
+  useEffect(() => {
+    if (isLoading || sessionChecked.current) return;
+    sessionChecked.current = true;
+    if (user && nextParam) router.replace(safeNextPath(nextParam));
+  }, [isLoading, user, nextParam, router]);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

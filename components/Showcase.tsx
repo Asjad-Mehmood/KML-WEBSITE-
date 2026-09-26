@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -14,16 +14,43 @@ import {
   RotateCw,
 } from "lucide-react";
 
+const MapPlaceholder = () => (
+  <div className="w-full h-[400px] rounded-2xl bg-slate-900 border border-slate-800 flex flex-col items-center justify-center gap-2 text-cyan-300 font-mono text-xs">
+    <Globe className="w-6 h-6 animate-spin text-cyan-500" aria-hidden />
+    <span>Loading Interactive Satellite View...</span>
+  </div>
+);
+
 // Dynamically import the Live Satellite Map
 const RealSatelliteMap = dynamic(() => import("./RealSatelliteMap"), {
   ssr: false,
-  loading: () => (
-    <div className="w-full h-[400px] rounded-2xl bg-slate-900 border border-slate-800 flex flex-col items-center justify-center gap-2 text-cyan-300 font-mono text-xs">
-      <Globe className="w-6 h-6 animate-spin text-cyan-500" aria-hidden />
-      <span>Loading Interactive Satellite View...</span>
-    </div>
-  ),
+  loading: MapPlaceholder,
 });
+
+// The map (and Leaflet with it) loads only once it is close to the screen,
+// so it doesn't compete with the top of the page on a phone
+function MapWhenNearView() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [near, setNear] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || near) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setNear(true);
+          obs.disconnect();
+        }
+      },
+      { rootMargin: "400px 0px" }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [near]);
+
+  return <div ref={ref}>{near ? <RealSatelliteMap /> : <MapPlaceholder />}</div>;
+}
 
 type TabId = "map" | "table" | "calibration";
 
@@ -425,7 +452,7 @@ ${placemarks}
 
               {/* Embedded Satellite Map */}
               <div className="w-full">
-                <RealSatelliteMap />
+                <MapWhenNearView />
               </div>
 
               {/* Satellite Footer Note */}

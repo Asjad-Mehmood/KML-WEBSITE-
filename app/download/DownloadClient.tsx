@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { ArrowUpRight, Globe, RefreshCw, Smartphone, Wrench } from "lucide-react";
 import DownloadHub from "../../components/DownloadHub";
+import WebAppLink from "../../components/WebAppLink";
 import { useLatestRelease } from "@/lib/useLatestRelease";
 
 /** The download section with the live release details, and the other ways to get the program. */
@@ -57,9 +58,9 @@ export default function DownloadClient() {
               Nothing to install: the web app runs in Chrome, Edge, Firefox or Safari on any computer, tablet or phone. Sign in with a free
               account to use it. The web version converts smaller sheets; the Windows app has no point limit.
             </p>
-            <Link href="/app" className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 hover:border-slate-300 text-[13.5px] font-semibold text-slate-800">
+            <WebAppLink className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 hover:border-slate-300 text-[13.5px] font-semibold text-slate-800">
               Open the web app
-            </Link>
+            </WebAppLink>
           </section>
 
           <section className={card}>

@@ -10,6 +10,7 @@ import {
   Globe,
   ArrowRight
 } from "lucide-react";
+import WebAppLink from "./WebAppLink";
 
 // Dynamically import HeroConverter with radar without SSR
 const HeroConverter = dynamic(() => import("./HeroConverter"), {
@@ -61,29 +62,28 @@ export default function Hero({ versionTag, fileSizeText, onDownloadClick }: Hero
               </span>
             </a>
 
-            {/* Headline */}
-            <h1 className="mb-5">
-              <span className="block text-[29px] sm:text-[38px] lg:text-[42px] font-extrabold tracking-tight text-slate-900 leading-[1.12] text-balance">
-                Convert Geospatial Coordinate Tables into{" "}
-                <span className="whitespace-nowrap text-transparent bg-clip-text bg-gradient-to-r from-[#0071e3] via-[#0284c7] to-[#0ea5e9]">
-                  Google Earth 3D
-                </span>
-              </span>
-              <span className="sr-only"> as KML, KMZ and DXF — complete with site photos and comprehensive reports</span>
-              <span aria-hidden className="mt-4 flex flex-wrap items-center gap-x-2.5 gap-y-2">
-                {["KML", "KMZ", "DXF"].map((f) => (
-                  <span
-                    key={f}
-                    className="inline-flex items-center px-2.5 py-1 rounded-lg bg-blue-50 border border-blue-100 text-[13px] sm:text-sm font-bold tracking-wide text-[#0071e3]"
-                  >
-                    {f}
-                  </span>
-                ))}
-                <span className="text-[15px] sm:text-base font-medium text-slate-500 leading-snug">
-                  with site photos &amp; comprehensive reports
-                </span>
+            {/* Headline: kept short (under 70 characters) for search engines */}
+            <h1 className="text-[29px] sm:text-[38px] lg:text-[42px] font-extrabold tracking-tight text-slate-900 leading-[1.12] text-balance">
+              Convert Geospatial Coordinate Tables into{" "}
+              <span className="whitespace-nowrap text-transparent bg-clip-text bg-gradient-to-r from-[#0071e3] via-[#0284c7] to-[#0ea5e9]">
+                Google Earth 3D
               </span>
             </h1>
+            <p className="mt-4 mb-5 flex flex-wrap items-center gap-x-2.5 gap-y-2">
+              <span className="sr-only">Save as KML, KMZ and DXF with site photos and comprehensive reports</span>
+              {["KML", "KMZ", "DXF"].map((f) => (
+                <span
+                  key={f}
+                  aria-hidden
+                  className="inline-flex items-center px-2.5 py-1 rounded-lg bg-blue-50 border border-blue-100 text-[13px] sm:text-sm font-bold tracking-wide text-[#0071e3]"
+                >
+                  {f}
+                </span>
+              ))}
+              <span aria-hidden className="text-[15px] sm:text-base font-medium text-slate-500 leading-snug">
+                with site photos &amp; comprehensive reports
+              </span>
+            </p>
 
             {/* Subtitle */}
             <p className="text-base sm:text-[17px] text-slate-600 leading-relaxed mb-8 max-w-[480px]">
@@ -101,13 +101,12 @@ export default function Hero({ versionTag, fileSizeText, onDownloadClick }: Hero
                 <span className="text-white text-xs font-normal">· {fileSizeText}</span>
               </button>
 
-              <a
-                href={`/app?web=true`}
+              <WebAppLink
                 className="group inline-flex items-center justify-center gap-1.5 px-5 py-3 text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200/90 hover:border-slate-300 rounded-xl text-sm font-medium shadow-xs transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
               >
                 <span>Try in browser</span>
                 <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
-              </a>
+              </WebAppLink>
             </div>
 
             {/* Minimal Modern Technical Badges */}

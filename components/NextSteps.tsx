@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { ArrowRight, Download, Globe } from "lucide-react";
+import WebAppLink from "./WebAppLink";
 
 /** The closing card on a content page: try the web app or get the Windows app. */
 export default function NextSteps({ title = "Try it on your own points" }: { title?: string }) {
@@ -19,12 +20,9 @@ export default function NextSteps({ title = "Try it on your own points" }: { tit
         >
           <Download className="w-4 h-4" aria-hidden /> Download for Windows
         </Link>
-        <Link
-          href="/app"
-          className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-[14px] font-semibold"
-        >
+        <WebAppLink className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-[14px] font-semibold">
           <Globe className="w-4 h-4" aria-hidden /> Open the web app <ArrowRight className="w-4 h-4" aria-hidden />
-        </Link>
+        </WebAppLink>
       </div>
     </section>
   );

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import GuideLayout from "../../../components/GuideLayout";
 import { guideMetadata } from "@/lib/guideMeta";
+import WebAppLink from "@/components/WebAppLink";
 
 const SLUG = "easting-northing-to-latitude-longitude";
 export const metadata = guideMetadata(SLUG);
@@ -43,7 +44,7 @@ export default function Guide() {
           latitude and longitude.
         </li>
         <li>
-          <strong>A whole sheet:</strong> paste it into the <Link href="/app">web app</Link>, pick the grid, and save a CSV with latitude
+          <strong>A whole sheet:</strong> paste it into the <WebAppLink>web app</WebAppLink>, pick the grid, and save a CSV with latitude
           and longitude added, or a KML/KMZ for Google Earth.
         </li>
       </ul>

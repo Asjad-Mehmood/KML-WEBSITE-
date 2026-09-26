@@ -4,7 +4,6 @@ import "./globals.css";
 import { AuthProvider } from "../context/AuthContext";
 import SiteNotice from "../components/SiteNotice";
 import AuthModal from "../components/AuthModal";
-import Preloader from "../components/Preloader";
 import { DEFAULT_TITLE, OG_IMAGE, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 
 const geistSans = Geist({
@@ -105,7 +104,6 @@ export default function RootLayout({
         <link rel="preconnect" href="https://api.github.com" />
       </head>
       <body className="min-h-screen bg-white text-[#1d1d1f] selection:bg-[#0071e3]/20 selection:text-[#0071e3]">
-        <Preloader />
         <AuthProvider>
           {children}
           <AuthModal />

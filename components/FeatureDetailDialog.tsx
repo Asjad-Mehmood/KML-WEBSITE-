@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import Link from "next/link";
 import { X, ArrowRight, Lightbulb, CheckCircle2 } from "lucide-react";
 import { FEATURE_DETAILS } from "@/lib/featureDetails";
+import WebAppLink from "./WebAppLink";
 
 export interface DialogTheme {
   icon: React.ElementType;
@@ -148,13 +148,12 @@ export default function FeatureDetailDialog({ item, siblings, theme, onSelect, o
             >
               Close
             </button>
-            <Link
-              href="/app"
+            <WebAppLink
               className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-[13px] font-semibold text-white bg-[#0071e3] hover:bg-[#0077ed] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
             >
               Try it in the web app
               <ArrowRight className="w-4 h-4" />
-            </Link>
+            </WebAppLink>
           </div>
         </>
       )}
