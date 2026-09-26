@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import proj4 from "proj4";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { parseSurveyRows, buildKml, MAX_ROWS, type ColumnOrder, type ConvertedPoint } from "../lib/surveyRows";
 import {
   RefreshCw,
@@ -717,6 +719,7 @@ export default function HeroConverter({ initialSystemId, initialRow }: { initial
       POPULAR_SYSTEMS[0]
   );
   const [mode, setMode] = useState<"single" | "batch">("single");
+  const pathname = usePathname();
 
   const [easting, setEasting] = useState<number>(current.defaultE);
   const [northing, setNorthing] = useState<number>(current.defaultN);
@@ -1117,9 +1120,18 @@ Datum: ${current.datum}]]></description>
             <Globe className="w-3 h-3 text-cyan-400/80" />
             Exports standard KML 2.2 for Google Earth
           </span>
-          <span className="text-[11px] font-mono text-cyan-400/80">
-            {current.grid}
-          </span>
+          {/* On other pages, link to this grid's own page (parameters, area of use, tips) */}
+          {pathname?.startsWith("/convert") ? (
+            <span className="text-[11px] font-mono text-cyan-400/80">{current.grid}</span>
+          ) : (
+            <Link
+              href={`/convert/epsg/${current.code}`}
+              className="text-[11px] font-mono text-cyan-300 hover:text-white underline-offset-2 hover:underline"
+              title={`${current.grid} details and converter page`}
+            >
+              {current.grid} details →
+            </Link>
+          )}
         </div>
       </div>
     </div>
