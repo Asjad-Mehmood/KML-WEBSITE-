@@ -10,6 +10,21 @@ export const dynamic = "force-dynamic";
 const GITHUB_RAW_URL =
   "https://raw.githubusercontent.com/Asjad-Mehmood/kml-convertor/main/app/index.html";
 
+// The web app keeps its own sign-in in localStorage and can't see the site's
+// httpOnly cookie, so a signed-in visitor looked signed out inside it. Hand it
+// the same session before its scripts run: the site's sign-in wins, and
+// signing out on the site ends it here too (the session is deleted).
+function withSiteSession(html: string, token: string, user: unknown): string {
+  const json = (v: unknown) => JSON.stringify(v).replace(/</g, "\\u003c");
+  const tag =
+    "<script>try{" +
+    "localStorage.setItem('surveyor_auth_token'," + json(token) + ");" +
+    "localStorage.setItem('surveyor_user_profile'," + json(JSON.stringify(user)) + ");" +
+    "}catch(e){}</script>";
+  const m = /<head[^>]*>/i.exec(html);
+  return m ? html.slice(0, m.index + m[0].length) + tag + html.slice(m.index + m[0].length) : tag + html;
+}
+
 async function applyWebRestrictions(html: string, req: NextRequest): Promise<string> {
   try {
     const token =
@@ -586,8 +601,9 @@ const MAINTENANCE_HTML = `<!doctype html>
 
 export async function GET(req: NextRequest) {
   // 0. Web app is for signed-in users only
-  const session = await sessionForToken(tokenFromRequest(req));
-  if (!session) {
+  const token = tokenFromRequest(req);
+  const session = await sessionForToken(token);
+  if (!session || !token) {
     return new NextResponse(SIGN_IN_REQUIRED_HTML, {
       status: 401,
       headers: {
@@ -631,7 +647,7 @@ export async function GET(req: NextRequest) {
         }
       }
 
-      const protectedContent = await applyWebRestrictions(rawContent, req);
+      const protectedContent = withSiteSession(await applyWebRestrictions(rawContent, req), token, db.sanitizeUser(session.user));
 
       return new NextResponse(protectedContent, {
         status: 200,
@@ -652,7 +668,7 @@ export async function GET(req: NextRequest) {
     const localFilePath = path.join(process.cwd(), "public", "app.html");
     if (fs.existsSync(localFilePath)) {
       const rawContent = await fs.promises.readFile(localFilePath, "utf-8");
-      const protectedContent = await applyWebRestrictions(rawContent, req);
+      const protectedContent = withSiteSession(await applyWebRestrictions(rawContent, req), token, db.sanitizeUser(session.user));
       return new NextResponse(protectedContent, {
         status: 200,
         headers: {
