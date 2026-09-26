@@ -12,7 +12,11 @@ const fmt = (iso: string) =>
 // A guide page: article text, a call to action, and links to the other guides
 export default function GuideLayout({ slug, children }: { slug: string; children: React.ReactNode }) {
   const guide = guideBySlug(slug)!;
-  const others = GUIDES.filter((g) => g.slug !== slug);
+  // the rest of its own section first, then the others, six in all
+  const others = [
+    ...GUIDES.filter((g) => g.slug !== slug && g.category === guide.category),
+    ...GUIDES.filter((g) => g.category !== guide.category),
+  ].slice(0, 6);
   const article = {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -49,6 +53,9 @@ export default function GuideLayout({ slug, children }: { slug: string; children
           </li>
         ))}
       </ul>
+      <p>
+        <Link href="/guides">All {GUIDES.length} guides</Link>
+      </p>
     </LegalShell>
   );
 }
