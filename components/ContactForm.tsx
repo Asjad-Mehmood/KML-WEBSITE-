@@ -25,7 +25,7 @@ const input =
   "w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-[15px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500";
 
 // Contact form (/contact): signed-in details filled in, a topic that can come
-// from ?topic=, and extra fields for problem reports
+// from ?topic=
 export default function ContactForm() {
   const { user } = useAuth();
   // ?topic=problem etc. picks the starting topic; the account fills name and
@@ -45,7 +45,6 @@ export default function ContactForm() {
   const name = nameIn ?? user?.name ?? "";
   const email = emailIn ?? user?.email ?? "";
   const [message, setMessage] = useState("");
-  const [details, setDetails] = useState({ version: "", platform: "", grid: "" });
   const [website, setWebsite] = useState(""); // honeypot
   const [state, setState] = useState<"idle" | "sending" | "sent">("idle");
   const [ref, setRef] = useState("");
@@ -59,7 +58,7 @@ export default function ContactForm() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, topic, message, details: topic === "problem" ? details : undefined, website }),
+        body: JSON.stringify({ name, email, topic, message, website }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Your message couldn't be sent. Please try again.");
@@ -122,29 +121,6 @@ export default function ContactForm() {
           <input required type="email" maxLength={200} autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className={`${input} mt-1.5`} />
         </label>
       </div>
-
-      {topic === "problem" && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {(
-            [
-              ["version", "App version", "e.g. v3.6.2"],
-              ["platform", "Windows, Android or web", "e.g. Web app, Chrome"],
-              ["grid", "Grid you chose", "e.g. Dubai DLTM"],
-            ] as const
-          ).map(([k, label, ph]) => (
-            <label key={k} className="block">
-              <span className="text-[13px] font-semibold text-slate-700">{label}</span>
-              <input
-                maxLength={120}
-                placeholder={ph}
-                value={details[k]}
-                onChange={(e) => setDetails({ ...details, [k]: e.target.value })}
-                className={`${input} mt-1.5`}
-              />
-            </label>
-          ))}
-        </div>
-      )}
 
       <label className="block">
         <span className="text-[13px] font-semibold text-slate-700">Message</span>
