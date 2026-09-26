@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { clientIp, recordFailure, tooManyFailures } from "@/lib/loginThrottle";
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,16 +14,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const user = await db.findUserByEmail(email);
-    if (!user) {
+    const ip = clientIp(req);
+    if (await tooManyFailures(String(email), ip)) {
       return NextResponse.json(
-        { error: "Invalid email or password." },
-        { status: 401 }
+        { error: "Too many sign-in attempts. Please wait 15 minutes and try again." },
+        { status: 429 }
       );
     }
 
-    const isValid = db.verifyPassword(user, password);
-    if (!isValid) {
+    // Same answer for an unknown email and a wrong password
+    const user = await db.findUserByEmail(email);
+    if (!user || !db.verifyPassword(user, password)) {
+      await recordFailure(String(email), ip, req.headers.get("user-agent"));
       return NextResponse.json(
         { error: "Invalid email or password." },
         { status: 401 }
