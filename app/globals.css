@@ -67,6 +67,11 @@ body {
   50%       { opacity: 0.5; }
 }
 
+/* Web app loading overlay: fades out on its own even if the page's scripts
+   never start (very slow connections), so the app underneath stays usable */
+@keyframes appLoaderGone { to { opacity: 0; visibility: hidden; } }
+.app-loader { animation: appLoaderGone 0.3s ease 20s forwards; }
+
 .animate-radar-sweep { animation: radarSweep 4s linear infinite; transform-origin: center; }
 .animate-fade-up      { animation: fadeUp   0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
 .animate-scale-in     { animation: scaleIn  0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
