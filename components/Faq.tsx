@@ -178,14 +178,14 @@ export default function Faq({ headingLevel = "h2" }: { headingLevel?: "h1" | "h2
 
             <div className="space-y-2">
               <a
-                href="https://github.com/Asjad-Mehmood/kml-convertor/discussions"
+                href="https://github.com/Asjad-Mehmood/excel-to-kml-pro/issues"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-[13px] font-semibold text-white transition-colors group"
               >
                 <span className="flex items-center gap-2">
                   <ExternalLink className="w-4 h-4 text-slate-300" />
-                  Ask on GitHub Discussions
+                  Ask on GitHub
                 </span>
                 <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
               </a>

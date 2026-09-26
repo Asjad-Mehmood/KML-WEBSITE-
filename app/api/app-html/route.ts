@@ -5,11 +5,10 @@ import { db } from "@/lib/db";
 import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
 import { WEB_APP_LOGIN_URL } from "@/lib/authRedirect";
 import { readSettings } from "@/lib/siteSettings";
+import { fetchAppSource } from "@/lib/appSource";
 
 export const dynamic = "force-dynamic";
 
-const GITHUB_RAW_URL =
-  "https://raw.githubusercontent.com/Asjad-Mehmood/kml-convertor/main/app/index.html";
 
 async function applyWebRestrictions(html: string, req: NextRequest): Promise<string> {
   try {
@@ -628,17 +627,9 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  // 1. Fetch directly from GitHub on every open / refresh
+  // 1. Read the page from the program's repository (lib/appSource.ts)
   try {
-    const timestampedUrl = `${GITHUB_RAW_URL}?t=${Date.now()}`;
-    const res = await fetch(timestampedUrl, {
-      cache: "no-store",
-      signal: AbortSignal.timeout(8000),
-      headers: {
-        "User-Agent": "KML-Website-App",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-      },
-    });
+    const res = await fetchAppSource();
 
     if (res.ok) {
       const rawContent = await res.text();

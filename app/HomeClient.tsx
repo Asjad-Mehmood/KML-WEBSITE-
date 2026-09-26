@@ -16,11 +16,12 @@ import Footer from "../components/Footer";
 import { useAuth } from "../context/AuthContext";
 import { useDownloadGate } from "../context/useDownloadGate";
 import { useSiteSettings } from "../context/SiteSettings";
+import { GITHUB_REPO_URL, RELEASES_API_URL } from "@/lib/site";
 
 type ReleaseAsset = { name?: string; size?: number; browser_download_url?: string; digest?: string };
 type Release = { tag: string; url: string; date: string; assets: ReleaseAsset[]; body: string };
 
-const REPO = "https://github.com/Asjad-Mehmood/kml-convertor";
+const REPO = GITHUB_REPO_URL;
 
 export default function HomeClient() {
   const { trackDownload } = useAuth();
@@ -43,7 +44,7 @@ export default function HomeClient() {
 
   useEffect(() => {
     let alive = true;
-    fetch("https://api.github.com/repos/Asjad-Mehmood/kml-convertor/releases/latest")
+    fetch(RELEASES_API_URL)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (!alive || !data) return;

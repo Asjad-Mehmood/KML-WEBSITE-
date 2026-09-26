@@ -152,11 +152,11 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
           {/* Right Actions */}
           <div className="flex items-center gap-2 pr-1">
             <a
-              href="https://github.com/Asjad-Mehmood/kml-convertor"
+              href="https://github.com/Asjad-Mehmood/excel-to-kml-pro/releases"
               target="_blank"
               rel="noreferrer"
-              aria-label="Excel to KML Pro on GitHub"
-              title="GitHub"
+              aria-label="Excel to KML Pro releases on GitHub"
+              title="Releases on GitHub"
               className="w-9 h-9 items-center justify-center rounded-full hover:bg-black/5 text-slate-500 hover:text-slate-900 transition-colors hidden sm:flex md:hidden lg:flex"
             >
               <GithubIcon className="w-4 h-4" />

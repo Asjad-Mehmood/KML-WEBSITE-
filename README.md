@@ -82,4 +82,5 @@ npm run start
 ---
 
 ## 📜 License
-Community Open Source • Maintained by [Asjad-Mehmood](https://github.com/Asjad-Mehmood)
+Copyright © 2026 Asjad Mehmood. All rights reserved. This code is private and may not be copied,
+changed or redistributed without written permission.

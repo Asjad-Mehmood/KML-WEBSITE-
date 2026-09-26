@@ -63,6 +63,6 @@ export const FAQS: FaqItem[] = [
     category: "security",
     categoryLabel: "Privacy & PC",
     q: "Why does Windows SmartScreen show an unrecognized app prompt on first run?",
-    a: "Windows SmartScreen routinely shows this safety prompt on newly released open-source software that doesn't purchase an expensive commercial code-signing certificate. Click \"More info\" and then \"Run anyway\". You can also verify the official SHA-256 binary hash on GitHub.",
+    a: "Windows SmartScreen routinely shows this safety prompt on new software that isn't signed with an expensive commercial code-signing certificate yet. Click \"More info\" and then \"Run anyway\". You can also verify the official SHA-256 binary hash on GitHub.",
   },
 ];

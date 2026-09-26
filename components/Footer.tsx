@@ -32,7 +32,7 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
               Survey benchmark &amp; coordinate spreadsheet converter for Google Earth and GIS workflows.
             </p>
             <p className="text-xs text-slate-500">
-              Open-source project maintained for geomatics professionals.
+              Built and maintained by Asjad Mehmood for geomatics professionals.
             </p>
           </div>
 
@@ -81,8 +81,8 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
             <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3.5">Resources</h2>
             <ul className="space-y-2.5 text-xs sm:text-sm text-slate-600">
               {[
-                ["https://github.com/Asjad-Mehmood/kml-convertor", "GitHub Repository"],
-                ["https://github.com/Asjad-Mehmood/kml-convertor/issues", "Issue Tracker"],
+                ["https://github.com/Asjad-Mehmood/excel-to-kml-pro/releases", "Releases on GitHub"],
+                ["https://github.com/Asjad-Mehmood/excel-to-kml-pro/issues", "Report a Problem"],
                 ["/convert", "Grid Converters"],
                 ["/guides", "Guides"],
                 ["/faq", "Common Questions"],
@@ -108,7 +108,7 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
         {/* Bottom Copyright Strip */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <p className="text-center sm:text-left">
-            Copyright &copy; {new Date().getFullYear()} Excel to KML Pro. Open-source geomatics software.
+            Copyright &copy; {new Date().getFullYear()} Asjad Mehmood. All rights reserved.
             <span className="block sm:inline sm:ml-1.5 mt-1 sm:mt-0">
               Managed by{" "}
               <a
@@ -122,7 +122,7 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
             </span>
           </p>
           <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-slate-600">
-            <a href="https://github.com/Asjad-Mehmood/kml-convertor" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 transition-colors">GitHub</a>
+            <a href="https://github.com/Asjad-Mehmood/excel-to-kml-pro/releases" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 transition-colors">Releases</a>
             <button onClick={onDownloadClick} className="hover:text-blue-600 transition-colors cursor-pointer">Download</button>
             <a href="/app" className="hover:text-blue-600 transition-colors">Web App</a>
             <Link href="/privacy" className="hover:text-blue-600 transition-colors">Privacy</Link>

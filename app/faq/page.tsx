@@ -4,6 +4,7 @@ import React from "react";
 import Navbar from "../../components/Navbar";
 import Faq from "../../components/Faq";
 import CtaBanner from "../../components/CtaBanner";
+import { GITHUB_REPO_URL } from "@/lib/site";
 import Footer from "../../components/Footer";
 
 export default function FaqPage() {
@@ -24,8 +25,8 @@ export default function FaqPage() {
       </main>
       <Footer
         versionTag="v3.6.2"
-        downloadUrl="https://github.com/Asjad-Mehmood/kml-convertor/releases/latest"
-        releaseNotesUrl="https://github.com/Asjad-Mehmood/kml-convertor/releases/latest"
+        downloadUrl={`${GITHUB_REPO_URL}/releases/latest`}
+        releaseNotesUrl={`${GITHUB_REPO_URL}/releases/latest`}
         onDownloadClick={handleDownload}
       />
     </div>

@@ -29,7 +29,13 @@ export const OG_IMAGE = {
   alt: "Excel to KML Pro: convert geospatial coordinate tables into Google Earth KML, KMZ and DXF",
 };
 
-export const GITHUB_REPO_URL = "https://github.com/Asjad-Mehmood/kml-convertor";
+/**
+ * The public page for downloads and release notes. The program's code is kept in a private
+ * repository; each release is published here, and the Windows app updates from here.
+ */
+export const GITHUB_REPO_URL = "https://github.com/Asjad-Mehmood/excel-to-kml-pro";
+/** The latest release, read by the home page for its version, size and SHA-256. */
+export const RELEASES_API_URL = "https://api.github.com/repos/Asjad-Mehmood/excel-to-kml-pro/releases/latest";
 export const INSTALLER_URL = `${GITHUB_REPO_URL}/releases/latest/download/ExcelToKMLPro-Lite-Setup.exe`;
 
 /** JSON for a <script type="application/ld+json"> tag, with "<" escaped so it can't close the tag. */
