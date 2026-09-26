@@ -54,7 +54,7 @@ export function openGraphFor(path: string, title: string, description: string) {
 }
 
 /** Public contact for support, privacy and legal questions (Privacy Policy, Terms) */
-export const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@exceltokml.com";
+export const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "exceltokml0@gmail.com";
 
 /** Date shown as "Last updated" on the Privacy Policy and Terms */
 export const LEGAL_UPDATED = "26 September 2026";
