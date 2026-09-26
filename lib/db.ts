@@ -1102,6 +1102,15 @@ export const db = {
     return prisma.conversion.count({ where: { userId } });
   },
 
+  /** Files kept across all accounts, and the bytes of the copies stored. */
+  async getFileTotals(): Promise<{ files: number; stored: number; bytes: number }> {
+    const [files, agg] = await Promise.all([
+      prisma.userFile.count(),
+      prisma.userFile.aggregate({ where: { contentBase64: { not: null } }, _count: { _all: true }, _sum: { fileSize: true } }),
+    ]);
+    return { files, stored: agg._count._all, bytes: agg._sum.fileSize ?? 0 };
+  },
+
   /** Bytes of files an account keeps, for the storage limit. */
   async getUserStorageBytes(userId: string): Promise<number> {
     const r = await prisma.userFile.aggregate({

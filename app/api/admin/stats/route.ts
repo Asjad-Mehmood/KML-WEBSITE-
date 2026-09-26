@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
     const conversions = await db.getAllConversions(5);
     const activities = await db.getAllActivities(200);
     const settings = await db.getSettings();
-    const allFiles = await db.getAllFiles();
+    const fileTotals = await db.getFileTotals();
 
     // Breakdown by role
     const roleCounts: Record<string, number> = {};
@@ -51,7 +51,10 @@ export async function GET(req: NextRequest) {
         totalDownloads: downloads.length,
         totalConversions: conversions.total,
         totalActivities: activities.length,
-        totalFilesStored: allFiles.length,
+        totalFilesStored: fileTotals.files,
+        totalFilesWithCopy: fileTotals.stored,
+        totalStorageBytes: fileTotals.bytes,
+        totalPointsKept: conversions.total,
         totalPointsProcessed,
         roleCounts,
         assetCounts,
