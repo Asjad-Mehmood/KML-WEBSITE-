@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<"login" | "register">("register");
   const [authIntentText, setAuthIntentText] = useState(
-    "Please create a free surveyor account or sign in to download Excel to KML Pro."
+    "Sign in or create a free account to download the Windows app."
   );
   const [pendingDownloadAction, setPendingDownloadAction] = useState<(() => void) | null>(null);
 
@@ -180,7 +180,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } else {
       setAuthIntentText(
         intentReason ||
-          "Registration required: Please create a free surveyor account or sign in to download Excel to KML Pro."
+          "Sign in or create a free account to download the Windows app."
       );
       setPendingDownloadAction(() => action);
       setAuthModalMode("register");

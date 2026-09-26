@@ -73,7 +73,7 @@ export default function DownloadHub({
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-    }, "Surveyor Authentication Required: Please sign in or register to download the Windows Installer.");
+    }, "Sign in or create a free account to download the Windows app.");
   };
 
   const handleDownloadSampleCsv = (e: React.MouseEvent) => {

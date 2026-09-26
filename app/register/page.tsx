@@ -97,9 +97,6 @@ export default function RegisterPage() {
                 PRO
               </span>
             </div>
-            <p className="text-[11px] font-medium text-slate-500 uppercase">
-              Survey Benchmark Engine
-            </p>
           </div>
         </Link>
 
@@ -114,16 +111,9 @@ export default function RegisterPage() {
       {/* Main Registration Card */}
       <div className="max-w-lg w-full mx-auto my-8 bg-white rounded-3xl border border-slate-200 shadow-xl shadow-slate-200/60 p-8 sm:p-10">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold mb-3">
-            <span className="w-2 h-2 rounded-full bg-emerald-600 inline-block" />
-            <span>100% Free &bull; Zero Spam</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight mb-2">
-            Create Surveyor Account
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight">
+            Create Account
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-            Register to unlock instant downloads for the Windows native app, sample CSV test packages, and export features.
-          </p>
         </div>
 
         {error && (
@@ -150,7 +140,7 @@ export default function RegisterPage() {
 
           <div>
             <label htmlFor={emailId} className="block text-xs font-bold text-slate-700 mb-1.5">
-              Work / Surveyor Email *
+              Email Address *
             </label>
             <input
               id={emailId}
@@ -230,7 +220,7 @@ export default function RegisterPage() {
             disabled={isSubmitting}
             className="w-full py-3.5 px-4 bg-blue-600 hover:bg-blue-700 active:scale-98 text-white font-bold text-sm rounded-xl shadow-lg shadow-blue-500/25 transition-all flex items-center justify-center gap-2 mt-2"
           >
-            {isSubmitting ? "Creating Account..." : "Complete Registration & Download"}
+            {isSubmitting ? "Creating account…" : "Create Account"}
           </button>
         </form>
 
@@ -248,7 +238,7 @@ export default function RegisterPage() {
 
       {/* Footer */}
       <div className="text-center text-xs text-slate-400 py-4">
-        &copy; 2026 Excel to KML Pro &bull; Open-source survey benchmark coordinate engine
+        &copy; 2026 Excel to KML Pro
       </div>
     </div>
   );
