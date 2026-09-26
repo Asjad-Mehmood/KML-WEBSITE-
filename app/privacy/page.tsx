@@ -51,6 +51,9 @@ export default function PrivacyPage() {
           <strong>Downloads:</strong> which version of the Windows app you downloaded, and when.
         </li>
         <li>
+          <strong>Messages you send us:</strong> your name, email address and what you write, so we can reply.
+        </li>
+        <li>
           <strong>Technical information</strong> that browsers send to every website, such as your IP address, the approximate
           area it comes from, and your browser and device type.
         </li>
@@ -59,7 +62,8 @@ export default function PrivacyPage() {
       <h2>How we use it</h2>
       <ul>
         <li>To run your account and show your history and files in your dashboard.</li>
-        <li>To send emails you ask for, such as a password reset link.</li>
+        <li>To send emails you ask for, such as a password reset link, a one-time welcome after your first download, or a reply to your message.</li>
+        <li>To answer messages you send us through the contact form or by email.</li>
         <li>To keep the service secure and prevent misuse.</li>
         <li>To understand how the tools are used, so we can improve them.</li>
         <li>To apply the web app&apos;s usage limits to the right account.</li>
@@ -90,6 +94,7 @@ export default function PrivacyPage() {
           When you delete your account, your details, files, points and history are removed. Download counts are kept without anything
           that identifies you.
         </li>
+        <li>Messages you send us are kept while we deal with them and for our records, and are deleted on request.</li>
         <li>Technical information is kept only as long as needed for security and to run the service.</li>
       </ul>
 

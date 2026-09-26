@@ -11,7 +11,7 @@ export function isMailConfigured(): boolean {
   return Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
 }
 
-export async function sendMail(opts: { to: string; subject: string; text: string; html: string }) {
+export async function sendMail(opts: { to: string; subject: string; text: string; html: string; replyTo?: string }) {
   if (!isMailConfigured()) throw new Error("Email is not configured (set SMTP_HOST, SMTP_USER, SMTP_PASS).");
   const port = Number(process.env.SMTP_PORT || 587);
   const transport = nodemailer.createTransport({
