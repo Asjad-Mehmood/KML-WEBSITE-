@@ -10,6 +10,21 @@ export const dynamic = "force-dynamic";
 const GITHUB_RAW_URL =
   "https://raw.githubusercontent.com/Asjad-Mehmood/kml-convertor/main/app/index.html";
 
+// The web app keeps its own sign-in in localStorage and can't see the site's
+// httpOnly cookie, so a signed-in visitor looked signed out inside it. Hand it
+// the same session before its scripts run: the site's sign-in wins, and
+// signing out on the site ends it here too (the session is deleted).
+function withSiteSession(html: string, token: string, user: unknown): string {
+  const json = (v: unknown) => JSON.stringify(v).replace(/</g, "\\u003c");
+  const tag =
+    "<script>try{" +
+    "localStorage.setItem('surveyor_auth_token'," + json(token) + ");" +
+    "localStorage.setItem('surveyor_user_profile'," + json(JSON.stringify(user)) + ");" +
+    "}catch(e){}</script>";
+  const m = /<head[^>]*>/i.exec(html);
+  return m ? html.slice(0, m.index + m[0].length) + tag + html.slice(m.index + m[0].length) : tag + html;
+}
+
 async function applyWebRestrictions(html: string, req: NextRequest): Promise<string> {
   try {
     const token =
@@ -575,15 +590,35 @@ const SIGN_IN_REQUIRED_HTML = `<!doctype html>
 <a href="${WEB_APP_LOGIN_URL}" target="_top" style="display:inline-block;padding:10px 20px;border-radius:10px;background:#0071e3;color:#fff;font-weight:600;font-size:14px;text-decoration:none">Sign in</a>
 </main></body></html>`;
 
+const MAINTENANCE_HTML = `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maintenance — Excel to KML Pro</title></head>
+<body style="margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:system-ui,-apple-system,sans-serif;background:#f8fafc;color:#0f172a">
+<main style="max-width:380px;padding:32px;text-align:center">
+<h1 style="font-size:20px;margin:0 0 8px">The web app is down for maintenance</h1>
+<p style="font-size:14px;color:#475569;line-height:1.5;margin:0">We'll be back shortly. The Windows app keeps working as usual.</p>
+</main></body></html>`;
+
 export async function GET(req: NextRequest) {
   // 0. Web app is for signed-in users only
-  if (!(await sessionForToken(tokenFromRequest(req)))) {
+  const token = tokenFromRequest(req);
+  const session = await sessionForToken(token);
+  if (!session || !token) {
     return new NextResponse(SIGN_IN_REQUIRED_HTML, {
       status: 401,
       headers: {
         "Content-Type": "text/html; charset=utf-8",
         "Cache-Control": "no-store",
       },
+    });
+  }
+
+  // Admin setting "Maintenance mode": paused for everyone but admins
+  const maintSettings = await db.getSettings().catch(() => null);
+  if (maintSettings?.maintenanceMode && !db.isAdmin(session.user)) {
+    return new NextResponse(MAINTENANCE_HTML, {
+      status: 503,
+      headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "Retry-After": "600" },
     });
   }
 
@@ -612,7 +647,7 @@ export async function GET(req: NextRequest) {
         }
       }
 
-      const protectedContent = await applyWebRestrictions(rawContent, req);
+      const protectedContent = withSiteSession(await applyWebRestrictions(rawContent, req), token, db.sanitizeUser(session.user));
 
       return new NextResponse(protectedContent, {
         status: 200,
@@ -633,7 +668,7 @@ export async function GET(req: NextRequest) {
     const localFilePath = path.join(process.cwd(), "public", "app.html");
     if (fs.existsSync(localFilePath)) {
       const rawContent = await fs.promises.readFile(localFilePath, "utf-8");
-      const protectedContent = await applyWebRestrictions(rawContent, req);
+      const protectedContent = withSiteSession(await applyWebRestrictions(rawContent, req), token, db.sanitizeUser(session.user));
       return new NextResponse(protectedContent, {
         status: 200,
         headers: {

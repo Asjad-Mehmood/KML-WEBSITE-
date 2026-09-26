@@ -1,5 +1,6 @@
 "use client";
 
+import { loadPublicSettings } from "@/lib/publicSettings";
 import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import Hero from "../components/Hero";
@@ -46,6 +47,17 @@ export default function HomeClient() {
   // Fetch latest GitHub release details
   useEffect(() => {
     async function loadRelease() {
+      // Admin settings (version, installer file and size) are the fallback;
+      // GitHub's latest release, when it answers, is the source of truth
+      const settings = await loadPublicSettings();
+      if (settings?.appVersion) setVersionTag(settings.appVersion);
+      if (settings?.installerFileSize) {
+        setFileSizeText(settings.installerFileSize);
+        setBytesText(settings.installerFileSize);
+      }
+      if (settings?.installerFileName && /^[\w.-]+\.exe$/i.test(settings.installerFileName)) {
+        setDownloadUrl(`https://github.com/Asjad-Mehmood/kml-convertor/releases/latest/download/${settings.installerFileName}`);
+      }
       try {
         const res = await fetch(
           "https://api.github.com/repos/Asjad-Mehmood/kml-convertor/releases/latest"

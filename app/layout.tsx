@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "../context/AuthContext";
+import SiteNotice from "../components/SiteNotice";
 import AuthModal from "../components/AuthModal";
 import Preloader from "../components/Preloader";
 import { DEFAULT_TITLE, OG_IMAGE, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
@@ -108,6 +109,7 @@ export default function RootLayout({
         <AuthProvider>
           {children}
           <AuthModal />
+          <SiteNotice />
         </AuthProvider>
       </body>
     </html>
