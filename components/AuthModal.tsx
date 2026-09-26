@@ -2,6 +2,7 @@
 
 import React, { useState, useId } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { X, Lock } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
@@ -96,6 +97,13 @@ export default function AuthModal() {
             >
               {submitting ? "Processing…" : authModalMode === "register" ? "Create Account & Download" : "Sign In & Continue"}
             </button>
+            {authModalMode === "register" && (
+              <p className="text-center text-[12px] text-[#6e6e73]">
+                By creating an account you agree to the{" "}
+                <Link href="/terms" target="_blank" className="text-[#0071e3] hover:underline">Terms of Use</Link> and{" "}
+                <Link href="/privacy" target="_blank" className="text-[#0071e3] hover:underline">Privacy Policy</Link>.
+              </p>
+            )}
           </form>
         </div>
       </div>

@@ -23,10 +23,10 @@ export const SITE_DESCRIPTION =
   "Convert Excel & CSV survey coordinates on 5,800+ EPSG grids into Google Earth KML, KMZ and DXF, with site photos and PDF reports. Free for Windows and the web.";
 
 export const OG_IMAGE = {
-  url: "/assets/hero_geospatial.jpg",
+  url: "/assets/og-image.png",
   width: 1200,
   height: 630,
-  alt: "Excel to KML Pro converting survey coordinates into Google Earth placemarks",
+  alt: "Excel to KML Pro: convert geospatial coordinate tables into Google Earth KML, KMZ and DXF",
 };
 
 export const GITHUB_REPO_URL = "https://github.com/Asjad-Mehmood/kml-convertor";
@@ -52,3 +52,9 @@ export function openGraphFor(path: string, title: string, description: string) {
     images: [OG_IMAGE],
   };
 }
+
+/** Public contact for support, privacy and legal questions (Privacy Policy, Terms) */
+export const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "exceltokml0@gmail.com";
+
+/** Date shown as "Last updated" on the Privacy Policy and Terms */
+export const LEGAL_UPDATED = "26 September 2026";

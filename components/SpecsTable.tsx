@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import {
   Sparkles,
   Globe,
@@ -65,14 +66,14 @@ const ADJUSTMENTS = [
 ];
 
 const POPULAR_GRIDS = [
-  { name: "Dubai DLTM", epsg: "EPSG:3997", region: "United Arab Emirates", datum: "WGS 84 / Dubai Local TM" },
-  { name: "Qatar National Grid", epsg: "EPSG:2932", region: "State of Qatar", datum: "Qatar 1995 / QNG" },
-  { name: "Pakistan UTM 42N", epsg: "EPSG:32642", region: "Pakistan / Central Asia", datum: "WGS 84 / UTM Zone 42N" },
-  { name: "Saudi Arabia UTM 38N", epsg: "EPSG:32638", region: "Kingdom of Saudi Arabia", datum: "WGS 84 / UTM Zone 38N" },
-  { name: "British National Grid", epsg: "EPSG:27700", region: "United Kingdom (OSGB36)", datum: "OSGB 1936 / British National Grid" },
-  { name: "USA State Plane (NAD83)", epsg: "EPSG:2227+", region: "United States (California, Texas, FL)", datum: "NAD83 (2011) State Plane" },
-  { name: "Australia GDA2020", epsg: "EPSG:7855", region: "Australia (MGA Zone 55/56)", datum: "GDA2020 / MGA Zone 55" },
-  { name: "UTM Zones 1–60 (N/S)", epsg: "EPSG:32601–32760", region: "Worldwide Universal Mercator", datum: "WGS 84 Global Ellipsoid" },
+  { name: "Dubai DLTM", epsg: "EPSG:3997", region: "United Arab Emirates", datum: "WGS 84 / Dubai Local TM", href: "/convert/dubai-dltm" },
+  { name: "Qatar National Grid", epsg: "EPSG:2932", region: "State of Qatar", datum: "Qatar 1995 / QNG", href: "/convert/qatar-national-grid" },
+  { name: "Pakistan UTM 42N", epsg: "EPSG:32642", region: "Pakistan / Central Asia", datum: "WGS 84 / UTM Zone 42N", href: "/convert/utm-zone-42n" },
+  { name: "Saudi Arabia UTM 38N", epsg: "EPSG:32638", region: "Kingdom of Saudi Arabia", datum: "WGS 84 / UTM Zone 38N", href: "/convert/utm-zone-38n" },
+  { name: "British National Grid", epsg: "EPSG:27700", region: "United Kingdom (OSGB36)", datum: "OSGB 1936 / British National Grid", href: "/convert/british-national-grid" },
+  { name: "USA State Plane (NAD83)", epsg: "EPSG:2227+", region: "United States (California, Texas, FL)", datum: "NAD83 (2011) State Plane", href: "/convert#americas" },
+  { name: "Australia GDA2020", epsg: "EPSG:7855", region: "Australia (MGA Zone 55/56)", datum: "GDA2020 / MGA Zone 55", href: "/convert/australia-mga-zone-55" },
+  { name: "UTM Zones 1–60 (N/S)", epsg: "EPSG:32601–32760", region: "Worldwide Universal Mercator", datum: "WGS 84 Global Ellipsoid", href: "/convert" },
 ];
 
 function FormatCard({
@@ -262,8 +263,9 @@ export default function SpecsTable() {
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
             {POPULAR_GRIDS.map((grid) => (
-              <div
+              <Link
                 key={grid.name}
+                href={grid.href}
                 className="group p-3.5 sm:p-4 rounded-xl bg-white border border-slate-200/80 hover:border-blue-200 hover:shadow-[0_8px_24px_-12px_rgba(0,113,227,0.25)] transition-all flex flex-col"
               >
                 <span className="self-start font-mono text-[10.5px] font-bold text-blue-700 bg-blue-50 border border-blue-100 px-1.5 py-0.5 rounded mb-2.5">
@@ -275,9 +277,14 @@ export default function SpecsTable() {
                   <MapPin className="w-3 h-3 shrink-0" />
                   <span>{grid.region}</span>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
+          <p className="mt-4 text-right">
+            <Link href="/convert" className="text-[13px] font-semibold text-[#0071e3] hover:underline">
+              All grid converters →
+            </Link>
+          </p>
         </div>
       </div>
     </section>

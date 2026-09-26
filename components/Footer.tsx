@@ -83,6 +83,8 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
               {[
                 ["https://github.com/Asjad-Mehmood/kml-convertor", "GitHub Repository"],
                 ["https://github.com/Asjad-Mehmood/kml-convertor/issues", "Issue Tracker"],
+                ["/convert", "Grid Converters"],
+                ["/guides", "Guides"],
                 ["/faq", "Common Questions"],
                 ["https://epsg.io", "EPSG Geodetic Registry"],
               ].map(([href, label]) => (
@@ -123,6 +125,8 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
             <a href="https://github.com/Asjad-Mehmood/kml-convertor" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 transition-colors">GitHub</a>
             <button onClick={onDownloadClick} className="hover:text-blue-600 transition-colors cursor-pointer">Download</button>
             <a href="/app" className="hover:text-blue-600 transition-colors">Web App</a>
+            <Link href="/privacy" className="hover:text-blue-600 transition-colors">Privacy</Link>
+            <Link href="/terms" className="hover:text-blue-600 transition-colors">Terms</Link>
           </div>
         </div>
 

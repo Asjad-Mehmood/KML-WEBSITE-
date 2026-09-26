@@ -282,6 +282,10 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
   const [name, setName] = useState(data.user.name);
   const [org, setOrg] = useState(data.user.organization || "");
   const [saving, setSaving] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   const { user, plan, stats, activities, downloads } = data;
   const firstName = user.name.split(" ")[0] || user.name;
@@ -342,6 +346,27 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
     await logout();
     router.push("/");
     router.refresh();
+  };
+
+  const deleteAccount = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setDeletingAccount(true);
+    setDeleteError(null);
+    try {
+      const res = await fetch("/api/user/account", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: deletePassword }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || "Couldn't delete your account. Please try again.");
+      await logout();
+      router.push("/");
+      router.refresh();
+    } catch (err) {
+      setDeleteError((err as Error).message);
+      setDeletingAccount(false);
+    }
   };
 
   const TABS: { id: Tab; label: string; icon: React.ElementType; count?: number }[] = [
@@ -785,6 +810,66 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
                   >
                     <LogOut className="w-4 h-4" aria-hidden /> Sign out
                   </button>
+                  {!user.isAdmin && (
+                    <section className="bg-white rounded-2xl border border-rose-200/80 p-5 sm:p-6">
+                      <h2 className="text-[15px] font-bold mb-1.5 flex items-center gap-2 text-rose-700">
+                        <Trash2 className="w-4 h-4" aria-hidden /> Delete account
+                      </h2>
+                      <p className="text-[13px] text-slate-500 mb-3">
+                        Removes your account, saved files and activity history. This can&apos;t be undone.
+                      </p>
+                      {!deleteOpen ? (
+                        <button
+                          onClick={() => setDeleteOpen(true)}
+                          className="text-[13px] font-semibold text-rose-700 hover:underline cursor-pointer"
+                        >
+                          Delete my account…
+                        </button>
+                      ) : (
+                        <form onSubmit={deleteAccount} className="space-y-3">
+                          <div>
+                            <label htmlFor="del-pass" className="block text-[12px] font-bold text-slate-700 mb-1.5">
+                              Enter your password to confirm
+                            </label>
+                            <input
+                              id="del-pass"
+                              type="password"
+                              required
+                              autoComplete="current-password"
+                              value={deletePassword}
+                              onChange={(e) => setDeletePassword(e.target.value)}
+                              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white"
+                            />
+                          </div>
+                          {deleteError && (
+                            <p role="alert" className="text-[12.5px] font-medium text-rose-700">
+                              {deleteError}
+                            </p>
+                          )}
+                          <div className="flex gap-2">
+                            <button
+                              type="submit"
+                              disabled={deletingAccount || !deletePassword}
+                              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 disabled:opacity-60 text-white text-[13px] font-semibold cursor-pointer"
+                            >
+                              {deletingAccount && <Loader2 className="w-4 h-4 animate-spin" aria-hidden />} Delete permanently
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setDeleteOpen(false);
+                                setDeletePassword("");
+                                setDeleteError(null);
+                              }}
+                              className="px-4 py-2 rounded-xl border border-slate-200 text-[13px] font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </form>
+                      )}
+                    </section>
+                  )}
                 </div>
               </div>
             )}

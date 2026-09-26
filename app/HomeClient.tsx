@@ -10,6 +10,7 @@ import Workflow from "../components/Workflow";
 import DownloadHub from "../components/DownloadHub";
 import SpecsTable from "../components/SpecsTable";
 import Faq from "../components/Faq";
+import GridsAndGuides from "../components/GridsAndGuides";
 import CtaBanner from "../components/CtaBanner";
 import Footer from "../components/Footer";
 import { useAuth } from "../context/AuthContext";
@@ -157,6 +158,9 @@ export default function HomeClient() {
 
         {/* Technical Specifications */}
         <SpecsTable />
+
+        {/* Grid converter pages and guides */}
+        <GridsAndGuides />
 
         {/* FAQ */}
         <Faq />
