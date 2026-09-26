@@ -24,6 +24,10 @@ export default function PrivacyPage() {
       <h2>The short version</h2>
       <ul>
         <li>Converting coordinates happens on your own computer or in your browser.</li>
+        <li>
+          When you&apos;re signed in, the files you open and save, and the points in them, are kept in your account so you
+          can find them again. Signed out, your coordinates and files stay on your computer.
+        </li>
         <li>We keep only what we need to run your account and improve the service.</li>
         <li>We don&apos;t sell your information or use it for advertising.</li>
         <li>You can delete your saved files, or your whole account, from your dashboard at any time.</li>
@@ -37,8 +41,10 @@ export default function PrivacyPage() {
         </li>
         <li>
           <strong>Your work while signed in:</strong> a record of your conversions and exports (such as file name, number of points,
-          coordinate system and format), and the files you open or save in the web app, so you can find and download them again
-          from your dashboard.
+          coordinate system and format); the files you open or save in the web app or the Windows app, up to 4 MB each and
+          200 MB in all (a bigger file is listed by name and size only); and the points in each saved file (station, code,
+          grid coordinates, latitude and longitude, and the coordinate system), so you can find and download them again from
+          your dashboard.
         </li>
         <li>
           <strong>Downloads:</strong> which version of the Windows app you downloaded, and when.
@@ -78,9 +84,9 @@ export default function PrivacyPage() {
       <h2>How long we keep it</h2>
       <ul>
         <li>Account details are kept while your account exists.</li>
-        <li>Saved files and your activity history are kept until you delete them or your account.</li>
+        <li>Saved files, their points and your activity history are kept until you delete them or your account.</li>
         <li>
-          When you delete your account, your details, files and history are removed. Download counts are kept without anything
+          When you delete your account, your details, files, points and history are removed. Download counts are kept without anything
           that identifies you.
         </li>
         <li>Technical information is kept only as long as needed for security and to run the service.</li>
@@ -91,7 +97,7 @@ export default function PrivacyPage() {
         <li>
           See and update your details in your <Link href="/dashboard">dashboard</Link>.
         </li>
-        <li>Delete any saved file from the dashboard&apos;s Files tab.</li>
+        <li>Delete any saved file from the dashboard&apos;s Files tab; its points are deleted with it.</li>
         <li>
           Delete your whole account from <strong>Dashboard → Account → Delete account</strong>.
         </li>

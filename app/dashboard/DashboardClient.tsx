@@ -72,9 +72,71 @@ export interface DashboardData {
     timestamp: string;
   }[];
   downloads: { id: string; assetType: string; fileName: string; version: string; timestamp: string }[];
+  /** Converted points of the files saved while signed in, newest first. */
+  points: {
+    total: number;
+    rows: {
+      id: string;
+      fileId: string | null;
+      fileName: string | null;
+      station: string;
+      code: string;
+      easting: number;
+      northing: number;
+      elevation: number;
+      lat: string;
+      lon: string;
+      grid: string;
+      timestamp: string;
+    }[];
+  };
 }
 
-type Tab = "overview" | "files" | "activity" | "downloads" | "account";
+type PointRow = DashboardData["points"]["rows"][number];
+
+/** One group per saved file, points in the order they were in the file. */
+function groupPoints(rows: PointRow[]) {
+  const groups: { key: string; name: string; grid: string; when: string; rows: PointRow[] }[] = [];
+  const byKey = new Map<string, (typeof groups)[number]>();
+  for (const r of rows) {
+    const key = r.fileId || r.timestamp;
+    let g = byKey.get(key);
+    if (!g) {
+      g = { key, name: r.fileName || "Saved file", grid: r.grid, when: r.timestamp, rows: [] };
+      byKey.set(key, g);
+      groups.push(g);
+    }
+    g.rows.push(r);
+  }
+  const order = (id: string) => parseInt(id.split("_").pop() || "0", 10) || 0;
+  for (const g of groups) g.rows.sort((a, b) => order(a.id) - order(b.id));
+  return groups;
+}
+
+function pointsCsv(rows: PointRow[]) {
+  const q = (v: unknown) => {
+    const s = String(v ?? "");
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const head = ["FILE", "SAVED", "STATION", "CODE", "EASTING", "NORTHING", "ELEVATION", "LATITUDE", "LONGITUDE", "GRID"];
+  const body = rows.map((r) =>
+    [r.fileName, r.timestamp, r.station, r.code, r.easting, r.northing, r.elevation, r.lat, r.lon, r.grid].map(q).join(",")
+  );
+  return "\ufeff" + [head.join(","), ...body].join("\r\n") + "\r\n";
+}
+
+function downloadText(text: string, name: string) {
+  const url = URL.createObjectURL(new Blob([text], { type: "text/csv;charset=utf-8" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+type Tab = "overview" | "files" | "points" | "activity" | "downloads" | "account";
 
 const ACTION_LABEL: Record<string, string> = {
   conversion: "Conversion",
@@ -273,6 +335,10 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
   const { logout } = useAuth();
   const [tab, setTab] = useState<Tab>("overview");
   const [files, setFiles] = useState(data.files);
+  const [pointRows, setPointRows] = useState(data.points.rows);
+  const [pointsTotal, setPointsTotal] = useState(data.points.total);
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
+  const pointGroups = useMemo(() => groupPoints(pointRows), [pointRows]);
   const [fileQuery, setFileQuery] = useState("");
   const [fileDir, setFileDir] = useState<"all" | "import" | "export">("all");
   const [actFilter, setActFilter] = useState<string>("all");
@@ -309,12 +375,16 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
   const shownActivities = actFilter === "all" ? activities : activities.filter((a) => a.action === actFilter);
 
   const deleteFile = async (id: string, fileName: string) => {
-    if (!window.confirm(`Delete “${fileName}” from your saved files? This can't be undone.`)) return;
+    if (!window.confirm(`Delete “${fileName}” and its points from your saved files? This can't be undone.`)) return;
     setDeleting(id);
     try {
       const res = await fetch(`/api/user/files/${encodeURIComponent(id)}`, { method: "DELETE" });
       if (!res.ok) throw new Error();
       setFiles((fs) => fs.filter((f) => f.id !== id));
+      // its points go with it
+      const gone = pointRows.filter((r) => r.fileId === id).length;
+      setPointRows((rs) => rs.filter((r) => r.fileId !== id));
+      setPointsTotal((t) => Math.max(0, t - gone));
       setNotice({ ok: true, text: `Deleted ${fileName}.` });
     } catch {
       setNotice({ ok: false, text: `Couldn't delete ${fileName}. Please try again.` });
@@ -372,6 +442,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
   const TABS: { id: Tab; label: string; icon: React.ElementType; count?: number }[] = [
     { id: "overview", label: "Overview", icon: Sparkles },
     { id: "files", label: "Files", icon: Files, count: files.length },
+    { id: "points", label: "Points", icon: MapPinned, count: pointsTotal },
     { id: "activity", label: "Activity", icon: ActivityIcon, count: activities.length },
     { id: "downloads", label: "Downloads", icon: Download, count: downloads.length },
     { id: "account", label: "Account", icon: UserRound },
@@ -666,6 +737,95 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
                         </div>
                       </li>
                     ))}
+                  </ul>
+                )}
+              </section>
+            )}
+
+            {/* Points */}
+            {tab === "points" && (
+              <section className="bg-white rounded-2xl border border-slate-200/80 overflow-hidden">
+                <div className="p-4 sm:p-5 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between border-b border-slate-100">
+                  <p className="text-[13px] text-slate-600">
+                    {num(pointsTotal)} points in {num(pointGroups.length)} saved {pointGroups.length === 1 ? "file" : "files"}
+                    {pointRows.length < pointsTotal && <> · showing the newest {num(pointRows.length)}</>}
+                  </p>
+                  <button
+                    onClick={() => downloadText(pointsCsv(pointGroups.flatMap((g) => g.rows)), "Excel to KML Pro points.csv")}
+                    disabled={!pointRows.length}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-[12px] font-semibold text-slate-700 hover:border-blue-200 hover:text-[#0071e3] cursor-pointer disabled:opacity-50 self-start"
+                  >
+                    <FileDown className="w-3.5 h-3.5" aria-hidden /> Download all as CSV
+                  </button>
+                </div>
+                {pointGroups.length === 0 ? (
+                  <Empty
+                    icon={MapPinned}
+                    title="No points yet"
+                    text="Save a KML, KMZ, Excel, CSV, DXF or instrument file while signed in, and every point in it is kept here with its grid position and latitude and longitude."
+                  />
+                ) : (
+                  <ul className="divide-y divide-slate-100">
+                    {pointGroups.map((g, i) => {
+                      const open = openGroup === null ? i === 0 : openGroup === g.key;
+                      return (
+                        <li key={g.key}>
+                          <button
+                            onClick={() => setOpenGroup(open ? "" : g.key)}
+                            aria-expanded={open}
+                            className="w-full px-4 sm:px-5 py-3.5 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-left cursor-pointer hover:bg-slate-50"
+                          >
+                            <span className="text-[13.5px] font-semibold text-slate-900 break-all">{g.name}</span>
+                            <span className="text-[11.5px] text-slate-500 flex-1">
+                              {num(g.rows.length)} points · {g.grid} · <When iso={g.when} />
+                            </span>
+                            <span className="text-[12px] font-semibold text-[#0071e3]">{open ? "Hide" : "Show"}</span>
+                          </button>
+                          {open && (
+                            <div className="px-4 sm:px-5 pb-4">
+                              <div className="overflow-auto max-h-[420px] border border-slate-200 rounded-lg">
+                                <table className="w-full text-[12px] whitespace-nowrap">
+                                  <thead className="bg-slate-50 text-slate-600 sticky top-0">
+                                    <tr>
+                                      {["Station", "Code", "Easting", "Northing", "Elevation", "Latitude", "Longitude"].map((h) => (
+                                        <th key={h} className="text-left font-semibold px-3 py-2">{h}</th>
+                                      ))}
+                                    </tr>
+                                  </thead>
+                                  <tbody className="font-mono divide-y divide-slate-100">
+                                    {g.rows.slice(0, 500).map((r) => {
+                                      const noGrid = !r.easting && !r.northing;
+                                      return (
+                                        <tr key={r.id}>
+                                          <td className="px-3 py-1.5 font-sans font-semibold text-slate-800">{r.station}</td>
+                                          <td className="px-3 py-1.5">{r.code}</td>
+                                          <td className="px-3 py-1.5">{noGrid ? "—" : r.easting.toFixed(3)}</td>
+                                          <td className="px-3 py-1.5">{noGrid ? "—" : r.northing.toFixed(3)}</td>
+                                          <td className="px-3 py-1.5">{r.elevation.toFixed(3)}</td>
+                                          <td className="px-3 py-1.5">{Number(r.lat).toFixed(7)}</td>
+                                          <td className="px-3 py-1.5">{Number(r.lon).toFixed(7)}</td>
+                                        </tr>
+                                      );
+                                    })}
+                                  </tbody>
+                                </table>
+                              </div>
+                              <div className="mt-2 flex flex-wrap items-center gap-3">
+                                {g.rows.length > 500 && (
+                                  <span className="text-[11.5px] text-slate-500">and {num(g.rows.length - 500)} more in the CSV</span>
+                                )}
+                                <button
+                                  onClick={() => downloadText(pointsCsv(g.rows), `${g.name.replace(/\.[a-z0-9]+$/i, "")} points.csv`)}
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-[12px] font-semibold text-slate-700 hover:border-blue-200 hover:text-[#0071e3] cursor-pointer"
+                                >
+                                  <FileDown className="w-3.5 h-3.5" aria-hidden /> Download these points as CSV
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
               </section>

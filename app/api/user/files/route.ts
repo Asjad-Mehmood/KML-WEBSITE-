@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getAdminSession } from "@/lib/adminAuth";
+import {
+  MAX_FILE_BYTES,
+  MAX_FILE_NAME,
+  MAX_FILES_REQUEST_BYTES,
+  MAX_USER_FILES,
+  MAX_USER_STORAGE_BYTES,
+  formatBytes,
+} from "@/lib/uploadLimits";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -62,10 +70,25 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST: Save an imported or exported file into the database & file vault
+function tooBig(message: string) {
+  return NextResponse.json({ error: message }, { status: 413, headers: CORS_HEADERS });
+}
+
+// POST: Save an imported or exported file into the signed-in user's file vault
 export async function POST(req: NextRequest) {
   try {
+    // Only signed-in users can store files; nothing is kept for anonymous requests.
     const user = await getAuthUser(req);
+    if (!user) {
+      return NextResponse.json({ error: "Sign in to save files." }, { status: 401, headers: CORS_HEADERS });
+    }
+
+    // Refuse an oversized body before reading it.
+    const declared = parseInt(req.headers.get("content-length") || "0", 10);
+    if (declared > MAX_FILES_REQUEST_BYTES) {
+      return tooBig(`Files larger than ${formatBytes(MAX_FILE_BYTES)} are not stored.`);
+    }
+
     const contentType = req.headers.get("content-type") || "";
     const platformHeader = req.headers.get("x-app-platform") || undefined;
 
@@ -87,6 +110,10 @@ export async function POST(req: NextRequest) {
         : "web_app";
     let fileBuffer: Buffer | undefined = undefined;
     let contentBase64: string | undefined = undefined;
+    // A file over the limit is still listed, with its name and size but no content.
+    let metaOnly = false;
+    let metaSize = 0;
+    let logActivity = true;
 
     if (contentType.includes("multipart/form-data")) {
       const formData = await req.formData();
@@ -97,7 +124,8 @@ export async function POST(req: NextRequest) {
 
       fileName = file.name || "unnamed_file";
       mimeType = file.type || "application/octet-stream";
-      direction = (formData.get("direction") as "import" | "export") || "import";
+      direction = formData.get("direction") === "export" ? "export" : "import";
+      if (formData.get("logActivity") === "false") logActivity = false;
       action = (formData.get("action") as string) || "";
       crs = (formData.get("crs") as string) || undefined;
       const pts = formData.get("pointsCount");
@@ -119,8 +147,12 @@ export async function POST(req: NextRequest) {
       if (body.platform === "windows_app" || body.platform === "web_app") {
         platform = body.platform;
       }
+      if (body.logActivity === false) logActivity = false;
 
-      if (body.contentBase64) {
+      if (body.metaOnly === true) {
+        metaOnly = true;
+        metaSize = typeof body.fileSize === "number" ? body.fileSize : 0;
+      } else if (body.contentBase64) {
         contentBase64 = body.contentBase64;
         fileBuffer = Buffer.from(body.contentBase64, "base64");
       } else if (body.content) {
@@ -133,14 +165,34 @@ export async function POST(req: NextRequest) {
     if (!fileName) {
       return NextResponse.json({ error: "fileName is required" }, { status: 400, headers: CORS_HEADERS });
     }
+    fileName = fileName.slice(0, MAX_FILE_NAME);
 
-    // Only a valid session decides whose account a file belongs to; a userId or
+    // The real size, whatever the request claimed.
+    const size = fileBuffer ? fileBuffer.length : 0;
+    if (!metaOnly && size === 0) {
+      return NextResponse.json({ error: "The file is empty." }, { status: 400, headers: CORS_HEADERS });
+    }
+    if (size > MAX_FILE_BYTES) {
+      return tooBig(`Files larger than ${formatBytes(MAX_FILE_BYTES)} are not stored.`);
+    }
+    if ((await db.countUserFiles(user.id)) >= MAX_USER_FILES) {
+      return tooBig(`Your account already keeps ${MAX_USER_FILES} files. Delete some from your dashboard to save more.`);
+    }
+    const used = metaOnly ? 0 : await db.getUserStorageBytes(user.id);
+    if (!metaOnly && used + size > MAX_USER_STORAGE_BYTES) {
+      return tooBig(
+        `Your file storage is full (${formatBytes(used)} of ${formatBytes(MAX_USER_STORAGE_BYTES)}). ` +
+          "Delete some files from your dashboard to save more."
+      );
+    }
+
+    // Only the session decides whose account a file belongs to; a userId or
     // email sent in the request is ignored so nobody can plant files in
-    // another user's dashboard. Signed-out uploads are kept without an owner.
+    // another user's dashboard.
     const savedRecord = await db.saveUserFile({
-      userId: user ? user.id : null,
-      userEmail: user ? user.email : null,
-      userName: user ? user.name : null,
+      userId: user.id,
+      userEmail: user.email,
+      userName: user.name,
       direction,
       fileName,
       fileBuffer,
@@ -152,6 +204,9 @@ export async function POST(req: NextRequest) {
       platform,
       ipAddress,
       userAgent,
+      metaOnly,
+      metaSize,
+      logActivity,
     });
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -162,7 +217,10 @@ export async function POST(req: NextRequest) {
         success: true,
         file: cleanRecord,
         downloadUrl: `/api/user/files/${cleanRecord.id}`,
-        message: `${direction === "import" ? "Imported" : "Exported"} file ${fileName} archived in database.`,
+        stored: !metaOnly,
+        message: metaOnly
+          ? `${fileName} is listed in your account; at ${formatBytes(metaSize)} it is too big to keep a copy.`
+          : `${direction === "import" ? "Imported" : "Exported"} file ${fileName} archived in database.`,
       },
       { headers: CORS_HEADERS }
     );

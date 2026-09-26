@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
 
     const users = await db.getAllUsers();
     const downloads = await db.getAllDownloads();
-    const conversions = await db.getAllConversions();
+    const conversions = await db.getAllConversions(5);
     const activities = await db.getAllActivities(200);
     const settings = await db.getSettings();
     const allFiles = await db.getAllFiles();
@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
       stats: {
         totalUsers: users.length,
         totalDownloads: downloads.length,
-        totalConversions: conversions.length,
+        totalConversions: conversions.total,
         totalActivities: activities.length,
         totalFilesStored: allFiles.length,
         totalPointsProcessed,
@@ -59,7 +59,7 @@ export async function GET(req: NextRequest) {
         settings,
         recentUsers: users.slice(0, 5),
         recentDownloads: downloads.slice(0, 5),
-        recentConversions: conversions.slice(0, 5),
+        recentConversions: conversions.conversions,
         recentActivities: activities.slice(0, 6),
       },
     });

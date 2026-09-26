@@ -366,8 +366,12 @@ async function applyWebRestrictions(html: string, req: NextRequest): Promise<str
     }
   };
 
-  // Automatically hook file inputs & drag-and-drop for imports & exports
+  // Automatically hook file inputs & drag-and-drop for imports & exports.
+  // Newer app builds keep every opened and saved file, and its points, in the
+  // account themselves (window.BM2KML_SYNC); these hooks are only for older builds.
   function hookFileArchival() {
+    if (window.BM2KML_SYNC) return;
+    if (!localStorage.getItem("surveyor_auth_token")) return;
     // 1. Hook file input changes
     const fileInputs = document.querySelectorAll('input[type="file"]');
     fileInputs.forEach(function(input) {

@@ -25,6 +25,7 @@ import {
   Compass,
   Cpu,
   FolderArchive,
+  MapPinned,
   FileText,
   Search,
 } from "lucide-react";
@@ -116,6 +117,22 @@ interface UserDetailResponse {
   activities: UserActivityItem[];
   downloads: UserDownloadItem[];
   files?: UserFileItem[];
+  points?: { total: number; conversions: UserPointItem[] };
+}
+
+export interface UserPointItem {
+  id: string;
+  fileId?: string | null;
+  fileName?: string | null;
+  station: string;
+  featureCode: string;
+  easting: number;
+  northing: number;
+  elevation: number;
+  coordSystem: string;
+  lat: string;
+  lon: string;
+  timestamp: string;
 }
 
 interface SurveyorDetailModalProps {
@@ -137,7 +154,7 @@ export default function SurveyorDetailModal({
 }: SurveyorDetailModalProps) {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<UserDetailResponse | null>(null);
-  const [activeTab, setActiveTab] = useState<"overview" | "files" | "activities" | "downloads" | "settings">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "files" | "points" | "activities" | "downloads" | "settings">("overview");
 
   // Files filter & search
   const [fileFilter, setFileFilter] = useState<"all" | "import" | "export">("all");
@@ -323,6 +340,8 @@ export default function SurveyorDetailModal({
   const activities = data?.activities || [];
   const downloads = data?.downloads || [];
   const files = data?.files || [];
+  const points = data?.points?.conversions || [];
+  const pointsTotal = data?.points?.total ?? points.length;
   const loc = formatLocationDisplay(user?.location);
 
   const filteredFiles = files.filter((f) => {
@@ -396,6 +415,7 @@ export default function SurveyorDetailModal({
           {[
             { id: "overview", label: "Overview & Analytics", icon: Activity },
             { id: "files", label: `Stored Files Vault (${files.length})`, icon: FolderArchive },
+            { id: "points", label: `Converted Points (${pointsTotal})`, icon: MapPinned },
             { id: "activities", label: `App Activity (${activities.length})`, icon: HardDrive },
             { id: "downloads", label: `Downloads (${downloads.length})`, icon: Download },
             { id: "settings", label: "Access & Restrictions", icon: Lock },
@@ -864,6 +884,68 @@ export default function SurveyorDetailModal({
                                 <td className="px-4 py-3 font-mono text-slate-400">
                                   {act.ipAddress || "127.0.0.1"}
                                 </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ========================================================= */}
+              {/* CONVERTED POINTS */}
+              {/* ========================================================= */}
+              {activeTab === "points" && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-base font-bold text-white">Converted Points</h3>
+                      <p className="text-xs text-slate-400">
+                        Every point in the files this user saved while signed in, newest first
+                        {points.length < pointsTotal ? ` (showing ${points.length} of ${pointsTotal})` : ""}
+                      </p>
+                    </div>
+                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                      {pointsTotal} Points
+                    </span>
+                  </div>
+
+                  {points.length === 0 ? (
+                    <div className="py-16 text-center text-slate-500 bg-slate-800/30 rounded-2xl border border-slate-800">
+                      <MapPinned className="w-8 h-8 text-slate-600 mx-auto mb-2" />
+                      <p className="text-sm font-semibold">No converted points recorded for this user</p>
+                    </div>
+                  ) : (
+                    <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg">
+                      <div className="overflow-auto max-h-[520px]">
+                        <table className="w-full text-left text-xs">
+                          <thead className="bg-slate-800/70 border-b border-slate-800 text-[11px] font-bold text-slate-400 uppercase tracking-wider sticky top-0">
+                            <tr>
+                              <th className="px-4 py-3">Saved</th>
+                              <th className="px-4 py-3">File</th>
+                              <th className="px-4 py-3">Station</th>
+                              <th className="px-4 py-3">Code</th>
+                              <th className="px-4 py-3">Grid</th>
+                              <th className="px-4 py-3">Easting / Northing / Elevation</th>
+                              <th className="px-4 py-3">WGS84 Lat/Lon</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-800/50">
+                            {points.slice(0, 1000).map((pt) => (
+                              <tr key={pt.id} className="hover:bg-slate-800/30 transition-colors">
+                                <td className="px-4 py-2.5 text-slate-400 whitespace-nowrap">{new Date(pt.timestamp).toLocaleString()}</td>
+                                <td className="px-4 py-2.5 font-mono text-white whitespace-nowrap">{pt.fileName || "—"}</td>
+                                <td className="px-4 py-2.5 font-mono font-bold text-white">{pt.station}</td>
+                                <td className="px-4 py-2.5 text-slate-300">{pt.featureCode}</td>
+                                <td className="px-4 py-2.5 text-blue-400 whitespace-nowrap">{pt.coordSystem}</td>
+                                <td className="px-4 py-2.5 font-mono text-slate-300 whitespace-nowrap">
+                                  {!pt.easting && !pt.northing
+                                    ? "—"
+                                    : `E ${pt.easting.toFixed(3)} · N ${pt.northing.toFixed(3)} · Z ${pt.elevation.toFixed(3)}`}
+                                </td>
+                                <td className="px-4 py-2.5 font-mono text-emerald-400 whitespace-nowrap">{pt.lat}, {pt.lon}</td>
                               </tr>
                             ))}
                           </tbody>

@@ -64,6 +64,8 @@ interface DownloadItem {
 
 interface ConversionItem {
   id: string;
+  userEmail?: string | null;
+  fileName?: string | null;
   station: string;
   featureCode: string;
   easting: number;
@@ -175,6 +177,7 @@ export default function AdminPage() {
 
   // Conversions state
   const [conversions, setConversions] = useState<ConversionItem[]>([]);
+  const [conversionsTotal, setConversionsTotal] = useState(0);
 
   // Settings state
   const [settingsForm, setSettingsForm] = useState<AppSettings>({
@@ -315,6 +318,7 @@ export default function AdminPage() {
       if (convRes.ok) {
         const data = await convRes.json();
         setConversions(data.conversions || []);
+        setConversionsTotal(data.total ?? (data.conversions || []).length);
       }
     } catch (err) {
       console.error("Dashboard data load error", err);
@@ -745,7 +749,7 @@ export default function AdminPage() {
             { id: "users", label: `Registered Surveyors (${users.length})`, icon: Users },
             { id: "activities", label: `App Activity & Telemetry (${allActivities.length})`, icon: Activity },
             { id: "downloads", label: `Download Logs (${downloads.length})`, icon: Download },
-            { id: "conversions", label: `Conversions (${conversions.length})`, icon: Globe },
+            { id: "conversions", label: `Conversions (${conversionsTotal})`, icon: Globe },
             { id: "settings", label: "System & Release Settings", icon: Settings },
           ].map((tab) => {
             const Icon = tab.icon;
@@ -1654,6 +1658,8 @@ export default function AdminPage() {
                   <thead className="bg-slate-800/60 border-b border-slate-800 text-xs font-bold text-slate-400 uppercase tracking-wider">
                     <tr>
                       <th className="px-6 py-4">Timestamp</th>
+                      <th className="px-6 py-4">User</th>
+                      <th className="px-6 py-4">File</th>
                       <th className="px-6 py-4">Station ID</th>
                       <th className="px-6 py-4">Feature Code</th>
                       <th className="px-6 py-4">Grid System</th>
@@ -1664,7 +1670,7 @@ export default function AdminPage() {
                   <tbody className="divide-y divide-slate-800/60">
                     {conversions.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
+                        <td colSpan={8} className="px-6 py-12 text-center text-slate-500">
                           No conversion records logged yet
                         </td>
                       </tr>
@@ -1674,6 +1680,8 @@ export default function AdminPage() {
                           <td className="px-6 py-4 text-xs text-slate-400">
                             {new Date(conv.timestamp).toLocaleString()}
                           </td>
+                          <td className="px-6 py-4 text-xs text-slate-300">{conv.userEmail || "—"}</td>
+                          <td className="px-6 py-4 font-mono text-xs text-slate-300">{conv.fileName || "—"}</td>
                           <td className="px-6 py-4 font-mono font-bold text-white text-xs">{conv.station}</td>
                           <td className="px-6 py-4">
                             <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 text-slate-300 border border-slate-700">
