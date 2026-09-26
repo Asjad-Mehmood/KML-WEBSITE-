@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { usePublicSettings } from "@/lib/publicSettings";
 
 export interface User {
   id: string;
@@ -51,6 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   // Modal states for intercepting downloads
+  const publicSettings = usePublicSettings();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<"login" | "register">("register");
   const [authIntentText, setAuthIntentText] = useState(
@@ -180,7 +182,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Guard function for downloads
   const requireAuth = (action: () => void, intentReason?: string) => {
-    if (user) {
+    // Admin setting "Require sign-in to download" switched off: no gate
+    if (user || publicSettings?.requireAuthForDownload === false) {
       action();
     } else {
       setAuthIntentText(

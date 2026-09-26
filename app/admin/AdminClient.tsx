@@ -1808,13 +1808,18 @@ export default function AdminClient() {
                   </div>
                 </div>
 
+                <p className="-mt-3 text-xs text-slate-500">
+                  Shown on the download section until the latest GitHub release loads (GitHub&apos;s details win when
+                  it answers). The installer file name is also used for the download link.
+                </p>
+
                 {/* Gate & Maintenance Mode */}
                 <div className="space-y-4 pt-2">
                   <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-800/60 border border-slate-700/60">
                     <div>
                       <div className="font-bold text-sm text-white">Require Surveyor Login to Download</div>
                       <div className="text-xs text-slate-400">
-                        When enabled, visitors must register or sign in before downloading the software.
+                        On: visitors sign in or register before the Windows download starts. Off: the download starts straight away.
                       </div>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
@@ -1831,7 +1836,7 @@ export default function AdminClient() {
                   <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-800/60 border border-slate-700/60">
                     <div>
                       <div className="font-bold text-sm text-white">Maintenance Mode</div>
-                      <div className="text-xs text-slate-400">Display maintenance indicator banner to public visitors</div>
+                      <div className="text-xs text-slate-400">Pauses the web app for everyone except admins and shows a maintenance notice on the site. The Windows app is not affected.</div>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
@@ -1915,15 +1920,6 @@ export default function AdminClient() {
                             <span>Lock PDF &amp; Cadastral Reports on Web</span>
                           </label>
 
-                          <label className="flex items-center gap-2.5 text-xs text-slate-300 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={settingsForm.webWatermarkKml}
-                              onChange={(e) => setSettingsForm({ ...settingsForm, webWatermarkKml: e.target.checked })}
-                              className="rounded bg-slate-800 border-slate-700 text-amber-500 focus:ring-0"
-                            />
-                            <span>Add &quot;Desktop Edition&quot; Watermark in Web KML</span>
-                          </label>
                         </div>
                       </div>
                     </div>
@@ -1943,7 +1939,7 @@ export default function AdminClient() {
                         onChange={(e) => setSettingsForm({ ...settingsForm, announcementActive: e.target.checked })}
                         className="rounded bg-slate-800 border-slate-700 text-blue-600 focus:ring-0"
                       />
-                      Show on Home Page
+                      Show on the site
                     </label>
                   </div>
                   <input

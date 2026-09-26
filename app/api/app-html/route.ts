@@ -575,15 +575,34 @@ const SIGN_IN_REQUIRED_HTML = `<!doctype html>
 <a href="${WEB_APP_LOGIN_URL}" target="_top" style="display:inline-block;padding:10px 20px;border-radius:10px;background:#0071e3;color:#fff;font-weight:600;font-size:14px;text-decoration:none">Sign in</a>
 </main></body></html>`;
 
+const MAINTENANCE_HTML = `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maintenance — Excel to KML Pro</title></head>
+<body style="margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:system-ui,-apple-system,sans-serif;background:#f8fafc;color:#0f172a">
+<main style="max-width:380px;padding:32px;text-align:center">
+<h1 style="font-size:20px;margin:0 0 8px">The web app is down for maintenance</h1>
+<p style="font-size:14px;color:#475569;line-height:1.5;margin:0">We'll be back shortly. The Windows app keeps working as usual.</p>
+</main></body></html>`;
+
 export async function GET(req: NextRequest) {
   // 0. Web app is for signed-in users only
-  if (!(await sessionForToken(tokenFromRequest(req)))) {
+  const session = await sessionForToken(tokenFromRequest(req));
+  if (!session) {
     return new NextResponse(SIGN_IN_REQUIRED_HTML, {
       status: 401,
       headers: {
         "Content-Type": "text/html; charset=utf-8",
         "Cache-Control": "no-store",
       },
+    });
+  }
+
+  // Admin setting "Maintenance mode": paused for everyone but admins
+  const maintSettings = await db.getSettings().catch(() => null);
+  if (maintSettings?.maintenanceMode && !db.isAdmin(session.user)) {
+    return new NextResponse(MAINTENANCE_HTML, {
+      status: 503,
+      headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "Retry-After": "600" },
     });
   }
 
