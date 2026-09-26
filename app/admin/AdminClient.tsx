@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import AdminMessages from "../../components/admin/AdminMessages";
+import AppSourceStatus from "../../components/admin/AppSourceStatus";
 import {
   Users,
   Download,
@@ -2011,6 +2012,11 @@ export default function AdminClient() {
           <AdminMessages adminFetch={adminFetch} onToast={showToast} onCounts={setNewMessages} />
         )}
 
+        {activeTab === "settings" && (
+          <div className="mb-5">
+            <AppSourceStatus adminFetch={adminFetch} />
+          </div>
+        )}
         {activeTab === "settings" && (
           <div className="max-w-3xl w-full mx-auto space-y-6">
             <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-8 shadow-xl">

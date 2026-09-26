@@ -4,7 +4,7 @@ import path from "path";
 import { db } from "@/lib/db";
 import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
 import { WEB_APP_LOGIN_URL } from "@/lib/authRedirect";
-import { fetchAppSource } from "@/lib/appSource";
+import { appSourceToken, fetchAppSource } from "@/lib/appSource";
 
 export const dynamic = "force-dynamic";
 
@@ -622,8 +622,13 @@ export async function GET(req: NextRequest) {
   }
 
   // 1. Fetch directly from GitHub on every open / refresh
+  let missReason = "";
   try {
     const res = await fetchAppSource();
+    if (!res.ok) {
+      missReason = `GitHub answered ${res.status}${appSourceToken() ? "" : " (no APP_SOURCE_TOKEN set)"}`;
+      console.warn(`Web app source not reachable: ${missReason}; serving the saved copy`);
+    }
 
     if (res.ok) {
       const rawContent = await res.text();
@@ -647,10 +652,12 @@ export async function GET(req: NextRequest) {
           "Cache-Control": "no-cache, no-store, must-revalidate",
           "Pragma": "no-cache",
           "Expires": "0",
+          "X-App-Source": "github",
         },
       });
     }
   } catch (err) {
+    missReason = "GitHub didn't answer in time";
     console.warn("GitHub fetch failed or timed out, loading local copy:", err);
   }
 
@@ -665,6 +672,7 @@ export async function GET(req: NextRequest) {
         headers: {
           "Content-Type": "text/html; charset=utf-8",
           "Cache-Control": "no-cache, no-store, must-revalidate",
+          "X-App-Source": `saved-copy; ${missReason || "unknown"}`.slice(0, 200),
         },
       });
     }
