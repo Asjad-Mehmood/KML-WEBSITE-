@@ -442,7 +442,7 @@ BLDG-C2,513620.000,2787440.000,15.15,STRUCTURE,Building Column Corner B
                 </span>
               </div>
               <p className="text-[13px] text-slate-600 leading-relaxed">
-                Changelogs, commit signatures, and previous builds.
+                What changed in each version, and earlier installers.
               </p>
             </div>
             <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-slate-700 group-hover:translate-x-0.5 transition-all shrink-0 mt-1" />

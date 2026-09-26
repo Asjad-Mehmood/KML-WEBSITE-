@@ -34,6 +34,9 @@ export const OG_IMAGE = {
  * the private repository Asjad-Mehmood/kml-convertor-src; each release is published here, and
  * installed copies update from here.
  */
+/** The newest release, shown until the live release details load. */
+export const LATEST_VERSION = "v4.2.1";
+
 export const GITHUB_REPO_URL = "https://github.com/Asjad-Mehmood/kml-convertor";
 /** The latest release, read by the home page for its version, size and SHA-256. */
 export const RELEASES_API_URL = "https://api.github.com/repos/Asjad-Mehmood/kml-convertor/releases/latest";

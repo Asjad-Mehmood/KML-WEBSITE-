@@ -4,7 +4,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
-import { GITHUB_REPO_URL } from "@/lib/site";
+import { GITHUB_REPO_URL, LATEST_VERSION } from "@/lib/site";
 
 // Page frame for the Privacy Policy and Terms: site navbar and footer around readable text
 export default function LegalShell({ title, updated, children }: { title: string; updated: string; children: React.ReactNode }) {
@@ -26,7 +26,7 @@ export default function LegalShell({ title, updated, children }: { title: string
         </article>
       </main>
       <Footer
-        versionTag="v3.6.2"
+        versionTag={LATEST_VERSION}
         downloadUrl={`${GITHUB_REPO_URL}/releases/latest`}
         releaseNotesUrl={`${GITHUB_REPO_URL}/releases/latest`}
         onDownloadClick={toDownload}

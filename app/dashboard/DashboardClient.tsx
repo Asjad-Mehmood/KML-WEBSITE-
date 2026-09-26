@@ -30,7 +30,7 @@ import {
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import { useAuth } from "../../context/AuthContext";
-import { GITHUB_REPO_URL } from "@/lib/site";
+import { GITHUB_REPO_URL, LATEST_VERSION } from "@/lib/site";
 import FileViewer, { type ViewerFile } from "@/components/FileViewer";
 
 export interface DashboardData {
@@ -1134,7 +1134,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
 
       <FileViewer file={viewing} onClose={() => setViewing(null)} />
       <Footer
-        versionTag="v3.6.2"
+        versionTag={LATEST_VERSION}
         downloadUrl={`${GITHUB_REPO_URL}/releases/latest`}
         releaseNotesUrl={`${GITHUB_REPO_URL}/releases/latest`}
         onDownloadClick={() => router.push("/#download")}

@@ -4,7 +4,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
-import { GITHUB_REPO_URL } from "@/lib/site";
+import { GITHUB_REPO_URL, LATEST_VERSION } from "@/lib/site";
 
 // Site navbar and footer around a content page (grid pages, guides)
 export default function PageShell({ children }: { children: React.ReactNode }) {
@@ -17,7 +17,7 @@ export default function PageShell({ children }: { children: React.ReactNode }) {
         {children}
       </main>
       <Footer
-        versionTag="v3.6.2"
+        versionTag={LATEST_VERSION}
         downloadUrl={`${GITHUB_REPO_URL}/releases/latest`}
         releaseNotesUrl={`${GITHUB_REPO_URL}/releases/latest`}
         onDownloadClick={toDownload}
