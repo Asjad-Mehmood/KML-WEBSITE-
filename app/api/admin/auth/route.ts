@@ -15,60 +15,8 @@ export async function GET(req: NextRequest) {
   });
 }
 
-export async function POST(req: NextRequest) {
-  try {
-    const { email, password } = await req.json();
-
-    if (!email || !password) {
-      return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
-    }
-
-    const user = await db.findUserByEmail(email);
-    if (!user) {
-      return NextResponse.json({ error: "Invalid admin credentials" }, { status: 401 });
-    }
-
-    const isValid = db.verifyPassword(user, password);
-    if (!isValid) {
-      return NextResponse.json({ error: "Invalid admin credentials" }, { status: 401 });
-    }
-
-    if (!db.isAdmin(user)) {
-      return NextResponse.json(
-        { error: "Access denied: Account does not have Administrator privileges" },
-        { status: 403 }
-      );
-    }
-
-    // Create session
-    const session = await db.createSession(user.id);
-    await db.touchUserLogin(user.id);
-
-    const response = NextResponse.json({
-      success: true,
-      token: session.token,
-      user: db.sanitizeUser(user),
-      message: "Admin authentication successful",
-    });
-
-    const cookieOptions = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax" as const,
-      maxAge: 30 * 24 * 60 * 60, // 30 days
-      path: "/",
-    };
-
-    // Set both cookies so that both the admin panel and public site recognize the session
-    response.cookies.set("surveyor_session", session.token, cookieOptions);
-    response.cookies.set("surveyor_auth_token", session.token, cookieOptions);
-
-    return response;
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : "Authentication failed";
-    return NextResponse.json({ error: msg }, { status: 500 });
-  }
-}
+// There is no separate admin sign-in: admins use the regular login page, and
+// this route only reports (GET) or ends (DELETE) an admin session.
 
 export async function DELETE(req: NextRequest) {
   try {
