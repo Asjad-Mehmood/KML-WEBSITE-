@@ -2256,7 +2256,7 @@ export default function AdminClient() {
                   value={userForm.name}
                   onChange={(e) => setUserForm({ ...userForm, name: e.target.value })}
                   className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500"
-                  placeholder="e.g. Asjad Mehmood"
+                  placeholder="Full name"
                 />
               </div>
 
