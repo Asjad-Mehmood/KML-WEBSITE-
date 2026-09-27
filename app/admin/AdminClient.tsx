@@ -77,7 +77,7 @@ interface ConversionItem {
   featureCode: string;
   easting: number;
   northing: number;
-  elevation: number;
+  elevation: number | null;
   coordSystem: string;
   lat: string;
   lon: string;
@@ -256,6 +256,8 @@ export default function AdminClient() {
   const [activityFilter, setActivityFilter] = useState("all");
   const [activitySearch, setActivitySearch] = useState("");
   const [activitiesLoading, setActivitiesLoading] = useState(false);
+  // every entry in the database; allActivities holds the newest of them, 200 more per "Load more"
+  const [activitiesTotal, setActivitiesTotal] = useState(0);
   const [actPage, setActPage] = useState(0);
 
   // Downloads state
@@ -495,7 +497,25 @@ export default function AdminClient() {
       if (res.ok) {
         const data = await res.json();
         setAllActivities(data.activities || []);
+        setActivitiesTotal(data.total ?? (data.activities || []).length);
       }
+    } finally {
+      setActivitiesLoading(false);
+    }
+  };
+
+  const loadMoreActivities = async () => {
+    setActivitiesLoading(true);
+    try {
+      const res = await adminFetch(`/api/admin/activities?limit=200&skip=${allActivities.length}`);
+      if (res.ok) {
+        const data = await res.json();
+        const have = new Set(allActivities.map((a) => a.id));
+        setAllActivities([...allActivities, ...(data.activities || []).filter((a: UserActivityItem) => !have.has(a.id))]);
+        setActivitiesTotal(data.total ?? activitiesTotal);
+      }
+    } catch {
+      showToast("Couldn't load more activity", "error");
     } finally {
       setActivitiesLoading(false);
     }
@@ -640,6 +660,7 @@ export default function AdminClient() {
       const res = await adminFetch("/api/admin/activities", { method: "DELETE" });
       if (res.ok) {
         setAllActivities([]);
+        setActivitiesTotal(0);
         showToast("Activity log cleared");
         loadDashboardData();
       }
@@ -838,7 +859,7 @@ export default function AdminClient() {
           {[
             { id: "overview", label: "Overview", icon: BarChart3 },
             { id: "users", label: "Surveyors", icon: Users, count: users.length },
-            { id: "activities", label: "Activity", icon: Activity, count: allActivities.length },
+            { id: "activities", label: "Activity", icon: Activity, count: Math.max(activitiesTotal, allActivities.length) },
             { id: "downloads", label: "Downloads", icon: Download, count: downloads.length },
             { id: "files", label: "Files", icon: Files, count: filesTotal && !fileSearch && fileDir === "all" ? filesTotal : stats?.totalFilesStored },
             { id: "conversions", label: "Points", icon: Globe, count: conversionsTotal },
@@ -1048,7 +1069,7 @@ export default function AdminClient() {
                     onClick={() => setActiveTab("activities")}
                     className="text-xs font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1 cursor-pointer"
                   >
-                    <span>Full Log ({allActivities.length})</span> &rarr;
+                    <span>Full Log ({Math.max(activitiesTotal, allActivities.length)})</span> &rarr;
                   </button>
                 </div>
 
@@ -1582,6 +1603,21 @@ export default function AdminClient() {
                 </table>
               </div>
               <Pager page={actPageNow} total={filteredActivities.length} size={ACT_PAGE} onPage={setActPage} noun="entries" />
+              {allActivities.length < activitiesTotal && (
+                <div className="mt-3 flex flex-wrap items-center justify-center gap-3 text-xs text-slate-400">
+                  <span>
+                    Showing the newest {allActivities.length.toLocaleString()} of {activitiesTotal.toLocaleString()} entries
+                    {activityFilter !== "all" || activitySearch ? "; the filter and search look through these" : ""}.
+                  </span>
+                  <button
+                    onClick={loadMoreActivities}
+                    disabled={activitiesLoading}
+                    className="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/60 hover:bg-slate-800 text-slate-200 font-semibold disabled:opacity-50 cursor-pointer"
+                  >
+                    {activitiesLoading ? "Loading…" : `Load ${Math.min(200, activitiesTotal - allActivities.length)} older`}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -1990,7 +2026,7 @@ export default function AdminClient() {
                             </td>
                             <td className="px-4 py-2.5 text-right text-slate-300">{noGrid ? "—" : conv.easting.toFixed(3)}</td>
                             <td className="px-4 py-2.5 text-right text-slate-300">{noGrid ? "—" : conv.northing.toFixed(3)}</td>
-                            <td className="px-4 py-2.5 text-right text-slate-300 hidden xl:table-cell">{conv.elevation.toFixed(3)}</td>
+                            <td className="px-4 py-2.5 text-right text-slate-300 hidden xl:table-cell">{conv.elevation == null ? "—" : conv.elevation.toFixed(3)}</td>
                             <td className="px-4 py-2.5 text-right text-emerald-400">{Number(conv.lat).toFixed(7)}</td>
                             <td className="px-4 py-2.5 text-right text-emerald-400">{Number(conv.lon).toFixed(7)}</td>
                           </tr>

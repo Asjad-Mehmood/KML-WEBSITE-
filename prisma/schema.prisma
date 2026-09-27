@@ -71,7 +71,8 @@ model Conversion {
   featureCode String
   easting     Float
   northing    Float
-  elevation   Float
+  /// null when the point has no level (not 0, which is a real level)
+  elevation   Float?
   coordSystem String
   lat         String
   lon         String

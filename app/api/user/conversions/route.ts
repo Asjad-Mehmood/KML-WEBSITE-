@@ -33,6 +33,12 @@ const float = (v: unknown) => {
   const n = typeof v === "number" ? v : parseFloat(String(v ?? ""));
   return Number.isFinite(n) ? n : 0;
 };
+/** A level, or null when the point has none: 0 would read as a real level. */
+const level = (v: unknown) => {
+  if (v === null || v === undefined || v === "") return null;
+  const n = typeof v === "number" ? v : parseFloat(String(v));
+  return Number.isFinite(n) ? n : null;
+};
 
 // POST: the converted points of one saved file.
 // Body: { fileId, crs, offset?, points: [{ station, code, easting, northing, elevation, lat, lon }] }
@@ -65,7 +71,7 @@ export async function POST(req: NextRequest) {
       featureCode: text(p.code ?? p.featureCode, 60),
       easting: float(p.easting),
       northing: float(p.northing),
-      elevation: float(p.elevation),
+      elevation: level(p.elevation),
       lat: degrees(p.lat),
       lon: degrees(p.lon),
     }));

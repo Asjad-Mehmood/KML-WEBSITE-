@@ -29,6 +29,7 @@ import {
   FileText,
   Search,
   Eye as EyeIcon,
+  Briefcase,
 } from "lucide-react";
 import FileViewer, { type ViewerFile } from "@/components/FileViewer";
 
@@ -104,6 +105,18 @@ export interface UserFileItem {
   downloadUrl: string;
 }
 
+interface UserJobItem {
+  jobId: string;
+  name: string;
+  points: number;
+  photos: number;
+  photosLeft: number;
+  grid: string;
+  size: number;
+  updated: number;
+  keptAt: string;
+}
+
 interface UserDetailResponse {
   user: UserItem;
   stats: {
@@ -119,6 +132,7 @@ interface UserDetailResponse {
   activities: UserActivityItem[];
   downloads: UserDownloadItem[];
   files?: UserFileItem[];
+  jobs?: UserJobItem[];
   points?: { total: number; conversions: UserPointItem[] };
 }
 
@@ -130,7 +144,7 @@ export interface UserPointItem {
   featureCode: string;
   easting: number;
   northing: number;
-  elevation: number;
+  elevation: number | null;
   coordSystem: string;
   lat: string;
   lon: string;
@@ -156,7 +170,7 @@ export default function SurveyorDetailModal({
 }: SurveyorDetailModalProps) {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<UserDetailResponse | null>(null);
-  const [activeTab, setActiveTab] = useState<"overview" | "files" | "points" | "activities" | "downloads" | "settings">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "files" | "points" | "jobs" | "activities" | "downloads" | "settings">("overview");
 
   // Files filter & search
   const [fileFilter, setFileFilter] = useState<"all" | "import" | "export">("all");
@@ -353,6 +367,7 @@ export default function SurveyorDetailModal({
   const activities = data?.activities || [];
   const downloads = data?.downloads || [];
   const files = data?.files || [];
+  const jobs = data?.jobs || [];
   const points = data?.points?.conversions || [];
   const pointsTotal = data?.points?.total ?? points.length;
   const loc = formatLocationDisplay(user?.location);
@@ -443,6 +458,7 @@ export default function SurveyorDetailModal({
             { id: "overview", label: "Overview", icon: Activity },
             { id: "files", label: "Files", icon: FolderArchive, count: files.length },
             { id: "points", label: "Points", icon: MapPinned, count: pointsTotal },
+            { id: "jobs", label: "Jobs", icon: Briefcase, count: jobs.length },
             { id: "activities", label: "Activity", icon: HardDrive, count: activities.length },
             { id: "downloads", label: "Downloads", icon: Download, count: downloads.length },
             { id: "settings", label: "Access", icon: Lock },
@@ -1001,7 +1017,7 @@ export default function SurveyorDetailModal({
                                   </td>
                                   <td className="px-3 py-2 text-right text-slate-300">{noGrid ? "—" : pt.easting.toFixed(3)}</td>
                                   <td className="px-3 py-2 text-right text-slate-300">{noGrid ? "—" : pt.northing.toFixed(3)}</td>
-                                  <td className="px-3 py-2 text-right text-slate-300 hidden lg:table-cell">{pt.elevation.toFixed(3)}</td>
+                                  <td className="px-3 py-2 text-right text-slate-300 hidden lg:table-cell">{pt.elevation == null ? "—" : pt.elevation.toFixed(3)}</td>
                                   <td className="px-3 py-2 text-right text-emerald-400 hidden sm:table-cell">{Number(pt.lat).toFixed(7)}</td>
                                   <td className="px-3 py-2 text-right text-emerald-400 hidden sm:table-cell">{Number(pt.lon).toFixed(7)}</td>
                                 </tr>
@@ -1023,6 +1039,68 @@ export default function SurveyorDetailModal({
               {/* ========================================================= */}
               {/* TAB 4: DOWNLOADS LOG */}
               {/* ========================================================= */}
+              {activeTab === "jobs" && (
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-base font-bold text-white">Jobs kept in the account</h3>
+                    <p className="text-xs text-slate-400">
+                      Kept from the app with Keep as a job while signed in. Download one to open it in the app with Import a job file.
+                    </p>
+                  </div>
+                  {jobs.length === 0 ? (
+                    <div className="py-16 text-center text-slate-500 bg-slate-800/30 rounded-2xl border border-slate-800">
+                      <Briefcase className="w-8 h-8 text-slate-600 mx-auto mb-2" />
+                      <p className="text-sm font-semibold">No jobs kept by this user</p>
+                    </div>
+                  ) : (
+                    <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left text-xs">
+                          <thead className="bg-slate-800/70 border-b border-slate-800 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                            <tr>
+                              <th className="px-4 py-3">Job</th>
+                              <th className="px-4 py-3 text-right">Points</th>
+                              <th className="px-4 py-3 text-right">Photos</th>
+                              <th className="px-4 py-3">Grid</th>
+                              <th className="px-4 py-3 text-right">Size</th>
+                              <th className="px-4 py-3">Last changed</th>
+                              <th className="px-4 py-3"></th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-800/50">
+                            {jobs.map((j) => (
+                              <tr key={j.jobId} className="hover:bg-slate-800/30 transition-colors">
+                                <td className="px-4 py-3 font-medium text-white">{j.name}</td>
+                                <td className="px-4 py-3 text-right text-cyan-400 font-mono">{j.points.toLocaleString()}</td>
+                                <td className="px-4 py-3 text-right text-slate-300 font-mono">
+                                  {j.photos}
+                                  {j.photosLeft ? <span className="text-amber-400"> (+{j.photosLeft} not uploaded)</span> : null}
+                                </td>
+                                <td className="px-4 py-3 text-slate-300 max-w-[220px] truncate" title={j.grid}>{j.grid || "—"}</td>
+                                <td className="px-4 py-3 text-right text-slate-400 font-mono whitespace-nowrap">
+                                  {j.size < 1048576 ? `${(j.size / 1024).toFixed(1)} KB` : `${(j.size / 1048576).toFixed(2)} MB`}
+                                </td>
+                                <td className="px-4 py-3 text-slate-400 whitespace-nowrap">
+                                  {new Date(j.updated || j.keptAt).toLocaleString()}
+                                </td>
+                                <td className="px-4 py-3 text-right">
+                                  <a
+                                    href={`/api/admin/jobs?userId=${encodeURIComponent(data?.user.id || "")}&jobId=${encodeURIComponent(j.jobId)}`}
+                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold"
+                                  >
+                                    <Download className="w-3.5 h-3.5" /> Download
+                                  </a>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {activeTab === "downloads" && (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
@@ -1076,7 +1154,7 @@ export default function SurveyorDetailModal({
                                     {dl.version}
                                   </td>
                                   <td className="px-4 py-3 font-mono text-emerald-400">
-                                    {dl.ipAddress || "127.0.0.1"}
+                                    {dl.ipAddress || "—"}
                                   </td>
                                   <td className="px-4 py-3 text-slate-300 flex items-center gap-1.5">
                                     <span>{dloc.flag}</span>
