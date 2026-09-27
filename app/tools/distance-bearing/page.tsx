@@ -1,16 +1,14 @@
 import Link from "next/link";
-import ToolLayout from "../../../components/tools/ToolLayout";
+import ToolLanding from "../../../components/tools/ToolLanding";
 import { toolMetadata } from "@/lib/toolMeta";
-import DistanceClient from "./DistanceClient";
 
 const SLUG = "distance-bearing";
 export const metadata = toolMetadata(SLUG);
 
 export default function Page() {
   return (
-    <ToolLayout
+    <ToolLanding
       slug={SLUG}
-      lead="Measure the distance and bearing between two points — from latitude and longitude on the Earth's curved surface, or from eastings and northings on a flat grid. Or go the other way: the point at a given bearing and distance."
       notes={
         <>
           <h2>Which one to use</h2>
@@ -37,8 +35,6 @@ export default function Page() {
           </p>
         </>
       }
-    >
-      <DistanceClient />
-    </ToolLayout>
+    />
   );
 }

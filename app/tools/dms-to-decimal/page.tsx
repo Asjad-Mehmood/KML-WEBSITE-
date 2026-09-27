@@ -1,16 +1,14 @@
 import Link from "next/link";
-import ToolLayout from "../../../components/tools/ToolLayout";
+import ToolLanding from "../../../components/tools/ToolLanding";
 import { toolMetadata } from "@/lib/toolMeta";
-import DmsClient from "./DmsClient";
 
 const SLUG = "dms-to-decimal";
 export const metadata = toolMetadata(SLUG);
 
 export default function Page() {
   return (
-    <ToolLayout
+    <ToolLanding
       slug={SLUG}
-      lead="Type a latitude and longitude in either form — decimal degrees like 25.193080, or degrees, minutes and seconds like 25°11'35.1&quot;N — and get the other. Or paste a whole column from Excel."
       notes={
         <>
           <h2>How the conversion works</h2>
@@ -36,8 +34,6 @@ export default function Page() {
           </p>
         </>
       }
-    >
-      <DmsClient />
-    </ToolLayout>
+    />
   );
 }

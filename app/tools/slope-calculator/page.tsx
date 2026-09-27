@@ -1,15 +1,13 @@
-import ToolLayout from "../../../components/tools/ToolLayout";
+import ToolLanding from "../../../components/tools/ToolLanding";
 import { toolMetadata } from "@/lib/toolMeta";
-import SlopeClient from "./SlopeClient";
 
 const SLUG = "slope-calculator";
 export const metadata = toolMetadata(SLUG);
 
 export default function Page() {
   return (
-    <ToolLayout
+    <ToolLanding
       slug={SLUG}
-      lead="Work out a slope from its rise and run — or from two levels and the distance between them — and see it as a percentage, an angle in degrees and 1 in N. Or convert any one of those into the others."
       notes={
         <>
           <h2>Three ways to write the same slope</h2>
@@ -27,8 +25,6 @@ export default function Page() {
           <p>Always check the code or specification for your job; these are only rough guides.</p>
         </>
       }
-    >
-      <SlopeClient />
-    </ToolLayout>
+    />
   );
 }

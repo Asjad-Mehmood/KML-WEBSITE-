@@ -1,17 +1,14 @@
 import Link from "next/link";
-import ToolLayout from "../../../components/tools/ToolLayout";
-import UnitConverter from "../../../components/tools/UnitConverter";
+import ToolLanding from "../../../components/tools/ToolLanding";
 import { toolMetadata } from "@/lib/toolMeta";
-import { AREA_UNITS } from "@/lib/toolMath";
 
 const SLUG = "area-converter";
 export const metadata = toolMetadata(SLUG);
 
 export default function Page() {
   return (
-    <ToolLayout
+    <ToolLanding
       slug={SLUG}
-      lead="Convert a land or floor area between square metres, square feet, acres, hectares, kanal, marla, feddan, dunam, guntha and cents — type it once and see it in every unit."
       notes={
         <>
           <h2>Local land units</h2>
@@ -35,8 +32,6 @@ export default function Page() {
           </p>
         </>
       }
-    >
-      <UnitConverter units={AREA_UNITS} start="kanal" value="1" />
-    </ToolLayout>
+    />
   );
 }

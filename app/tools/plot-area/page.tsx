@@ -1,16 +1,14 @@
 import Link from "next/link";
-import ToolLayout from "../../../components/tools/ToolLayout";
+import ToolLanding from "../../../components/tools/ToolLanding";
 import { toolMetadata } from "@/lib/toolMeta";
-import PlotClient from "./PlotClient";
 
 const SLUG = "plot-area";
 export const metadata = toolMetadata(SLUG);
 
 export default function Page() {
   return (
-    <ToolLayout
+    <ToolLanding
       slug={SLUG}
-      lead="Paste the corners of a plot — eastings and northings from a survey, or latitude and longitude from a GPS or Google Maps — and get its area in square metres, hectares, acres, kanal and marla, with the perimeter and a sketch to check the shape."
       notes={
         <>
           <h2>Getting the right area</h2>
@@ -42,8 +40,6 @@ export default function Page() {
           </p>
         </>
       }
-    >
-      <PlotClient />
-    </ToolLayout>
+    />
   );
 }
