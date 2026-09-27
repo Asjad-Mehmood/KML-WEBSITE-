@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db, isAdminRole } from "@/lib/db";
+import { cleanOccupation } from "@/lib/occupations";
 import { getClientIp, getIpGeoLocation } from "@/lib/geo";
 
 export async function POST(req: NextRequest) {
@@ -25,7 +26,16 @@ export async function POST(req: NextRequest) {
     if (email.trim().toLowerCase() === "admin@exceltokml.com") {
       return NextResponse.json({ error: "This email address is reserved." }, { status: 400 });
     }
-    const safeRole = typeof role === "string" && !isAdminRole(role) ? role : undefined;
+    // The occupation is typed freely. Admin rights are never given through sign-up, so an
+    // occupation that reads like an admin role is turned back with a reason.
+    const occupation = cleanOccupation(role);
+    if (occupation && isAdminRole(occupation)) {
+      return NextResponse.json(
+        { error: 'Please describe your occupation without the word "admin".' },
+        { status: 400 }
+      );
+    }
+    const safeRole = occupation || undefined;
 
     // Check if user already exists
     const existing = await db.findUserByEmail(email);
