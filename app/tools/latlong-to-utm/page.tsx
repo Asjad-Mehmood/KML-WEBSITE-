@@ -1,3 +1,4 @@
+import Link from "next/link";
 import ToolLayout from "../../../components/tools/ToolLayout";
 import { toolMetadata } from "@/lib/toolMeta";
 import UtmClient from "./UtmClient";
@@ -30,12 +31,12 @@ export default function Page() {
             <li>
               <strong>Datum:</strong> this tool is on WGS 84 (EPSG:326xx north, 327xx south). Older national UTM grids on other datums
               (ED50, Nahrwan, Clarke 1880) differ by up to a few hundred metres — use the{" "}
-              <a href="/convert">grid pages</a> for those.
+              <Link href="/convert">grid pages</Link> for those.
             </li>
           </ul>
           <p>
-            To find the zone for any spot by clicking a map, use <a href="/tools/coordinates-on-map">coordinates on a map</a>. The guide{" "}
-            <a href="/guides/find-your-utm-zone">how to find your UTM zone</a> lists the zones for common regions.
+            To find the zone for any spot by clicking a map, use <Link href="/tools/coordinates-on-map">coordinates on a map</Link>. The guide{" "}
+            <Link href="/guides/find-your-utm-zone">how to find your UTM zone</Link> lists the zones for common regions.
           </p>
         </>
       }

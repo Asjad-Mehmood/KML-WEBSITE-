@@ -1,3 +1,4 @@
+import Link from "next/link";
 import ToolLayout from "../../../components/tools/ToolLayout";
 import { toolMetadata } from "@/lib/toolMeta";
 import DmsClient from "./DmsClient";
@@ -30,7 +31,7 @@ export default function Page() {
           <h2>How many decimals?</h2>
           <p>
             Six decimal places of a degree is about 0.1 m on the ground; eight is about a millimetre. Keep at least six for survey work. The
-            guide <a href="/guides/dms-to-decimal-degrees">DMS to decimal degrees in Excel</a> has formulas for doing it inside a
+            guide <Link href="/guides/dms-to-decimal-degrees">DMS to decimal degrees in Excel</Link> has formulas for doing it inside a
             spreadsheet.
           </p>
         </>
