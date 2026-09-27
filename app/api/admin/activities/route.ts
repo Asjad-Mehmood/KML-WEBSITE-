@@ -8,30 +8,26 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized: Admin privileges required" }, { status: 401 });
   }
 
+  // ?limit= (up to 1000) and ?skip= page through the log, newest first; ?action= and
+  // ?userId= (an id or an email) filter it in the database, so older entries are reachable
+  // and `total` is the true number of matching entries
   const { searchParams } = new URL(req.url);
-  const limit = parseInt(searchParams.get("limit") || "150", 10);
-  const actionFilter = searchParams.get("action");
-  const userFilter = searchParams.get("userId");
+  const limit = Math.min(1000, Math.max(1, parseInt(searchParams.get("limit") || "150", 10) || 150));
+  const skip = Math.max(0, parseInt(searchParams.get("skip") || "0", 10) || 0);
+  const opts = {
+    action: searchParams.get("action") || undefined,
+    user: searchParams.get("userId") || undefined,
+  };
 
-  let activities = await db.getAllActivities(limit);
-
-  if (actionFilter && actionFilter !== "all") {
-    activities = activities.filter((a) => a.action === actionFilter);
-  }
-
-  if (userFilter) {
-    const uLower = userFilter.toLowerCase();
-    activities = activities.filter(
-      (a) =>
-        (a.userId && a.userId.toLowerCase() === uLower) ||
-        (a.userEmail && a.userEmail.toLowerCase() === uLower)
-    );
-  }
+  const [activities, total] = await Promise.all([
+    db.getAllActivities(limit, { ...opts, skip }),
+    db.countActivities(opts),
+  ]);
 
   return NextResponse.json({
     success: true,
     activities,
-    total: activities.length,
+    total,
   });
 }
 

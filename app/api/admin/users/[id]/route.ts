@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/adminAuth";
 import { db } from "@/lib/db";
+import { listJobs } from "@/lib/userJobs";
 
 export async function GET(
   req: NextRequest,
@@ -44,6 +45,9 @@ export async function GET(
     // Converted points of the files this user saved
     const points = await db.getUserConversions(user.id, { limit: 2000 });
 
+    // Jobs kept from the app (names and sizes; the contents download separately)
+    const jobs = await listJobs(user.id).catch(() => []);
+
     return NextResponse.json({
       success: true,
       user: sanitized,
@@ -52,6 +56,7 @@ export async function GET(
       downloads,
       files,
       points,
+      jobs,
     });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Failed to retrieve user details";

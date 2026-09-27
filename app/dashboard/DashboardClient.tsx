@@ -98,7 +98,7 @@ export interface DashboardData {
       code: string;
       easting: number;
       northing: number;
-      elevation: number;
+      elevation: number | null;
       lat: string;
       lon: string;
       grid: string;
@@ -896,7 +896,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
                                           <td className="px-3 py-1.5">{r.code}</td>
                                           <td className="px-3 py-1.5">{noGrid ? "—" : r.easting.toFixed(3)}</td>
                                           <td className="px-3 py-1.5">{noGrid ? "—" : r.northing.toFixed(3)}</td>
-                                          <td className="px-3 py-1.5">{r.elevation.toFixed(3)}</td>
+                                          <td className="px-3 py-1.5">{r.elevation == null ? "—" : r.elevation.toFixed(3)}</td>
                                           <td className="px-3 py-1.5">{Number(r.lat).toFixed(7)}</td>
                                           <td className="px-3 py-1.5">{Number(r.lon).toFixed(7)}</td>
                                         </tr>

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
-import { countJobs, deleteJob, getJob, putJob } from "@/lib/userJobs";
+import { countJobs, deleteJob, getJob, jobFileResponse, putJob } from "@/lib/userJobs";
 import { MAX_JOB_BYTES, MAX_USER_JOBS, MAX_USER_STORAGE_BYTES, formatBytes } from "@/lib/uploadLimits";
 
 const CORS_HEADERS = {
@@ -46,17 +46,7 @@ export async function GET(req: NextRequest, ctx: Ctx) {
     const job = await getJob(user.id, id);
     if (!job) return json({ error: "Unknown job." }, 404);
     // ?download=1: the job as a .bm2job file, the same as Export in the app
-    if (new URL(req.url).searchParams.get("download")) {
-      const head = JSON.stringify({ kind: "Excel to KML Pro job", v: 1, name: job.name, updated: job.updated, points: job.points, grid: job.grid });
-      const name = (job.name.replace(/[\\/:*?"<>|\r\n]/g, "-") || "job") + ".bm2job";
-      return new NextResponse(head.slice(0, -1) + ',"state":' + job.state + "}", {
-        headers: {
-          "Content-Type": "application/json; charset=utf-8",
-          "Content-Disposition": `attachment; filename="${name.replace(/[^\x20-\x7e]/g, "_")}"; filename*=UTF-8''${encodeURIComponent(name)}`,
-          "Cache-Control": "private, no-store",
-        },
-      });
-    }
+    if (new URL(req.url).searchParams.get("download")) return jobFileResponse(job);
     return json({ success: true, job });
   } catch (e) {
     console.error("[jobs] get", e);

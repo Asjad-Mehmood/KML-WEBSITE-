@@ -13,6 +13,7 @@ export async function GET(req: NextRequest) {
     const downloads = await db.getAllDownloads();
     const conversions = await db.getAllConversions(5);
     const activities = await db.getAllActivities(200);
+    const activityCount = await db.countActivities();
     const settings = await db.getSettings();
     const fileTotals = await db.getFileTotals();
 
@@ -50,7 +51,7 @@ export async function GET(req: NextRequest) {
         totalUsers: users.length,
         totalDownloads: downloads.length,
         totalConversions: conversions.total,
-        totalActivities: activities.length,
+        totalActivities: activityCount,
         totalFilesStored: fileTotals.files,
         totalFilesWithCopy: fileTotals.stored,
         totalStorageBytes: fileTotals.bytes,

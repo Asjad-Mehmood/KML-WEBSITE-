@@ -126,3 +126,16 @@ export async function deleteJob(userId: string, jobId: string): Promise<boolean>
   const r = await prisma.userJob.deleteMany({ where: { userId, jobId } });
   return r.count > 0;
 }
+
+/** A kept job as a .bm2job file, the same as Export in the app. */
+export function jobFileResponse(job: JobSummary & { state: string }): Response {
+  const head = JSON.stringify({ kind: "Excel to KML Pro job", v: 1, name: job.name, updated: job.updated, points: job.points, grid: job.grid });
+  const name = (job.name.replace(/[\\/:*?"<>|\r\n]/g, "-") || "job") + ".bm2job";
+  return new Response(head.slice(0, -1) + ',"state":' + job.state + "}", {
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      "Content-Disposition": `attachment; filename="${name.replace(/[^\x20-\x7e]/g, "_")}"; filename*=UTF-8''${encodeURIComponent(name)}`,
+      "Cache-Control": "private, no-store",
+    },
+  });
+}

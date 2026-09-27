@@ -57,7 +57,7 @@ export interface ConversionRecord {
   featureCode: string;
   easting: number;
   northing: number;
-  elevation: number;
+  elevation: number | null;
   coordSystem: string;
   lat: string;
   lon: string;
@@ -136,6 +136,34 @@ function randomSecret(): string {
 }
 
 /** Roles that grant admin rights; never accepted from public sign-up */
+/** The filter shared by the activity list and its count. */
+function activityWhere(opts: { action?: string; user?: string }) {
+  const where: Prisma.ActivityWhereInput = {};
+  if (opts.action && opts.action !== "all") where.action = opts.action;
+  if (opts.user) {
+    where.OR = [{ userId: opts.user }, { userEmail: { equals: opts.user, mode: "insensitive" } }];
+  }
+  return where;
+}
+
+/**
+ * A point with no level is kept with no elevation (null), not 0. Databases made before
+ * that have the column as NOT NULL; loosen it once, the first time points are saved.
+ */
+let elevationOptional: Promise<void> | null = null;
+function ensureElevationOptional(): Promise<void> {
+  if (!elevationOptional) {
+    elevationOptional = prisma
+      .$executeRawUnsafe(`ALTER TABLE "conversions" ALTER COLUMN "elevation" DROP NOT NULL`)
+      .then(() => undefined)
+      .catch((err) => {
+        elevationOptional = null;
+        throw err;
+      });
+  }
+  return elevationOptional;
+}
+
 export function isAdminRole(role: string | undefined | null): boolean {
   return /admin/i.test(role ?? "");
 }
@@ -534,7 +562,7 @@ export const db = {
     featureCode: string;
     easting: number;
     northing: number;
-    elevation: number;
+    elevation: number | null;
     coordSystem: string;
     lat: string;
     lon: string;
@@ -575,11 +603,12 @@ export const db = {
       featureCode: string;
       easting: number;
       northing: number;
-      elevation: number;
+      elevation: number | null;
       lat: string;
       lon: string;
     }[];
   }): Promise<number> {
+    await ensureElevationOptional();
     const when = new Date();
     const r = await prisma.conversion.createMany({
       data: entry.points.map((pt, i) => ({
@@ -598,7 +627,7 @@ export const db = {
   async withConversionLinks(
     rows: {
       id: string; userId: string | null; station: string; featureCode: string; easting: number;
-      northing: number; elevation: number; coordSystem: string; lat: string; lon: string; timestamp: Date;
+      northing: number; elevation: number | null; coordSystem: string; lat: string; lon: string; timestamp: Date;
     }[],
     withOwner = false
   ): Promise<ConversionRecord[]> {
@@ -914,10 +943,20 @@ export const db = {
     }));
   },
 
-  async getAllActivities(limit = 100): Promise<UserActivityRecord[]> {
+  /** Newest first. action / user (id or email) filter in the database, before the limit. */
+  async countActivities(opts: { action?: string; user?: string } = {}): Promise<number> {
+    return prisma.activity.count({ where: activityWhere(opts) });
+  },
+
+  async getAllActivities(
+    limit = 100,
+    opts: { action?: string; user?: string; skip?: number } = {}
+  ): Promise<UserActivityRecord[]> {
     const rows = await prisma.activity.findMany({
+      where: activityWhere(opts),
       orderBy: { timestamp: "desc" },
       take: limit,
+      skip: opts.skip || 0,
     });
 
     return rows.map((a) => ({
