@@ -6,6 +6,7 @@ import SiteNotice from "../components/SiteNotice";
 import AuthModal from "../components/AuthModal";
 import { DEFAULT_TITLE, OG_IMAGE, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -111,6 +112,7 @@ export default function RootLayout({
           <SiteNotice />
         </AuthProvider>
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
