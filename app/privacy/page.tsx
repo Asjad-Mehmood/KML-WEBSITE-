@@ -94,7 +94,8 @@ export default function PrivacyPage() {
       <h2>How long we keep it</h2>
       <ul>
         <li>Account details are kept while your account exists.</li>
-        <li>Saved files, their points and your activity history are kept until you delete them or your account.</li>
+        <li>Saved files and their points are kept for 12 months, then deleted automatically. You can delete them sooner at any time.</li>
+        <li>Your activity history is kept until you delete your account.</li>
         <li>
           When you delete your account, your details, files, points and history are removed. Download counts are kept without anything
           that identifies you.

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import AdminMessages from "../../components/admin/AdminMessages";
 import AppSourceStatus from "../../components/admin/AppSourceStatus";
+import CleanupCard from "../../components/admin/CleanupCard";
 import {
   Users,
   Download,
@@ -2051,6 +2052,9 @@ export default function AdminClient() {
         {activeTab === "settings" && (
           <div className="mb-5">
             <AppSourceStatus adminFetch={adminFetch} />
+            <div className="mt-3">
+              <CleanupCard adminFetch={adminFetch} />
+            </div>
           </div>
         )}
         {activeTab === "settings" && (
