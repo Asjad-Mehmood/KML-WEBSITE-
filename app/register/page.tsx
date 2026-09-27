@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 import { safeNextPath } from "../../lib/authRedirect";
+import { OCCUPATIONS, OCCUPATION_MAX } from "../../lib/occupations";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -21,7 +22,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [organization, setOrganization] = useState("");
-  const [role, setRole] = useState("Cadastral Surveyor");
+  const [role, setRole] = useState("");
   const [agree, setAgree] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -182,20 +183,25 @@ export default function RegisterPage() {
 
             <div>
               <label htmlFor={roleId} className="block text-xs font-bold text-slate-700 mb-1.5">
-                Survey Discipline
+                Occupation
               </label>
-              <select
+              <input
                 id={roleId}
+                type="text"
+                required
+                list={`${roleId}-list`}
+                maxLength={OCCUPATION_MAX}
+                autoComplete="organization-title"
+                placeholder="e.g. Land Surveyor"
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
                 className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
-              >
-                <option value="Cadastral Surveyor">Cadastral Surveyor</option>
-                <option value="Civil Engineer">Civil Engineer</option>
-                <option value="GIS Specialist">GIS Specialist</option>
-                <option value="UAV / Drone Operator">UAV / Drone Operator</option>
-                <option value="Survey Tech / Student">Survey Tech / Student</option>
-              </select>
+              />
+              <datalist id={`${roleId}-list`}>
+                {OCCUPATIONS.map((o) => (
+                  <option key={o} value={o} />
+                ))}
+              </datalist>
             </div>
           </div>
 

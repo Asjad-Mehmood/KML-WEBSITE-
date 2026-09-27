@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { X, Lock } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { OCCUPATIONS, OCCUPATION_MAX } from "../lib/occupations";
 
 export default function AuthModal() {
   const router = useRouter();
@@ -14,7 +15,7 @@ export default function AuthModal() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [organization, setOrganization] = useState("");
-  const [role, setRole] = useState("Cadastral Surveyor");
+  const [role, setRole] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -86,13 +87,12 @@ export default function AuthModal() {
             {authModalMode === "register" && (
               <div className="grid grid-cols-2 gap-3">
                 <input type="text" placeholder="Organization" value={organization} onChange={e => setOrganization(e.target.value)} className={inputCls} />
-                <select value={role} onChange={e => setRole(e.target.value)} className={inputCls}>
-                  <option>Cadastral Surveyor</option>
-                  <option>Civil Engineer</option>
-                  <option>GIS Specialist</option>
-                  <option>UAV / Drone Operator</option>
-                  <option>Survey Tech / Student</option>
-                </select>
+                <input type="text" placeholder="Occupation" aria-label="Occupation" required list="auth-occupations"
+                  maxLength={OCCUPATION_MAX} autoComplete="organization-title" value={role}
+                  onChange={e => setRole(e.target.value)} className={inputCls} />
+                <datalist id="auth-occupations">
+                  {OCCUPATIONS.map((o) => <option key={o} value={o} />)}
+                </datalist>
               </div>
             )}
 

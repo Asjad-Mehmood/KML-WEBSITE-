@@ -2333,6 +2333,10 @@ export default function AdminClient() {
                     onChange={(e) => setUserForm({ ...userForm, role: e.target.value })}
                     className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500"
                   >
+                    {userForm.role &&
+                      !["Surveyor", "Cadastral Surveyor", "Chief Surveyor", "Civil Engineer", "GIS Specialist", "ADMIN"].includes(userForm.role) && (
+                        <option value={userForm.role}>{userForm.role} (as they typed it)</option>
+                      )}
                     <option value="Surveyor">Surveyor</option>
                     <option value="Cadastral Surveyor">Cadastral Surveyor</option>
                     <option value="Chief Surveyor">Chief Surveyor</option>

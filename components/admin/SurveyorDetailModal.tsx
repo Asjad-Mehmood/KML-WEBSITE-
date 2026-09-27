@@ -1289,6 +1289,10 @@ export default function SurveyorDetailModal({
                           onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
                           className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500"
                         >
+                          {editForm.role &&
+                            !["Surveyor", "Senior Surveyor", "Cadastral Lead", "Civil Engineer", "GIS Specialist", "ADMIN"].includes(editForm.role) && (
+                              <option value={editForm.role}>{editForm.role} (as they typed it)</option>
+                            )}
                           <option value="Surveyor">Surveyor</option>
                           <option value="Senior Surveyor">Senior Surveyor</option>
                           <option value="Cadastral Lead">Cadastral Lead</option>
