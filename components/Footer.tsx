@@ -32,9 +32,6 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
             <p className="text-xs sm:text-sm text-slate-500 leading-relaxed max-w-[300px]">
               Survey benchmark &amp; coordinate spreadsheet converter for Google Earth and GIS workflows.
             </p>
-            <p className="text-xs text-slate-500">
-              Built and maintained by Asjad Mehmood for geomatics professionals.
-            </p>
           </div>
 
           {/* Product Links */}
