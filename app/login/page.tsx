@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 import { safeNextPath } from "../../lib/authRedirect";
+import GoogleSignIn, { GOOGLE_ERRORS } from "../../components/GoogleSignIn";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -15,6 +16,12 @@ export default function LoginPage() {
     () => new URLSearchParams(window.location.search).get("next"),
     () => null
   );
+  const googleErrorCode = useSyncExternalStore(
+    () => () => {},
+    () => new URLSearchParams(window.location.search).get("error"),
+    () => null
+  );
+  const googleError = googleErrorCode ? GOOGLE_ERRORS[googleErrorCode] ?? null : null;
   const { login, user, isLoading } = useAuth();
 
   // Links to the web app send signed-out visitors here with ?next=/app. Someone
@@ -102,9 +109,11 @@ export default function LoginPage() {
           )}
         </div>
 
-        {error && (
+        <GoogleSignIn next={safeNextPath(nextParam)} />
+
+        {(error || googleError) && (
           <div className="mb-5 p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 font-semibold">
-            {error}
+            {error || googleError}
           </div>
         )}
 

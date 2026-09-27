@@ -79,6 +79,11 @@ export default function PrivacyPage() {
         The maps on this site load imagery from Esri and OpenStreetMap, and place names you type into the map search are looked up
         with OpenStreetMap. The Windows installer is hosted on GitHub. These services have their own privacy policies.
       </p>
+      <p>
+        If you choose <strong>Continue with Google</strong>, Google tells us your name and your verified email address so we can
+        create or open your account. We don&apos;t receive your Google password and don&apos;t access anything else in your Google
+        account.
+      </p>
 
       <h2>Cookies</h2>
       <p>
