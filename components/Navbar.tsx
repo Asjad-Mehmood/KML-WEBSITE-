@@ -29,12 +29,13 @@ function GithubIcon({ className }: { className?: string }) {
 
 // Absolute paths so the links also work from /faq and other pages
 // id: a home-page section (highlighted while in view); path: a page section of its own
-const NAV_LINKS: { label: string; href: string; id?: string; path?: string; wideOnly?: boolean }[] = [
+const NAV_LINKS: { label: string; href: string; id?: string; path?: string; wideOnly?: boolean; widestOnly?: boolean }[] = [
   { label: "Features", href: "/features", path: "/features" },
   { label: "How it works", href: "/how-it-works", path: "/how-it-works" },
   { label: "Formats", href: "/formats", path: "/formats", wideOnly: true },
   { label: "Grids", href: "/convert", path: "/convert" },
-  { label: "Tutorial", href: "/tutorial", path: "/tutorial" },
+  { label: "Tools", href: "/tools", path: "/tools" },
+  { label: "Tutorial", href: "/tutorial", path: "/tutorial", widestOnly: true },
   { label: "Guides", href: "/guides", path: "/guides" },
 ];
 
@@ -140,7 +141,7 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
                   key={link.label}
                   href={link.href}
                   aria-current={isActive ? (link.path ? "page" : "location") : undefined}
-                  className={`${link.wideOnly ? "hidden lg:inline-block " : ""}whitespace-nowrap px-2.5 lg:px-3 xl:px-4 py-2 text-[14px] font-semibold rounded-full transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+                  className={`${link.wideOnly ? "hidden lg:inline-block " : link.widestOnly ? "hidden xl:inline-block " : ""}whitespace-nowrap px-2.5 lg:px-3 xl:px-4 py-2 text-[14px] font-semibold rounded-full transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                     isActive ? "text-slate-900 bg-black/[0.05]" : "text-slate-600 hover:text-slate-900 hover:bg-black/5"
                   }`}
                 >

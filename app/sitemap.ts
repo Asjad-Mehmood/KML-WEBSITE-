@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/site";
 import { GRID_PAGES } from "@/lib/gridPages";
 import { GUIDES } from "@/lib/guides";
+import { TOOLS } from "@/lib/tools";
 import { BIG_COUNTRY, allSystems, countries, countryRegions } from "@/lib/epsgCatalog";
 
 // Public, indexable pages only (the web app and dashboard need a sign-in, so they are left out)
@@ -14,6 +15,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified,
       changeFrequency: (p === "/whats-new" ? "weekly" : "monthly") as "weekly" | "monthly",
       priority: p === "/download" || p === "/features" ? 0.9 : 0.7,
+    })),
+    { url: `${SITE_URL}/tools`, lastModified, changeFrequency: "monthly", priority: 0.8 },
+    ...TOOLS.map((t) => ({
+      url: `${SITE_URL}/tools/${t.slug}`,
+      lastModified,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
     })),
     { url: `${SITE_URL}/convert`, lastModified, changeFrequency: "monthly", priority: 0.8 },
     ...GRID_PAGES.map((g) => ({
