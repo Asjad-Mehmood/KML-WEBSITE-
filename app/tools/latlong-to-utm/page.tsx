@@ -1,16 +1,14 @@
 import Link from "next/link";
-import ToolLayout from "../../../components/tools/ToolLayout";
+import ToolLanding from "../../../components/tools/ToolLanding";
 import { toolMetadata } from "@/lib/toolMeta";
-import UtmClient from "./UtmClient";
 
 const SLUG = "latlong-to-utm";
 export const metadata = toolMetadata(SLUG);
 
 export default function Page() {
   return (
-    <ToolLayout
+    <ToolLanding
       slug={SLUG}
-      lead="Convert latitude and longitude to UTM easting, northing and zone on WGS 84 — or UTM back to latitude and longitude. The zone is worked out from the point; you can also convert into a neighbouring zone."
       notes={
         <>
           <h2>About UTM</h2>
@@ -40,8 +38,6 @@ export default function Page() {
           </p>
         </>
       }
-    >
-      <UtmClient />
-    </ToolLayout>
+    />
   );
 }

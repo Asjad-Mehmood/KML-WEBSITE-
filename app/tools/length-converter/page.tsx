@@ -1,17 +1,14 @@
 import Link from "next/link";
-import ToolLayout from "../../../components/tools/ToolLayout";
-import UnitConverter from "../../../components/tools/UnitConverter";
+import ToolLanding from "../../../components/tools/ToolLanding";
 import { toolMetadata } from "@/lib/toolMeta";
-import { LENGTH_UNITS } from "@/lib/toolMath";
 
 const SLUG = "length-converter";
 export const metadata = toolMetadata(SLUG);
 
 export default function Page() {
   return (
-    <ToolLayout
+    <ToolLanding
       slug={SLUG}
-      lead="Convert a length between metres, feet, US survey feet, yards, miles, nautical miles, chains, links, rods, karam and gaz — type it once and see it in every unit."
       notes={
         <>
           <h2>International foot or US survey foot?</h2>
@@ -29,8 +26,6 @@ export default function Page() {
           </ul>
         </>
       }
-    >
-      <UnitConverter units={LENGTH_UNITS} start="m" value="100" />
-    </ToolLayout>
+    />
   );
 }

@@ -1,16 +1,14 @@
 import Link from "next/link";
-import ToolLayout from "../../../components/tools/ToolLayout";
+import ToolLanding from "../../../components/tools/ToolLanding";
 import { toolMetadata } from "@/lib/toolMeta";
-import MapClient from "./MapClient";
 
 const SLUG = "coordinates-on-map";
 export const metadata = toolMetadata(SLUG);
 
 export default function Page() {
   return (
-    <ToolLayout
+    <ToolLanding
       slug={SLUG}
-      lead="Click anywhere on the map, search for a place, type coordinates or use your own location — and get its latitude and longitude in every common form, its UTM zone, easting and northing, and a link to share it."
       notes={
         <>
           <h2>Getting a precise point</h2>
@@ -29,8 +27,6 @@ export default function Page() {
           </p>
         </>
       }
-    >
-      <MapClient />
-    </ToolLayout>
+    />
   );
 }
