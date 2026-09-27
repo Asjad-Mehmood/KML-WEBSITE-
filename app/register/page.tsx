@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 import { safeNextPath } from "../../lib/authRedirect";
+import GoogleSignIn, { GOOGLE_ERRORS } from "../../components/GoogleSignIn";
 import { OCCUPATIONS, OCCUPATION_MAX } from "../../lib/occupations";
 
 export default function RegisterPage() {
@@ -16,6 +17,12 @@ export default function RegisterPage() {
     () => new URLSearchParams(window.location.search).get("next"),
     () => null
   );
+  const googleErrorCode = useSyncExternalStore(
+    () => () => {},
+    () => new URLSearchParams(window.location.search).get("error"),
+    () => null
+  );
+  const googleError = googleErrorCode ? GOOGLE_ERRORS[googleErrorCode] ?? null : null;
   const { register } = useAuth();
 
   const [name, setName] = useState("");
@@ -114,9 +121,11 @@ export default function RegisterPage() {
           </h1>
         </div>
 
-        {error && (
+        <GoogleSignIn next={safeNextPath(nextParam)} />
+
+        {(error || googleError) && (
           <div className="mb-5 p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 font-semibold">
-            {error}
+            {error || googleError}
           </div>
         )}
 

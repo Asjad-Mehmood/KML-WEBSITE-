@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { db, isAdminRole } from "@/lib/db";
+import { cleanOccupation } from "@/lib/occupations";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -57,11 +58,21 @@ export async function PATCH(req: NextRequest) {
     }
 
     const body = await req.json().catch(() => ({}));
-    const { name, organization, password, currentPassword } = body;
+    const { name, organization, occupation, password, currentPassword } = body;
 
-    const updates: { name?: string; organization?: string; password?: string } = {};
-    if (typeof name === "string" && name.trim()) updates.name = name.trim();
-    if (typeof organization === "string") updates.organization = organization.trim();
+    const updates: { name?: string; organization?: string; role?: string; password?: string } = {};
+    if (typeof name === "string" && name.trim()) updates.name = name.trim().slice(0, 100);
+    if (typeof organization === "string") updates.organization = organization.trim().slice(0, 120);
+    // Occupation / designation (stored as the account's role). Never used to
+    // grant or change admin rights.
+    if (occupation !== undefined && !db.isAdmin(user)) {
+      const o = cleanOccupation(occupation);
+      if (!o) return NextResponse.json({ error: "Please enter your occupation." }, { status: 400, headers: CORS_HEADERS });
+      if (isAdminRole(o)) {
+        return NextResponse.json({ error: 'Please describe your occupation without the word "admin".' }, { status: 400, headers: CORS_HEADERS });
+      }
+      updates.role = o;
+    }
     if (password !== undefined) {
       // A new password needs the current one, so a borrowed or stolen
       // session alone can't take over the account

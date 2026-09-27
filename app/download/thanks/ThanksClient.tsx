@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, BookOpen, CheckCircle2, Download, Globe, LayoutDashboard, Map, PlayCircle } from "lucide-react";
 import PageShell from "../../../components/PageShell";
@@ -16,7 +16,8 @@ const NEXT: { href: string; title: string; text: string; Icon: React.ElementType
 ];
 
 export default function ThanksClient() {
-  const { user } = useAuth();
+  const { user, isLoading, trackDownload } = useAuth();
+  const autoDone = useRef(false);
   const [url, setUrl] = useState(INSTALLER_URL);
   const [started, setStarted] = useState(false);
 
@@ -37,6 +38,25 @@ export default function ThanksClient() {
     }, 600);
     return () => clearTimeout(t);
   }, []);
+
+  // Signed in with Google from the download popup: the page comes back here
+  // with ?auto=1. Record the download and start it once, then drop the flag
+  // so a refresh doesn't download again.
+  useEffect(() => {
+    if (isLoading || autoDone.current) return;
+    if (new URLSearchParams(window.location.search).get("auto") !== "1") return;
+    autoDone.current = true;
+    window.history.replaceState(null, "", "/download/thanks");
+    if (!user || peekPendingDownload()) return;
+    trackDownload("windows_installer", "ExcelToKMLPro-Lite-Setup.exe", "latest");
+    const a = document.createElement("a");
+    a.href = INSTALLER_URL;
+    a.download = "";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    queueMicrotask(() => setStarted(true));
+  }, [isLoading, user, trackDownload]);
 
   return (
     <PageShell>

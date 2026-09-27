@@ -3,14 +3,16 @@
 import React, { useState, useId } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import GoogleSignIn from "./GoogleSignIn";
 import { X, Lock } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { OCCUPATIONS, OCCUPATION_MAX } from "../lib/occupations";
 
 export default function AuthModal() {
   const router = useRouter();
-  const { authModalOpen, setAuthModalOpen, authModalMode, setAuthModalMode, authIntentText, login, register } = useAuth();
+  const { authModalOpen, setAuthModalOpen, authModalMode, setAuthModalMode, authIntentText, login, register, pendingDownloadAction } = useAuth();
+  const pathname = usePathname();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -70,6 +72,9 @@ export default function AuthModal() {
               className={`flex-1 py-2 rounded-[9px] transition-all ${authModalMode === "login" ? "bg-white text-[#1d1d1f] shadow-sm" : "text-[#6e6e73] hover:text-[#1d1d1f]"}`}
             >Sign In</button>
           </div>
+
+          {/* After Google, a pending download continues on the thank-you page */}
+          <GoogleSignIn compact next={pendingDownloadAction ? "/download/thanks?auto=1" : pathname || "/"} />
 
           {error && (
             <div className="mb-4 px-4 py-3 bg-[#ff3b30]/[0.08] border border-[#ff3b30]/20 rounded-[12px] text-[13px] text-[#ff3b30] font-medium">

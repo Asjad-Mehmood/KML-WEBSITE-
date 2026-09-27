@@ -10,6 +10,7 @@ export interface PublicSettings {
   appVersion?: string;
   installerFileName?: string;
   installerFileSize?: string;
+  googleSignIn?: boolean;
 }
 
 let pending: Promise<PublicSettings | null> | null = null;
