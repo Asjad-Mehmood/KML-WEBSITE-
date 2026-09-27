@@ -344,6 +344,36 @@ function pointScale(lat: number, lon: number, zone: number): number {
   return 0.9996 * (1 + ((1 + C) * A * A) / 2 + ((5 - 4 * Math.tan(phi) ** 2 + 42 * C + 13 * C * C - 28 * ep2) * A ** 4) / 24);
 }
 
+/** True when two sides of the shape cross each other (corners out of order), which spoils its area. */
+export function selfIntersects(pts: [number, number][]): boolean {
+  const n = pts.length;
+  if (n < 4) return false;
+  const cross = (o: [number, number], a: [number, number], b: [number, number]) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  for (let i = 0; i < n; i++) {
+    const a1 = pts[i], a2 = pts[(i + 1) % n];
+    for (let j = i + 1; j < n; j++) {
+      // sides that share a corner don't count
+      if (j === i || (j + 1) % n === i || (i + 1) % n === j) continue;
+      const b1 = pts[j], b2 = pts[(j + 1) % n];
+      const d1 = cross(b1, b2, a1), d2 = cross(b1, b2, a2), d3 = cross(a1, a2, b1), d4 = cross(a1, a2, b2);
+      if (((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) && ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0))) return true;
+    }
+  }
+  return false;
+}
+
+/** One line of a corner list as [easting, northing] and an optional point name. */
+export function parseCorner(line: string, order: "EN" | "NE"): { name: string; xy: [number, number] } | null {
+  const parts = String(line ?? "").trim().split(/[\t;,]+\s*|\s+/).filter(Boolean);
+  if (!parts.length) return null;
+  let name = "";
+  if (parseNumber(parts[0]) === null) name = parts.shift()!;
+  const nums = parts.map(parseNumber);
+  if (nums.length < 2 || nums.slice(0, 2).some((v) => v === null)) return null;
+  const [a, b] = nums as number[];
+  return { name, xy: order === "EN" ? [a, b] : [b, a] };
+}
+
 /* ─────────────────────────────── units ─────────────────────────────── */
 
 export interface Unit {
