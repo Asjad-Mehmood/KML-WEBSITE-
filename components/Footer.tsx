@@ -116,7 +116,7 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
         {/* Bottom Copyright Strip */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <p className="text-center sm:text-left">
-            Copyright &copy; {new Date().getFullYear()} Asjad Mehmood. All rights reserved.
+            Copyright &copy; {new Date().getFullYear()} Excel to KML. All rights reserved.
             <span className="block sm:inline sm:ml-1.5 mt-1 sm:mt-0">
               Managed by{" "}
               <a
