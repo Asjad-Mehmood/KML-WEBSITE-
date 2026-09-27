@@ -34,7 +34,8 @@ const NAV_LINKS: { label: string; href: string; id?: string; path?: string; wide
   { label: "How it works", href: "/how-it-works", path: "/how-it-works" },
   { label: "Formats", href: "/formats", path: "/formats", wideOnly: true },
   { label: "Grids", href: "/convert", path: "/convert" },
-  { label: "Tutorial", href: "/tutorial", path: "/tutorial" },
+  { label: "Tools", href: "/tools", path: "/tools" },
+  { label: "Tutorial", href: "/tutorial", path: "/tutorial", wideOnly: true },
   { label: "Guides", href: "/guides", path: "/guides" },
 ];
 

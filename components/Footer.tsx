@@ -90,6 +90,7 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
                 ["/convert", "Grid Converters"],
                 ["/tutorial", "App Tutorial"],
                 ["/guides", "Guides"],
+                ["/tools", "Free Tools"],
                 ["/faq", "Common Questions"],
                 ["/about", "About"],
                 ["/contact", "Contact & Support"],
