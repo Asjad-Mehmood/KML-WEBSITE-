@@ -2,12 +2,17 @@
 
 import React, { useState } from "react";
 import { Card, Field, ResultRow, Tabs } from "@/components/tools/ui";
+import { ShareButton, useShared } from "@/components/tools/share";
 import { fmt, parseNumber, slopeFromDegrees, slopeFromOneIn, slopeFromPercent, slopeFromRiseRun, type Slope } from "@/lib/toolMath";
 
 type Mode = "riseRun" | "levels" | "convert";
 
 export default function SlopeClient() {
-  const [mode, setMode] = useState<Mode>("riseRun");
+  const get = useShared();
+  const [mode, setMode] = useState<Mode>(() => {
+    const m = get("m", "riseRun");
+    return m === "levels" || m === "convert" ? m : "riseRun";
+  });
   return (
     <div className="space-y-5">
       <Tabs
@@ -25,7 +30,7 @@ export default function SlopeClient() {
   );
 }
 
-function SlopeResult({ s, run }: { s: Slope | null; run?: number }) {
+function SlopeResult({ s, run, share }: { s: Slope | null; run?: number; share: Record<string, string> }) {
   if (!s) return <p className="text-[14px] text-slate-500">Type the values to see the slope.</p>;
   const dir = s.percent > 0 ? "rising" : s.percent < 0 ? "falling" : "level";
   return (
@@ -35,13 +40,16 @@ function SlopeResult({ s, run }: { s: Slope | null; run?: number }) {
       <ResultRow label="1 in N" value={Number.isFinite(s.oneIn) ? `1 in ${fmt(s.oneIn, 2)}` : "level (1 in ∞)"} />
       {run !== undefined && <ResultRow label="Slope length" value={fmt(Math.hypot(run, (s.percent / 100) * run), 3)} />}
       <p className="mt-3 text-[12.5px] text-slate-500">The slope is {dir}.</p>
+      <div className="mt-3"><ShareButton title="Slope" params={share} /></div>
     </div>
   );
 }
 
 function RiseRun() {
-  const [rise, setRise] = useState("1.5");
-  const [run, setRun] = useState("60");
+  const get = useShared();
+  const here = { key: "m", value: "riseRun", isDefault: true };
+  const [rise, setRise] = useState(() => get("rise", "1.5", here));
+  const [run, setRun] = useState(() => get("run", "60", here));
   const R = parseNumber(rise), N = parseNumber(run);
   const ok = R !== null && N !== null && N > 0;
   return (
@@ -52,15 +60,17 @@ function RiseRun() {
           <Field label="Run (horizontal distance)" value={run} onChange={setRun} error={run.trim() && (N === null || N <= 0) ? "A distance above 0" : null} hint="Same unit as the rise" />
         </div>
       </Card>
-      <Card title="Slope"><SlopeResult s={ok ? slopeFromRiseRun(R, N) : null} run={ok ? N : undefined} /></Card>
+      <Card title="Slope"><SlopeResult s={ok ? slopeFromRiseRun(R, N) : null} run={ok ? N : undefined} share={{ m: "riseRun", rise: rise.trim(), run: run.trim() }} /></Card>
     </div>
   );
 }
 
 function Levels() {
-  const [a, setA] = useState("45.260");
-  const [b, setB] = useState("44.810");
-  const [d, setD] = useState("30");
+  const get = useShared();
+  const here = { key: "m", value: "levels" };
+  const [a, setA] = useState(() => get("a", "45.260", here));
+  const [b, setB] = useState(() => get("b", "44.810", here));
+  const [d, setD] = useState(() => get("d", "30", here));
   const A = parseNumber(a), B = parseNumber(b), D = parseNumber(d);
   const ok = A !== null && B !== null && D !== null && D > 0;
   return (
@@ -73,16 +83,18 @@ function Levels() {
         </div>
         {ok && <p className="mt-3 text-[13px] text-slate-600">Change in level: <span className="font-mono font-semibold">{fmt(B - A, 3)}</span></p>}
       </Card>
-      <Card title="Slope"><SlopeResult s={ok ? slopeFromRiseRun(B - A, D) : null} run={ok ? D : undefined} /></Card>
+      <Card title="Slope"><SlopeResult s={ok ? slopeFromRiseRun(B - A, D) : null} run={ok ? D : undefined} share={{ m: "levels", a: a.trim(), b: b.trim(), d: d.trim() }} /></Card>
     </div>
   );
 }
 
 function Convert() {
-  const [pct, setPct] = useState("2");
-  const [dg, setDg] = useState("");
-  const [n, setN] = useState("");
-  const [last, setLast] = useState<"pct" | "deg" | "n">("pct");
+  const get = useShared();
+  const here = { key: "m", value: "convert" };
+  const [pct, setPct] = useState(() => get("p", get("g", "") || get("n", "") ? "" : "2", here));
+  const [dg, setDg] = useState(() => get("g", "", here));
+  const [n, setN] = useState(() => get("n", "", here));
+  const [last, setLast] = useState<"pct" | "deg" | "n">(() => (get("g", "", here) ? "deg" : get("n", "", here) ? "n" : "pct"));
   const P = parseNumber(pct), G = parseNumber(dg), O = parseNumber(n);
   const s =
     last === "pct" && P !== null ? slopeFromPercent(P)
@@ -98,7 +110,7 @@ function Convert() {
           <Field label="1 in N" value={n} onChange={(v) => { setN(v); setLast("n"); }} hint="e.g. 12 for 1 in 12" />
         </div>
       </Card>
-      <Card title="Slope"><SlopeResult s={s} /></Card>
+      <Card title="Slope"><SlopeResult s={s} share={{ m: "convert", ...(last === "pct" ? { p: pct.trim() } : last === "deg" ? { g: dg.trim() } : { n: n.trim() }) }} /></Card>
     </div>
   );
 }

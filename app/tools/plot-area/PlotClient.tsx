@@ -3,6 +3,7 @@
 import React, { useMemo, useState } from "react";
 import { AlertTriangle } from "lucide-react";
 import { Card, Choice, ResultRow, Tabs, inputCls } from "@/components/tools/ui";
+import { ShareButton, useShared } from "@/components/tools/share";
 import { AREA_UNITS, convertUnit, fmt, geoArea, parseCorner, parsePair, planarArea, selfIntersects, toUtm } from "@/lib/toolMath";
 
 type Kind = "grid" | "geo";
@@ -13,9 +14,10 @@ const GEO_SAMPLE = "25.193080, 55.468990\n25.193080, 55.469490\n25.193530, 55.46
 const SHOW = ["m2", "ha", "acre", "ft2", "kanal", "marla", "yd2", "feddan", "dunam"];
 
 export default function PlotClient() {
-  const [kind, setKind] = useState<Kind>("grid");
-  const [order, setOrder] = useState<"EN" | "NE">("EN");
-  const [text, setText] = useState(GRID_SAMPLE);
+  const get = useShared();
+  const [kind, setKind] = useState<Kind>(() => (get("k", "grid") === "geo" ? "geo" : "grid"));
+  const [order, setOrder] = useState<"EN" | "NE">(() => (get("o", "EN") === "NE" ? "NE" : "EN"));
+  const [text, setText] = useState(() => get("c", get("k", "grid") === "geo" ? GEO_SAMPLE : GRID_SAMPLE));
 
   const switchKind = (k: Kind) => {
     setKind(k);
@@ -90,6 +92,9 @@ export default function PlotClient() {
               })}
               <ResultRow label={kind === "grid" ? "Perimeter (grid units)" : "Perimeter (m)"} value={fmt(r.area.perimeter, 3)} />
               {kind === "geo" && r.area.zone && <ResultRow label="Measured on" value={`UTM zone ${r.area.zone}, scale removed`} copy={false} />}
+              <div className="mt-4">
+                <ShareButton title="Plot area" params={{ k: kind, o: kind === "grid" && order === "NE" ? "NE" : "", c: text.trim() }} />
+              </div>
             </div>
           ) : (
             <p className="text-[14px] text-slate-500">Type at least three corners.</p>

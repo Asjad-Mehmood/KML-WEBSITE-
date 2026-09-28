@@ -2,12 +2,17 @@
 
 import React, { useState } from "react";
 import { Card, Choice, CopyButton, Field } from "./ui";
+import { ShareButton, useShared } from "./share";
 import { convertUnit, parseNumber, type Unit } from "@/lib/toolMath";
 
 /** Type a value in one unit and see it in every other unit of the list. */
 export default function UnitConverter({ units, start, value: startValue }: { units: Unit[]; start: string; value: string }) {
-  const [value, setValue] = useState(startValue);
-  const [from, setFrom] = useState(start);
+  const get = useShared();
+  const [value, setValue] = useState(() => get("v", startValue));
+  const [from, setFrom] = useState(() => {
+    const u = get("u", start);
+    return units.some((x) => x.id === u) ? u : start;
+  });
   const v = parseNumber(value);
   const src = units.find((u) => u.id === from)!;
   const show = (x: number) => {
@@ -22,6 +27,7 @@ export default function UnitConverter({ units, start, value: startValue }: { uni
           <Field label="Value" value={value} onChange={setValue} error={value.trim() && v === null ? "Not a number" : null} />
           <Choice label="From" value={from} onChange={setFrom} options={units.map((u) => ({ value: u.id, label: u.name }))} />
           {src.note && <p className="text-[12.5px] text-slate-500">{src.note}</p>}
+          {v !== null && <ShareButton title="Unit conversion" params={{ v: value.trim(), u: from }} />}
         </div>
       </Card>
       <Card title={v !== null ? `${v.toLocaleString("en-US", { maximumFractionDigits: 8 })} ${src.name} is` : "Results"}>
