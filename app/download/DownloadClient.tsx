@@ -23,6 +23,7 @@ export default function DownloadClient() {
         versionTag={r.versionTag}
         downloadUrl={r.downloadUrl}
         releaseNotesUrl={r.releaseNotesUrl}
+        fileName={r.fileName}
         fileSizeText={r.fileSizeText}
         bytesText={r.bytesText}
         releaseDateText={r.releaseDateText}

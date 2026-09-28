@@ -1,10 +1,12 @@
 // "Thanks for downloading" email, sent once: the first time a signed-in user
 // downloads the Windows app. Uses the site's SMTP settings (lib/mailer.ts).
-import { SITE_URL, SUPPORT_EMAIL } from "@/lib/site";
+import { INSTALLER_NAME, SITE_URL, SUPPORT_EMAIL } from "@/lib/site";
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 
-export function downloadThanksEmail(name: string, version: string) {
+export function downloadThanksEmail(name: string, version: string, fileName: string = INSTALLER_NAME) {
+  // the name the browser reported; anything unexpected falls back to the installer's own name
+  const file = /^[\w.-]{1,80}\.exe$/.test(fileName) ? fileName : INSTALLER_NAME;
   const first = (name || "there").split(" ")[0];
   const links: [string, string, string][] = [
     ["App tutorial", `${SITE_URL}/tutorial`, "Four steps from your sheet to Google Earth, with screenshots"],
@@ -20,7 +22,7 @@ export function downloadThanksEmail(name: string, version: string) {
     `Thanks for downloading Excel to KML${version ? ` ${version}` : ""}!`,
     "",
     "Getting started:",
-    "1. Run ExcelToKMLPro-Lite-Setup.exe and follow the installer.",
+    `1. Run ${file} and follow the installer.`,
     "2. If Windows shows a SmartScreen message, click \"More info\", then \"Run anyway\".",
     "3. Open the app and click \"Try the sample\" to see a finished job in a minute.",
     "",
@@ -40,7 +42,7 @@ export function downloadThanksEmail(name: string, version: string) {
 <p style="margin:0 0 16px;font-size:15px;line-height:1.55;color:#334155">You've got Excel to KML${version ? ` ${esc(version)}` : ""} — survey coordinates from Excel to Google Earth KML, KMZ and DXF, on any grid.</p>
 <h2 style="margin:20px 0 8px;font-size:16px">Getting started</h2>
 <ol style="margin:0 0 8px;padding-left:20px;font-size:14.5px;line-height:1.6;color:#334155">
-<li>Run <b>ExcelToKMLPro-Lite-Setup.exe</b> and follow the installer.</li>
+<li>Run <b>${esc(file)}</b> and follow the installer.</li>
 <li>If Windows shows a SmartScreen message, click <b>More info</b>, then <b>Run anyway</b>.</li>
 <li>Open the app and click <b>Try the sample</b> to see a finished job in a minute.</li>
 </ol>

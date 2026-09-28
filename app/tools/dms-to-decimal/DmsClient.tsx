@@ -2,12 +2,14 @@
 
 import React, { useMemo, useState } from "react";
 import { Card, CopyButton, Field, ResultRow, Tabs, inputCls } from "@/components/tools/ui";
+import { ShareButton, useShared } from "@/components/tools/share";
 import { formatDdm, formatDms, parseDms, parsePair, validLat, validLon } from "@/lib/toolMath";
 
 type Mode = "one" | "list";
 
 export default function DmsClient() {
-  const [mode, setMode] = useState<Mode>("one");
+  const get = useShared();
+  const [mode, setMode] = useState<Mode>(() => (get("m", "one") === "list" ? "list" : "one"));
   return (
     <div className="space-y-5">
       <Tabs label="Convert" value={mode} onChange={setMode} options={[{ value: "one", label: "One point" }, { value: "list", label: "A list" }]} />
@@ -17,8 +19,10 @@ export default function DmsClient() {
 }
 
 function One() {
-  const [latT, setLatT] = useState(`25°11'35.1"N`);
-  const [lonT, setLonT] = useState(`55°28'08.4"E`);
+  const get = useShared();
+  const here = { key: "m", value: "one", isDefault: true };
+  const [latT, setLatT] = useState(() => get("lat", `25°11'35.1"N`, here));
+  const [lonT, setLonT] = useState(() => get("lon", `55°28'08.4"E`, here));
   const lat = latT.trim() ? parseDms(latT) : null;
   const lon = lonT.trim() ? parseDms(lonT) : null;
   const latErr = latT.trim() && !validLat(lat) ? "Not a latitude: use -90 to 90, e.g. 25.193080 or 25°11'35.1\"N" : null;
@@ -41,7 +45,8 @@ function One() {
             <ResultRow label="Latitude, DMS" value={formatDms(lat, "lat")} />
             <ResultRow label="Longitude, DMS" value={formatDms(lon, "lon")} />
             <ResultRow label="Degrees and decimal minutes" value={`${formatDdm(lat, "lat")}  ${formatDdm(lon, "lon")}`} />
-            <p className="mt-4">
+            <p className="mt-4 flex flex-wrap items-center gap-3">
+              <ShareButton title="DMS ↔ decimal degrees" params={{ m: "one", lat: latT.trim(), lon: lonT.trim() }} />
               <a
                 href={`https://www.google.com/maps?q=${lat.toFixed(7)},${lon.toFixed(7)}`}
                 target="_blank"
@@ -61,7 +66,8 @@ function One() {
 }
 
 function List() {
-  const [text, setText] = useState(`25°11'35.1"N\t55°28'08.4"E\n24.453884, 54.377344\n33°52'10"S 151°12'30"E`);
+  const get = useShared();
+  const [text, setText] = useState(() => get("pts", `25°11'35.1"N\t55°28'08.4"E\n24.453884, 54.377344\n33°52'10"S 151°12'30"E`, { key: "m", value: "list" }));
   const rows = useMemo(
     () =>
       text
@@ -103,7 +109,8 @@ function List() {
         <Card>
           <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
             <h2 className="text-[15px] font-bold text-slate-900">Converted</h2>
-            <div className="flex gap-1">
+            <div className="flex flex-wrap items-center gap-1">
+              <ShareButton title="DMS ↔ decimal degrees" params={{ m: "list", pts: text.trim() }} />
               <CopyButton text={csv("dec")} label="Copy decimal" />
               <CopyButton text={csv("dms")} label="Copy DMS" />
             </div>

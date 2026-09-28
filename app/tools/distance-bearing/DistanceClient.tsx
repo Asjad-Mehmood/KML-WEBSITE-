@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Card, Field, ResultRow, Tabs } from "@/components/tools/ui";
+import { ShareButton, useShared } from "@/components/tools/share";
 import {
   compassPoint, direct, fmt, formatBearing, formatDms, gridInverse, inverse, parseDms, parseNumber, validLat, validLon,
 } from "@/lib/toolMath";
@@ -9,7 +10,11 @@ import {
 type Mode = "geo" | "grid" | "direct";
 
 export default function DistanceClient() {
-  const [mode, setMode] = useState<Mode>("geo");
+  const get = useShared();
+  const [mode, setMode] = useState<Mode>(() => {
+    const m = get("m", "geo");
+    return m === "grid" || m === "direct" ? m : "geo";
+  });
   return (
     <div className="space-y-5">
       <Tabs
@@ -42,10 +47,12 @@ function Distances({ m }: { m: number }) {
 }
 
 function Geo() {
-  const [a1, setA1] = useState("25.197200");
-  const [o1, setO1] = useState("55.274400");
-  const [a2, setA2] = useState("24.453884");
-  const [o2, setO2] = useState("54.377344");
+  const get = useShared();
+  const here = { key: "m", value: "geo", isDefault: true };
+  const [a1, setA1] = useState(() => get("a1", "25.197200", here));
+  const [o1, setO1] = useState(() => get("o1", "55.274400", here));
+  const [a2, setA2] = useState(() => get("a2", "24.453884", here));
+  const [o2, setO2] = useState(() => get("o2", "54.377344", here));
   const la1 = parseDms(a1), lo1 = parseDms(o1), la2 = parseDms(a2), lo2 = parseDms(o2);
   const ok = validLat(la1) && validLon(lo1) && validLat(la2) && validLon(lo2);
   const r = ok ? inverse(la1, lo1, la2, lo2) : null;
@@ -67,6 +74,9 @@ function Geo() {
             <ResultRow label="Bearing, setting off" value={`${formatBearing(r.initialBearing)} (${r.initialBearing.toFixed(4)}°) ${compassPoint(r.initialBearing)}`} />
             <ResultRow label="Bearing, arriving" value={`${formatBearing(r.finalBearing)} (${r.finalBearing.toFixed(4)}°)`} />
             <ResultRow label="Back bearing" value={formatBearing(r.finalBearing + 180)} />
+            <div className="mt-4">
+              <ShareButton title="Distance and bearing" params={{ m: "geo", a1: a1.trim(), o1: o1.trim(), a2: a2.trim(), o2: o2.trim() }} />
+            </div>
           </div>
         ) : (
           <p className="text-[14px] text-slate-500">Type both points.</p>
@@ -77,12 +87,14 @@ function Geo() {
 }
 
 function Grid() {
-  const [e1, setE1] = useState("1000.000");
-  const [n1, setN1] = useState("1000.000");
-  const [z1, setZ1] = useState("10.000");
-  const [e2, setE2] = useState("1100.000");
-  const [n2, setN2] = useState("900.000");
-  const [z2, setZ2] = useState("12.500");
+  const get = useShared();
+  const here = { key: "m", value: "grid" };
+  const [e1, setE1] = useState(() => get("e1", "1000.000", here));
+  const [n1, setN1] = useState(() => get("n1", "1000.000", here));
+  const [z1, setZ1] = useState(() => get("z1", "10.000", here));
+  const [e2, setE2] = useState(() => get("e2", "1100.000", here));
+  const [n2, setN2] = useState(() => get("n2", "900.000", here));
+  const [z2, setZ2] = useState(() => get("z2", "12.500", here));
   const E1 = parseNumber(e1), N1 = parseNumber(n1), E2 = parseNumber(e2), N2 = parseNumber(n2);
   const Z1 = z1.trim() ? parseNumber(z1) : null, Z2 = z2.trim() ? parseNumber(z2) : null;
   const num = (t: string, v: number | null) => (t.trim() && v === null ? "Not a number" : null);
@@ -116,6 +128,9 @@ function Grid() {
               </>
             )}
             <p className="mt-3 text-[12.5px] text-slate-500">In the units of your coordinates (metres on metric grids).</p>
+            <div className="mt-3">
+              <ShareButton title="Grid distance and bearing" params={{ m: "grid", e1: e1.trim(), n1: n1.trim(), z1: z1.trim(), e2: e2.trim(), n2: n2.trim(), z2: z2.trim() }} />
+            </div>
           </div>
         ) : (
           <p className="text-[14px] text-slate-500">Type both points&apos; eastings and northings.</p>
@@ -126,10 +141,12 @@ function Grid() {
 }
 
 function Direct() {
-  const [a, setA] = useState("25.197200");
-  const [o, setO] = useState("55.274400");
-  const [b, setB] = useState("45");
-  const [d, setD] = useState("1000");
+  const get = useShared();
+  const here = { key: "m", value: "direct" };
+  const [a, setA] = useState(() => get("a", "25.197200", here));
+  const [o, setO] = useState(() => get("o", "55.274400", here));
+  const [b, setB] = useState(() => get("b", "45", here));
+  const [d, setD] = useState(() => get("d", "1000", here));
   const la = parseDms(a), lo = parseDms(o), br = parseDms(b), dist = parseNumber(d);
   const brOk = br !== null && br >= 0 && br <= 360;
   const dOk = dist !== null && dist >= 0 && dist <= 20000000;
@@ -152,7 +169,8 @@ function Direct() {
             <ResultRow label="Latitude, DMS" value={formatDms(r.lat, "lat")} />
             <ResultRow label="Longitude, DMS" value={formatDms(r.lon, "lon")} />
             <ResultRow label="Bearing on arrival" value={formatBearing(r.finalBearing)} />
-            <p className="mt-4">
+            <p className="mt-4 flex flex-wrap items-center gap-3">
+              <ShareButton title="Point from bearing and distance" params={{ m: "direct", a: a.trim(), o: o.trim(), b: b.trim(), d: d.trim() }} />
               <a href={`https://www.google.com/maps?q=${r.lat.toFixed(7)},${r.lon.toFixed(7)}`} target="_blank" rel="noopener noreferrer" className="text-[14px] font-semibold text-[#0071e3] hover:underline">
                 Open in Google Maps ↗
               </a>

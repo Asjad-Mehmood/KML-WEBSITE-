@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { LATEST_VERSION } from "@/lib/site";
+import { INSTALLER_NAME, LATEST_VERSION } from "@/lib/site";
 import { getClientIp, getIpGeoLocation } from "@/lib/geo";
 import { prisma } from "@/lib/prisma";
 import { isMailConfigured, sendMail } from "@/lib/mailer";
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => ({}));
     const {
       assetType = "windows_installer",
-      fileName = "ExcelToKMLPro-Lite-Setup.exe",
+      fileName = INSTALLER_NAME,
       version = LATEST_VERSION,
     } = body;
 
@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
     let emailed = false;
     if (firstDownload && isMailConfigured() && sessionData.user.email) {
       try {
-        const mail = downloadThanksEmail(sessionData.user.name, String(version));
+        const mail = downloadThanksEmail(sessionData.user.name, String(version), String(fileName));
         await sendMail({ to: sessionData.user.email, ...mail });
         emailed = true;
       } catch (e) {
