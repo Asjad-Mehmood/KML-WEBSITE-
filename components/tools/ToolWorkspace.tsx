@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import Link from "next/link";
 import { ArrowLeft, Info } from "lucide-react";
 import PageShell from "../PageShell";
@@ -25,7 +25,10 @@ export default function ToolWorkspace({ slug, children }: { slug: string; childr
           </Link>
         </div>
 
-        <section className="mt-6">{children}</section>
+        {/* the tools read shared values from the address, which needs a Suspense boundary */}
+        <section className="mt-6">
+          <Suspense fallback={<div className="h-64 rounded-2xl bg-slate-100 animate-pulse" />}>{children}</Suspense>
+        </section>
 
         <p className="mt-4 text-[12.5px] text-slate-500">Worked out in your browser: nothing you type here is sent anywhere or kept.</p>
 

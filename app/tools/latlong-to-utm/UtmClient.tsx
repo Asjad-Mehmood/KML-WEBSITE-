@@ -3,12 +3,17 @@
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import { Card, Choice, CopyButton, Field, ResultRow, Tabs, inputCls } from "@/components/tools/ui";
+import { ShareButton, useShared } from "@/components/tools/share";
 import { formatDms, fromUtm, parseDms, parseNumber, parsePair, toUtm, utmZone, validLat, validLon } from "@/lib/toolMath";
 
 type Mode = "toUtm" | "fromUtm" | "list";
 
 export default function UtmClient() {
-  const [mode, setMode] = useState<Mode>("toUtm");
+  const get = useShared();
+  const [mode, setMode] = useState<Mode>(() => {
+    const m = get("m", "toUtm");
+    return m === "fromUtm" || m === "list" ? m : "toUtm";
+  });
   return (
     <div className="space-y-5">
       <Tabs
@@ -29,9 +34,11 @@ export default function UtmClient() {
 const m3 = (v: number) => v.toFixed(3);
 
 function ToUtm() {
-  const [latT, setLatT] = useState("25.193080");
-  const [lonT, setLonT] = useState("55.468990");
-  const [zoneT, setZoneT] = useState("auto");
+  const get = useShared();
+  const here = { key: "m", value: "toUtm", isDefault: true };
+  const [latT, setLatT] = useState(() => get("lat", "25.193080", here));
+  const [lonT, setLonT] = useState(() => get("lon", "55.468990", here));
+  const [zoneT, setZoneT] = useState(() => get("z", "auto", here));
   const lat = parseDms(latT), lon = parseDms(lonT);
   const ok = validLat(lat) && validLon(lon) && Math.abs(lat) <= 84;
   const natural = ok ? utmZone(lat, lon) : 0;
@@ -64,7 +71,10 @@ function ToUtm() {
             <ResultRow label="Northing (m)" value={m3(u.northing)} big />
             <ResultRow label="EPSG code" value={`EPSG:${u.epsg}`} />
             <ResultRow label="All in one line" value={`${u.zone}${u.band} ${m3(u.easting)} E ${m3(u.northing)} N`} />
-            <p className="mt-4 text-[13px] text-slate-500">
+            <div className="mt-4">
+              <ShareButton title="Lat/long to UTM" params={{ m: "toUtm", lat: latT.trim(), lon: lonT.trim(), z: zoneT === "auto" ? "" : zoneT }} />
+            </div>
+            <p className="mt-3 text-[13px] text-slate-500">
               Grid details for this zone:{" "}
               <Link href={`/convert/epsg/${u.epsg}`} className="font-semibold text-[#0071e3] hover:underline">EPSG:{u.epsg}</Link>
               {zone && zone !== natural ? " · converted into a neighbouring zone on purpose; distortion grows away from its centre." : ""}
@@ -79,10 +89,12 @@ function ToUtm() {
 }
 
 function FromUtm() {
-  const [zoneT, setZoneT] = useState("40");
-  const [hemi, setHemi] = useState<"N" | "S">("N");
-  const [eT, setET] = useState("345736.747");
-  const [nT, setNT] = useState("2787204.964");
+  const get = useShared();
+  const here = { key: "m", value: "fromUtm" };
+  const [zoneT, setZoneT] = useState(() => get("z", "40", here));
+  const [hemi, setHemi] = useState<"N" | "S">(() => (get("h", "N", here) === "S" ? "S" : "N"));
+  const [eT, setET] = useState(() => get("e", "345736.747", here));
+  const [nT, setNT] = useState(() => get("n", "2787204.964", here));
   const zone = parseNumber(zoneT), e = parseNumber(eT), n = parseNumber(nT);
   const zoneOk = zone !== null && Number.isInteger(zone) && zone >= 1 && zone <= 60;
   const eOk = e !== null && e > 100000 && e < 900000;
@@ -106,7 +118,8 @@ function FromUtm() {
             <ResultRow label="Decimal degrees" value={`${ll.lat.toFixed(7)}, ${ll.lon.toFixed(7)}`} big />
             <ResultRow label="Latitude, DMS" value={formatDms(ll.lat, "lat")} />
             <ResultRow label="Longitude, DMS" value={formatDms(ll.lon, "lon")} />
-            <p className="mt-4">
+            <p className="mt-4 flex flex-wrap items-center gap-3">
+              <ShareButton title="UTM to lat/long" params={{ m: "fromUtm", z: zoneT.trim(), h: hemi, e: eT.trim(), n: nT.trim() }} />
               <a href={`https://www.google.com/maps?q=${ll.lat.toFixed(7)},${ll.lon.toFixed(7)}`} target="_blank" rel="noopener noreferrer"
                 className="text-[14px] font-semibold text-[#0071e3] hover:underline">Open in Google Maps ↗</a>
             </p>
@@ -120,7 +133,8 @@ function FromUtm() {
 }
 
 function ListToUtm() {
-  const [text, setText] = useState("25.193080\t55.468990\n24.453884, 54.377344\n31.520400 74.358700");
+  const get = useShared();
+  const [text, setText] = useState(() => get("pts", "25.193080\t55.468990\n24.453884, 54.377344\n31.520400 74.358700", { key: "m", value: "list" }));
   const rows = useMemo(
     () => text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean).slice(0, 5000).map((line) => {
       const p = parsePair(line);
@@ -145,7 +159,10 @@ function ListToUtm() {
         <Card>
           <div className="flex items-center justify-between gap-2 mb-3">
             <h2 className="text-[15px] font-bold text-slate-900">UTM</h2>
-            <CopyButton text={csv} label="Copy as CSV" />
+            <span className="flex flex-wrap items-center gap-1">
+              <ShareButton title="Lat/long to UTM" params={{ m: "list", pts: text.trim() }} />
+              <CopyButton text={csv} label="Copy as CSV" />
+            </span>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-[13px] font-mono">

@@ -4,7 +4,8 @@ import React, { useState } from "react";
 import dynamic from "next/dynamic";
 import { Crosshair, Layers, Search } from "lucide-react";
 import { Card, ResultRow } from "@/components/tools/ui";
-import { formatDdm, formatDms, parsePair, toUtm } from "@/lib/toolMath";
+import { ShareButton, useShared } from "@/components/tools/share";
+import { formatDdm, formatDms, parseDms, parsePair, toUtm, validLat, validLon } from "@/lib/toolMath";
 import { placeSearchAllowed, searchPlaces, type PlaceHit } from "@/lib/mapSearch";
 
 const PickMap = dynamic(() => import("@/components/tools/PickMap"), {
@@ -15,9 +16,17 @@ const PickMap = dynamic(() => import("@/components/tools/PickMap"), {
 type Pt = { lat: number; lon: number };
 
 export default function MapClient() {
-  const [pt, setPt] = useState<Pt | null>(null);
+  const get = useShared();
+  // a shared link opens on its point
+  const [shared] = useState<Pt | null>(() => {
+    const lat = parseDms(get("lat", "")), lon = parseDms(get("lon", ""));
+    return validLat(lat) && validLon(lon) ? { lat, lon } : null;
+  });
+  const [pt, setPt] = useState<Pt | null>(shared);
   const [accuracy, setAccuracy] = useState<number | null>(null);
-  const [view, setView] = useState<{ lat: number; lon: number; zoom: number; key: number } | null>(null);
+  const [view, setView] = useState<{ lat: number; lon: number; zoom: number; key: number } | null>(
+    shared ? { ...shared, zoom: Number(get("zoom", "17")) || 17, key: 1 } : null
+  );
   const [mapType, setMapType] = useState<"satellite" | "street">("satellite");
   const [q, setQ] = useState("");
   const [hits, setHits] = useState<PlaceHit[]>([]);
@@ -128,7 +137,8 @@ export default function MapClient() {
               <ResultRow label="UTM" value="Not used this far north or south" copy={false} />
             )}
             {accuracy ? <ResultRow label="Location accuracy" value={`± ${Math.round(accuracy)} m`} copy={false} /> : null}
-            <div className="mt-4 flex flex-wrap gap-3 text-[14px] font-semibold">
+            <div className="mt-4 flex flex-wrap items-center gap-3 text-[14px] font-semibold">
+              <ShareButton title="A point on the map" params={{ lat: pt.lat.toFixed(7), lon: pt.lon.toFixed(7) }} />
               <a href={`https://www.google.com/maps?q=${pt.lat.toFixed(7)},${pt.lon.toFixed(7)}`} target="_blank" rel="noopener noreferrer" className="text-[#0071e3] hover:underline">
                 Google Maps ↗
               </a>

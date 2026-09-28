@@ -40,7 +40,15 @@ export const LATEST_VERSION = "v4.2.1";
 export const GITHUB_REPO_URL = "https://github.com/Asjad-Mehmood/kml-convertor";
 /** The latest release, read by the home page for its version, size and SHA-256. */
 export const RELEASES_API_URL = "https://api.github.com/repos/Asjad-Mehmood/kml-convertor/releases/latest";
-export const INSTALLER_URL = `${GITHUB_REPO_URL}/releases/latest/download/ExcelToKMLPro-Lite-Setup.exe`;
+/** The Windows installer's name since 4.3.1. */
+export const INSTALLER_NAME = "ExcelToKML-Setup.exe";
+/**
+ * Its name before 4.3.1. Every release still carries the installer under this name too, for
+ * older versions' automatic updates, so a link to it always works — before and after 4.3.1.
+ */
+export const LEGACY_INSTALLER_NAME = "ExcelToKMLPro-Lite-Setup.exe";
+/** A link to the latest installer that always works; pages that ask GitHub use the new name. */
+export const INSTALLER_URL = `${GITHUB_REPO_URL}/releases/latest/download/${LEGACY_INSTALLER_NAME}`;
 
 /** JSON for a <script type="application/ld+json"> tag, with "<" escaped so it can't close the tag. */
 export function jsonLd(data: unknown): string {

@@ -85,6 +85,7 @@ export default function HomeClient() {
           versionTag={versionTag}
           downloadUrl={downloadUrl}
           releaseNotesUrl={releaseNotesUrl}
+          fileName={fileName}
           fileSizeText={fileSizeText}
           bytesText={bytesText}
           releaseDateText={releaseDateText}

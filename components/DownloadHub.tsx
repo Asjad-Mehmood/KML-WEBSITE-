@@ -28,11 +28,14 @@ import {
   MapPinned,
 } from "lucide-react";
 import WebAppLink from "./WebAppLink";
+import { INSTALLER_NAME } from "@/lib/site";
 
 interface DownloadHubProps {
   versionTag: string;
   downloadUrl: string;
   releaseNotesUrl: string;
+  /** the installer's file name, as the release lists it */
+  fileName?: string;
   fileSizeText: string;
   bytesText: string;
   releaseDateText: string;
@@ -42,7 +45,6 @@ interface DownloadHubProps {
   asPage?: boolean;
 }
 
-const INSTALLER_NAME = "ExcelToKMLPro-Lite-Setup.exe";
 
 const REQUIREMENTS = [
   { icon: Monitor, label: "Operating System", value: "Windows 10 / 11", note: "64-bit architecture" },
@@ -55,6 +57,7 @@ export default function DownloadHub({
   versionTag,
   downloadUrl,
   releaseNotesUrl,
+  fileName = INSTALLER_NAME,
   fileSizeText,
   bytesText,
   releaseDateText,
@@ -69,12 +72,12 @@ export default function DownloadHub({
 
   // Tag may or may not carry a leading "v" depending on the GitHub release
   const displayVersion = versionTag.startsWith("v") ? versionTag : `v${versionTag}`;
-  const verifyCommand = `Get-FileHash .\\${INSTALLER_NAME} -Algorithm SHA256`;
+  const verifyCommand = `Get-FileHash .\\${fileName} -Algorithm SHA256`;
 
   const handleDownloadExe = () => {
     requireAuth(() => {
       // Record it, then the thank-you page starts the file
-      trackDownload("windows_installer", INSTALLER_NAME, versionTag);
+      trackDownload("windows_installer", fileName, versionTag);
       goToDownload(router.push, downloadUrl, versionTag);
     }, "Sign in or create a free account to download the Windows app.");
   };
@@ -126,7 +129,7 @@ BLDG-C2,513620.000,2787440.000,15.15,STRUCTURE,Building Column Corner B
         <>
           Click <b className="text-slate-800">Download for Windows</b> to get{" "}
           <code className="text-slate-800 bg-slate-100 px-1 py-0.5 rounded font-mono text-[11px] whitespace-nowrap">
-            {INSTALLER_NAME}
+            {fileName}
           </code>{" "}
           ({fileSizeText}).
         </>
@@ -265,7 +268,7 @@ BLDG-C2,513620.000,2787440.000,15.15,STRUCTURE,Building Column Corner B
               <dl className="text-[13px] divide-y divide-slate-200/70 mb-6">
                 {[
                   { k: "Version", v: <span className="font-mono font-semibold text-slate-900">{displayVersion}</span> },
-                  { k: "File", v: <span className="font-mono text-slate-800 text-xs truncate">{INSTALLER_NAME}</span> },
+                  { k: "File", v: <span className="font-mono text-slate-800 text-xs truncate">{fileName}</span> },
                   { k: "Size", v: <span className="text-slate-800" title={bytesText}>{fileSizeText}</span> },
                   { k: "Platform", v: <span className="text-slate-800">Windows 10 / 11 · x64</span> },
                 ].map(({ k, v }) => (
