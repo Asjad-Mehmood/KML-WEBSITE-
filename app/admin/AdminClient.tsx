@@ -5,6 +5,7 @@ import Link from "next/link";
 import AdminMessages from "../../components/admin/AdminMessages";
 import AppSourceStatus from "../../components/admin/AppSourceStatus";
 import CleanupCard from "../../components/admin/CleanupCard";
+import AdminPoints from "../../components/admin/AdminPoints";
 import {
   Users,
   Download,
@@ -268,9 +269,7 @@ export default function AdminClient() {
   // Conversions state
   const [conversions, setConversions] = useState<ConversionItem[]>([]);
   const [conversionsTotal, setConversionsTotal] = useState(0);
-  const [convSearch, setConvSearch] = useState("");
-  const [convPage, setConvPage] = useState(0);
-  const [convLimit, setConvLimit] = useState(1000);
+  const convLimit = 1000;
 
   // Files state: searched and paged on the server
   const [files, setFiles] = useState<AdminFileItem[]>([]);
@@ -670,56 +669,6 @@ export default function AdminClient() {
     }
   };
 
-  // Clear conversions
-  const loadConversions = async (limit: number) => {
-    try {
-      const res = await adminFetch(`/api/admin/conversions?limit=${limit}`);
-      if (!res.ok) throw new Error();
-      const data = await res.json();
-      setConversions(data.conversions || []);
-      setConversionsTotal(data.total ?? (data.conversions || []).length);
-      setConvLimit(limit);
-    } catch {
-      showToast("Couldn't load more points", "error");
-    }
-  };
-
-  const exportConversionsCsv = () => {
-    const q = (v: unknown) => {
-      const s = String(v ?? "");
-      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-    };
-    const head = ["SAVED", "SURVEYOR", "FILE", "STATION", "CODE", "GRID", "EASTING", "NORTHING", "ELEVATION", "LATITUDE", "LONGITUDE"];
-    const rows = filteredConversions.map((c) =>
-      [c.timestamp, c.userEmail, c.fileName, c.station, c.featureCode, c.coordSystem, c.easting, c.northing, c.elevation, c.lat, c.lon]
-        .map(q)
-        .join(",")
-    );
-    const url = URL.createObjectURL(
-      new Blob(["\ufeff" + [head.join(","), ...rows].join("\r\n") + "\r\n"], { type: "text/csv;charset=utf-8" })
-    );
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "Converted points.csv";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 2000);
-  };
-
-  const handleClearConversions = async () => {
-    if (!confirm("Delete every converted point for every surveyor? The files stay. This cannot be undone.")) return;
-    try {
-      const res = await adminFetch("/api/admin/conversions", { method: "DELETE" });
-      if (res.ok) {
-        setConversions([]);
-        showToast("Conversion history cleared");
-      }
-    } catch {
-      showToast("Failed to clear conversions", "error");
-    }
-  };
-
   // Save Settings
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -777,17 +726,6 @@ export default function AdminClient() {
       (act.crs && act.crs.toLowerCase().includes(q))
     );
   });
-  const filteredConversions = convSearch.trim()
-    ? conversions.filter((c) =>
-        [c.userEmail, c.fileName, c.station, c.featureCode, c.coordSystem]
-          .join(" ")
-          .toLowerCase()
-          .includes(convSearch.trim().toLowerCase())
-      )
-    : conversions;
-  const CONV_PAGE = 100;
-  const convPageNow = Math.min(convPage, Math.max(0, Math.ceil(filteredConversions.length / CONV_PAGE) - 1));
-  const pagedConversions = filteredConversions.slice(convPageNow * CONV_PAGE, (convPageNow + 1) * CONV_PAGE);
   const ACT_PAGE = 50;
   const actPageNow = Math.min(actPage, Math.max(0, Math.ceil(filteredActivities.length / ACT_PAGE) - 1));
   const pagedActivities = filteredActivities.slice(actPageNow * ACT_PAGE, (actPageNow + 1) * ACT_PAGE);
@@ -1926,121 +1864,7 @@ export default function AdminClient() {
           </div>
         )}
 
-        {activeTab === "conversions" && (
-          <div className="space-y-5">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-              <div>
-                <h3 className="text-base font-bold text-white">Converted points</h3>
-                <p className="text-xs text-slate-400">
-                  Every point in the files surveyors saved while signed in, newest first.{" "}
-                  {conversions.length < conversionsTotal
-                    ? `Showing the newest ${conversions.length.toLocaleString()} of ${conversionsTotal.toLocaleString()}.`
-                    : `${conversionsTotal.toLocaleString()} points.`}
-                </p>
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <div className="relative">
-                  <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="search"
-                    value={convSearch}
-                    onChange={(e) => {
-                      setConvSearch(e.target.value);
-                      setConvPage(0);
-                    }}
-                    placeholder="Surveyor, file, station, code or grid"
-                    className="w-64 max-w-full pl-9 pr-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-base sm:text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                {conversions.length < conversionsTotal && (
-                  <button
-                    onClick={() => loadConversions(Math.min(5000, convLimit + 1000))}
-                    disabled={convLimit >= 5000}
-                    className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white transition-colors cursor-pointer disabled:opacity-50"
-                  >
-                    Load 1,000 more
-                  </button>
-                )}
-                <button
-                  onClick={exportConversionsCsv}
-                  disabled={!filteredConversions.length}
-                  className="px-3.5 py-2 rounded-xl bg-emerald-600/15 text-emerald-400 hover:bg-emerald-600/25 text-xs font-bold transition-colors flex items-center gap-2 border border-emerald-500/30 cursor-pointer disabled:opacity-50"
-                >
-                  <FileSpreadsheet className="w-4 h-4" /> Export CSV
-                </button>
-                <button
-                  onClick={handleClearConversions}
-                  className="px-3.5 py-2 rounded-xl bg-rose-600/15 text-rose-400 hover:bg-rose-600/25 text-xs font-bold transition-colors flex items-center gap-2 border border-rose-500/30 cursor-pointer"
-                >
-                  <Trash2 className="w-4 h-4" /> Clear all
-                </button>
-              </div>
-            </div>
-
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-800/60 border-b border-slate-800 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                    <tr>
-                      <th className="px-4 py-3.5 hidden 2xl:table-cell">Saved</th>
-                      <th className="px-4 py-3.5">Surveyor</th>
-                      <th className="px-4 py-3.5">File</th>
-                      <th className="px-4 py-3.5">Station</th>
-                      <th className="px-4 py-3.5 hidden xl:table-cell">Code</th>
-                      <th className="px-4 py-3.5 hidden lg:table-cell">Grid</th>
-                      <th className="px-4 py-3.5 text-right">Easting</th>
-                      <th className="px-4 py-3.5 text-right">Northing</th>
-                      <th className="px-4 py-3.5 text-right hidden xl:table-cell">Elevation</th>
-                      <th className="px-4 py-3.5 text-right">Latitude</th>
-                      <th className="px-4 py-3.5 text-right">Longitude</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800/60 font-mono">
-                    {filteredConversions.length === 0 ? (
-                      <tr>
-                        <td colSpan={11} className="px-4 py-12 text-center text-slate-500 font-sans">
-                          {conversions.length ? "No points match" : "No converted points yet"}
-                        </td>
-                      </tr>
-                    ) : (
-                      pagedConversions.map((conv) => {
-                        const noGrid = !conv.easting && !conv.northing;
-                        return (
-                          <tr key={conv.id} className="hover:bg-slate-800/30 transition-colors whitespace-nowrap">
-                            <td className="px-4 py-2.5 text-slate-400 font-sans hidden 2xl:table-cell">{new Date(conv.timestamp).toLocaleString()}</td>
-                            <td className="px-4 py-2.5 font-sans">
-                              <span className="block max-w-[180px] truncate text-slate-200" title={conv.userEmail || ""}>
-                                {conv.userEmail || "—"}
-                              </span>
-                            </td>
-                            <td className="px-4 py-2.5">
-                              <span className="block max-w-[160px] truncate text-slate-300" title={conv.fileName || ""}>
-                                {conv.fileName || "—"}
-                              </span>
-                            </td>
-                            <td className="px-4 py-2.5 font-bold text-white">{conv.station}</td>
-                            <td className="px-4 py-2.5 text-slate-300 hidden xl:table-cell">{conv.featureCode || "—"}</td>
-                            <td className="px-4 py-2.5 hidden lg:table-cell font-sans">
-                              <span className="block max-w-[170px] truncate text-blue-400" title={conv.coordSystem}>
-                                {conv.coordSystem}
-                              </span>
-                            </td>
-                            <td className="px-4 py-2.5 text-right text-slate-300">{noGrid ? "—" : conv.easting.toFixed(3)}</td>
-                            <td className="px-4 py-2.5 text-right text-slate-300">{noGrid ? "—" : conv.northing.toFixed(3)}</td>
-                            <td className="px-4 py-2.5 text-right text-slate-300 hidden xl:table-cell">{conv.elevation == null ? "—" : conv.elevation.toFixed(3)}</td>
-                            <td className="px-4 py-2.5 text-right text-emerald-400">{Number(conv.lat).toFixed(7)}</td>
-                            <td className="px-4 py-2.5 text-right text-emerald-400">{Number(conv.lon).toFixed(7)}</td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
-              </div>
-              <Pager page={convPageNow} total={filteredConversions.length} size={CONV_PAGE} onPage={setConvPage} noun="points" />
-            </div>
-          </div>
-        )}
+        {activeTab === "conversions" && <AdminPoints adminFetch={adminFetch} onToast={showToast} />}
 
         {/* ================================================================== */}
         {/* TAB 6: SETTINGS & RELEASE MANAGEMENT */}
