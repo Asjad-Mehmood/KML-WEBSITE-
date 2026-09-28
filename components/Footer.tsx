@@ -32,9 +32,6 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
             <p className="text-xs sm:text-sm text-slate-500 leading-relaxed max-w-[300px]">
               Survey benchmark &amp; coordinate spreadsheet converter for Google Earth and GIS workflows.
             </p>
-            <p className="text-xs text-slate-500">
-              Built and maintained by Asjad Mehmood for geomatics professionals.
-            </p>
           </div>
 
           {/* Product Links */}
@@ -116,7 +113,7 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
         {/* Bottom Copyright Strip */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <p className="text-center sm:text-left">
-            Copyright &copy; {new Date().getFullYear()} Asjad Mehmood. All rights reserved.
+            Copyright &copy; {new Date().getFullYear()} Excel to KML. All rights reserved.
             <span className="block sm:inline sm:ml-1.5 mt-1 sm:mt-0">
               Managed by{" "}
               <a
