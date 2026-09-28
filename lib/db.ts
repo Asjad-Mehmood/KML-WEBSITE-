@@ -1320,7 +1320,7 @@ export const db = {
         data: {
           id: 1,
           appVersion: "v3.5.7",
-          installerFileName: "ExcelToKMLPro-Lite-Setup.exe",
+          installerFileName: "ExcelToKML-Setup.exe",
           installerFileSize: "3.2 MB",
           requireAuthForDownload: true,
           maintenanceMode: false,
@@ -1356,7 +1356,7 @@ export const db = {
       create: {
         id: 1,
         appVersion: updates.appVersion ?? "v3.5.7",
-        installerFileName: updates.installerFileName ?? "ExcelToKMLPro-Lite-Setup.exe",
+        installerFileName: updates.installerFileName ?? "ExcelToKML-Setup.exe",
         installerFileSize: updates.installerFileSize ?? "3.2 MB",
         requireAuthForDownload: updates.requireAuthForDownload ?? true,
         maintenanceMode: updates.maintenanceMode ?? false,

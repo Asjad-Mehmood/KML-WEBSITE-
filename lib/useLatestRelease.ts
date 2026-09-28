@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { loadPublicSettings } from "@/lib/publicSettings";
-import { GITHUB_REPO_URL, LATEST_VERSION, RELEASES_API_URL } from "@/lib/site";
+import { GITHUB_REPO_URL, INSTALLER_NAME, LATEST_VERSION, LEGACY_INSTALLER_NAME, RELEASES_API_URL } from "@/lib/site";
 
 export interface LatestRelease {
   versionTag: string;
@@ -19,7 +19,8 @@ export interface LatestRelease {
   apkUrl: string | null;
 }
 
-const INSTALLER = "ExcelToKMLPro-Lite-Setup.exe";
+// Until GitHub answers, link the name every release carries (see LEGACY_INSTALLER_NAME)
+const INSTALLER = LEGACY_INSTALLER_NAME;
 
 const FALLBACK: LatestRelease = {
   versionTag: LATEST_VERSION,
@@ -66,8 +67,13 @@ export function useLatestRelease(): LatestRelease {
         if (!res.ok) return;
         const data = await res.json();
         const assets: Asset[] = Array.isArray(data.assets) ? data.assets : [];
+        // the new name when the release has it (4.3.1 on), then the admin's choice, then the old name
         const exe =
-          assets.find((a) => a.name === wanted) || assets.find((a) => a.name?.toLowerCase().endsWith(".exe")) || null;
+          assets.find((a) => a.name === INSTALLER_NAME) ||
+          assets.find((a) => a.name === wanted) ||
+          assets.find((a) => a.name === LEGACY_INSTALLER_NAME) ||
+          assets.find((a) => a.name?.toLowerCase().endsWith(".exe")) ||
+          null;
         const apk = assets.find((a) => a.name?.toLowerCase().endsWith(".apk")) || null;
         const mb = exe?.size ? (exe.size / (1024 * 1024)).toFixed(2) + " MB" : "";
         const hash =

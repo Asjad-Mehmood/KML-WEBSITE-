@@ -6,7 +6,8 @@ import { ArrowRight, BookOpen, CheckCircle2, Download, Globe, LayoutDashboard, M
 import PageShell from "../../../components/PageShell";
 import { clearPendingDownload, peekPendingDownload } from "@/lib/downloadHandoff";
 import { useAuth } from "../../../context/AuthContext";
-import { INSTALLER_URL, SUPPORT_EMAIL } from "@/lib/site";
+import { INSTALLER_NAME, SUPPORT_EMAIL } from "@/lib/site";
+import { useLatestRelease } from "@/lib/useLatestRelease";
 
 const NEXT: { href: string; title: string; text: string; Icon: React.ElementType }[] = [
   { href: "/tutorial", title: "App tutorial", text: "Four steps from your sheet to Google Earth, with screenshots.", Icon: PlayCircle },
@@ -18,7 +19,11 @@ const NEXT: { href: string; title: string; text: string; Icon: React.ElementType
 export default function ThanksClient() {
   const { user, isLoading, trackDownload } = useAuth();
   const autoDone = useRef(false);
-  const [url, setUrl] = useState(INSTALLER_URL);
+  const latest = useLatestRelease();
+  const [picked, setUrl] = useState<string | null>(null);
+  const url = picked ?? latest.downloadUrl;
+  // the steps name the file that was actually downloaded
+  const fileName = decodeURIComponent(url.split("/").pop() || "") || INSTALLER_NAME;
   const [started, setStarted] = useState(false);
 
   // Arrived from a Download button: start the file once
@@ -48,15 +53,15 @@ export default function ThanksClient() {
     autoDone.current = true;
     window.history.replaceState(null, "", "/download/thanks");
     if (!user || peekPendingDownload()) return;
-    trackDownload("windows_installer", "ExcelToKMLPro-Lite-Setup.exe", "latest");
+    trackDownload("windows_installer", latest.fileName, latest.versionTag || "latest");
     const a = document.createElement("a");
-    a.href = INSTALLER_URL;
+    a.href = latest.downloadUrl;
     a.download = "";
     document.body.appendChild(a);
     a.click();
     a.remove();
     queueMicrotask(() => setStarted(true));
-  }, [isLoading, user, trackDownload]);
+  }, [isLoading, user, trackDownload, latest.fileName, latest.versionTag, latest.downloadUrl]);
 
   return (
     <PageShell>
@@ -87,7 +92,7 @@ export default function ThanksClient() {
           <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">Install in a minute</h2>
           <ol className="mt-5 space-y-4">
             {[
-              ["Run the installer", "Open ExcelToKMLPro-Lite-Setup.exe from your Downloads folder and follow the steps."],
+              ["Run the installer", `Open ${fileName} from your Downloads folder and follow the steps.`],
               ["If Windows asks", "If a blue SmartScreen message appears, click More info, then Run anyway."],
               ["Try the sample", "Open the app and click Try the sample: a finished job on the Dubai grid, ready to save as KMZ."],
               ["Open your own sheet", "Load your Excel or CSV, choose your grid, check one known mark and save for Google Earth."],

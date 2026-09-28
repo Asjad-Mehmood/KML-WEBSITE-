@@ -285,7 +285,7 @@ export default function AdminClient() {
   // Settings state
   const [settingsForm, setSettingsForm] = useState<AppSettings>({
     appVersion: "v3.5.7",
-    installerFileName: "ExcelToKMLPro-Lite-Setup.exe",
+    installerFileName: "ExcelToKML-Setup.exe",
     installerFileSize: "3.2 MB",
     requireAuthForDownload: true,
     maintenanceMode: false,
