@@ -8,6 +8,7 @@ import { useAuth } from "../../context/AuthContext";
 import { safeNextPath } from "../../lib/authRedirect";
 import GoogleSignIn, { GOOGLE_ERRORS } from "../../components/GoogleSignIn";
 import { OCCUPATIONS, OCCUPATION_MAX } from "../../lib/occupations";
+import { usePublicSettings } from "../../lib/publicSettings";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -24,6 +25,7 @@ export default function RegisterPage() {
   );
   const googleError = googleErrorCode ? GOOGLE_ERRORS[googleErrorCode] ?? null : null;
   const { register } = useAuth();
+  const signupsClosed = usePublicSettings()?.signupsOpen === false;
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -120,6 +122,13 @@ export default function RegisterPage() {
             Create Account
           </h1>
         </div>
+
+        {signupsClosed && (
+          <div role="status" className="mb-5 p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 font-semibold">
+            New sign-ups are paused for now. If you already have an account,{" "}
+            <Link href="/login" className="underline">sign in</Link>.
+          </div>
+        )}
 
         <GoogleSignIn next={safeNextPath(nextParam)} />
 

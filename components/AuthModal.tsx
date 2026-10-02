@@ -9,6 +9,7 @@ import OtpForm from "./OtpForm";
 import { X, Lock } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { OCCUPATIONS, OCCUPATION_MAX } from "../lib/occupations";
+import { usePublicSettings } from "../lib/publicSettings";
 
 export default function AuthModal() {
   const router = useRouter();
@@ -21,6 +22,7 @@ export default function AuthModal() {
   const [role, setRole] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const signupsClosed = usePublicSettings()?.signupsOpen === false;
 
   if (!authModalOpen) return null;
 
@@ -80,6 +82,12 @@ export default function AuthModal() {
 
           {/* After Google, a pending download continues on the thank-you page */}
           <GoogleSignIn compact next={pendingDownloadAction ? "/download/thanks?auto=1" : pathname || "/"} />
+
+          {signupsClosed && authModalMode === "register" && (
+            <div role="status" className="mb-4 px-4 py-3 bg-amber-50 border border-amber-200 rounded-[12px] text-[13px] text-amber-900 font-medium">
+              New sign-ups are paused for now. Already have an account? Use Sign In.
+            </div>
+          )}
 
           {error && (
             <div className="mb-4 px-4 py-3 bg-[#ff3b30]/[0.08] border border-[#ff3b30]/20 rounded-[12px] text-[13px] text-[#ff3b30] font-medium">

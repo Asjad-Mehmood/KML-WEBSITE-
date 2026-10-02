@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { GOOGLE_COOKIE, isGoogleConfigured, profileFromCode } from "@/lib/googleAuth";
 import { safeNextPath } from "@/lib/authRedirect";
 import { getClientIp, getIpGeoLocation } from "@/lib/geo";
+import { getExtraSettings } from "@/lib/siteSettings";
 
 // Back from Google: check the state, get the verified email, then sign in to
 // the matching account or create one, and continue to ?next
@@ -22,7 +23,8 @@ export async function GET(req: NextRequest) {
   const next = safeNextPath(saved.next);
   const q = req.nextUrl.searchParams;
   if (q.get("error")) return fail("google-cancelled", next); // closed or denied on Google's page
-  if (!isGoogleConfigured()) return fail("google-unavailable", next);
+  const extra = await getExtraSettings();
+  if (!isGoogleConfigured() || !extra.googleSignInEnabled) return fail("google-unavailable", next);
   const code = q.get("code");
   if (!code || !saved.state || !saved.verifier || q.get("state") !== saved.state) return fail("google-expired", next);
 
@@ -37,6 +39,7 @@ export async function GET(req: NextRequest) {
     // and occupation before going on
     let needsProfile = false;
     if (!user) {
+      if (!extra.allowSignups) return fail("signups-closed", next);
       needsProfile = true;
       const geo = await getIpGeoLocation(getClientIp(req), req);
       // No password is set (a random one is stored); "Forgot password" can add one later

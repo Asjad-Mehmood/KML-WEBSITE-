@@ -3,9 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import AdminMessages from "../../components/admin/AdminMessages";
-import AppSourceStatus from "../../components/admin/AppSourceStatus";
-import CleanupCard from "../../components/admin/CleanupCard";
-import SignInSecurity from "../../components/admin/SignInSecurity";
+import SettingsPanel from "../../components/admin/SettingsPanel";
 import AdminPoints from "../../components/admin/AdminPoints";
 import AdminFiles from "../../components/admin/AdminFiles";
 import {
@@ -254,21 +252,8 @@ export default function AdminClient() {
   // Files state: searched and paged on the server
   const [viewing, setViewing] = useState<ViewerFile | null>(null);
 
-  // Settings state
-  const [settingsForm, setSettingsForm] = useState<AppSettings>({
-    appVersion: "v3.5.7",
-    installerFileName: "ExcelToKML-Setup.exe",
-    installerFileSize: "3.2 MB",
-    requireAuthForDownload: true,
-    maintenanceMode: false,
-    announcementBanner: "",
-    announcementActive: false,
-    webAppRestricted: true,
-    webMaxPoints: 50,
-    webWatermarkKml: true,
-    webDisableReports: true,
-  });
-  const [settingsSaved, setSettingsSaved] = useState(false);
+  // The saved web point limit: the default shown for surveyors without their own
+  const [globalMaxPoints, setGlobalMaxPoints] = useState(50);
 
   // Toast notice
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
@@ -378,7 +363,7 @@ export default function AdminClient() {
         const data = await statsRes.json();
         setStats(data.stats);
         if (data.stats.settings) {
-          setSettingsForm(data.stats.settings);
+          setGlobalMaxPoints(data.stats.settings?.webMaxPoints || 50);
         }
       }
 
@@ -596,26 +581,6 @@ export default function AdminClient() {
       }
     } catch {
       showToast("Could not clear the activity log", "error");
-    }
-  };
-
-  // Save Settings
-  const handleSaveSettings = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const res = await adminFetch("/api/admin/settings", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(settingsForm),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to update settings");
-      setSettingsSaved(true);
-      setTimeout(() => setSettingsSaved(false), 3000);
-      showToast("System settings updated & applied!");
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Error updating settings";
-      showToast(msg, "error");
     }
   };
 
@@ -1240,7 +1205,7 @@ export default function AdminClient() {
                             ) : (
                               <div className="flex items-center gap-2 whitespace-nowrap">
                                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                                  <Lock className="w-3.5 h-3.5" /> Demo · {u.customMaxPoints || settingsForm.webMaxPoints || 50} pts
+                                  <Lock className="w-3.5 h-3.5" /> Demo · {u.customMaxPoints || globalMaxPoints} pts
                                 </span>
                                 <button
                                   onClick={() => handleToggleUserFullAccess(u.id, true)}
@@ -1642,233 +1607,7 @@ export default function AdminClient() {
         )}
 
         {activeTab === "settings" && (
-          <div className="mb-5">
-            <SignInSecurity adminFetch={adminFetch} />
-            <div className="mt-3">
-              <AppSourceStatus adminFetch={adminFetch} />
-            </div>
-            <div className="mt-3">
-              <CleanupCard adminFetch={adminFetch} />
-            </div>
-          </div>
-        )}
-        {activeTab === "settings" && (
-          <div className="max-w-3xl w-full mx-auto space-y-6">
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-8 shadow-xl">
-              <div className="mb-6 pb-6 border-b border-slate-800 flex items-start sm:items-center justify-between gap-3">
-                <div>
-                  <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                    <Settings className="w-5 h-5 text-blue-400" /> Settings
-                  </h3>
-                  <p className="text-xs text-slate-400 mt-1">
-                    The release shown on the site, who may download, maintenance, and the web app&apos;s limits
-                  </p>
-                </div>
-                <span className="shrink-0 px-2.5 py-1 rounded-full text-xs font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                  Whole site
-                </span>
-              </div>
-
-              <form onSubmit={handleSaveSettings} className="space-y-6">
-                {/* Application Version */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-                      Current version
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={settingsForm.appVersion}
-                      onChange={(e) => setSettingsForm({ ...settingsForm, appVersion: e.target.value })}
-                      className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500"
-                      placeholder="v3.5.7"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-                      Installer file
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={settingsForm.installerFileName}
-                      onChange={(e) => setSettingsForm({ ...settingsForm, installerFileName: e.target.value })}
-                      className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500 font-mono text-xs"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-                      Installer size
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={settingsForm.installerFileSize}
-                      onChange={(e) => setSettingsForm({ ...settingsForm, installerFileSize: e.target.value })}
-                      className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500"
-                      placeholder="3.2 MB"
-                    />
-                  </div>
-                </div>
-
-                <p className="-mt-3 text-xs text-slate-500">
-                  Shown on the download section until the latest GitHub release loads (GitHub&apos;s details win when
-                  it answers). The installer file name is also used for the download link.
-                </p>
-
-                {/* Gate & Maintenance Mode */}
-                <div className="space-y-4 pt-2">
-                  <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-800/60 border border-slate-700/60">
-                    <div>
-                      <div className="font-bold text-sm text-white">Require Surveyor Login to Download</div>
-                      <div className="text-xs text-slate-400">
-                        On: visitors sign in or register before the Windows download starts. Off: the download starts straight away.
-                      </div>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={settingsForm.requireAuthForDownload}
-                        onChange={(e) => setSettingsForm({ ...settingsForm, requireAuthForDownload: e.target.checked })}
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                    </label>
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-800/60 border border-slate-700/60">
-                    <div>
-                      <div className="font-bold text-sm text-white">Maintenance Mode</div>
-                      <div className="text-xs text-slate-400">Pauses the web app for everyone except admins and shows a maintenance notice on the site. The Windows app is not affected.</div>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={settingsForm.maintenanceMode}
-                        onChange={(e) => setSettingsForm({ ...settingsForm, maintenanceMode: e.target.checked })}
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
-                    </label>
-                  </div>
-                </div>
-
-                {/* Web App Demo Restrictions Card */}
-                <div className="p-6 rounded-2xl bg-slate-800/50 border border-amber-500/20 space-y-4">
-                  <div className="flex items-center gap-3 pb-3 border-b border-slate-700/60">
-                    <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center">
-                      <Lock className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                        Web App Demo Restrictions &amp; Point Limits
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                          Drive Desktop Downloads
-                        </span>
-                      </h4>
-                      <p className="text-xs text-slate-400">
-                        Limit web features so users are prompted to download the full offline Windows Desktop Edition
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Master Web Restriction Toggle */}
-                  <div className="flex items-center justify-between p-4 rounded-xl bg-slate-800/80 border border-slate-700/70">
-                    <div>
-                      <div className="font-bold text-xs text-white">Enforce Web App Demo Mode</div>
-                      <div className="text-[11px] text-slate-400">
-                        When enabled, visitors &amp; standard surveyors cannot bulk convert without downloading desktop app.
-                      </div>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={settingsForm.webAppRestricted}
-                        onChange={(e) => setSettingsForm({ ...settingsForm, webAppRestricted: e.target.checked })}
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
-                    </label>
-                  </div>
-
-                  {settingsForm.webAppRestricted && (
-                    <div className="space-y-4 pt-1">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-xs font-bold text-slate-300 mb-1.5">
-                            Default Web Points Limit per Conversion
-                          </label>
-                          <input
-                            type="number"
-                            min="5"
-                            max="5000"
-                            value={settingsForm.webMaxPoints}
-                            onChange={(e) => setSettingsForm({ ...settingsForm, webMaxPoints: parseInt(e.target.value, 10) || 50 })}
-                            className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-amber-500 font-mono"
-                            placeholder="50"
-                          />
-                          <p className="text-[10px] text-slate-400 mt-1">
-                            Converting datasets larger than this triggers the Desktop Download modal.
-                          </p>
-                        </div>
-
-                        <div className="flex flex-col justify-center space-y-2.5 pt-1">
-                          <label className="flex items-center gap-2.5 text-xs text-slate-300 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={settingsForm.webDisableReports}
-                              onChange={(e) => setSettingsForm({ ...settingsForm, webDisableReports: e.target.checked })}
-                              className="rounded bg-slate-800 border-slate-700 text-amber-500 focus:ring-0"
-                            />
-                            <span>Lock PDF &amp; Cadastral Reports on Web</span>
-                          </label>
-
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Announcement Banner */}
-                <div className="pt-4 border-t border-slate-800 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                      Global Announcement Banner
-                    </label>
-                    <label className="inline-flex items-center gap-2 cursor-pointer text-xs text-slate-300">
-                      <input
-                        type="checkbox"
-                        checked={settingsForm.announcementActive}
-                        onChange={(e) => setSettingsForm({ ...settingsForm, announcementActive: e.target.checked })}
-                        className="rounded bg-slate-800 border-slate-700 text-blue-600 focus:ring-0"
-                      />
-                      Show on the site
-                    </label>
-                  </div>
-                  <input
-                    type="text"
-                    value={settingsForm.announcementBanner}
-                    onChange={(e) => setSettingsForm({ ...settingsForm, announcementBanner: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500"
-                    placeholder="e.g. v3.5.7 released with UK OSGB36 & Dubai DLTM improvements!"
-                  />
-                </div>
-
-                <div className="pt-6 flex justify-end">
-                  <button
-                    type="submit"
-                    className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold shadow-lg shadow-blue-600/30 transition-all flex items-center gap-2 cursor-pointer"
-                  >
-                    {settingsSaved ? <CheckCircle2 className="w-4 h-4 text-emerald-300" /> : <Settings className="w-4 h-4" />}
-                    {settingsSaved ? "Settings Saved!" : "Save & Apply Settings"}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
+          <SettingsPanel adminFetch={adminFetch} onToast={showToast} onSaved={(st) => setGlobalMaxPoints(st.webMaxPoints)} />
         )}
       </div>
 
@@ -1992,7 +1731,7 @@ export default function AdminClient() {
                       value={userForm.customMaxPoints}
                       onChange={(e) => setUserForm({ ...userForm, customMaxPoints: e.target.value })}
                       className="w-full px-3.5 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-blue-500 font-mono"
-                      placeholder={`Leave blank to use global default (${settingsForm.webMaxPoints || 50} pts)`}
+                      placeholder={`Leave blank to use global default (${globalMaxPoints} pts)`}
                     />
                     <div className="text-[10px] text-slate-400 mt-1">
                       Overrides the global limit for this specific surveyor account.
@@ -2035,7 +1774,7 @@ export default function AdminClient() {
           loadDashboardData();
         }}
         onToast={showToast}
-        globalMaxPoints={settingsForm.webMaxPoints || 50}
+        globalMaxPoints={globalMaxPoints}
       />
     </div>
   );

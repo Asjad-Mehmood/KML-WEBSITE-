@@ -2,11 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { db, isAdminRole } from "@/lib/db";
 import { cleanOccupation } from "@/lib/occupations";
 import { getClientIp, getIpGeoLocation } from "@/lib/geo";
+import { getExtraSettings } from "@/lib/siteSettings";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { name, email, password, organization, role } = body;
+
+    if (!(await getExtraSettings()).allowSignups) {
+      return NextResponse.json(
+        { error: "New sign-ups are paused for now. If you already have an account, please sign in." },
+        { status: 403 }
+      );
+    }
 
     if (!name || !email || !password) {
       return NextResponse.json(
