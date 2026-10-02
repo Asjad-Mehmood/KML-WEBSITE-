@@ -57,7 +57,7 @@ export default function DownloadClient() {
             <h2 className="mt-3 text-[18px] font-bold text-slate-900">In your browser</h2>
             <p className="mt-1.5 text-[14px] text-slate-600 leading-relaxed">
               Nothing to install: the web app runs in Chrome, Edge, Firefox or Safari on any computer, tablet or phone. Sign in with a free
-              account to use it. The web version converts smaller sheets; the Windows app has no point limit.
+              account to use it. Neither the web app nor the Windows app has a point limit.
             </p>
             <WebAppLink className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 hover:border-slate-300 text-[13.5px] font-semibold text-slate-800">
               Open the web app

@@ -5,7 +5,6 @@ import {
   X,
   User,
   ShieldCheck,
-  Lock,
   Globe,
   Download,
   Activity,
@@ -157,7 +156,6 @@ interface SurveyorDetailModalProps {
   onClose: () => void;
   onUserUpdated?: () => void;
   onToast: (msg: string, type?: "success" | "error") => void;
-  globalMaxPoints?: number;
 }
 
 export default function SurveyorDetailModal({
@@ -166,7 +164,6 @@ export default function SurveyorDetailModal({
   onClose,
   onUserUpdated,
   onToast,
-  globalMaxPoints = 50,
 }: SurveyorDetailModalProps) {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<UserDetailResponse | null>(null);
@@ -264,8 +261,6 @@ export default function SurveyorDetailModal({
         email: editForm.email.trim(),
         organization: editForm.organization.trim(),
         role: editForm.role.trim(),
-        hasFullAccess: editForm.hasFullAccess,
-        customMaxPoints: editForm.customMaxPoints ? parseInt(editForm.customMaxPoints, 10) : null,
       };
       if (editForm.password.trim()) {
         payload.password = editForm.password.trim();
@@ -413,15 +408,6 @@ export default function SurveyorDetailModal({
                     Administrator
                   </span>
                 )}
-                {user?.hasFullAccess || user?.role === "ADMIN" ? (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-                    <ShieldCheck className="w-3.5 h-3.5" /> Full access
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30 whitespace-nowrap">
-                    <Lock className="w-3.5 h-3.5" /> Demo · {user?.customMaxPoints || globalMaxPoints} pts
-                  </span>
-                )}
               </div>
 
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-400">
@@ -461,7 +447,7 @@ export default function SurveyorDetailModal({
             { id: "jobs", label: "Jobs", icon: Briefcase, count: jobs.length },
             { id: "activities", label: "Activity", icon: HardDrive, count: activities.length },
             { id: "downloads", label: "Downloads", icon: Download, count: downloads.length },
-            { id: "settings", label: "Access", icon: Lock },
+            { id: "settings", label: "Profile & role", icon: User },
           ].map((tab) => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
@@ -1176,62 +1162,6 @@ export default function SurveyorDetailModal({
               {/* ========================================================= */}
               {activeTab === "settings" && (
                 <form onSubmit={handleSaveUserPermissions} className="space-y-6 max-w-2xl mx-auto">
-                  <div className="p-6 rounded-2xl bg-slate-800/40 border border-slate-800 space-y-4">
-                    <h3 className="text-base font-bold text-white flex items-center gap-2">
-                      <Lock className="w-4 h-4 text-amber-400" /> Web Access &amp; Point Restrictions
-                    </h3>
-                    <p className="text-xs text-slate-400">
-                      Configure individual access tiers. Note: Windows Desktop App users automatically have full unrestricted access without limits.
-                    </p>
-
-                    {/* Master Full Access Toggle */}
-                    <label className="flex items-start gap-3 p-4 rounded-xl bg-slate-800/80 border border-slate-700/60 cursor-pointer hover:border-slate-600 transition-colors">
-                      <input
-                        type="checkbox"
-                        checked={editForm.hasFullAccess}
-                        onChange={(e) => setEditForm({ ...editForm, hasFullAccess: e.target.checked })}
-                        className="mt-0.5 rounded bg-slate-700 border-slate-600 text-blue-600 focus:ring-0 w-4 h-4"
-                      />
-                      <div>
-                        <div className="text-sm font-bold text-white flex items-center gap-2">
-                          <span>Grant Full Unrestricted Web Access</span>
-                          <span className="text-[10px] px-2 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                            Full access
-                          </span>
-                        </div>
-                        <div className="text-xs text-slate-400 mt-1">
-                          When checked, this account can convert unlimited points on the web without any watermark or download prompts.
-                        </div>
-                      </div>
-                    </label>
-
-                    {/* Custom Point Limit */}
-                    {!editForm.hasFullAccess && (
-                      <div className="pt-2 space-y-1.5">
-                        <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
-                          Custom Point Limit for this User
-                        </label>
-                        <div className="relative">
-                          <input
-                            type="number"
-                            min="5"
-                            max="50000"
-                            value={editForm.customMaxPoints}
-                            onChange={(e) => setEditForm({ ...editForm, customMaxPoints: e.target.value })}
-                            className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-amber-500 font-mono"
-                            placeholder={`Default: ${globalMaxPoints} points`}
-                          />
-                          <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-slate-500 font-mono">
-                            points
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-slate-400">
-                          Leave blank to inherit the global web limitation ({globalMaxPoints} points).
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
                   {/* Profile & Role Configuration */}
                   <div className="p-6 rounded-2xl bg-slate-800/40 border border-slate-800 space-y-4">
                     <h3 className="text-base font-bold text-white flex items-center gap-2">

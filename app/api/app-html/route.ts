@@ -24,333 +24,14 @@ function withSiteSession(html: string, token: string, user: unknown): string {
   return m ? html.slice(0, m.index + m[0].length) + tag + html.slice(m.index + m[0].length) : tag + html;
 }
 
-async function applyWebRestrictions(html: string, req: NextRequest): Promise<string> {
+// The web app has no usage limits: every signed-in user gets all of it. What
+// is injected here is the file vault, which saves each imported and exported
+// file to the user's account (Dashboard → Files).
+function withFileVault(html: string): string {
   try {
-    const token =
-      req.cookies.get("surveyor_auth_token")?.value ||
-      req.headers.get("authorization")?.replace("Bearer ", "");
-
-    let user = null;
-    if (token) {
-      const sessionData = await db.validateSession(token);
-      if (sessionData) {
-        user = sessionData.user;
-      }
-    }
-
-    const settings = await db.getSettings();
-    const isAdmin = db.isAdmin(user);
-    // The Windows app carries its own copy of the app and never loads this
-    // route, so a "windows" header, query or user agent grants nothing here.
-    const hasFullAccess =
-      !settings.webAppRestricted ||
-      isAdmin ||
-      Boolean(user?.hasFullAccess);
-
-    const isRestricted = !hasFullAccess;
-    const maxPoints = hasFullAccess
-      ? 999999
-      : user?.customMaxPoints || settings.webMaxPoints || 50;
-    const watermark = isRestricted && (settings.webWatermarkKml ?? true);
-    const disableReports = isRestricted && (settings.webDisableReports ?? true);
-
-    const injectionPayload = JSON.stringify({
-      isRestricted,
-      hasFullAccess,
-      maxPoints,
-      watermark,
-      disableReports,
-      userName: user?.name || null,
-    });
-
     const script = `
-<script id="web-app-restrictions-guard">
+<script id="web-app-file-vault">
 (function() {
-  const config = ${injectionPayload};
-  window.__APP_RESTRICTIONS__ = config;
-
-  function initGuard() {
-    // Check if running inside Windows Desktop Application
-    const isDesktopApp =
-      window.location.protocol === "file:" ||
-      Boolean(window.chrome && window.chrome.webview) ||
-      window.__DESKTOP__ === true ||
-      navigator.userAgent.includes("ExcelToKML") ||
-      navigator.userAgent.includes("WindowsApp") ||
-      navigator.userAgent.includes("Electron") ||
-      Boolean(window.bm2kmlSave) ||
-      Boolean(window.KMLHost && window.KMLHost.isWindows);
-
-    if (isDesktopApp) {
-      console.log("Excel to KML: Running in Windows Desktop App - All usage limits removed!");
-      window.__APP_RESTRICTIONS__ = {
-        isRestricted: false,
-        hasFullAccess: true,
-        maxPoints: 99999999,
-        watermark: false,
-        disableReports: false,
-        isDesktop: true
-      };
-      const titlebar = document.querySelector(".titlebar");
-      const aboutBtn = document.getElementById("aboutBtn");
-      if (titlebar && aboutBtn && !document.getElementById("app-restriction-banner")) {
-        const desktopBadge = document.createElement("div");
-        desktopBadge.id = "app-restriction-banner";
-        desktopBadge.style.cssText = "display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:6px;font-family:system-ui,-apple-system,sans-serif;font-size:11px;font-weight:600;margin-right:8px;background:rgba(16, 185, 129, 0.15);color:#34d399;border:1px solid rgba(16, 185, 129, 0.35);";
-        desktopBadge.innerHTML = '🪟 Windows Desktop Edition (Unlimited)';
-        titlebar.insertBefore(desktopBadge, aboutBtn);
-      }
-      return;
-    }
-
-    // 1. Create Top Notification Banner
-    const banner = document.createElement("div");
-    banner.id = "app-restriction-banner";
-
-    // Keep the banner from squashing or running over the app name: neither
-    // wraps nor shrinks (the job box gives way instead), and below 1400px the
-    // banner is a short "50 pts" chip (the website bar above already has a
-    // desktop-download button).
-    if (!document.getElementById("app-restriction-style")) {
-      const st = document.createElement("style");
-      st.id = "app-restriction-style";
-      st.textContent =
-        "#app-restriction-banner{flex:none;white-space:nowrap}" +
-        ".titlebar .titles{flex:none}" +
-        ".titlebar .appname{white-space:nowrap}" +
-        "#app-restriction-banner .arb-short{display:none}" +
-        "@media (max-width:1400px){#app-restriction-banner .arb-long,#app-restriction-banner #btn-download-desktop{display:none}" +
-        "#app-restriction-banner .arb-short{display:inline}#app-restriction-banner{padding:3px 7px!important;margin-right:4px!important}}";
-      document.head.appendChild(st);
-    }
-
-    const titlebar = document.querySelector(".titlebar");
-    const aboutBtn = document.getElementById("aboutBtn");
-
-    if (titlebar && aboutBtn) {
-      banner.style.cssText = "display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:6px;font-family:system-ui,-apple-system,sans-serif;font-size:11px;font-weight:600;margin-right:8px;";
-      if (config.isRestricted) {
-        banner.style.backgroundColor = "rgba(245, 158, 11, 0.15)";
-        banner.style.color = "#fbbf24";
-        banner.style.border = "1px solid rgba(245, 158, 11, 0.35)";
-        banner.title = "Web demo: up to " + config.maxPoints + " points per job. The desktop app has no limit.";
-        banner.innerHTML = '<span style="display:inline-flex;align-items:center;gap:4px;">⚠️ <span class="arb-long">Web Demo: <strong>' + config.maxPoints + ' Pts Limit</strong></span><strong class="arb-short">' + config.maxPoints + ' pts</strong></span>' +
-          '<button id="btn-download-desktop" style="margin-left:6px;background:#2563eb;color:#fff;border:none;border-radius:4px;padding:2px 7px;font-size:10px;font-weight:700;cursor:pointer;">Get Desktop</button>';
-      } else {
-        banner.style.backgroundColor = "rgba(16, 185, 129, 0.15)";
-        banner.style.color = "#34d399";
-        banner.style.border = "1px solid rgba(16, 185, 129, 0.35)";
-        banner.innerHTML = '✨ <span class="arb-long">Full access (unlimited)</span><span class="arb-short">Full</span>';
-      }
-      titlebar.insertBefore(banner, aboutBtn);
-    } else {
-      banner.style.cssText = "position:fixed;top:8px;right:14px;z-index:99999;display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:10px;font-family:system-ui,-apple-system,sans-serif;font-size:12px;font-weight:600;box-shadow:0 4px 14px rgba(0,0,0,0.15);transition:all 0.2s;";
-      if (config.isRestricted) {
-        banner.style.backgroundColor = "#fffbeb";
-        banner.style.color = "#92400e";
-        banner.style.border = "1px solid #fde68a";
-        banner.innerHTML = '<span style="display:inline-flex;align-items:center;gap:4px;">⚠️ <span>Web Demo: <strong>' + config.maxPoints + ' Points Limit</strong></span></span>' +
-          '<button id="btn-download-desktop" style="margin-left:6px;background:#2563eb;color:#fff;border:none;border-radius:6px;padding:3px 8px;font-size:11px;font-weight:700;cursor:pointer;">Get Desktop (Unlimited)</button>';
-      } else {
-        banner.style.backgroundColor = "#ecfdf5";
-        banner.style.color = "#065f46";
-        banner.style.border = "1px solid #a7f3d0";
-        banner.innerHTML = '✨ Full access (unlimited points)';
-      }
-      document.body.appendChild(banner);
-    }
-
-    const dlBtn = document.getElementById("btn-download-desktop");
-    if (dlBtn) {
-      dlBtn.onclick = function() {
-        if (window.top) window.top.location.href = "/download";
-        else window.location.href = "/download";
-      };
-    }
-
-    if (!config.isRestricted) return;
-
-    // Helper modal for showing restriction limit dialog
-    function showLimitModal(totalPoints) {
-      let modal = document.getElementById("web-limit-modal");
-      if (!modal) {
-        modal = document.createElement("div");
-        modal.id = "web-limit-modal";
-        modal.style.cssText = "position:fixed;inset:0;background:rgba(15,23,42,0.65);backdrop-filter:blur(4px);z-index:999999;display:flex;align-items:center;justify-content:center;padding:16px;font-family:system-ui,-apple-system,sans-serif;";
-        modal.innerHTML = '<div style="background:#fff;border-radius:16px;max-width:440px;width:100%;padding:24px;box-shadow:0 20px 40px rgba(0,0,0,0.2);border:1px solid #e2e8f0;text-align:center;">' +
-          '<div style="width:48px;height:48px;border-radius:12px;background:#fef3c7;color:#d97706;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:24px;">⚠️</div>' +
-          '<h3 style="font-size:18px;font-weight:800;color:#0f172a;margin:0 0 8px;">Web Demo Point Limit Reached</h3>' +
-          '<p id="web-modal-desc" style="font-size:13px;color:#475569;line-height:1.5;margin:0 0 20px;"></p>' +
-          '<div style="display:flex;flex-direction:column;gap:8px;">' +
-            '<button id="btn-modal-download" style="width:100%;padding:10px 16px;background:#2563eb;color:#fff;font-weight:700;font-size:13px;border-radius:10px;border:none;cursor:pointer;box-shadow:0 4px 12px rgba(37,99,235,0.25);">Download Windows Desktop App (Unlimited)</button>' +
-            '<button id="btn-modal-trim" style="width:100%;padding:9px 16px;background:#f1f5f9;color:#334155;font-weight:600;font-size:12px;border-radius:10px;border:1px solid #cbd5e1;cursor:pointer;">Continue with First ' + config.maxPoints + ' Points</button>' +
-          '</div>' +
-        '</div>';
-        document.body.appendChild(modal);
-
-        document.getElementById("btn-modal-download").onclick = function() {
-          if (window.top) window.top.location.href = "/download";
-          else window.location.href = "/download";
-        };
-      }
-
-      document.getElementById("web-modal-desc").innerHTML = "You loaded <strong>" + totalPoints + " points</strong>. The web demo is capped at <strong>" + config.maxPoints + " points</strong> per conversion.<br><br>Download the Windows Desktop edition for <strong>unlimited points</strong>, bulk datasets, and full offline CAD performance.";
-      modal.style.display = "flex";
-
-      document.getElementById("btn-modal-trim").onclick = function() {
-        modal.style.display = "none";
-        trimDataToLimit();
-      };
-    }
-
-    // Points the app will actually save: its own "ready" counter in the
-    // status bar, which covers typed, pasted, opened and dropped sheets alike.
-    // Falls back to counting non-empty sheet lines if the counter is missing.
-    function pointCount() {
-      const ok = document.getElementById("stOk");
-      const n = ok ? parseInt(ok.textContent || "", 10) : NaN;
-      if (!isNaN(n)) return n;
-      const dataEl = document.getElementById("data");
-      if (!dataEl || !dataEl.value) return 0;
-      const lines = dataEl.value.trim().split("\\n").filter(function(l) { return l.trim().length > 0; });
-      return Math.max(0, lines.length - 1);
-    }
-    const overLimit = function() { return pointCount() > config.maxPoints; };
-
-    // Keep the first maxPoints points: cut the sheet (header + rows) and let
-    // the app re-read it. If the sheet had no header row, one more row goes.
-    function trimDataToLimit() {
-      const dataEl = document.getElementById("data");
-      if (!dataEl) return;
-      const lines = dataEl.value.split("\\n");
-      let keep = config.maxPoints + 1;
-      for (let tries = 0; tries < 3 && lines.length > keep - 1; tries++) {
-        dataEl.value = lines.slice(0, keep).join("\\n");
-        dataEl.dispatchEvent(new Event("input", { bubbles: true }));
-        if (!overLimit()) break;
-        keep -= 1;
-      }
-    }
-
-    // Warn as soon as a sheet goes over the limit (not on every keystroke
-    // after that): watch the app's "ready" counter.
-    let warnedAt = 0;
-    function checkPointsLimit() {
-      const n = pointCount();
-      if (n > config.maxPoints && n !== warnedAt) {
-        warnedAt = n;
-        showLimitModal(n);
-      } else if (n <= config.maxPoints) {
-        warnedAt = 0;
-      }
-    }
-    const okEl = document.getElementById("stOk");
-    if (okEl && window.MutationObserver) {
-      new MutationObserver(function() { setTimeout(checkPointsLimit, 50); })
-        .observe(okEl, { childList: true, characterData: true, subtree: true });
-    }
-    const dataEl = document.getElementById("data");
-    if (dataEl) {
-      dataEl.addEventListener("change", function() { setTimeout(checkPointsLimit, 250); });
-      dataEl.addEventListener("paste", function() { setTimeout(checkPointsLimit, 250); });
-    }
-
-    // Every way out of the app with converted points: file saves, the
-    // derived sheets, and copying the converted table. Blocked while the
-    // sheet is over the limit; the job file (jobSave) stays allowed.
-    const EXPORT_IDS = [
-      "save", "saveKmz", "saveCsv", "saveXlsx", "saveDxf", "saveGeo", "saveGpx", "saveShp", "saveInst", "saveMain", "readySave", "msave",
-      "radCsv", "radCopy", "chSave", "profSave", "cmpSave", "copyTbl"
-    ];
-    const EXPORT_SELECTOR = EXPORT_IDS.map(function(id) { return "#" + id; }).join(",");
-    document.addEventListener("click", function(e) {
-      const btn = e.target && e.target.closest ? e.target.closest(EXPORT_SELECTOR) : null;
-      if (btn && overLimit()) {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        showLimitModal(pointCount());
-      }
-    }, true);
-
-    // Ctrl+S / Cmd+S saves straight away in the app
-    window.addEventListener("keydown", function(e) {
-      if ((e.ctrlKey || e.metaKey) && String(e.key).toLowerCase() === "s" && overLimit()) {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        showLimitModal(pointCount());
-      }
-    }, true);
-
-    // Batch converts many sheets at once, so it can't be held to a per-sheet
-    // limit: it's a desktop feature in the web demo, like PDF reports.
-    function showDesktopOnly(title, text) {
-      let modal = document.getElementById("web-desktop-modal");
-      if (!modal) {
-        modal = document.createElement("div");
-        modal.id = "web-desktop-modal";
-        modal.style.cssText = "position:fixed;inset:0;background:rgba(15,23,42,0.65);backdrop-filter:blur(4px);z-index:999999;display:flex;align-items:center;justify-content:center;padding:16px;font-family:system-ui,-apple-system,sans-serif;";
-        modal.innerHTML = '<div style="background:#fff;border-radius:16px;max-width:400px;width:100%;padding:24px;box-shadow:0 20px 40px rgba(0,0,0,0.2);text-align:center;">' +
-          '<div style="width:48px;height:48px;border-radius:12px;background:#eff6ff;color:#2563eb;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:24px;">🗂️</div>' +
-          '<h3 id="web-desktop-title" style="font-size:17px;font-weight:800;color:#0f172a;margin:0 0 8px;"></h3>' +
-          '<p id="web-desktop-text" style="font-size:13px;color:#475569;line-height:1.5;margin:0 0 20px;"></p>' +
-          '<button id="btn-desktop-dl" style="width:100%;padding:10px 16px;background:#2563eb;color:#fff;font-weight:700;font-size:13px;border-radius:10px;border:none;cursor:pointer;margin-bottom:8px;">Download Windows Desktop App</button>' +
-          '<button id="btn-desktop-close" style="width:100%;padding:8px 16px;background:#f8fafc;color:#64748b;font-weight:600;font-size:12px;border-radius:10px;border:1px solid #e2e8f0;cursor:pointer;">Dismiss</button>' +
-        '</div>';
-        document.body.appendChild(modal);
-        document.getElementById("btn-desktop-dl").onclick = function() {
-          if (window.top) window.top.location.href = "/download";
-          else window.location.href = "/download";
-        };
-        document.getElementById("btn-desktop-close").onclick = function() { modal.style.display = "none"; };
-      }
-      document.getElementById("web-desktop-title").textContent = title;
-      document.getElementById("web-desktop-text").textContent = text;
-      modal.style.display = "flex";
-    }
-    document.addEventListener("click", function(e) {
-      const btn = e.target && e.target.closest ? e.target.closest("#batchBtn") : null;
-      if (btn) {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        showDesktopOnly("Batch conversion is a desktop feature",
-          "Converting many sheets at once is available in the Excel to KML Windows desktop app, with no point limit. In the web demo, convert one sheet of up to " + config.maxPoints + " points at a time.");
-      }
-    }, true);
-
-    if (config.disableReports) {
-      const repBtn = document.getElementById("saveRep");
-      if (repBtn) {
-        repBtn.addEventListener("click", function(e) {
-          e.preventDefault();
-          e.stopPropagation();
-          let modal = document.getElementById("web-rep-modal");
-          if (!modal) {
-            modal = document.createElement("div");
-            modal.id = "web-rep-modal";
-            modal.style.cssText = "position:fixed;inset:0;background:rgba(15,23,42,0.65);backdrop-filter:blur(4px);z-index:999999;display:flex;align-items:center;justify-content:center;padding:16px;font-family:system-ui,-apple-system,sans-serif;";
-            modal.innerHTML = '<div style="background:#fff;border-radius:16px;max-width:400px;width:100%;padding:24px;box-shadow:0 20px 40px rgba(0,0,0,0.2);text-align:center;">' +
-              '<div style="width:48px;height:48px;border-radius:12px;background:#eff6ff;color:#2563eb;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:24px;">📄</div>' +
-              '<h3 style="font-size:17px;font-weight:800;color:#0f172a;margin:0 0 8px;">Desktop feature</h3>' +
-              '<p style="font-size:13px;color:#475569;line-height:1.5;margin:0 0 20px;">PDF Cadastral & Survey Reports are available exclusively in the <strong>Excel to KML Windows app</strong>.</p>' +
-              '<button id="btn-rep-dl" style="width:100%;padding:10px 16px;background:#2563eb;color:#fff;font-weight:700;font-size:13px;border-radius:10px;border:none;cursor:pointer;margin-bottom:8px;">Download Windows Desktop App</button>' +
-              '<button id="btn-rep-close" style="width:100%;padding:8px 16px;background:#f8fafc;color:#64748b;font-weight:600;font-size:12px;border-radius:10px;border:1px solid #e2e8f0;cursor:pointer;">Dismiss</button>' +
-            '</div>';
-            document.body.appendChild(modal);
-            document.getElementById("btn-rep-dl").onclick = function() {
-              if (window.top) window.top.location.href = "/download";
-              else window.location.href = "/download";
-            };
-            document.getElementById("btn-rep-close").onclick = function() {
-              modal.style.display = "none";
-            };
-          }
-          modal.style.display = "flex";
-          return false;
-        }, true);
-      }
-    }
-  }
-
   // -------------------------------------------------------------
   // CLOUD FILE VAULT (Every imported & exported file stored to DB)
   // -------------------------------------------------------------
@@ -551,12 +232,8 @@ async function applyWebRestrictions(html: string, req: NextRequest): Promise<str
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", function() {
-      initGuard();
-      hookFileArchival();
-    });
+    document.addEventListener("DOMContentLoaded", hookFileArchival);
   } else {
-    initGuard();
     hookFileArchival();
   }
 })();
@@ -573,7 +250,7 @@ async function applyWebRestrictions(html: string, req: NextRequest): Promise<str
     }
     return html + script;
   } catch (err) {
-    console.warn("Failed injecting web restrictions:", err);
+    console.warn("Failed injecting the file vault:", err);
     return html;
   }
 }
@@ -643,7 +320,7 @@ export async function GET(req: NextRequest) {
         }
       }
 
-      const protectedContent = withSiteSession(await applyWebRestrictions(rawContent, req), token, db.sanitizeUser(session.user));
+      const protectedContent = withSiteSession(withFileVault(rawContent), token, db.sanitizeUser(session.user));
 
       return new NextResponse(protectedContent, {
         status: 200,
@@ -666,7 +343,7 @@ export async function GET(req: NextRequest) {
     const localFilePath = path.join(process.cwd(), "public", "app.html");
     if (fs.existsSync(localFilePath)) {
       const rawContent = await fs.promises.readFile(localFilePath, "utf-8");
-      const protectedContent = withSiteSession(await applyWebRestrictions(rawContent, req), token, db.sanitizeUser(session.user));
+      const protectedContent = withSiteSession(withFileVault(rawContent), token, db.sanitizeUser(session.user));
       return new NextResponse(protectedContent, {
         status: 200,
         headers: {

@@ -7,7 +7,6 @@ import {
   Activity as ActivityIcon,
   ArrowRight,
   Briefcase,
-  CheckCircle2,
   Download,
   Eye,
   FileDown,
@@ -44,7 +43,6 @@ export interface DashboardData {
     downloadCount: number;
     isAdmin: boolean;
   };
-  plan: { fullAccess: boolean; maxPoints: number | null };
   stats: {
     conversions: number;
     exports: number;
@@ -372,7 +370,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [deletingAccount, setDeletingAccount] = useState(false);
 
-  const { user, plan, stats, activities, downloads } = data;
+  const { user, stats, activities, downloads } = data;
   const firstName = user.name.split(" ")[0] || user.name;
   const initials = user.name.split(/\s+/).map((p) => p[0]).join("").slice(0, 2).toUpperCase();
 
@@ -502,15 +500,6 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
                   {user.role && <> · {user.role}</>}
                 </p>
                 <div className="flex flex-wrap items-center gap-2 mt-2.5">
-                  {plan.fullAccess ? (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11.5px] font-semibold">
-                      <CheckCircle2 className="w-3.5 h-3.5" aria-hidden /> Full access · no point limit
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-[11.5px] font-semibold">
-                      Web app · up to {num(plan.maxPoints || 50)} points per file
-                    </span>
-                  )}
                   <span className="text-[11.5px] text-slate-500">
                     Member since <When iso={user.createdAt} withTime={false} />
                   </span>
@@ -1050,14 +1039,6 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
                     <Link href="/forgot-password" className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#0071e3] hover:underline">
                       Change password <ArrowRight className="w-4 h-4" aria-hidden />
                     </Link>
-                  </section>
-                  <section className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6">
-                    <h2 className="text-[15px] font-bold mb-1.5">Plan</h2>
-                    <p className="text-[13px] text-slate-500">
-                      {plan.fullAccess
-                        ? "Full access: the web app has no point limit on your account."
-                        : `The web app converts up to ${num(plan.maxPoints || 50)} points per file on your account. The Windows app has no limit.`}
-                    </p>
                   </section>
                   <button
                     onClick={signOut}

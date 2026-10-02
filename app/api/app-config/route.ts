@@ -18,32 +18,17 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    const settings = await db.getSettings();
-
-    const isAdmin = db.isAdmin(user);
-    const hasFullAccess =
-      !settings.webAppRestricted ||
-      isAdmin ||
-      Boolean(user?.hasFullAccess);
-
-    const isRestricted = !hasFullAccess;
-    const maxPoints = hasFullAccess
-      ? 999999
-      : user?.customMaxPoints || settings.webMaxPoints || 50;
-
+    // The web app has no usage limits; signing in is the only requirement.
+    // The limit fields stay in the reply, all off, for older app copies that read them.
     return NextResponse.json({
       success: true,
-      isRestricted,
-      hasFullAccess,
-      isAdmin,
-      maxPoints,
-      watermark: isRestricted && (settings.webWatermarkKml ?? true),
-      disableReports: isRestricted && (settings.webDisableReports ?? true),
+      isRestricted: false,
+      hasFullAccess: true,
+      isAdmin: db.isAdmin(user),
+      maxPoints: 999999,
+      watermark: false,
+      disableReports: false,
       user,
-      settings: {
-        webAppRestricted: settings.webAppRestricted ?? true,
-        webMaxPoints: settings.webMaxPoints || 50,
-      },
     });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Failed to load app config";

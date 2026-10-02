@@ -103,8 +103,7 @@ export async function PUT(req: NextRequest) {
 function cleanSettings(body: Record<string, unknown>): Partial<AllSettings> | { error: string } {
   const out: Record<string, string | number | boolean> = {};
   const bools = [
-    "requireAuthForDownload", "maintenanceMode", "announcementActive", "webAppRestricted", "webWatermarkKml", "webDisableReports",
-    "allowSignups", "googleSignInEnabled",
+    "requireAuthForDownload", "maintenanceMode", "announcementActive", "allowSignups", "googleSignInEnabled",
   ];
   for (const k of bools) if (typeof body[k] === "boolean") out[k] = body[k] as boolean;
   const texts: [string, number][] = [
@@ -116,11 +115,6 @@ function cleanSettings(body: Record<string, unknown>): Partial<AllSettings> | { 
     return { error: "Installer file must be a file name ending in .exe (letters, numbers, dots, dashes)." };
   }
   if (out.appVersion === "") return { error: "Version can't be empty." };
-  if (body.webMaxPoints !== undefined) {
-    const n = Number(body.webMaxPoints);
-    if (!Number.isInteger(n) || n < 1 || n > 100000) return { error: "Point limit must be a whole number from 1 to 100,000." };
-    out.webMaxPoints = n;
-  }
   if (body.announcementTone !== undefined) {
     if (!["info", "success", "warning"].includes(String(body.announcementTone))) return { error: "Unknown announcement colour." };
     out.announcementTone = String(body.announcementTone);
