@@ -6,6 +6,7 @@ import AdminMessages from "../../components/admin/AdminMessages";
 import AppSourceStatus from "../../components/admin/AppSourceStatus";
 import CleanupCard from "../../components/admin/CleanupCard";
 import AdminPoints from "../../components/admin/AdminPoints";
+import AdminFiles from "../../components/admin/AdminFiles";
 import {
   Users,
   Download,
@@ -35,9 +36,6 @@ import {
   Clock,
   Filter,
   Files,
-  FileDown,
-  FileUp,
-  Loader2,
   Inbox,
 } from "lucide-react";
 import SurveyorDetailModal from "@/components/admin/SurveyorDetailModal";
@@ -108,25 +106,6 @@ interface UserActivityItem {
   userAgent?: string;
   timestamp: string;
 }
-
-interface AdminFileItem {
-  id: string;
-  userId: string | null;
-  userEmail: string | null;
-  userName: string | null;
-  direction: "import" | "export";
-  fileName: string;
-  fileSize: number;
-  size: string;
-  pointsCount: number | null;
-  crs: string | null;
-  platform: "web_app" | "windows_app";
-  hasContent: boolean;
-  timestamp: string;
-  downloadUrl: string;
-}
-
-const FILE_PAGE = 50;
 
 interface AppSettings {
   appVersion: string;
@@ -272,14 +251,6 @@ export default function AdminClient() {
   const convLimit = 1000;
 
   // Files state: searched and paged on the server
-  const [files, setFiles] = useState<AdminFileItem[]>([]);
-  const [filesTotal, setFilesTotal] = useState(0);
-  const [filesBytes, setFilesBytes] = useState(0);
-  const [fileSearch, setFileSearch] = useState("");
-  const [fileDir, setFileDir] = useState<"all" | "import" | "export">("all");
-  const [filePage, setFilePage] = useState(0);
-  const [filesLoading, setFilesLoading] = useState(false);
-  const [fileDeleting, setFileDeleting] = useState<string | null>(null);
   const [viewing, setViewing] = useState<ViewerFile | null>(null);
 
   // Settings state
@@ -432,48 +403,6 @@ export default function AdminClient() {
       }
     } catch (err) {
       console.error("Dashboard data load error", err);
-    }
-  };
-
-  const loadFiles = useCallback(
-    async (q: string, dir: string, page: number) => {
-      setFilesLoading(true);
-      try {
-        const qs = new URLSearchParams({ q, direction: dir, page: String(page), size: String(FILE_PAGE) });
-        const res = await adminFetch(`/api/admin/files?${qs}`);
-        if (!res.ok) throw new Error();
-        const data = await res.json();
-        setFiles(data.files || []);
-        setFilesTotal(data.total ?? 0);
-        setFilesBytes(data.bytes ?? 0);
-      } catch {
-        showToast("Couldn't load the files", "error");
-      } finally {
-        setFilesLoading(false);
-      }
-    },
-    [adminFetch]
-  );
-
-  // search after typing stops, and whenever the filter or page changes
-  useEffect(() => {
-    if (!isAdminAuthenticated) return;
-    const t = setTimeout(() => loadFiles(fileSearch, fileDir, filePage), fileSearch ? 300 : 0);
-    return () => clearTimeout(t);
-  }, [isAdminAuthenticated, fileSearch, fileDir, filePage, loadFiles]);
-
-  const deleteAdminFile = async (f: AdminFileItem) => {
-    if (!window.confirm(`Delete “${f.fileName}” from ${f.userEmail || "this account"}? Its points go with it. This can't be undone.`)) return;
-    setFileDeleting(f.id);
-    try {
-      const res = await adminFetch(`/api/admin/files?id=${encodeURIComponent(f.id)}`, { method: "DELETE" });
-      if (!res.ok) throw new Error();
-      showToast(`Deleted ${f.fileName}`);
-      loadFiles(fileSearch, fileDir, filePage);
-    } catch {
-      showToast(`Couldn't delete ${f.fileName}`, "error");
-    } finally {
-      setFileDeleting(null);
     }
   };
 
@@ -800,7 +729,7 @@ export default function AdminClient() {
             { id: "users", label: "Surveyors", icon: Users, count: users.length },
             { id: "activities", label: "Activity", icon: Activity, count: Math.max(activitiesTotal, allActivities.length) },
             { id: "downloads", label: "Downloads", icon: Download, count: downloads.length },
-            { id: "files", label: "Files", icon: Files, count: filesTotal && !fileSearch && fileDir === "all" ? filesTotal : stats?.totalFilesStored },
+            { id: "files", label: "Files", icon: Files, count: stats?.totalFilesStored },
             { id: "conversions", label: "Points", icon: Globe, count: conversionsTotal },
             { id: "messages", label: "Messages", icon: Inbox, count: newMessages || undefined },
             { id: "settings", label: "Settings", icon: Settings },
@@ -1691,177 +1620,15 @@ export default function AdminClient() {
         {/* TAB 5: CONVERSIONS AUDIT */}
         {/* ================================================================== */}
         {activeTab === "files" && (
-          <div className="space-y-5">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-              <div>
-                <h3 className="text-base font-bold text-white">All files</h3>
-                <p className="text-xs text-slate-400">
-                  Every file surveyors opened or saved while signed in, newest first.{" "}
-                  {filesTotal.toLocaleString()} {fileSearch || fileDir !== "all" ? "match" : "files"} · {fmtBytes(filesBytes)}
-                </p>
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <div className="relative">
-                  <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="search"
-                    value={fileSearch}
-                    onChange={(e) => {
-                      setFileSearch(e.target.value);
-                      setFilePage(0);
-                    }}
-                    placeholder="File, surveyor or grid"
-                    aria-label="Search files"
-                    className="w-64 max-w-full pl-9 pr-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-base sm:text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div role="group" aria-label="Show" className="flex gap-1 bg-slate-900 border border-slate-800 p-1 rounded-xl">
-                  {(["all", "import", "export"] as const).map((d) => (
-                    <button
-                      key={d}
-                      onClick={() => {
-                        setFileDir(d);
-                        setFilePage(0);
-                      }}
-                      aria-pressed={fileDir === d}
-                      className={`px-3 py-1 rounded-lg text-xs font-semibold cursor-pointer ${
-                        fileDir === d ? "bg-slate-700 text-white" : "text-slate-400 hover:text-white"
-                      }`}
-                    >
-                      {d === "all" ? "All" : d === "import" ? "Opened" : "Saved"}
-                    </button>
-                  ))}
-                </div>
-                <button
-                  onClick={() => loadFiles(fileSearch, fileDir, filePage)}
-                  className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 cursor-pointer"
-                  aria-label="Refresh files"
-                >
-                  <RefreshCw className={`w-4 h-4 ${filesLoading ? "animate-spin" : ""}`} />
-                </button>
-              </div>
-            </div>
-
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-800/60 border-b border-slate-800 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                    <tr>
-                      <th className="px-4 py-3.5">File</th>
-                      <th className="px-4 py-3.5">Surveyor</th>
-                      <th className="px-4 py-3.5 hidden md:table-cell">Kind</th>
-                      <th className="px-4 py-3.5 text-right hidden sm:table-cell">Size</th>
-                      <th className="px-4 py-3.5 text-right hidden lg:table-cell">Points</th>
-                      <th className="px-4 py-3.5 hidden xl:table-cell">Grid</th>
-                      <th className="px-4 py-3.5 hidden lg:table-cell">When</th>
-                      <th className="px-4 py-3.5 text-right">
-                        <span className="sr-only">Actions</span>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800/60">
-                    {files.length === 0 ? (
-                      <tr>
-                        <td colSpan={8} className="px-4 py-12 text-center text-slate-500">
-                          {filesLoading ? "Loading…" : fileSearch || fileDir !== "all" ? "No files match" : "No files kept yet"}
-                        </td>
-                      </tr>
-                    ) : (
-                      files.map((f) => (
-                        <tr key={f.id} className="hover:bg-slate-800/30 transition-colors">
-                          <td className="px-4 py-2.5">
-                            <span className="block max-w-[140px] sm:max-w-[260px] truncate font-semibold text-white" title={f.fileName}>
-                              {f.fileName}
-                            </span>
-                            <span className="text-[11px] text-slate-500 md:hidden">
-                              {f.direction === "export" ? "Saved" : "Opened"} · {f.size}
-                            </span>
-                          </td>
-                          <td className="px-4 py-2.5">
-                            {f.userId ? (
-                              <button
-                                onClick={() => {
-                                  setDetailUserId(f.userId);
-                                  setDetailModalOpen(true);
-                                }}
-                                className="block max-w-[110px] sm:max-w-[200px] truncate text-left text-blue-400 hover:text-blue-300 cursor-pointer"
-                                title={f.userEmail || ""}
-                              >
-                                {f.userName || f.userEmail || "—"}
-                              </button>
-                            ) : (
-                              <span className="text-slate-400">{f.userEmail || "—"}</span>
-                            )}
-                          </td>
-                          <td className="px-4 py-2.5 hidden md:table-cell whitespace-nowrap">
-                            <span
-                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold ${
-                                f.direction === "export" ? "bg-emerald-500/10 text-emerald-400" : "bg-blue-500/10 text-blue-400"
-                              }`}
-                            >
-                              {f.direction === "export" ? <FileDown className="w-3 h-3" /> : <FileUp className="w-3 h-3" />}
-                              {f.direction === "export" ? "Saved" : "Opened"}
-                            </span>
-                            <span className="ml-2 text-[11px] text-slate-500">{f.platform === "web_app" ? "Web" : "Windows"}</span>
-                          </td>
-                          <td className="px-4 py-2.5 text-right text-slate-300 hidden sm:table-cell whitespace-nowrap">{f.size}</td>
-                          <td className="px-4 py-2.5 text-right text-slate-300 hidden lg:table-cell">
-                            {f.pointsCount != null ? f.pointsCount.toLocaleString() : "—"}
-                          </td>
-                          <td className="px-4 py-2.5 hidden xl:table-cell">
-                            <span className="block max-w-[180px] truncate text-slate-400" title={f.crs || ""}>
-                              {f.crs || "—"}
-                            </span>
-                          </td>
-                          <td className="px-4 py-2.5 text-slate-400 hidden lg:table-cell whitespace-nowrap">
-                            {new Date(f.timestamp).toLocaleString()}
-                          </td>
-                          <td className="px-4 py-2.5">
-                            <div className="flex items-center justify-end gap-2">
-                              {f.hasContent && (
-                                <button
-                                  onClick={() => setViewing({ fileName: f.fileName, url: f.downloadUrl, size: f.size })}
-                                  aria-label={`View ${f.fileName}`}
-                                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-[11px] font-bold text-white whitespace-nowrap cursor-pointer"
-                                >
-                                  <Eye className="w-3.5 h-3.5" aria-hidden />
-                                  <span className="sr-only sm:not-sr-only">View</span>
-                                </button>
-                              )}
-                              {f.hasContent ? (
-                                <a
-                                  href={f.downloadUrl}
-                                  download
-                                  aria-label={`Download ${f.fileName}`}
-                                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-bold text-white whitespace-nowrap"
-                                >
-                                  <Download className="w-3.5 h-3.5" aria-hidden />
-                                  <span className="sr-only sm:not-sr-only">Download</span>
-                                </a>
-                              ) : (
-                                <span className="text-[11px] text-slate-500 whitespace-nowrap" title="The file was too big to keep; only its name and size are recorded">
-                                  Details only
-                                </span>
-                              )}
-                              <button
-                                onClick={() => deleteAdminFile(f)}
-                                disabled={fileDeleting === f.id}
-                                aria-label={`Delete ${f.fileName}`}
-                                className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 cursor-pointer disabled:opacity-50"
-                              >
-                                {fileDeleting === f.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-              <Pager page={filePage} total={filesTotal} size={FILE_PAGE} onPage={setFilePage} noun="files" />
-            </div>
-          </div>
+          <AdminFiles
+            adminFetch={adminFetch}
+            onToast={showToast}
+            onView={(f) => setViewing({ fileName: f.fileName, url: f.downloadUrl, size: f.size })}
+            onOpenUser={(id) => {
+              setDetailUserId(id);
+              setDetailModalOpen(true);
+            }}
+          />
         )}
 
         {activeTab === "conversions" && <AdminPoints adminFetch={adminFetch} onToast={showToast} />}
