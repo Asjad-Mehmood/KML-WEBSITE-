@@ -20,17 +20,15 @@ export default async function DashboardPage() {
   if (!session) redirect("/login?next=%2Fdashboard");
 
   const { user } = session;
-  const [activities, files, downloads, settings, points, jobs] = await Promise.all([
+  const [activities, files, downloads, points, jobs] = await Promise.all([
     db.getOwnActivities(user.id),
     db.getOwnFileList(user.id),
     db.getUserDownloads(user.id),
-    db.getSettings(),
     db.getUserConversions(user.id, { limit: 5000 }),
     listJobs(user.id).catch(() => []),
   ]);
 
   const isAdmin = db.isAdmin(user);
-  const fullAccess = isAdmin || Boolean(user.hasFullAccess) || !settings.webAppRestricted;
 
   // Totals over everything recorded for this account
   const formats: Record<string, number> = {};
@@ -68,10 +66,6 @@ export default async function DashboardPage() {
       lastLoginAt: user.lastLoginAt || null,
       downloadCount: user.downloadCount || 0,
       isAdmin,
-    },
-    plan: {
-      fullAccess,
-      maxPoints: fullAccess ? null : user.customMaxPoints || settings.webMaxPoints || 50,
     },
     stats: { conversions, exports, pointsConverted, formats, systems },
     activities: activities.slice(0, 300).map((a) => ({

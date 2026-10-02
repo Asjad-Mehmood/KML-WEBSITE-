@@ -10,7 +10,7 @@ export default function NextSteps({ title = "Try it on your own points" }: { tit
       <div className="max-w-xl">
         <h2 className="text-[22px] sm:text-[26px] font-extrabold tracking-tight">{title}</h2>
         <p className="mt-2 text-[15px] text-slate-300 leading-relaxed">
-          Open the web app in your browser, or install the Windows app to work offline with no point limit. Both are free.
+          Open the web app in your browser, or install the Windows app to work offline. Both are free, with no point limit.
         </p>
       </div>
       <div className="flex flex-wrap gap-3">

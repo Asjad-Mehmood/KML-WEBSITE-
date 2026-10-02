@@ -42,7 +42,7 @@ const POINTS: { icon: React.ElementType; title: string; text: string }[] = [
   {
     icon: Wallet,
     title: "Free to use",
-    text: "The Windows app, the Android app and the web app are free. The Windows app has no point limit.",
+    text: "The Windows app, the Android app and the web app are free, with no point limit.",
   },
   {
     icon: HeartHandshake,

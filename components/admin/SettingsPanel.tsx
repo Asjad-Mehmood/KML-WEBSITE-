@@ -7,7 +7,6 @@ import {
   Download,
   History,
   Loader2,
-  Lock,
   Megaphone,
   RotateCcw,
   Save,
@@ -33,26 +32,20 @@ export interface AllSettings {
   announcementTone: "info" | "success" | "warning";
   announcementLink: string;
   announcementEndsAt: string;
-  webAppRestricted: boolean;
-  webMaxPoints: number;
-  webWatermarkKml: boolean;
-  webDisableReports: boolean;
   allowSignups: boolean;
   googleSignInEnabled: boolean;
 }
 
-// The point limit is typed as text so the box can be cleared while editing
-type Draft = Omit<AllSettings, "webMaxPoints"> & { webMaxPoints: string };
+type Draft = AllSettings;
 type Change = { id: string; by: string | null; changes: string | null; at: string };
 type AdminFetch = (url: string, options?: RequestInit) => Promise<Response>;
 
-const toDraft = (s: AllSettings): Draft => ({ ...s, webMaxPoints: String(s.webMaxPoints) });
+const toDraft = (s: AllSettings): Draft => ({ ...s });
 
 const SECTIONS = [
   ["status", "Status"],
   ["access", "Access"],
   ["notices", "Notices"],
-  ["webapp", "Web app"],
   ["release", "Release"],
   ["security", "Security"],
   ["system", "System"],
@@ -97,9 +90,7 @@ export default function SettingsPanel({
 
   const changedKeys = useMemo(() => {
     if (!saved || !draft) return [];
-    return (Object.keys(saved) as (keyof AllSettings)[]).filter((k) =>
-      k === "webMaxPoints" ? String(saved.webMaxPoints) !== draft.webMaxPoints.trim() : saved[k] !== draft[k]
-    );
+    return (Object.keys(draft) as (keyof AllSettings)[]).filter((k) => saved[k] !== draft[k]);
   }, [saved, draft]);
   const dirty = changedKeys.length > 0;
 
@@ -136,11 +127,6 @@ export default function SettingsPanel({
   const set = <K extends keyof Draft>(k: K, v: Draft[K]) => setDraft((d) => (d ? { ...d, [k]: v } : d));
 
   const save = async () => {
-    const points = Number(draft.webMaxPoints);
-    if (!Number.isInteger(points) || points < 1 || points > 100000) {
-      onToast("Point limit must be a whole number from 1 to 100,000.", "error");
-      return;
-    }
     if (draft.announcementActive && !draft.announcementBanner.trim()) {
       onToast("Write the announcement text before switching it on.", "error");
       return;
@@ -150,7 +136,7 @@ export default function SettingsPanel({
       const r = await adminFetch("/api/admin/settings", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...draft, webMaxPoints: points }),
+        body: JSON.stringify(draft),
       });
       const d = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(d.error || "Couldn't save the settings.");
@@ -326,32 +312,6 @@ export default function SettingsPanel({
           </div>
         </Section>
 
-        {/* Web app limits */}
-        <Section id="webapp" icon={Lock} title="Web app limits" text="Limits on the browser version, so heavy users move to the free Windows app. Admins are never limited.">
-          <Toggle
-            label="Limit the web app"
-            text="On: the limits below apply to everyone who isn't an admin. A surveyor's own limit (Surveyors tab) wins over the default."
-            checked={draft.webAppRestricted}
-            onChange={(v) => set("webAppRestricted", v)}
-            tone="amber"
-          />
-          <div className={`grid grid-cols-1 sm:grid-cols-2 gap-4 ${draft.webAppRestricted ? "" : "opacity-40 pointer-events-none"}`}>
-            <Field label="Points per conversion" hint="1 to 100,000. Bigger sheets are asked to use the Windows app.">
-              <input
-                inputMode="numeric"
-                value={draft.webMaxPoints}
-                onChange={(e) => set("webMaxPoints", e.target.value.replace(/\D/g, "").slice(0, 6))}
-                className={`${inputCls} font-mono`}
-                placeholder="50"
-              />
-            </Field>
-            <div className="space-y-2.5 pt-6">
-              <Check label="Watermark on web KML/KMZ files" checked={draft.webWatermarkKml} onChange={(v) => set("webWatermarkKml", v)} />
-              <Check label="Lock PDF reports on the web" checked={draft.webDisableReports} onChange={(v) => set("webDisableReports", v)} />
-            </div>
-          </div>
-        </Section>
-
         {/* Release */}
         <Section id="release" icon={Download} title="Release details" text="Shown on the download section until the latest GitHub release loads; GitHub's details win when it answers.">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -487,15 +447,6 @@ function Toggle({
           className={`w-11 h-6 bg-slate-700 rounded-full peer-focus-visible:ring-2 peer-focus-visible:ring-blue-400 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full ${on}`}
         />
       </span>
-    </label>
-  );
-}
-
-function Check({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
-  return (
-    <label className="flex items-center gap-2.5 text-xs text-slate-300 cursor-pointer">
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="h-4 w-4 accent-amber-500" />
-      {label}
     </label>
   );
 }

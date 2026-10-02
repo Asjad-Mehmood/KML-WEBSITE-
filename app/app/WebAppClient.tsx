@@ -14,27 +14,6 @@ export default function WebAppClient() {
   const [reloadKey, setReloadKey] = useState(() => Date.now());
   const [isLoading, setIsLoading] = useState(true);
   const [isReloading, setIsReloading] = useState(false);
-  const [appConfig, setAppConfig] = useState<{
-    isRestricted: boolean;
-    hasFullAccess: boolean;
-    maxPoints: number;
-  } | null>(null);
-
-  useEffect(() => {
-    fetch("/api/app-config")
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.success) {
-          setAppConfig({
-            isRestricted: data.isRestricted,
-            hasFullAccess: data.hasFullAccess,
-            maxPoints: data.maxPoints,
-          });
-        }
-      })
-      .catch(() => {});
-  }, [user]);
-
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isFullscreen) {
@@ -105,19 +84,6 @@ export default function WebAppClient() {
               <span className="hidden sm:inline whitespace-nowrap font-extrabold text-sm text-slate-900 tracking-tight">
                 Excel to KML
               </span>
-              {appConfig && (
-                appConfig.isRestricted ? (
-                  <span className="hidden xl:inline-flex whitespace-nowrap items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-300">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                    Web Demo ({appConfig.maxPoints} Pts Limit)
-                  </span>
-                ) : (
-                  <span className="hidden xl:inline-flex whitespace-nowrap items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-300">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                    Full access
-                  </span>
-                )
-              )}
             </div>
           </div>
 
