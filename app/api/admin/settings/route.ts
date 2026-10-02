@@ -1,53 +1,143 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/adminAuth";
-import { db } from "@/lib/db";
+import { db, type AppSettings } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
+import { clientIp } from "@/lib/loginThrottle";
+import { EXTRA_DEFAULTS, getExtraSettings, safeNoticeLink, saveExtraSettings, type ExtraSettings } from "@/lib/siteSettings";
+
+type AllSettings = AppSettings & ExtraSettings;
+
+// Names shown in the change history
+const LABELS: Record<keyof AllSettings, string> = {
+  appVersion: "Version",
+  installerFileName: "Installer file",
+  installerFileSize: "Installer size",
+  requireAuthForDownload: "Sign-in to download",
+  maintenanceMode: "Maintenance mode",
+  maintenanceMessage: "Maintenance message",
+  announcementBanner: "Announcement text",
+  announcementActive: "Announcement shown",
+  announcementTone: "Announcement colour",
+  announcementLink: "Announcement link",
+  announcementEndsAt: "Announcement end date",
+  webAppRestricted: "Web app limits",
+  webMaxPoints: "Web point limit",
+  webWatermarkKml: "Web KML watermark",
+  webDisableReports: "Web PDF reports locked",
+  allowSignups: "New sign-ups",
+  googleSignInEnabled: "Google sign-in",
+};
+
+async function allSettings(): Promise<AllSettings> {
+  const [core, extra] = await Promise.all([db.getSettings(), getExtraSettings()]);
+  return { ...core, ...extra };
+}
+
+async function history() {
+  const rows = await prisma.activity.findMany({
+    where: { action: "settings_changed" },
+    orderBy: { timestamp: "desc" },
+    take: 15,
+    select: { id: true, userEmail: true, details: true, timestamp: true },
+  });
+  return rows.map((r) => ({ id: r.id, by: r.userEmail, changes: r.details, at: r.timestamp.toISOString() }));
+}
 
 export async function GET(req: NextRequest) {
   const admin = await getAdminSession(req);
-  if (!admin) {
-    return NextResponse.json({ error: "Unauthorized: Admin privileges required" }, { status: 401 });
-  }
-
-  const settings = await db.getSettings();
-  return NextResponse.json({ success: true, settings });
+  if (!admin) return NextResponse.json({ error: "Unauthorized: Admin privileges required" }, { status: 401 });
+  return NextResponse.json({ success: true, settings: await allSettings(), history: await history().catch(() => []) });
 }
 
 export async function PUT(req: NextRequest) {
   const admin = await getAdminSession(req);
-  if (!admin) {
-    return NextResponse.json({ error: "Unauthorized: Admin privileges required" }, { status: 401 });
-  }
+  if (!admin) return NextResponse.json({ error: "Unauthorized: Admin privileges required" }, { status: 401 });
 
   try {
     const body = await req.json().catch(() => ({}));
-    const updates = cleanSettings(body);
-    if ("error" in updates) return NextResponse.json({ error: updates.error }, { status: 400 });
-    const updated = await db.updateSettings(updates);
+    const clean = cleanSettings(body);
+    if ("error" in clean) return NextResponse.json({ error: clean.error }, { status: 400 });
+
+    const before = await allSettings();
+    const core: Record<string, unknown> = {};
+    const extra: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(clean)) {
+      if (before[k as keyof AllSettings] === v) continue; // unchanged
+      (k in EXTRA_DEFAULTS ? extra : core)[k] = v;
+    }
+    if (Object.keys(core).length) await db.updateSettings(core as Partial<AppSettings>);
+    if (Object.keys(extra).length) await saveExtraSettings(extra as Partial<ExtraSettings>);
+
+    const changed = [...Object.keys(core), ...Object.keys(extra)] as (keyof AllSettings)[];
+    if (changed.length) {
+      const show = (v: unknown) => (typeof v === "boolean" ? (v ? "on" : "off") : v === "" ? "(empty)" : String(v).slice(0, 60));
+      await prisma.activity
+        .create({
+          data: {
+            action: "settings_changed",
+            title: `Settings changed: ${changed.map((k) => LABELS[k]).join(", ")}`.slice(0, 250),
+            details: changed.map((k) => `${LABELS[k]}: ${show(before[k])} → ${show(clean[k])}`).join("\n"),
+            userId: admin.user.id,
+            userEmail: admin.user.email,
+            userName: admin.user.name,
+            ipAddress: clientIp(req),
+          },
+        })
+        .catch((e) => console.error("Couldn't log the settings change:", e));
+    }
+
     return NextResponse.json({
       success: true,
-      settings: updated,
-      message: "Application settings updated successfully",
+      settings: await allSettings(),
+      history: await history().catch(() => []),
+      changed: changed.length,
+      message: changed.length ? "Settings saved" : "Nothing changed",
     });
   } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : "Failed to update settings";
-    return NextResponse.json({ error: msg }, { status: 400 });
+    console.error("Saving settings failed:", err);
+    return NextResponse.json({ error: "Couldn't save the settings. Please try again." }, { status: 500 });
   }
 }
 
 // Only known settings, with the right types and sane ranges
-function cleanSettings(body: Record<string, unknown>): Record<string, string | number | boolean> | { error: string } {
+function cleanSettings(body: Record<string, unknown>): Partial<AllSettings> | { error: string } {
   const out: Record<string, string | number | boolean> = {};
-  const bools = ["requireAuthForDownload", "maintenanceMode", "announcementActive", "webAppRestricted", "webWatermarkKml", "webDisableReports"];
+  const bools = [
+    "requireAuthForDownload", "maintenanceMode", "announcementActive", "webAppRestricted", "webWatermarkKml", "webDisableReports",
+    "allowSignups", "googleSignInEnabled",
+  ];
   for (const k of bools) if (typeof body[k] === "boolean") out[k] = body[k] as boolean;
-  const texts: [string, number][] = [["appVersion", 30], ["installerFileName", 120], ["installerFileSize", 20], ["announcementBanner", 300]];
+  const texts: [string, number][] = [
+    ["appVersion", 30], ["installerFileName", 120], ["installerFileSize", 20], ["announcementBanner", 300], ["maintenanceMessage", 300],
+  ];
   for (const [k, max] of texts) if (typeof body[k] === "string") out[k] = (body[k] as string).trim().slice(0, max);
+
   if (typeof out.installerFileName === "string" && out.installerFileName && !/^[\w.-]+\.exe$/i.test(out.installerFileName)) {
     return { error: "Installer file must be a file name ending in .exe (letters, numbers, dots, dashes)." };
   }
+  if (out.appVersion === "") return { error: "Version can't be empty." };
   if (body.webMaxPoints !== undefined) {
     const n = Number(body.webMaxPoints);
     if (!Number.isInteger(n) || n < 1 || n > 100000) return { error: "Point limit must be a whole number from 1 to 100,000." };
     out.webMaxPoints = n;
   }
-  return out;
+  if (body.announcementTone !== undefined) {
+    if (!["info", "success", "warning"].includes(String(body.announcementTone))) return { error: "Unknown announcement colour." };
+    out.announcementTone = String(body.announcementTone);
+  }
+  if (typeof body.announcementLink === "string") {
+    const raw = body.announcementLink.trim();
+    const link = raw ? safeNoticeLink(raw) : "";
+    if (raw && !link) return { error: "The announcement link must be a site page like /whats-new or a full https:// address." };
+    out.announcementLink = link.slice(0, 300);
+  }
+  if (typeof body.announcementEndsAt === "string") {
+    const d = body.announcementEndsAt.trim();
+    if (d && (!/^\d{4}-\d{2}-\d{2}$/.test(d) || Number.isNaN(new Date(d).getTime()))) return { error: "The end date isn't a valid date." };
+    out.announcementEndsAt = d;
+  }
+  if (out.announcementActive === true && typeof out.announcementBanner === "string" && !out.announcementBanner) {
+    return { error: "Write the announcement text before switching it on." };
+  }
+  return out as Partial<AllSettings>;
 }

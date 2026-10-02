@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revokeTrustedBrowsers } from "@/lib/adminOtp";
 import { db, isAdminRole } from "@/lib/db";
 import { cleanOccupation } from "@/lib/occupations";
 
@@ -86,6 +87,8 @@ export async function PATCH(req: NextRequest) {
     }
 
     const updated = await db.updateUser(user.id, updates);
+    // A new password ends every browser's trust for the admin email code
+    if (updates.password) await revokeTrustedBrowsers(user.id);
 
     // Record activity for profile update
     await db.recordActivity({

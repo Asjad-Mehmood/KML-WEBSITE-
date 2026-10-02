@@ -11,6 +11,11 @@ export interface PublicSettings {
   installerFileName?: string;
   installerFileSize?: string;
   googleSignIn?: boolean;
+  /** False while the admin has paused new accounts */
+  signupsOpen?: boolean;
+  announcementTone?: "info" | "success" | "warning";
+  announcementLink?: string;
+  maintenanceMessage?: string;
 }
 
 let pending: Promise<PublicSettings | null> | null = null;

@@ -5,13 +5,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import GoogleSignIn from "./GoogleSignIn";
+import OtpForm from "./OtpForm";
 import { X, Lock } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { OCCUPATIONS, OCCUPATION_MAX } from "../lib/occupations";
+import { usePublicSettings } from "../lib/publicSettings";
 
 export default function AuthModal() {
   const router = useRouter();
-  const { authModalOpen, setAuthModalOpen, authModalMode, setAuthModalMode, authIntentText, login, register, pendingDownloadAction } = useAuth();
+  const { authModalOpen, setAuthModalOpen, authModalMode, setAuthModalMode, authIntentText, login, register, pendingDownloadAction, otp } = useAuth();
   const pathname = usePathname();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -20,6 +22,7 @@ export default function AuthModal() {
   const [role, setRole] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const signupsClosed = usePublicSettings()?.signupsOpen === false;
 
   if (!authModalOpen) return null;
 
@@ -30,7 +33,7 @@ export default function AuthModal() {
     const result = authModalMode === "register"
       ? await register({ name, email, password, organization, role })
       : await login(email, password);
-    if (!result.ok) setError(result.error);
+    if (!result.ok) { if (!result.otpRequired) setError(result.error); }
     // An admin signing in goes to the admin dashboard
     else if (authModalMode !== "register" && "isAdmin" in result && result.isAdmin) router.push("/admin");
     setSubmitting(false);
@@ -58,6 +61,10 @@ export default function AuthModal() {
         </div>
 
         <div className="px-6 py-6">
+          {otp ? (
+            <OtpForm onSuccess={() => router.push("/admin")} />
+          ) : (
+          <>
           {/* Intent */}
           <div className="mb-5 px-4 py-3 bg-[#0071e3]/[0.07] border border-[#0071e3]/20 rounded-[12px] text-[13px] text-[#0071e3] font-medium">
             {authIntentText}
@@ -75,6 +82,12 @@ export default function AuthModal() {
 
           {/* After Google, a pending download continues on the thank-you page */}
           <GoogleSignIn compact next={pendingDownloadAction ? "/download/thanks?auto=1" : pathname || "/"} />
+
+          {signupsClosed && authModalMode === "register" && (
+            <div role="status" className="mb-4 px-4 py-3 bg-amber-50 border border-amber-200 rounded-[12px] text-[13px] text-amber-900 font-medium">
+              New sign-ups are paused for now. Already have an account? Use Sign In.
+            </div>
+          )}
 
           {error && (
             <div className="mb-4 px-4 py-3 bg-[#ff3b30]/[0.08] border border-[#ff3b30]/20 rounded-[12px] text-[13px] text-[#ff3b30] font-medium">
@@ -114,6 +127,8 @@ export default function AuthModal() {
               </p>
             )}
           </form>
+          </>
+          )}
         </div>
       </div>
     </div>
