@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { clientIp, recordFailure, tooManyFailures } from "@/lib/loginThrottle";
+import { signedInResponse } from "@/lib/loginResponse";
+import { TooManyCodes, isTrustedBrowser, maskEmail, otpAvailable, startChallenge } from "@/lib/adminOtp";
 
 export async function POST(req: NextRequest) {
   try {
@@ -32,35 +34,28 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Touch login date
-    await db.touchUserLogin(user.id);
-
-    // Create session
-    const session = await db.createSession(user.id);
-    const sanitized = db.sanitizeUser(user);
-
-    const response = NextResponse.json({
-      success: true,
-      user: sanitized,
-      token: session.token,
-    });
-
-    const cookieOptions = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax" as const,
-      maxAge: 30 * 24 * 60 * 60, // 30 days
-      path: "/",
-    };
-
-    // Set cookie
-    response.cookies.set("surveyor_auth_token", session.token, cookieOptions);
-
-    if (db.isAdmin(user)) {
-      response.cookies.set("surveyor_session", session.token, cookieOptions);
+    // Admins: a browser that hasn't been through the email code before must
+    // pass it now. (Without email set up the code can't be sent; see lib/adminOtp.)
+    if (db.isAdmin(user) && otpAvailable() && !(await isTrustedBrowser(req, user.id))) {
+      try {
+        const challenge = await startChallenge(user.id, user.email, ip, req.headers.get("user-agent"));
+        return NextResponse.json({ otpRequired: true, challenge, sentTo: maskEmail(user.email) });
+      } catch (err) {
+        if (err instanceof TooManyCodes) {
+          return NextResponse.json(
+            { error: "Too many codes requested. Please wait 15 minutes and try again." },
+            { status: 429 }
+          );
+        }
+        console.error("Couldn't send the admin sign-in code:", err);
+        return NextResponse.json(
+          { error: "We couldn't email your sign-in code. Please try again in a few minutes." },
+          { status: 503 }
+        );
+      }
     }
 
-    return response;
+    return await signedInResponse(user);
   } catch (err: unknown) {
     // Details go to the server log only: database errors can name hosts and settings
     console.error("Sign-in failed:", err);

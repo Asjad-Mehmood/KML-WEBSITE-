@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 import { safeNextPath } from "../../lib/authRedirect";
 import GoogleSignIn, { GOOGLE_ERRORS } from "../../components/GoogleSignIn";
+import OtpForm from "../../components/OtpForm";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -22,7 +23,7 @@ export default function LoginPage() {
     () => null
   );
   const googleError = googleErrorCode ? GOOGLE_ERRORS[googleErrorCode] ?? null : null;
-  const { login, user, isLoading } = useAuth();
+  const { login, user, isLoading, otp } = useAuth();
 
   // Links to the web app send signed-out visitors here with ?next=/app. Someone
   // who is already signed in goes straight on (decided once, when the session check ends)
@@ -53,15 +54,16 @@ export default function LoginPage() {
     }
 
     const result = await login(email, password);
-    if (result.ok) {
-      // Back to where the visitor was headed (e.g. /app or /dashboard); otherwise
-      // admins go to the admin dashboard and everyone else to the home page
-      const next = new URLSearchParams(window.location.search).get("next");
-      router.push(next ? safeNextPath(next) : result.isAdmin ? "/admin" : "/");
-    } else {
-      setError(result.error);
-    }
+    if (result.ok) goOn(result.isAdmin);
+    else if (!result.otpRequired) setError(result.error);
     setIsSubmitting(false);
+  };
+
+  // Back to where the visitor was headed (e.g. /app or /dashboard); otherwise
+  // admins go to the admin dashboard and everyone else to the home page
+  const goOn = (isAdmin?: boolean) => {
+    const next = new URLSearchParams(window.location.search).get("next");
+    router.push(next ? safeNextPath(next) : isAdmin ? "/admin" : "/");
   };
 
 
@@ -98,6 +100,10 @@ export default function LoginPage() {
 
       {/* Main Login Card */}
       <div className="max-w-md w-full mx-auto my-12 bg-white rounded-3xl border border-slate-200 shadow-xl shadow-slate-200/60 p-8 sm:p-10">
+        {otp ? (
+          <OtpForm onSuccess={(r) => goOn(r.isAdmin)} />
+        ) : (
+        <>
         <div className="text-center mb-8">
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight">
             Welcome Back
@@ -171,6 +177,8 @@ export default function LoginPage() {
             Create Free Account &rarr;
           </Link>
         </div>
+        </>
+        )}
 
       </div>
 

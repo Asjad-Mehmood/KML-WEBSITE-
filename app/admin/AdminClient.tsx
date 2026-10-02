@@ -5,6 +5,7 @@ import Link from "next/link";
 import AdminMessages from "../../components/admin/AdminMessages";
 import AppSourceStatus from "../../components/admin/AppSourceStatus";
 import CleanupCard from "../../components/admin/CleanupCard";
+import SignInSecurity from "../../components/admin/SignInSecurity";
 import AdminPoints from "../../components/admin/AdminPoints";
 import {
   Users,
@@ -1875,7 +1876,10 @@ export default function AdminClient() {
 
         {activeTab === "settings" && (
           <div className="mb-5">
-            <AppSourceStatus adminFetch={adminFetch} />
+            <SignInSecurity adminFetch={adminFetch} />
+            <div className="mt-3">
+              <AppSourceStatus adminFetch={adminFetch} />
+            </div>
             <div className="mt-3">
               <CleanupCard adminFetch={adminFetch} />
             </div>

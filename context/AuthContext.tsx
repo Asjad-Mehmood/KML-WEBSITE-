@@ -19,6 +19,11 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<AuthResult>;
+  /** Set while an admin sign-in waits for the emailed code */
+  otp: OtpState | null;
+  verifyOtp: (code: string, trust: boolean) => Promise<AuthResult>;
+  resendOtp: () => Promise<{ ok: true; sentTo: string } | { ok: false; error: string }>;
+  cancelOtp: () => void;
   register: (data: {
     name: string;
     email: string;
@@ -41,7 +46,12 @@ interface AuthContextType {
 }
 
 /** ok, or the reason to show the visitor (from the server when it gave one) */
-export type AuthResult = { ok: true; isAdmin?: boolean } | { ok: false; error: string };
+export type AuthResult = { ok: true; isAdmin?: boolean } | { ok: false; error: string; otpRequired?: boolean };
+
+export interface OtpState {
+  challenge: string;
+  sentTo: string;
+}
 
 const NETWORK_ERROR = "Couldn't reach the server. Check your connection and try again.";
 
@@ -53,6 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Modal states for intercepting downloads
   const publicSettings = usePublicSettings();
+  const [otp, setOtp] = useState<OtpState | null>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<"login" | "register">("register");
   const [authIntentText, setAuthIntentText] = useState(
@@ -92,24 +103,78 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!res.ok) {
         return { ok: false, error: data.error || "Sign-in failed. Please try again." };
       }
-
-      setUser(data.user);
-      setAuthModalOpen(false);
-
-      // Execute queued download action if any
-      if (pendingDownloadAction) {
-        setTimeout(() => {
-          pendingDownloadAction();
-          setPendingDownloadAction(null);
-        }, 150);
+      // Admin from a browser we don't know yet: a code was emailed
+      if (data.otpRequired) {
+        setOtp({ challenge: data.challenge, sentTo: data.sentTo });
+        return { ok: false, error: "", otpRequired: true };
       }
 
-      return { ok: true, isAdmin: /admin/i.test(data.user?.role ?? "") };
+      return finishSignIn(data.user);
     } catch (err) {
       console.error(err);
       return { ok: false, error: NETWORK_ERROR };
     }
   };
+
+  const finishSignIn = (signedIn: User): AuthResult => {
+    setUser(signedIn);
+    setAuthModalOpen(false);
+    setOtp(null);
+
+    // Execute queued download action if any
+    if (pendingDownloadAction) {
+      setTimeout(() => {
+        pendingDownloadAction();
+        setPendingDownloadAction(null);
+      }, 150);
+    }
+
+    return { ok: true, isAdmin: /admin/i.test(signedIn?.role ?? "") };
+  };
+
+  const verifyOtp = async (code: string, trust: boolean): Promise<AuthResult> => {
+    if (!otp) return { ok: false, error: "Start again from the sign-in page." };
+    try {
+      const res = await fetch("/api/auth/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ challenge: otp.challenge, code, trust }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        // an expired or used-up code can't be retried: back to the password step
+        if (data.restart) setOtp(null);
+        return { ok: false, error: data.error || "That code didn't work. Please try again." };
+      }
+      return finishSignIn(data.user);
+    } catch (err) {
+      console.error(err);
+      return { ok: false, error: NETWORK_ERROR };
+    }
+  };
+
+  const resendOtp = async () => {
+    if (!otp) return { ok: false as const, error: "Start again from the sign-in page." };
+    try {
+      const res = await fetch("/api/auth/resend-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ challenge: otp.challenge }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        if (data.restart) setOtp(null);
+        return { ok: false as const, error: data.error || "Couldn't send a new code." };
+      }
+      setOtp({ challenge: data.challenge, sentTo: data.sentTo });
+      return { ok: true as const, sentTo: data.sentTo as string };
+    } catch (err) {
+      console.error(err);
+      return { ok: false as const, error: NETWORK_ERROR };
+    }
+  };
+
+  const cancelOtp = () => setOtp(null);
 
   const register = async (data: {
     name: string;
@@ -203,6 +268,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: !!user,
         isLoading,
         login,
+        otp,
+        verifyOtp,
+        resendOtp,
+        cancelOtp,
         register,
         logout,
         trackDownload,
