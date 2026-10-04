@@ -55,6 +55,10 @@ export const FACEBOOK_URL = (() => {
   }
 })();
 
+// The SurveyX Digital Page's numeric ID, sent as <meta property="fb:pages"> so
+// Facebook knows which Page is the official one for exceltokml.com
+export const FACEBOOK_PAGE_ID = "302259400276782";
+
 // Meta's domain verification code (FACEBOOK_DOMAIN_VERIFICATION in Vercel):
 // the content="…" part of the meta tag Meta Business Suite gives you.
 export const FACEBOOK_DOMAIN_VERIFICATION = (process.env.FACEBOOK_DOMAIN_VERIFICATION || "").trim().replace(/[^A-Za-z0-9]/g, "");
