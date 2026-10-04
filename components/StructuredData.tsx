@@ -1,6 +1,6 @@
 import React from "react";
 import { FAQS } from "@/lib/faqs";
-import { GITHUB_REPO_URL, INSTALLER_URL, SITE_DESCRIPTION, SITE_NAME, SITE_URL, jsonLd } from "@/lib/site";
+import { FACEBOOK_URL, GITHUB_REPO_URL, INSTALLER_URL, SITE_DESCRIPTION, SITE_NAME, SITE_URL, jsonLd } from "@/lib/site";
 
 // Schema.org JSON-LD. Everything here must match what the page visibly shows:
 // no made-up ratings or reviews, and FAQ answers come from the same data as the FAQ section.
@@ -25,7 +25,7 @@ export function HomeStructuredData() {
             url: SITE_URL,
             logo: { "@type": "ImageObject", url: `${SITE_URL}/assets/icon-512.png`, width: 512, height: 512 },
             founder: { "@type": "Person", name: "Asjad Mehmood" },
-            sameAs: [GITHUB_REPO_URL],
+            sameAs: [GITHUB_REPO_URL, ...(FACEBOOK_URL ? [FACEBOOK_URL] : [])],
           },
           {
             "@type": "WebSite",

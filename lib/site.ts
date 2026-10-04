@@ -38,6 +38,25 @@ export const OG_IMAGE = {
 export const LATEST_VERSION = "v4.2.1";
 
 export const GITHUB_REPO_URL = "https://github.com/Asjad-Mehmood/kml-convertor";
+
+// The official Facebook Page (NEXT_PUBLIC_FACEBOOK_URL in Vercel). Linked from
+// the footer and listed in the site's structured data, so Facebook and Google
+// can tie exceltokml.com to the Page. Only a facebook.com address is accepted.
+export const FACEBOOK_URL = (() => {
+  const raw = (process.env.NEXT_PUBLIC_FACEBOOK_URL || "").trim();
+  try {
+    const u = new URL(raw);
+    return u.protocol === "https:" && /^(www\.|m\.|web\.)?facebook\.com$/.test(u.hostname) && u.pathname.length > 1
+      ? `https://www.facebook.com${u.pathname.replace(/\/+$/, "")}${u.search}`
+      : "";
+  } catch {
+    return "";
+  }
+})();
+
+// Meta's domain verification code (FACEBOOK_DOMAIN_VERIFICATION in Vercel):
+// the content="…" part of the meta tag Meta Business Suite gives you.
+export const FACEBOOK_DOMAIN_VERIFICATION = (process.env.FACEBOOK_DOMAIN_VERIFICATION || "").trim().replace(/[^A-Za-z0-9]/g, "");
 /** The latest release, read by the home page for its version, size and SHA-256. */
 export const RELEASES_API_URL = "https://api.github.com/repos/Asjad-Mehmood/kml-convertor/releases/latest";
 /** The Windows installer's name since 4.3.1. */

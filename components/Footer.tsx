@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import WebAppLink from "./WebAppLink";
+import { FACEBOOK_URL } from "@/lib/site";
 
 interface FooterProps {
   versionTag: string;
@@ -132,6 +133,20 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
             <WebAppLink className="hover:text-blue-600 transition-colors">Web App</WebAppLink>
             <Link href="/privacy" className="hover:text-blue-600 transition-colors">Privacy</Link>
             <Link href="/terms" className="hover:text-blue-600 transition-colors">Terms</Link>
+            {FACEBOOK_URL && (
+              <a
+                href={FACEBOOK_URL}
+                target="_blank"
+                rel="noopener noreferrer me"
+                aria-label="Excel to KML on Facebook"
+                className="inline-flex items-center gap-1.5 hover:text-blue-600 transition-colors"
+              >
+                <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="currentColor" aria-hidden>
+                  <path d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.96.93-1.96 1.89v2.25h3.33l-.53 3.49h-2.8V24C19.61 23.1 24 18.1 24 12.07z" />
+                </svg>
+                Facebook
+              </a>
+            )}
           </div>
         </div>
 

@@ -4,7 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "../context/AuthContext";
 import SiteNotice from "../components/SiteNotice";
 import AuthModal from "../components/AuthModal";
-import { DEFAULT_TITLE, OG_IMAGE, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
+import { DEFAULT_TITLE, FACEBOOK_DOMAIN_VERIFICATION, OG_IMAGE, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -90,6 +90,8 @@ export const metadata: Metadata = {
     images: [OG_IMAGE.url],
   },
   formatDetection: { telephone: false, address: false, email: false },
+  // Proves to Meta that we own exceltokml.com (Business Suite → Brand safety → Domains)
+  ...(FACEBOOK_DOMAIN_VERIFICATION ? { other: { "facebook-domain-verification": FACEBOOK_DOMAIN_VERIFICATION } } : {}),
 };
 
 export default function RootLayout({
