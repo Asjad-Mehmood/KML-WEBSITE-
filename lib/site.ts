@@ -39,11 +39,12 @@ export const LATEST_VERSION = "v4.2.1";
 
 export const GITHUB_REPO_URL = "https://github.com/Asjad-Mehmood/kml-convertor";
 
-// The official Facebook Page (NEXT_PUBLIC_FACEBOOK_URL in Vercel). Linked from
-// the footer and listed in the site's structured data, so Facebook and Google
-// can tie exceltokml.com to the Page. Only a facebook.com address is accepted.
+// The official Facebook Page (SurveyX Digital). Linked from the footer and
+// listed in the site's structured data, so Facebook and Google can tie
+// exceltokml.com to the Page. NEXT_PUBLIC_FACEBOOK_URL in Vercel overrides it;
+// only a facebook.com address is accepted.
 export const FACEBOOK_URL = (() => {
-  const raw = (process.env.NEXT_PUBLIC_FACEBOOK_URL || "").trim();
+  const raw = (process.env.NEXT_PUBLIC_FACEBOOK_URL || "https://www.facebook.com/RealAm025/").trim();
   try {
     const u = new URL(raw);
     return u.protocol === "https:" && /^(www\.|m\.|web\.)?facebook\.com$/.test(u.hostname) && u.pathname.length > 1
