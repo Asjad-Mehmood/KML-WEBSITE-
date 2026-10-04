@@ -4,7 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "../context/AuthContext";
 import SiteNotice from "../components/SiteNotice";
 import AuthModal from "../components/AuthModal";
-import { DEFAULT_TITLE, FACEBOOK_DOMAIN_VERIFICATION, OG_IMAGE, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
+import { DEFAULT_TITLE, FACEBOOK_DOMAIN_VERIFICATION, FACEBOOK_PAGE_ID, OG_IMAGE, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -106,6 +106,8 @@ export default function RootLayout({
     >
       <head>
         <link rel="preconnect" href="https://api.github.com" />
+        {/* Ties the site to the official Facebook Page (needs property=, which Metadata can't set) */}
+        <meta property="fb:pages" content={FACEBOOK_PAGE_ID} />
       </head>
       <body className="min-h-screen bg-white text-[#1d1d1f] selection:bg-[#0071e3]/20 selection:text-[#0071e3]">
         <AuthProvider>
