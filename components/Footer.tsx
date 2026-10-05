@@ -75,6 +75,11 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
                   All Downloads (Windows, Android)
                 </Link>
               </li>
+              <li>
+                <Link href="/roadpro" className="hover:text-blue-600 transition-colors">
+                  RoadPro for AutoCAD
+                </Link>
+              </li>
             </ul>
           </nav>
 

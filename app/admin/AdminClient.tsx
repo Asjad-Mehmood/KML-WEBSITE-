@@ -175,6 +175,7 @@ const ASSET_NAME: Record<string, string> = {
   sample_csv: "Sample CSV",
   test_kml: "Test KML",
   web_app: "Web app",
+  roadpro: "RoadPro (AutoCAD)",
 };
 
 export default function AdminClient() {
@@ -815,6 +816,21 @@ export default function AdminClient() {
 
                   <div>
                     <div className="flex justify-between text-xs font-semibold mb-1.5">
+                      <span className="text-slate-300">RoadPro for AutoCAD (.zip)</span>
+                      <span className="text-amber-400">{stats?.assetCounts?.roadpro ?? 0} downloads</span>
+                    </div>
+                    <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+                      <div
+                        className="h-full bg-amber-500 rounded-full"
+                        style={{
+                          width: barWidth(stats?.assetCounts?.roadpro ?? 0, downloads.length),
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between text-xs font-semibold mb-1.5">
                       <span className="text-slate-300">Sample Survey Benchmarks (.csv)</span>
                       <span className="text-indigo-400">{stats?.assetCounts?.sample_csv ?? 0} downloads</span>
                     </div>
@@ -1403,7 +1419,7 @@ export default function AdminClient() {
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="flex items-center gap-2">
-                {["all", "windows_installer", "sample_csv", "test_kml"].map((type) => (
+                {["all", "windows_installer", "roadpro", "sample_csv", "test_kml"].map((type) => (
                   <button
                     key={type}
                     onClick={() => setDownloadFilter(type)}
