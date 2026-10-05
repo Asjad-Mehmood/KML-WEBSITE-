@@ -140,6 +140,9 @@ export default function RoadProPage() {
               <a href="#demo" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50">
                 <PlayCircle className="w-4 h-4" aria-hidden /> Watch the demo
               </a>
+              <a href={ROADPRO_FILES.guidePdf.href} target="_blank" rel="noopener" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50">
+                <FileText className="w-4 h-4" aria-hidden /> User guide (PDF)
+              </a>
             </div>
             <p className="mt-3 text-[12.5px] text-slate-500">
               {ROADPRO_FILES.plugin.detail} · Full AutoCAD 2013 or newer (not LT) · Free account needed
@@ -369,19 +372,30 @@ export default function RoadProPage() {
               <p className="text-[13.5px] text-slate-500 flex-1">{ROADPRO_FILES.plugin.detail}</p>
               <RoadProDownload className="mt-4 inline-flex justify-center items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-sm font-semibold cursor-pointer" label="Download plugin" />
             </div>
-            {[
-              { f: ROADPRO_FILES.guide, Icon: FileText, text: "Every command, setting, layer and sign, with pictures" },
-              { f: ROADPRO_FILES.shortcuts, Icon: FileSpreadsheet, text: "One page of shortcut keys to print or keep open" },
-            ].map(({ f, Icon, text }) => (
-              <div key={f.href} className="rounded-2xl border border-slate-200 bg-white p-5 flex flex-col">
-                <Icon className="w-6 h-6 text-slate-500" aria-hidden />
-                <h3 className="mt-2 font-bold text-slate-900">{f.label}</h3>
-                <p className="text-[13.5px] text-slate-500 flex-1">{text}. {f.detail}.</p>
-                <a href={f.href} download={f.name} className="mt-4 inline-flex justify-center items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50">
-                  <Download className="w-4 h-4" aria-hidden /> Download
+            {/* The guide: PDF to read in the browser, PowerPoint to edit or present */}
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 flex flex-col">
+              <FileText className="w-6 h-6 text-slate-500" aria-hidden />
+              <h3 className="mt-2 font-bold text-slate-900">{ROADPRO_FILES.guidePdf.label}</h3>
+              <p className="text-[13.5px] text-slate-500 flex-1">
+                Every command, setting, layer and sign, with pictures. {ROADPRO_FILES.guidePdf.detail}; also as {ROADPRO_FILES.guide.detail.split(",")[0]}.
+              </p>
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                <a href={ROADPRO_FILES.guidePdf.href} target="_blank" rel="noopener" className="inline-flex justify-center items-center gap-1.5 px-3 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50">
+                  <FileText className="w-4 h-4" aria-hidden /> PDF
+                </a>
+                <a href={ROADPRO_FILES.guide.href} download={ROADPRO_FILES.guide.name} className="inline-flex justify-center items-center gap-1.5 px-3 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50">
+                  <Download className="w-4 h-4" aria-hidden /> PowerPoint
                 </a>
               </div>
-            ))}
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 flex flex-col">
+              <FileSpreadsheet className="w-6 h-6 text-slate-500" aria-hidden />
+              <h3 className="mt-2 font-bold text-slate-900">{ROADPRO_FILES.shortcuts.label}</h3>
+              <p className="text-[13.5px] text-slate-500 flex-1">One page of shortcut keys to print or keep open. {ROADPRO_FILES.shortcuts.detail}.</p>
+              <a href={ROADPRO_FILES.shortcuts.href} download={ROADPRO_FILES.shortcuts.name} className="mt-4 inline-flex justify-center items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50">
+                <Download className="w-4 h-4" aria-hidden /> Download
+              </a>
+            </div>
           </div>
           <p className="mt-5 text-[13px] text-slate-500">
             Questions or a feature request? <Link href="/contact?topic=idea" className="text-[#0071e3] hover:underline">Write to us</Link>.
