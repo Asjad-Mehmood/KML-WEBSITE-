@@ -11,7 +11,7 @@ import MetricsRibbon from "../components/MetricsRibbon";
 import Features from "../components/Features";
 import Workflow from "../components/Workflow";
 import TutorialTeaser from "../components/TutorialTeaser";
-import RoadProTeaser from "../components/RoadProTeaser";
+import ProductSpotlight from "../components/ProductSpotlight";
 import DownloadHub from "../components/DownloadHub";
 import SpecsTable from "../components/SpecsTable";
 import Faq from "../components/Faq";
@@ -68,6 +68,9 @@ export default function HomeClient() {
           onDownloadClick={handleDownloadApp}
         />
 
+        {/* Spotlight on our other software (lib/products.ts) */}
+        <ProductSpotlight />
+
         {/* Showcase Window */}
         <Showcase versionTag={versionTag} onToast={showToast} />
 
@@ -80,7 +83,6 @@ export default function HomeClient() {
         {/* 3-Step Workflow */}
         <Workflow />
         <TutorialTeaser />
-        <RoadProTeaser />
 
         {/* Download Hub */}
         <DownloadHub

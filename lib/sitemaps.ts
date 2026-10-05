@@ -6,6 +6,7 @@ import { SITE_URL } from "@/lib/site";
 import { GRID_PAGES } from "@/lib/gridPages";
 import { GUIDES } from "@/lib/guides";
 import { TOOLS } from "@/lib/tools";
+import { PRODUCTS } from "@/lib/products";
 import { BIG_COUNTRY, allSystems, countries, countryRegions } from "@/lib/epsgCatalog";
 
 // Update this when the pages' content really changes. A date that changes on
@@ -33,7 +34,7 @@ export function priorityEntries(): Entry[] {
     page("/download", 0.9),
     page("/features", 0.9),
     page("/tutorial", 0.9),
-    page("/roadpro", 0.9),
+    ...PRODUCTS.map((p) => page(p.href, 0.9)),
     page("/how-it-works", 0.8),
     page("/formats", 0.8),
     page("/faq", 0.8),
