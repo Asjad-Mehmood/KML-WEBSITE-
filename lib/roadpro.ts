@@ -108,3 +108,16 @@ export const ROADPRO_FIXES: { q: string; a: string }[] = [
   { q: "Dimension text is the wrong size", a: "Set the dimension style's text height to 0." },
   { q: "Where is the Excel file?", a: "Next to the DWG, named like ROAD-01_RoadPro_Report.csv. Press F2 to see the full path." },
 ];
+
+// Pages shown in "Look inside the user guide" on /roadpro (images rendered
+// from the PDF at 1280 × 720 into public/roadpro/guide/page-NN.webp)
+export const ROADPRO_GUIDE_PAGES: { page: number; title: string; text: string }[] = [
+  { page: 1, title: "RoadPro at a glance", text: "Type RDP to start: the plan view built by one command." },
+  { page: 2, title: "One command builds the road", text: "Edges, radius, barricades, widening, signs, sections and the report." },
+  { page: 5, title: "Six steps", text: "From the centre line to the finished drawing, with a tip for each step." },
+  { page: 9, title: "Signs placed for you", text: "Road works, speed limit, bend ahead, STOP, give way, keep right." },
+  { page: 11, title: "Cross sections", text: "Typical, at one chainage or every interval, with crossfall and heights." },
+  { page: 12, title: "Lane widening", text: "Tapers, match points and fillets: the three ways to join the new lane." },
+  { page: 14, title: "Report and Excel file", text: "Summary, curve data, setting-out and the sign schedule in a CSV." },
+  { page: 16, title: "Quick reference card", text: "Every shortcut and default value on one page to print." },
+];
