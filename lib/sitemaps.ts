@@ -33,6 +33,7 @@ export function priorityEntries(): Entry[] {
     page("/download", 0.9),
     page("/features", 0.9),
     page("/tutorial", 0.9),
+    page("/roadpro", 0.9),
     page("/how-it-works", 0.8),
     page("/formats", 0.8),
     page("/faq", 0.8),

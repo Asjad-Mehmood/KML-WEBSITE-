@@ -30,11 +30,12 @@ function GithubIcon({ className }: { className?: string }) {
 // Absolute paths so the links also work from /faq and other pages
 // id: a home-page section (highlighted while in view); path: a page section of its own
 const NAV_LINKS: { label: string; href: string; id?: string; path?: string; wideOnly?: boolean }[] = [
-  { label: "How it works", href: "/how-it-works", path: "/how-it-works" },
+  { label: "How it works", href: "/how-it-works", path: "/how-it-works", wideOnly: true },
   { label: "Formats", href: "/formats", path: "/formats", wideOnly: true },
   { label: "Grids", href: "/convert", path: "/convert" },
   { label: "Tools", href: "/tools", path: "/tools" },
   { label: "Tutorial", href: "/tutorial", path: "/tutorial" },
+  { label: "RoadPro", href: "/roadpro", path: "/roadpro" },
 ];
 
 export default function Navbar({ onDownloadClick }: { onDownloadClick: () => void }) {

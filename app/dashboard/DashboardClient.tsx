@@ -166,6 +166,7 @@ const ASSET_LABEL: Record<string, string> = {
   sample_csv: "Sample CSV",
   test_kml: "Test KML",
   web_app: "Web app",
+  roadpro: "RoadPro (AutoCAD)",
 };
 
 const num = (n: number) => n.toLocaleString("en-US");

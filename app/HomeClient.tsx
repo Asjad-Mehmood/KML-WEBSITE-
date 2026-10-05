@@ -11,6 +11,7 @@ import MetricsRibbon from "../components/MetricsRibbon";
 import Features from "../components/Features";
 import Workflow from "../components/Workflow";
 import TutorialTeaser from "../components/TutorialTeaser";
+import RoadProTeaser from "../components/RoadProTeaser";
 import DownloadHub from "../components/DownloadHub";
 import SpecsTable from "../components/SpecsTable";
 import Faq from "../components/Faq";
@@ -79,6 +80,7 @@ export default function HomeClient() {
         {/* 3-Step Workflow */}
         <Workflow />
         <TutorialTeaser />
+        <RoadProTeaser />
 
         {/* Download Hub */}
         <DownloadHub
