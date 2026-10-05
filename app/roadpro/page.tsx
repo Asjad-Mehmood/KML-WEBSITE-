@@ -4,6 +4,7 @@ import Link from "next/link";
 import {
   AlertTriangle,
   ArrowRight,
+  BookOpen,
   CheckCircle2,
   CircleDot,
   Download,
@@ -30,6 +31,7 @@ import {
   ROADPRO_FEATURES,
   ROADPRO_FILES,
   ROADPRO_FIXES,
+  ROADPRO_GUIDE_PAGES,
   ROADPRO_INSTALL,
   ROADPRO_KEYS,
   ROADPRO_LAYERS,
@@ -178,6 +180,55 @@ export default function RoadProPage() {
             </video>
           </div>
           <p className="mt-2 text-[12.5px] text-slate-500">No sound. Tip: switch to full screen to read the drawing.</p>
+        </section>
+
+        {/* A look inside the user guide */}
+        <section id="guide" aria-labelledby="guide-h" className="scroll-mt-28 mt-20">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+            <SectionHead
+              id="guide-h"
+              eyebrow="User guide"
+              title="Look inside the user guide"
+              text="Sixteen illustrated pages: every command, setting, layer and sign. Here are eight of them; tap a page to open it in the guide."
+              Icon={BookOpen}
+            />
+            <a
+              href={ROADPRO_FILES.guidePdf.href}
+              target="_blank"
+              rel="noopener"
+              className="shrink-0 self-start md:self-auto inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-sm font-semibold"
+            >
+              <FileText className="w-4 h-4" aria-hidden /> Read all 16 pages
+            </a>
+          </div>
+          <ul className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {ROADPRO_GUIDE_PAGES.map((g) => (
+              <li key={g.page}>
+                <a
+                  href={`${ROADPRO_FILES.guidePdf.href}#page=${g.page}`}
+                  target="_blank"
+                  rel="noopener"
+                  className="group block h-full rounded-2xl border border-slate-200 bg-white p-2.5 hover:border-blue-200 hover:shadow-[0_10px_28px_rgba(15,23,42,0.10)] transition-all"
+                >
+                  <div className="rounded-xl overflow-hidden border border-slate-100 bg-slate-50">
+                    <Image
+                      src={`/roadpro/guide/page-${String(g.page).padStart(2, "0")}.webp`}
+                      alt={`RoadPro user guide, page ${g.page}: ${g.title}`}
+                      width={1280}
+                      height={720}
+                      sizes="(min-width: 1024px) 260px, (min-width: 640px) 45vw, 100vw"
+                      className="w-full h-auto group-hover:scale-[1.02] transition-transform duration-300"
+                    />
+                  </div>
+                  <div className="px-1.5 pt-3 pb-1">
+                    <p className="text-[12px] font-bold text-[#0071e3]">Page {g.page}</p>
+                    <h3 className="mt-0.5 text-[15px] font-bold text-slate-900 group-hover:text-[#0071e3]">{g.title}</h3>
+                    <p className="mt-1 text-[13.5px] text-slate-500 leading-relaxed">{g.text}</p>
+                  </div>
+                </a>
+              </li>
+            ))}
+          </ul>
         </section>
 
         {/* What it draws */}
