@@ -1,5 +1,6 @@
 "use client";
 
+import { PRODUCTS } from "@/lib/products";
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -35,7 +36,8 @@ const NAV_LINKS: { label: string; href: string; id?: string; path?: string; wide
   { label: "Grids", href: "/convert", path: "/convert" },
   { label: "Tools", href: "/tools", path: "/tools" },
   { label: "Tutorial", href: "/tutorial", path: "/tutorial" },
-  { label: "RoadPro", href: "/roadpro", path: "/roadpro" },
+  // our other software (lib/products.ts) with inNav
+  ...PRODUCTS.filter((p) => p.inNav).map((p) => ({ label: p.name, href: p.href, path: p.href })),
 ];
 
 export default function Navbar({ onDownloadClick }: { onDownloadClick: () => void }) {

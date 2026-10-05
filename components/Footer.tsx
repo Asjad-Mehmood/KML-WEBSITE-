@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import WebAppLink from "./WebAppLink";
 import { FACEBOOK_URL } from "@/lib/site";
+import { PRODUCTS } from "@/lib/products";
 
 interface FooterProps {
   versionTag: string;
@@ -75,11 +76,13 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
                   All Downloads (Windows, Android)
                 </Link>
               </li>
-              <li>
-                <Link href="/roadpro" className="hover:text-blue-600 transition-colors">
-                  RoadPro for AutoCAD
-                </Link>
-              </li>
+              {PRODUCTS.map((p) => (
+                <li key={p.id}>
+                  <Link href={p.href} className="hover:text-blue-600 transition-colors">
+                    {p.name} ({p.platform})
+                  </Link>
+                </li>
+              ))}
             </ul>
           </nav>
 

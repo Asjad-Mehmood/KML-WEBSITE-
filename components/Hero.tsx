@@ -10,7 +10,9 @@ import {
   Globe,
   ArrowRight
 } from "lucide-react";
+import Link from "next/link";
 import WebAppLink from "./WebAppLink";
+import { PRODUCTS, isNew } from "@/lib/products";
 
 // Dynamically import HeroConverter with radar without SSR
 const HeroConverter = dynamic(() => import("./HeroConverter"), {
@@ -43,10 +45,11 @@ export default function Hero({ versionTag, fileSizeText, onDownloadClick }: Hero
              ══════════════════════════════════════════════════════════════════ */}
           <div className="lg:col-span-5 flex flex-col items-start text-left">
 
-            {/* Modern Version Badge */}
+            {/* Version badge, then a badge for each product we spotlight (lib/products.ts) */}
+            <div className="flex flex-wrap items-center gap-2 mb-6">
             <a
               href="#download"
-              className="group inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-50/90 border border-slate-200/90 shadow-xs hover:border-slate-300 hover:bg-white transition-all mb-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              className="group inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-50/90 border border-slate-200/90 shadow-xs hover:border-slate-300 hover:bg-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             >
               <span className="flex h-2 w-2 relative">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
@@ -61,6 +64,26 @@ export default function Hero({ versionTag, fileSizeText, onDownloadClick }: Hero
                 <ArrowRight className="w-3 h-3 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
               </span>
             </a>
+            {PRODUCTS.filter((p) => p.inHero).map((p) => (
+              <Link
+                key={p.id}
+                href={p.href}
+                className="group inline-flex items-center gap-2 pl-1.5 pr-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 shadow-xs hover:border-amber-300 hover:bg-amber-100/70 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+              >
+                {isNew(p) && (
+                  <span className="px-1.5 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold uppercase tracking-wider">New</span>
+                )}
+                <span className="text-xs font-semibold text-slate-800">
+                  {p.name} <span className="text-amber-700 font-bold">{p.version}</span>
+                </span>
+                <span className="text-amber-300">·</span>
+                <span className="text-xs font-medium text-slate-600 flex items-center gap-1">
+                  {p.platform}
+                  <ArrowRight className="w-3 h-3 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+                </span>
+              </Link>
+            ))}
+            </div>
 
             {/* Headline: kept short (under 70 characters) for search engines */}
             <h1 className="text-[29px] sm:text-[38px] lg:text-[42px] font-extrabold tracking-tight text-slate-900 leading-[1.12] text-balance">
