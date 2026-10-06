@@ -36,6 +36,8 @@ export default async function DashboardPage() {
   let conversions = 0;
   let exports = 0;
   let pointsConverted = 0;
+  let traverses = 0;
+  let levelRuns = 0;
   for (const a of activities) {
     // Points are counted once, at conversion; imports and exports of the same
     // job carry the same count and would add it again
@@ -47,6 +49,8 @@ export default async function DashboardPage() {
       exports++;
       if (a.exportFormat) formats[a.exportFormat.toUpperCase()] = (formats[a.exportFormat.toUpperCase()] || 0) + 1;
     }
+    if (a.action === "traverse") traverses++;
+    if (a.action === "levelling") levelRuns++;
     if (a.action === "conversion" && a.crs?.trim()) systems[a.crs.trim()] = (systems[a.crs.trim()] || 0) + 1;
   }
   // No conversions recorded (older accounts): fall back to the saved files
@@ -67,7 +71,7 @@ export default async function DashboardPage() {
       downloadCount: user.downloadCount || 0,
       isAdmin,
     },
-    stats: { conversions, exports, pointsConverted, formats, systems },
+    stats: { conversions, exports, pointsConverted, traverses, levelRuns, formats, systems },
     activities: activities.slice(0, 300).map((a) => ({
       id: a.id,
       action: a.action,

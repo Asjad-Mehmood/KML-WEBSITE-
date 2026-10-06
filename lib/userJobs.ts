@@ -29,6 +29,8 @@ export function ensureJobsTable(): Promise<void> {
         CONSTRAINT "user_jobs_pkey" PRIMARY KEY ("id")
       )`);
       await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "user_jobs_userId_idx" ON "user_jobs"("userId")`);
+      // added with Traverse adjust: tables made before it gain the column here
+      await prisma.$executeRawUnsafe(`ALTER TABLE "user_jobs" ADD COLUMN IF NOT EXISTS "survey" TEXT NOT NULL DEFAULT ''`);
       await prisma.$executeRawUnsafe(
         `CREATE UNIQUE INDEX IF NOT EXISTS "user_jobs_userId_jobId_key" ON "user_jobs"("userId", "jobId")`
       );
@@ -52,24 +54,26 @@ export interface JobSummary {
   photosLeft: number;
   grid: string;
   size: number;
+  /** Traverses and level runs in the job, e.g. "2 traverses · 1 level run"; empty when none */
+  survey: string;
   updated: number;
   keptAt: string;
 }
 
 const summary = {
-  jobId: true, name: true, points: true, photos: true, photosLeft: true, grid: true, size: true,
+  jobId: true, name: true, points: true, photos: true, photosLeft: true, grid: true, size: true, survey: true,
   clientUpdated: true, updatedAt: true,
 } as const;
 
 type SummaryRow = {
   jobId: string; name: string; points: number; photos: number; photosLeft: number; grid: string; size: number;
-  clientUpdated: bigint; updatedAt: Date;
+  survey: string; clientUpdated: bigint; updatedAt: Date;
 };
 
 function toSummary(r: SummaryRow): JobSummary {
   return {
     jobId: r.jobId, name: r.name, points: r.points, photos: r.photos, photosLeft: r.photosLeft, grid: r.grid,
-    size: r.size, updated: Number(r.clientUpdated), keptAt: r.updatedAt.toISOString(),
+    size: r.size, survey: r.survey || "", updated: Number(r.clientUpdated), keptAt: r.updatedAt.toISOString(),
   };
 }
 
@@ -102,14 +106,14 @@ export async function jobBytes(userId: string, exceptJobId?: string): Promise<nu
 export async function putJob(
   userId: string,
   jobId: string,
-  j: { name: string; points: number; photos: number; photosLeft: number; grid: string; state: string; updated: number }
+  j: { name: string; points: number; photos: number; photosLeft: number; grid: string; survey: string; state: string; updated: number }
 ): Promise<{ job: JobSummary; stale: boolean }> {
   await ensureJobsTable();
   const now = await prisma.userJob.findUnique({ where: { userId_jobId: { userId, jobId } }, select: summary });
   // An older copy never replaces a newer one: two computers can both be working.
   if (now && Number(now.clientUpdated) > j.updated) return { job: toSummary(now), stale: true };
   const data = {
-    name: j.name, points: j.points, photos: j.photos, photosLeft: j.photosLeft, grid: j.grid,
+    name: j.name, points: j.points, photos: j.photos, photosLeft: j.photosLeft, grid: j.grid, survey: j.survey.slice(0, 120),
     state: j.state, size: Buffer.byteLength(j.state, "utf8"), clientUpdated: BigInt(Math.round(j.updated)),
   };
   const r = await prisma.userJob.upsert({

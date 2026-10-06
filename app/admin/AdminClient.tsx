@@ -37,6 +37,7 @@ import {
 } from "lucide-react";
 import SurveyorDetailModal from "@/components/admin/SurveyorDetailModal";
 import FileViewer, { type ViewerFile } from "@/components/FileViewer";
+import { actionLabel, adminActionTag } from "@/lib/activityKinds";
 
 interface UserItem {
   id: string;
@@ -907,8 +908,8 @@ export default function AdminClient() {
                         className="p-3.5 rounded-2xl bg-slate-800/50 border border-slate-800/80 flex items-center justify-between gap-3 text-xs hover:border-slate-700 transition-colors"
                       >
                         <div className="flex items-center gap-3 min-w-0">
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-blue-500/15 text-blue-400 border border-blue-500/20 shrink-0">
-                            {act.action.replace("_", " ")}
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border shrink-0 ${adminActionTag(act.action)}`}>
+                            {actionLabel(act.action)}
                           </span>
                           <div className="min-w-0">
                             <div className="font-semibold text-white truncate max-w-md">
@@ -1245,6 +1246,8 @@ export default function AdminClient() {
                   { id: "file_upload", label: "File Uploads" },
                   { id: "batch_process", label: "Batch Process" },
                   { id: "photos_attached", label: "Photos Attached" },
+                  { id: "traverse", label: "Traverses" },
+                  { id: "levelling", label: "Level Runs" },
                 ].map((item) => (
                   <button
                     key={item.id}
@@ -1341,8 +1344,8 @@ export default function AdminClient() {
                             <div className="text-[11px] text-slate-500 truncate max-w-[200px]">{act.userEmail || "—"}</div>
                           </td>
                           <td className="px-4 py-3">
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-blue-500/10 text-blue-400 border border-blue-500/20 whitespace-nowrap">
-                              {act.action.replace(/_/g, " ")}
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border whitespace-nowrap ${adminActionTag(act.action)}`}>
+                              {actionLabel(act.action)}
                             </span>
                           </td>
                           <td className="px-4 py-3">

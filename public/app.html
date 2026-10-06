@@ -7,12 +7,12 @@
   <meta name="theme-color" content="#0B2A35">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="KML Pro">
+  <meta name="apple-mobile-web-app-title" content="Excel to KML">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="format-detection" content="telephone=no">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-180.png">
-  <title>Excel to KML Pro — Survey Benchmark Converter</title>
+  <title>Excel to KML — Survey Benchmark Converter</title>
   <style>
     :root {
       --chrome: #0B2A35;
@@ -5813,6 +5813,16 @@
       color: #CBD5E1;
     }
 
+    .auth-google-btn {
+      width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
+      padding: 11px 14px; border-radius: 10px; border: 1px solid #cbd5e1; background: #fff;
+      color: #1e293b; font: 600 14px/1.2 inherit; cursor: pointer;
+    }
+    .auth-google-btn:hover { background: #f8fafc; }
+    .auth-google-btn:disabled { opacity: .6; cursor: default; }
+    .auth-or { display: flex; align-items: center; gap: 10px; margin: 14px 0 12px; color: #94a3b8; font-size: 12px; }
+    .auth-or::before, .auth-or::after { content: ""; flex: 1; height: 1px; background: #e2e8f0; }
+
     .auth-submit-btn {
       width: 100%;
       padding: 10px;
@@ -6269,6 +6279,930 @@
       .gut-h::after {
         top: 5px;
         opacity: .9
+      }
+    }
+
+    /* ---- traverse adjust: the section panels ---- */
+    .tvsec {
+      padding: 6px 24px 28px;
+      font-size: 13.5px;
+      color: #22343C
+    }
+
+    .tvsec:empty {
+      display: none
+    }
+
+    .tvtop,
+    .tvrow {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 12px
+    }
+
+    .tvrow {
+      margin: 10px 0 0
+    }
+
+    .tvsp {
+      flex: 1
+    }
+
+    .tvbtn {
+      background: #fff;
+      border: 1px solid #CBD5DA;
+      border-radius: 7px;
+      color: #22343C;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 7px 12px;
+      min-height: 34px;
+      white-space: nowrap
+    }
+
+    .tvbtn:hover:not(:disabled) {
+      border-color: #0B2A35;
+      background: #F7FAFA
+    }
+
+    .tvbtn.pri {
+      background: #0B2A35;
+      border-color: #0B2A35;
+      color: #fff
+    }
+
+    .tvbtn.pri:hover:not(:disabled) {
+      background: #12404F
+    }
+
+    .tvbtn:disabled {
+      opacity: .45;
+      cursor: not-allowed
+    }
+
+    .tvlink {
+      background: none;
+      border: 0;
+      padding: 0;
+      color: #1F6F8B;
+      font-size: inherit;
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 2px
+    }
+
+    .tvnote {
+      font-size: 12px;
+      line-height: 1.5;
+      color: #5A6E77;
+      margin: 6px 0 10px
+    }
+
+    .tvwarn {
+      font-size: 12.5px;
+      line-height: 1.5;
+      color: #8A5A00;
+      background: #FFF7E0;
+      border-radius: 7px;
+      padding: 8px 11px;
+      margin: 8px 0
+    }
+
+    .tvhint {
+      font-size: 12px;
+      color: #7A8D96
+    }
+
+    .tvpick {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 0 0 12px
+    }
+
+    .tvchip {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: #F4F7F7;
+      border: 1px solid #DCE4E6;
+      border-radius: 16px;
+      padding: 5px 11px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #22343C;
+      max-width: 100%
+    }
+
+    .tvchip.on {
+      background: #0B2A35;
+      border-color: #0B2A35;
+      color: #fff
+    }
+
+    .tvchip.add {
+      background: #fff;
+      border-style: dashed;
+      color: #1F6F8B
+    }
+
+    .tvdot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #B6C3C8;
+      flex: none
+    }
+
+    .tvdot.pass {
+      background: #1F9D5B
+    }
+
+    .tvdot.fail {
+      background: #D64545
+    }
+
+    .tvdot.err {
+      background: transparent;
+      box-shadow: inset 0 0 0 1.5px #9AAAB1
+    }
+
+    .tvhead {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin: 0 0 14px
+    }
+
+    .tvsec input[type="text"],
+    .tvsec select,
+    .tvsec textarea {
+      font: inherit;
+      font-size: 13.5px;
+      color: #0F172A;
+      background: #fff;
+      border: 1px solid #CBD5DA;
+      border-radius: 6px;
+      padding: 6px 8px;
+      min-height: 34px;
+      width: 100%;
+      min-width: 0;
+      box-sizing: border-box
+    }
+
+    .tvsec input[type="text"]:focus,
+    .tvsec select:focus,
+    .tvsec textarea:focus {
+      outline: none;
+      border-color: #0B2A35;
+      box-shadow: 0 0 0 3px rgba(255, 209, 0, .45)
+    }
+
+    .tvsec input.n {
+      font-family: var(--mono);
+      font-size: 13px;
+      text-align: right
+    }
+
+    .tvsec input.bad {
+      border-color: #D64545;
+      background: #FDF0EE
+    }
+
+    .tvsec .tvname {
+      font-size: 16px;
+      font-weight: 650;
+      flex: 1
+    }
+
+    .tvsec .tvlvl {
+      width: auto;
+      flex: none
+    }
+
+    .tvx {
+      background: none;
+      border: 0;
+      color: #8A9BA3;
+      font-size: 18px;
+      line-height: 1;
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      border-radius: 6px;
+      flex: none
+    }
+
+    .tvx:hover {
+      color: #D64545;
+      background: #FDF0EE
+    }
+
+    .tvx.big {
+      width: 34px;
+      height: 34px;
+      font-size: 22px
+    }
+
+    .tvblk {
+      margin: 0 0 12px
+    }
+
+    .tvl,
+    .tvf>span {
+      display: block;
+      font-size: 12px;
+      color: #5A6E77;
+      margin: 0 0 4px
+    }
+
+    .tvseg {
+      display: flex;
+      border: 1px solid #CBD5DA;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff
+    }
+
+    .tvseg button {
+      flex: 1;
+      background: #fff;
+      border: 0;
+      border-left: 1px solid #CBD5DA;
+      border-radius: 0;
+      padding: 8px 6px;
+      font-size: 13px;
+      color: #22343C;
+      white-space: nowrap
+    }
+
+    .tvseg button:first-child {
+      border-left: 0
+    }
+
+    .tvseg button.on {
+      background: #0B2A35;
+      color: #fff;
+      font-weight: 600
+    }
+
+    .tvsub {
+      font-size: 14px;
+      font-weight: 650;
+      color: #0B2A35;
+      margin: 18px 0 8px
+    }
+
+    .tvsub span {
+      display: block;
+      font-size: 11.5px;
+      font-weight: 400;
+      color: #7A8D96;
+      margin-top: 2px
+    }
+
+    .tvgrid2 {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 10px 10px
+    }
+
+    .tvgrid2 .span2 {
+      grid-column: span 2
+    }
+
+    .tvf {
+      display: block;
+      min-width: 0
+    }
+
+    .tvf.tvchk {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      align-self: end;
+      min-height: 34px
+    }
+
+    .tvf.tvchk>span {
+      margin: 0;
+      color: #22343C;
+      font-size: 13px
+    }
+
+    .tvf.tvchk input {
+      width: 17px;
+      height: 17px;
+      margin: 0;
+      accent-color: #0B2A35
+    }
+
+    .tvpair {
+      display: flex;
+      gap: 6px
+    }
+
+    .tvgridwrap {
+      overflow-x: auto;
+      border: 1px solid #E2E8F0;
+      border-radius: 8px
+    }
+
+    .tvgrid {
+      border-collapse: collapse;
+      width: 100%;
+      table-layout: fixed
+    }
+
+    .tvgrid th {
+      font-size: 11px;
+      font-weight: 600;
+      color: #5A6E77;
+      text-align: left;
+      padding: 7px 4px 6px;
+      background: #F4F7F7;
+      border-bottom: 1px solid #E2E8F0;
+      white-space: nowrap
+    }
+
+    .tvgrid td {
+      padding: 3px 3px;
+      border-bottom: 1px solid #EEF2F4;
+      vertical-align: middle
+    }
+
+    .tvgrid tr:last-child td {
+      border-bottom: 0
+    }
+
+    .tvgrid input[type="text"] {
+      min-height: 30px;
+      padding: 4px 6px;
+      font-size: 12.5px
+    }
+
+    .tvgrid input.n {
+      font-size: 12px
+    }
+
+    .tvgrid .ix {
+      width: 22px;
+      text-align: center;
+      font: 11px var(--mono);
+      color: #8A9BA3
+    }
+
+    .tvgrid th:first-child {
+      width: 22px
+    }
+
+    .tvgrid th:last-child {
+      width: 28px
+    }
+
+    .tvgrid.ctl th:nth-child(4) {
+      width: 19%
+    }
+
+    .tvgrid.obs th:nth-child(3) {
+      width: 27%
+    }
+
+    .tvgrid.obs th:nth-child(4) {
+      width: 23%
+    }
+
+    .tvgrid.obs.h th:nth-child(5) {
+      width: 17%
+    }
+
+    .tvgrid.lev.st th:nth-child(n+3):nth-child(-n+5) {
+      width: 15%
+    }
+
+    .tvgrid.lev.st th:nth-child(6) {
+      width: 20%
+    }
+
+    .tvgrid.lev.dh th:nth-child(n+3):nth-child(-n+4) {
+      width: 24%
+    }
+
+    .tvgrid.ctl th:first-child {
+      width: auto
+    }
+
+    .tvgrid.ctl th:nth-child(2),
+    .tvgrid.ctl th:nth-child(3) {
+      width: 27%
+    }
+
+    .tvgrid tr.fixed td {
+      background: #F7FAF9
+    }
+
+    .tvgrid .fx {
+      display: block;
+      font: 600 12.5px var(--mono);
+      color: #0B2A35;
+      padding: 0 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap
+    }
+
+    .tvgrid .role {
+      display: block;
+      font-size: 10.5px;
+      color: #A88600;
+      padding: 0 4px;
+      font-weight: 600
+    }
+
+    .tvgrid .na {
+      display: block;
+      text-align: center;
+      color: #C2CDD2
+    }
+
+    .tvmore {
+      margin-top: 20px;
+      border-top: 1px solid var(--rule);
+      padding-top: 12px
+    }
+
+    .tvmore summary {
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      color: #22343C;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 10px;
+      flex-wrap: wrap
+    }
+
+    .tvmore summary::-webkit-details-marker {
+      display: none
+    }
+
+    .tvmore summary::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-right: 2px solid #50656F;
+      border-bottom: 2px solid #50656F;
+      transform: rotate(-45deg);
+      transition: transform .15s
+    }
+
+    .tvmore[open] summary::before {
+      transform: rotate(45deg)
+    }
+
+    .tvmore summary span {
+      font: 400 11.5px var(--mono);
+      color: #7A8D96
+    }
+
+    .tvpaste,
+    .tvsheet {
+      border: 1px solid #E2E8F0;
+      background: #F8FAFB;
+      border-radius: 8px;
+      padding: 10px 12px 12px;
+      margin: 10px 0
+    }
+
+    .tvpaste textarea {
+      height: 140px;
+      font: 12px/1.45 var(--mono) !important;
+      resize: vertical
+    }
+
+    .tvlist {
+      max-height: 230px;
+      overflow-y: auto;
+      border: 1px solid #E2E8F0;
+      border-radius: 6px;
+      background: #fff;
+      margin-top: 8px
+    }
+
+    .tvlist label {
+      display: grid;
+      grid-template-columns: 18px minmax(0, 1fr) auto;
+      gap: 2px 8px;
+      align-items: center;
+      padding: 6px 10px;
+      border-bottom: 1px solid #EEF2F4;
+      font-size: 12.5px;
+      cursor: pointer
+    }
+
+    .tvlist label[hidden] {
+      display: none
+    }
+
+    .tvlist label span {
+      color: #7A8D96;
+      font-size: 11.5px
+    }
+
+    .tvlist label em {
+      grid-column: 2 / 4;
+      font: 11px var(--mono);
+      font-style: normal;
+      color: #5A6E77
+    }
+
+    .tvsheet .tvfind {
+      flex: 1
+    }
+
+    /* ---- traverse adjust: the results pane, in place of the sheet ---- */
+    .pane.right .tvpane {
+      display: none
+    }
+
+    .pane.right.tvon .tvpane {
+      display: block;
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      background: #F6F8F8;
+      padding: 0 0 24px
+    }
+
+    .pane.right.tvon>.prevhead,
+    .pane.right.tvon>.tablewrap,
+    .pane.right.tvon>.mapwrap,
+    .pane.right.tvon>.radwrap {
+      display: none !important
+    }
+
+    .pane.right.tvon>.log {
+      flex: none;
+      max-height: 120px
+    }
+
+    .tvph {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px 14px;
+      padding: 12px 20px;
+      background: #fff;
+      border-bottom: 1px solid var(--rule)
+    }
+
+    .tvph>div:first-child {
+      flex: 1;
+      min-width: 160px
+    }
+
+    .tvph h3 {
+      margin: 0;
+      font-size: 17px;
+      color: #0B2A35
+    }
+
+    .tvps {
+      font-size: 12px;
+      color: #7A8D96
+    }
+
+    .tvpill {
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 11px;
+      border-radius: 14px;
+      background: #EEF2F4;
+      color: #5A6E77;
+      white-space: nowrap
+    }
+
+    .tvpill:empty {
+      display: none
+    }
+
+    .tvpill.pass {
+      background: #DDF3E7;
+      color: #157A45
+    }
+
+    .tvpill.fail {
+      background: #FBE3E1;
+      color: #B5302F
+    }
+
+    .tvacts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px
+    }
+
+    .tvempty {
+      margin: 22px 20px;
+      background: #fff;
+      border: 1px solid var(--rule);
+      border-radius: 10px;
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 13.5px;
+      color: #22343C
+    }
+
+    .tvempty span {
+      color: #B5302F
+    }
+
+    .tvempty .tvsoft {
+      color: #7A8D96;
+      font-size: 12.5px
+    }
+
+    .tvgs4 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 10px;
+      padding: 16px 20px 6px
+    }
+
+    .tvg {
+      background: #fff;
+      border: 1px solid var(--rule);
+      border-radius: 10px;
+      padding: 11px 13px;
+      min-width: 0
+    }
+
+    .tvgl {
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+      font-size: 12px;
+      color: #5A6E77
+    }
+
+    .tvgl b {
+      font-size: 11px;
+      padding: 1px 7px;
+      border-radius: 9px;
+      background: #EEF2F4
+    }
+
+    .tvg.good .tvgl b,
+    .tvg.warn .tvgl b {
+      background: #DDF3E7;
+      color: #157A45
+    }
+
+    .tvg.bad .tvgl b {
+      background: #D64545;
+      color: #fff
+    }
+
+    .tvgv {
+      font: 600 20px/1.3 var(--mono);
+      color: #0F172A;
+      margin: 3px 0 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis
+    }
+
+    .tvg.bad .tvgv {
+      color: #B5302F
+    }
+
+    .tvm {
+      height: 6px;
+      border-radius: 3px;
+      background: #EEF2F4;
+      margin: 5px 0 4px
+    }
+
+    .tvm i {
+      display: block;
+      height: 6px;
+      border-radius: 3px;
+      background: #1F9D5B
+    }
+
+    .tvg.warn .tvm i {
+      background: #D9A21B
+    }
+
+    .tvg.bad .tvm i {
+      background: #D64545
+    }
+
+    .tvgs {
+      font-size: 11.5px;
+      color: #7A8D96
+    }
+
+    .tvpane>.tvwarn {
+      margin: 8px 20px 0
+    }
+
+    .tvplot {
+      margin: 12px 20px 4px;
+      background: #fff;
+      border: 1px solid var(--rule);
+      border-radius: 10px;
+      overflow: hidden
+    }
+
+    .tvplot svg {
+      display: block;
+      width: 100%;
+      height: auto
+    }
+
+    .tvplot .gr line {
+      stroke: #EEF2F4;
+      stroke-width: 1
+    }
+
+    .tvplot .leg {
+      fill: none;
+      stroke-width: 2.4;
+      stroke-linejoin: round
+    }
+
+    .tvplot .leg.open {
+      stroke-dasharray: 7 5
+    }
+
+    .tvplot .area {
+      fill: rgba(31, 111, 139, .08)
+    }
+
+    .tvplot .stn {
+      stroke: #fff;
+      stroke-width: 2
+    }
+
+    .tvplot .ctl {
+      fill: #0B2A35
+    }
+
+    .tvplot .sight {
+      stroke: #8A9BA3;
+      stroke-width: 1.3;
+      stroke-dasharray: 3 4
+    }
+
+    .tvplot .ell {
+      fill: rgba(214, 69, 69, .1);
+      stroke: #D64545;
+      stroke-width: 1.2
+    }
+
+    .tvplot .lb {
+      font: 600 12px var(--mono);
+      fill: #0B2A35;
+      paint-order: stroke;
+      stroke: #fff;
+      stroke-width: 4px;
+      stroke-linejoin: round
+    }
+
+    .tvplot .ax {
+      font: 10.5px var(--mono);
+      fill: #7A8D96
+    }
+
+    .tvplot .na path {
+      fill: #0B2A35
+    }
+
+    .tvplot .na text {
+      font: 700 12px var(--sans);
+      fill: #0B2A35
+    }
+
+    .tvplot .sb path {
+      stroke: #0B2A35;
+      stroke-width: 2
+    }
+
+    .tvplot .sb text {
+      font: 11px var(--mono);
+      fill: #0B2A35
+    }
+
+    .tvtabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2px;
+      margin: 14px 20px 0;
+      border-bottom: 1px solid var(--rule)
+    }
+
+    .tvtabs button {
+      background: none;
+      border: 0;
+      border-radius: 0;
+      padding: 8px 12px;
+      font-size: 13px;
+      color: #5A6E77;
+      box-shadow: inset 0 -2px 0 transparent
+    }
+
+    .tvtabs button.on {
+      color: #0B2A35;
+      font-weight: 650;
+      box-shadow: inset 0 -2px 0 #FFD100
+    }
+
+    .tvtw {
+      margin: 0 20px;
+      overflow-x: auto;
+      background: #fff;
+      border: 1px solid var(--rule);
+      border-top: 0;
+      border-radius: 0 0 10px 10px
+    }
+
+    .tvres {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 12.5px
+    }
+
+    .tvres th {
+      font-size: 11px;
+      font-weight: 600;
+      color: #5A6E77;
+      text-align: left;
+      padding: 8px 12px;
+      background: #F8FAFB;
+      border-bottom: 1px solid var(--rule);
+      white-space: nowrap
+    }
+
+    .tvres td {
+      padding: 7px 12px;
+      border-bottom: 1px solid #EEF2F4;
+      white-space: nowrap
+    }
+
+    .tvres .r {
+      text-align: right;
+      font-family: var(--mono);
+      font-size: 12px
+    }
+
+    .tvres tr.fx td {
+      background: #F7FAF9;
+      font-weight: 600
+    }
+
+    .tvres tr.flag td {
+      color: #B5302F;
+      font-weight: 600
+    }
+
+    .tvpane .tvnote {
+      margin: 8px 20px 0
+    }
+
+    @media (max-width:560px) {
+      .tvsec {
+        padding: 6px 14px 24px
+      }
+
+      .tvgrid2 {
+        grid-template-columns: minmax(0, 1fr)
+      }
+
+      .tvgrid2 .span2 {
+        grid-column: auto
+      }
+
+      .tvph,
+      .tvgs4 {
+        padding-left: 12px;
+        padding-right: 12px
+      }
+
+      .tvplot,
+      .tvtabs,
+      .tvtw {
+        margin-left: 12px;
+        margin-right: 12px
       }
     }
 
@@ -6772,7 +7706,7 @@
           </svg>
         </div>
         <div style="flex:1;">
-          <h3 class="auth-modal-title" id="authModalTitle">Excel to KML Pro Account</h3>
+          <h3 class="auth-modal-title" id="authModalTitle">Excel to KML Account</h3>
 
         </div>
         <button type="button" class="auth-modal-close" id="authModalClose" title="Close">
@@ -6791,6 +7725,15 @@
 
       <div class="auth-modal-body">
         <div id="authAlert" class="auth-alert"></div>
+
+        <!-- Windows program only: sign in through the default browser (Google blocks sign-in inside app windows) -->
+        <div id="authGoogleWrap" style="display:none;">
+          <button type="button" class="auth-google-btn" id="authGoogleBtn">
+            <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>
+            <span>Continue with Google</span>
+          </button>
+          <div class="auth-or">or with email</div>
+        </div>
 
         <!-- Login Form -->
         <form id="loginForm" autocomplete="on">
@@ -6820,7 +7763,7 @@
         <form id="registerForm" style="display:none;" autocomplete="on">
           <div class="auth-form-group">
             <label for="regName">Full Name</label>
-            <input type="text" id="regName" placeholder="Asjad Mehmood" required autocomplete="name">
+            <input type="text" id="regName" placeholder="Your full name" required autocomplete="name">
           </div>
           <div class="auth-form-group">
             <label for="regEmail">Email Address</label>
@@ -6844,14 +7787,22 @@
             <input type="text" id="regOrg" placeholder="Geomatics Engineering Ltd">
           </div>
           <div class="auth-form-group">
-            <label for="regRole">Role</label>
-            <select id="regRole">
-              <option value="surveyor">Surveyor / Party Chief</option>
-              <option value="civil_engineer">Civil / Site Engineer</option>
-              <option value="gis_specialist">GIS Analyst / Specialist</option>
-              <option value="contractor">Contractor / Estimator</option>
-              <option value="other">Other</option>
-            </select>
+            <label for="regRole">Occupation</label>
+            <input type="text" id="regRole" list="regRoleList" maxlength="60" autocomplete="organization-title"
+              placeholder="e.g. Land Surveyor">
+            <datalist id="regRoleList">
+              <option value="Land Surveyor"></option>
+              <option value="Cadastral Surveyor"></option>
+              <option value="Party Chief"></option>
+              <option value="Civil Engineer"></option>
+              <option value="Site Engineer"></option>
+              <option value="GIS Specialist"></option>
+              <option value="UAV / Drone Operator"></option>
+              <option value="Survey Technician"></option>
+              <option value="Contractor"></option>
+              <option value="Architect"></option>
+              <option value="Student"></option>
+            </datalist>
           </div>
           <button type="submit" class="auth-submit-btn" id="regSubmitBtn">
             <span>Create Account</span>
@@ -6905,7 +7856,7 @@
     </span>
 
     <span class="titles">
-      <span class="appname">Excel to KML <em>Pro</em></span>
+      <span class="appname">Excel to KML</span>
     </span>
     <span class="tb-div" aria-hidden="true"></span>
 
@@ -6956,7 +7907,7 @@
       <span class="lbl">About</span>
     </button>
 
-    <button class="auth-btn" id="authBtn" title="Excel to KML Pro Account">
+    <button class="auth-btn" id="authBtn" title="Excel to KML Account">
       <span class="auth-avatar" id="authBtnAvatar">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
           stroke-linecap="round" stroke-linejoin="round">
@@ -7003,6 +7954,10 @@
       <button class="ritem" type="button" data-sec="lines" title="Lines and areas"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l5-6 4 3 4-7 5 4"/></svg><span class="rl">Lines and areas</span><span class="rs" id="rs-lines"></span><span class="rdot" id="rd-lines"></span></button>
       <div class="rgroup">Simulate</div>
       <button class="ritem" type="button" data-sec="radar" title="Radar simulator"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><path d="M12 12l6.4-6.4"/></svg><span class="rl">Radar simulator</span><span class="rs" id="rs-radar"></span><span class="rdot" id="rd-radar"></span></button>
+      <div class="rgroup">Traverse adjust</div>
+      <button class="ritem" type="button" data-sec="tvctl" title="Control points"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 15H4z"/><circle cx="12" cy="13" r="1.6" fill="currentColor"/></svg><span class="rl">Control points</span><span class="rs" id="rs-tvctl"></span><span class="rdot" id="rd-tvctl"></span></button>
+      <button class="ritem" type="button" data-sec="tvtrav" title="Traverse"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 18L8 5l11 3-3 12z"/><circle cx="4" cy="18" r="1.8" fill="currentColor"/></svg><span class="rl">Traverse</span><span class="rs" id="rs-tvtrav"></span><span class="rdot" id="rd-tvtrav"></span></button>
+      <button class="ritem" type="button" data-sec="tvlev" title="Level run"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l5-4 4 2 5-7 4 2"/><path d="M3 21h18"/><path d="M7 3v7M5 5h4M5 8h4"/></svg><span class="rl">Level run</span><span class="rs" id="rs-tvlev"></span><span class="rdot" id="rd-tvlev"></span></button>
       <div class="rspacer"></div>
       <div class="rgroup">This job</div>
       <button class="ritem" type="button" data-sec="balloon" title="Balloon contents"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg><span class="rl">Balloon contents</span><span class="rs" id="rs-balloon"></span><span class="rdot" id="rd-balloon"></span></button>
@@ -7061,6 +8016,14 @@
             <path d="M9 4V3h6v1M9 10h6M9 14h6" />
           </svg>
           Paste
+        </button>
+        <button class="pbtn" id="keyBtn" type="button" title="Type points in one at a time: station, coordinates, level, code">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 20h9" />
+            <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
+          </svg>
+          Type points
         </button>
         <button class="pbtn" id="sampleLoad" type="button" title="Load twelve sample points on the Dubai grid">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -7411,6 +8374,10 @@ TBM-03,513920.113,2787558.486"></textarea>
         </details>
       </div>
 
+      <div class="tvsec" id="tvCtl" data-in="tvctl"></div>
+      <div class="tvsec" id="tvTrav" data-in="tvtrav"></div>
+      <div class="tvsec" id="tvLev" data-in="tvlev"></div>
+
       <div class="jobmeta" data-in="balloon">
         <div class="zf">
           <label for="fdate">Date on balloons</label>
@@ -7523,8 +8490,8 @@ TBM-03,513920.113,2787558.486"></textarea>
             works on it exactly as if it had been opened from a file.</p>
           <div class="keyrow">
             <div class="zf md"><label for="kSt">Station</label><input type="text" id="kSt" placeholder="TBM-01"></div>
-            <div class="zf md"><label for="kyE">Easting</label><input type="text" class="num" id="kyE"></div>
-            <div class="zf md"><label for="kyN">Northing</label><input type="text" class="num" id="kyN"></div>
+            <div class="zf md"><label for="kyE" id="kyELab">Easting</label><input type="text" class="num" id="kyE"></div>
+            <div class="zf md"><label for="kyN" id="kyNLab">Northing</label><input type="text" class="num" id="kyN"></div>
             <div class="zf sm"><label for="kZ">Level</label><input type="text" class="num" id="kZ"></div>
             <div class="zf sm"><label for="kC">Code</label><input type="text" id="kC" placeholder="TBM"></div>
             <div class="zf gr"><label for="kR">Remarks</label><input type="text" id="kR"
@@ -7532,7 +8499,8 @@ TBM-03,513920.113,2787558.486"></textarea>
             <button class="mini" id="kAdd" style="height:31px">Add point</button>
           </div>
           <p class="keyhint">Enter moves to the next box; Enter on Remarks adds the point. The station name
-            and both coordinates are needed — the rest is optional.</p>
+            and both coordinates are needed — the rest is optional. The coordinates follow the
+            Coordinate system: easting and northing on a grid, or latitude and longitude.</p>
           <div class="keyfeed" id="keyFeed"></div>
           <div class="profrow" style="margin-top:8px">
             <button class="mini" id="kUndo">Undo last point</button>
@@ -7732,10 +8700,10 @@ TBM-03,513920.113,2787558.486"></textarea>
             <div class="zf" style="min-width:170px">
               <label for="labHigh">Labels appear</label>
               <select id="labHigh">
-                <option value="0">At every height</option>
+                <option value="0" selected>At every height</option>
                 <option value="3000">Below about 3,000 m</option>
                 <option value="1500">Below about 1,500 m</option>
-                <option value="800" selected>Below about 800 m</option>
+                <option value="800">Below about 800 m</option>
                 <option value="400">Below about 400 m</option>
                 <option value="200">Below about 200 m</option>
               </select>
@@ -7751,7 +8719,8 @@ TBM-03,513920.113,2787558.486"></textarea>
           </div>
           <p class="zsub">Google Earth draws labels at a fixed size on the screen, so when you zoom
             out they stay large while the ground shrinks, and a busy site turns into a pile of text.
-            Labels appear holds them back until the camera comes down below the height you choose.
+            Names show at every height unless you choose otherwise: for a busy site, Labels appear
+            can hold them back until the camera comes down below the height you choose.
             The markers themselves always show. The height is approximate, since it depends a little
             on the size of the screen.</p>
         </div>
@@ -7900,6 +8869,7 @@ TBM-03,513920.113,2787558.486"></textarea>
         </div>
         <div class="maptip" id="radTip" hidden></div>
       </div>
+      <div class="tvpane" id="tvPane" hidden></div>
       <div class="log" id="report"></div>
     </div>
   </div>
@@ -8712,7 +9682,7 @@ TBM-03,513920.113,2787558.486"></textarea>
     $("saveKmz").addEventListener("click", function () { doSave("kmz"); });
 
     /* every change ends here: the conversion first, then the masthead catches up */
-    function refresh() { refreshCore(); xlSheetMark(); undoNote(); shellSync(); }
+    function refresh() { refreshCore(); xlSheetMark(); undoNote(); shellSync(); keyLabels(); }
 
     /* ---- undo ----
        Every change to the rows is remembered: a clear, a file or sample loaded over them, a
@@ -8777,7 +9747,8 @@ TBM-03,513920.113,2787558.486"></textarea>
       if (!READY || !READY.pts.length || !window.trackUserActivity) return;
       CONVLOG.t = setTimeout(function () {
         if (!READY || !READY.pts.length) return;
-        var crs = CRSSEL && $("sys").value === "epsg" ? CRSSEL.c : $("sys").value;
+        /* the grid by name, as the saved files note it: "WGS 84 / Dubai Local TM · EPSG:3997" */
+        var crs = config().label || (CRSSEL && $("sys").value === "epsg" ? "EPSG:" + CRSSEL.c : $("sys").value);
         var sig = textHash($("data").value) + "|" + config().label;
         if (CONVLOG.done[sig]) return;
         CONVLOG.done[sig] = 1;
@@ -9167,9 +10138,10 @@ TBM-03,513920.113,2787558.486"></textarea>
         if (curVer) {
           txt = txt.replace(/BM2KML\s+v[0-9.]+/gi, "BM2KML v" + curVer);
           txt = txt.replace(/Version\s+[0-9.]+/gi, "Version " + curVer);
-          txt = txt.replace(/ExcelToKMLPro-Lite-Setup-[0-9.]+\.exe/gi, "ExcelToKMLPro-Lite-Setup-" + curVer + ".exe");
-          txt = txt.replace(/ExcelToKMLPro-[0-9.]+\.apk/gi, "ExcelToKMLPro-" + curVer + ".apk");
+          txt = txt.replace(/ExcelToKMLPro-[0-9.]+\.apk/gi, "ExcelToKML-" + curVer + ".apk");
         }
+        /* the download names since 4.3.1: no "Pro", no "Lite", no version in the installer's name */
+        txt = txt.replace(/ExcelToKMLPro-Lite-Setup(-[0-9.]*[0-9])?\.exe/gi, "ExcelToKML-Setup.exe");
         if (curDate) {
           txt = txt.replace(/[0-9]{1,2}-[A-Za-z]{3}-[0-9]{4}/g, curDate);
         }
@@ -9197,7 +10169,7 @@ TBM-03,513920.113,2787558.486"></textarea>
       document.getElementById("manFrame").srcdoc = doc;
       document.getElementById("manClose").onclick = manualShut;
       document.getElementById("manSave").onclick = function () {
-        saveBlob(doc, "Excel to KML Pro manual.html", "text/html;charset=utf-8", true);
+        saveBlob(doc, "Excel to KML manual.html", "text/html;charset=utf-8", true);
       };
       wrap.onclick = function (ev) { if (ev.target === wrap) manualShut(); };
     }
@@ -9251,7 +10223,7 @@ TBM-03,513920.113,2787558.486"></textarea>
       wrap.className = "slidewrap"; wrap.id = "slideWrap";
       wrap.innerHTML = '<div class="slidebox">' +
         '<div class="slidetop">' + surveyArt() +
-        "<div><h2>Excel to KML <span>Pro</span></h2>" +
+        "<div><h2>Excel to KML</h2>" +
         "<p>Survey coordinates on any national or site grid, turned into a Google Earth file " +
         "that opens anywhere \u2014 with your markers, your photos and your report. " +
         "Everything happens on this computer. Signed in, the files you open and save are also kept in your account.</p></div></div>" +
@@ -9771,7 +10743,8 @@ TBM-03,513920.113,2787558.486"></textarea>
       var ll = function (p) { return 'lat="' + p[1].toFixed(9) + '" lon="' + p[0].toFixed(9) + '"'; };
       var job = $("fname").value.trim() || "Benchmarks";
       var out = ['<?xml version="1.0" encoding="UTF-8"?>',
-        '<gpx version="1.1" creator="Excel to KML Pro" xmlns="http://www.topografix.com/GPX/1/1">',
+        /* GPX needs a creator; it is the surveyor's company, not the program */
+        '<gpx version="1.1" creator="' + x($("coName").value.trim() || "Survey points") + '" xmlns="http://www.topografix.com/GPX/1/1">',
         "  <metadata><name>" + x(job) + "</name><time>" + new Date().toISOString().replace(/\.\d+Z$/, "Z") + "</time></metadata>"];
       READY.pts.forEach(function (g, i) {
         var z = gisNum(g.d["ELEVATION"]), code = String(g.d["CODE"] || "");
@@ -9958,7 +10931,7 @@ TBM-03,513920.113,2787558.486"></textarea>
       } else if (status === "installing") {
         overlay.style.display = "flex";
         if (title) title.textContent = "Installing Update...";
-        if (desc) desc.textContent = "Finalizing update. Restarting Excel to KML Pro now...";
+        if (desc) desc.textContent = "Finalizing update. Restarting Excel to KML now...";
       } else if (status === "failed") {
         if (title) title.textContent = "Update Interrupted";
         if (desc) desc.textContent = (ver || "Failed to download update.") + " You can continue using the app.";
@@ -9988,7 +10961,6 @@ TBM-03,513920.113,2787558.486"></textarea>
       var v = document.querySelector(".ver");
       return v ? v.textContent.split("\u00b7")[0].trim() : "BM2KML";
     }
-    var CREDIT = "developed by Asjad Mehmood";
 
     /* a page fit to hand in: header, what was checked, then every point */
     /* the top of the report: logo and company on the left, job name under them */
@@ -10065,12 +11037,9 @@ TBM-03,513920.113,2787558.486"></textarea>
         "<h2>Points</h2><table><thead><tr><th>#</th>" + cols.map(function (c) {
           return "<th>" + esc(c) + "</th>";
         }).join("") + "</tr></thead>" +
-        /* a footer row in a long table repeats at the foot of every printed page */
-        "<tfoot><tr><td class='pf' colspan='" + (cols.length + 1) + "'>Excel to KML Pro &middot; " +
-        esc(appVer()) + " &middot; " + CREDIT + "</td></tr></tfoot>" +
+        /* the report is the surveyor's own document: no program name or credit on it */
         "<tbody>" + rows + "</tbody></table>" +
-        "<div class='foot'>Produced with Excel to KML Pro, " + esc(appVer()) + " — " + CREDIT + ". " +
-        "Open this file in any browser and print it, or choose Save as PDF.</div></body></html>";
+        "<div class='foot'>Open this file in any browser and print it, or choose Save as PDF.</div></body></html>";
     }
 
     /* ================= the report as a real PDF =================
@@ -10210,40 +11179,59 @@ TBM-03,513920.113,2787558.486"></textarea>
           });
         }
         var grp = symGroups(), few = pts.length <= 150, placed = [];
-        /* a label goes beside its point where it does not cover another label;
-           four places are tried, and a label with nowhere to go is left off */
+        /* the label the user chose for Google Earth (station, code or level); none when they chose none */
+        var labCol = $("labWhat").value;
+        /* busy sites get smaller lettering so more names find room */
+        var fs = pts.length <= 150 ? 14 : pts.length <= 600 ? 12 : 11, hh = fs + 3, r = few ? 7 : 4.5;
+        /* a label goes beside its point where it does not cover another label or point;
+           eight places are tried, and a label with nowhere to go is left off */
+        var dots = pts.map(function (g) { return at(g); });
         var tryLabel = function (t, p) {
-          var w = x.measureText(t).width + 6, hh = 17;
-          var spots = [[p[0] + 10, p[1] - 8], [p[0] + 10, p[1] + 19], [p[0] - 10 - w, p[1] - 8], [p[0] - 10 - w, p[1] + 19]];
+          var w = x.measureText(t).width + 6, d = r + 3, up = Math.round(fs * 0.3), dn = fs + 4;
+          var spots = [[p[0] + d, p[1] - up], [p[0] + d, p[1] + dn], [p[0] - d - w, p[1] - up], [p[0] - d - w, p[1] + dn],
+            [p[0] - w / 2, p[1] - d - 4], [p[0] - w / 2, p[1] + d + fs], [p[0] + d, p[1] - fs], [p[0] - d - w, p[1] - fs]];
           for (var s = 0; s < spots.length; s++) {
-            var bx = spots[s][0] - 3, by = spots[s][1] - 14, clash = false;
-            if (bx < 4 || by < 4 || bx + w > W - 90 || by + hh > H - 60) continue;
+            var bx = spots[s][0] - 3, by = spots[s][1] - fs, clash = false;
+            if (bx < 4 || by < 4 || bx + w > W - 4 || by + hh > H - 60 || (bx + w > W - 90 && by < 94)) continue;
             for (var q = 0; q < placed.length; q++) {
               var o = placed[q];
               if (bx < o[0] + o[2] && bx + w > o[0] && by < o[1] + o[3] && by + hh > o[1]) { clash = true; break; }
+            }
+            /* nor over another point's marker */
+            for (var k = 0; !clash && k < dots.length; k++) {
+              var dp = dots[k];
+              if (dp === p) continue;
+              if (dp[0] + r > bx && dp[0] - r < bx + w && dp[1] + r > by && dp[1] - r < by + hh) clash = true;
             }
             if (!clash) { placed.push([bx, by, w, hh]); return spots[s]; }
           }
           return null;
         };
-        x.font = "600 14px Segoe UI, Arial, sans-serif";
+        x.font = "600 " + fs + "px Segoe UI, Arial, sans-serif";
         x.lineJoin = "round"; x.miterLimit = 2;   /* no spikes on the lettering outlines */
+        /* markers first, then names on top, so no marker covers a name */
         pts.forEach(function (g, i) {
-          var p = at(g), col = "#FFD100";
+          var p = dots[i], col = "#FFD100";
           if (grp) {
             var v = String(g.d[SYMCOL] === undefined || g.d[SYMCOL] === "" ? "(blank)" : g.d[SYMCOL]);
             var tn = tintOf(v) || (SYMTINT[v] === "NATURAL" ? null : guessColour(SYMORDER.indexOf(v)));
             if (tn) col = "#" + tn;
           }
           else if (tintOf("__ALL__")) col = "#" + tintOf("__ALL__");
-          x.beginPath(); x.arc(p[0], p[1], few ? 7 : 4.5, 0, 6.2832);
+          x.beginPath(); x.arc(p[0], p[1], r, 0, 6.2832);
           x.fillStyle = col; x.fill(); x.lineWidth = 2; x.strokeStyle = "#FFFFFF"; x.stroke();
-          if (few) {
-            var t = String(g.d["STATION"] || ""), spot = tryLabel(t, p);
-            if (spot) {
-              x.lineWidth = 4; x.strokeStyle = "rgba(11,42,53,.85)"; x.strokeText(t, spot[0], spot[1]);
-              x.fillStyle = "#FFFFFF"; x.fillText(t, spot[0], spot[1]);
-            }
+        });
+        var named = 0, wanted = 0;
+        if (labCol) pts.forEach(function (g, i) {
+          var v = g.d[labCol];
+          var t = String(v === undefined || v === null ? "" : v).trim();
+          if (!t) return;
+          wanted++;
+          var spot = tryLabel(t, dots[i]);
+          if (spot) {
+            named++;
+            x.lineWidth = 4; x.strokeStyle = "rgba(11,42,53,.85)"; x.strokeText(t, spot[0], spot[1]);
+            x.fillStyle = "#FFFFFF"; x.fillText(t, spot[0], spot[1]);
           }
         });
         /* north arrow */
@@ -10267,7 +11255,7 @@ TBM-03,513920.113,2787558.486"></textarea>
         x.font = "12px Segoe UI, Arial"; var cw = x.measureText(cr).width + 16;
         x.fillStyle = "rgba(255,255,255,.82)"; x.fillRect(W - cw, H - 20, cw, 20);
         x.fillStyle = "#33505C"; x.fillText(cr, W - cw + 8, H - 6);
-        return { bytes: jpegBytesOf(cv, 0.86), w: W, h: H, sat: sat };
+        return { bytes: jpegBytesOf(cv, 0.86), w: W, h: H, sat: sat, named: named, wanted: wanted };
       });
     }
 
@@ -10306,7 +11294,9 @@ TBM-03,513920.113,2787558.486"></textarea>
         var images = [], pages = [], cur = null, y = 0;
         var addImg = function (im) { images.push(im); return "Im" + images.length; };
         var mapName = addImg(map), logoName = logo ? addImg(logo) : null;
-        var credit = "Excel to KML Pro  \u00b7  " + appVer() + "  \u00b7  " + CREDIT;
+        /* the foot of each page carries the surveyor's company (when set), the job and the page number:
+           no program name or credit */
+        var credit = co || "";
         var INK = "0.07 0.19 0.23", SOFT = "0.36 0.45 0.50", RULE = "0.84 0.88 0.87", DARK = "0.043 0.165 0.208",
           GOLD = "1 0.82 0", GREEN = "0.18 0.49 0.31", RED = "0.70 0.25 0.17", BAND = "0.965 0.976 0.973";
 
@@ -10532,6 +11522,10 @@ TBM-03,513920.113,2787558.486"></textarea>
         y -= 18 * Math.ceil(legend.length / 5) + 6;
         text(M, y, map.sat ? "Every point converted by the program, shown on satellite imagery. North is up; the scale bar is in the lower left." :
           "Every point converted by the program. Satellite imagery needs internet when the report is made.", 8, false, SOFT);
+        if (map.wanted > map.named) {
+          y -= 12;
+          text(M, y, (map.wanted - map.named) + " of " + map.wanted + " names are left off where points crowd together; every point is listed in the table.", 8, false, SOFT);
+        }
 
         /* ---- the foot of every page: small, but set properly ---- */
         pages.forEach(function (pg, i) {
@@ -10570,8 +11564,7 @@ TBM-03,513920.113,2787558.486"></textarea>
         objs[2] = "<< /Type /Pages /Kids [" + kids.join(" ") + "] /Count " + kids.length + " >>";
         var info = next++;
         var plain = function (s) { return pdfStr(String(s).replace(/[\u2013\u2014\u00b7\u2212]/g, "-").replace(/[^\x20-\x7e]/g, "")); };
-        objs[info] = "<< /Title (" + plain(job) + ") /Author (" + plain(co || "Asjad Mehmood") + ") " +
-          "/Creator (Excel to KML Pro " + plain(appVer()) + " - " + plain(CREDIT) + ") >>";
+        objs[info] = "<< /Title (" + plain(job) + ")" + (co ? " /Author (" + plain(co) + ")" : "") + " >>";
         var out = "%PDF-1.4\n%\u00e2\u00e3\u00cf\u00d3\n", offs = [];
         for (var o = 1; o < next; o++) { offs[o] = out.length; out += o + " 0 obj\n" + objs[o] + "\nendobj\n"; }
         var xref = out.length;
@@ -11883,7 +12876,10 @@ TBM-03,513920.113,2787558.486"></textarea>
       filter: ["Filter what is saved", "Choose which points go into the file, by code, by name or by row."],
       job: ["Setup profiles", "Save the setup alone — the grid, the symbols, the photo size, the check limits — to reuse on new sheets."],
       save: ["Ready to save", "Everything the file will carry, so nothing goes out by surprise."],
-      radar: ["Radar simulator", "Every point by bearing and distance from a station, to set them out one at a time."]
+      radar: ["Radar simulator", "Every point by bearing and distance from a station, to set them out one at a time."],
+      tvctl: ["Control points", "The points you already know: traverses start and close on them, level runs on their levels. Type them, paste them, or take them from the sheet."],
+      tvtrav: ["Traverse", "Angles and distances from the field book, closed on your control and adjusted by Bowditch, Transit or least squares. The results go into the sheet with one click."],
+      tvlev: ["Level run", "Staff readings or height differences, reduced by rise and fall, closed on your benchmarks and checked against C\u221aK."]
     };
     var SEC = "points";
 
@@ -11914,6 +12910,7 @@ TBM-03,513920.113,2787558.486"></textarea>
       /* the radar section shows the radar */
       if (sec === "radar") { if (typeof viewSet === "function" && MAPVIEW !== "radar") viewSet("radar"); radPanel(); }
       if (sec === "save" && typeof readySync === "function") readySync();
+      if (typeof tvShow === "function") tvShow(sec);
       if (sec !== "save") try { localStorage.setItem("bm2kml.sec", sec); } catch (e) { }
     }
 
@@ -12452,21 +13449,60 @@ TBM-03,513920.113,2787558.486"></textarea>
        rest of the program neither knows nor cares where it came from. */
     var KEYED = 0;
 
+    /* typed points follow the coordinate system: latitude and longitude, or easting and northing */
+    function keyGeo() { return $("sys").value === "geo"; }
+    function keyHead() {
+      return keyGeo() ? "STATION,CODE,LATITUDE,LONGITUDE,ELEVATION,REMARKS" : "STATION,CODE,EASTING,NORTHING,ELEVATION,REMARKS";
+    }
+    function keyLabels() {
+      var geo = keyGeo();
+      $("kyELab").textContent = geo ? "Latitude" : "Easting";
+      $("kyNLab").textContent = geo ? "Longitude" : "Northing";
+      $("kyE").placeholder = geo ? "25.193080" : "";
+      $("kyN").placeholder = geo ? "55.468990" : "";
+    }
+    /* a typed coordinate as a plain decimal string, or null. Latitude and longitude may also be typed as
+       degrees, minutes and seconds (25°11'35.5"N, 25 11 35.5 N, 25°11.59'N); they are turned into degrees. */
+    function keyVal(v, geo) {
+      var t = String(v).trim().replace(/[,\s]+(?=\d{3}(\D|$))/g, "");
+      if (/^[+-]?(\d+(\.\d*)?|\.\d+)$/.test(t)) return t;
+      if (!geo) return null;
+      var m = String(v).trim().match(/^([+-])?\s*(\d+(?:\.\d+)?)\s*(?:°|º|d|\s)\s*(?:(\d+(?:\.\d+)?)\s*(?:'|′|’|m|\s)?\s*(?:(\d+(?:\.\d+)?)\s*(?:"|″|”|''|s)?)?)?\s*([NSEWnsew])?$/);
+      if (!m || (m[1] && m[5])) return null;
+      var d = parseFloat(m[2]), mi = m[3] ? parseFloat(m[3]) : 0, se = m[4] ? parseFloat(m[4]) : 0;
+      if (mi >= 60 || se >= 60 || (m[4] && m[3] && m[3].indexOf(".") >= 0)) return null;
+      var x = d + mi / 60 + se / 3600;
+      if (m[1] === "-" || /[SWsw]/.test(m[5] || "")) x = -x;
+      return x.toFixed(8);
+    }
     function keyAdd() {
+      var geo = keyGeo(), cE = geo ? "LATITUDE" : "EASTING", cN = geo ? "LONGITUDE" : "NORTHING";
+      var both = geo ? "latitude and longitude" : "easting and northing";
       var st = $("kSt").value.trim(), E = $("kyE").value.trim(), N = $("kyN").value.trim();
       var Z = $("kZ").value.trim(), C = $("kC").value.trim(), R = $("kR").value.trim();
       if (!st || !E || !N) {
-        $("keyFeed").innerHTML = '<span style="color:#B3402C">Station, easting and northing are all needed.</span>';
+        $("keyFeed").innerHTML = '<span style="color:#B3402C">Station, ' + both + ' are all needed.</span>';
         (!st ? $("kSt") : (!E ? $("kyE") : $("kyN"))).focus();
         return;
       }
-      if (isNaN(num(E)) || isNaN(num(N)) || (Z && isNaN(num(Z)))) {
-        $("keyFeed").innerHTML = '<span style="color:#B3402C">The coordinates have to be numbers.</span>';
+      var E2 = keyVal(E, geo), N2 = keyVal(N, geo), Z2 = Z ? keyVal(Z, false) : "";
+      if (E2 === null || N2 === null || Z2 === null) {
+        $("keyFeed").innerHTML = '<span style="color:#B3402C">' + (Z2 === null ? "The level" : "The coordinates") +
+          " must be plain numbers" + (geo && Z2 !== null ? ": decimal degrees such as 25.193080, or degrees, minutes and seconds " +
+            "such as 25°11'35.1\"N" : "") + ".</span>";
+        (E2 === null ? $("kyE") : N2 === null ? $("kyN") : $("kZ")).focus();
+        return;
+      }
+      var typed = (E2 !== E.trim() || N2 !== N.trim()) && geo ? E + ", " + N : "";
+      E = E2; N = N2; Z = Z2;
+      if (geo && (Math.abs(num(E)) > 90 || Math.abs(num(N)) > 180)) {
+        $("keyFeed").innerHTML = '<span style="color:#B3402C">Latitude goes from -90 to 90 and longitude from -180 to 180. ' +
+          "For eastings and northings, choose their grid under Coordinate system first.</span>";
         return;
       }
       var q = function (v) { v = String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
       var box = $("data"), txt = box.value.replace(/\s+$/, "");
-      var head = "STATION,CODE,EASTING,NORTHING,ELEVATION,REMARKS";
+      var head = keyHead();
       var cols = null;
       if (txt) {
         /* follow the heading the sheet already has, so typed points sit in the right columns */
@@ -12479,10 +13515,19 @@ TBM-03,513920.113,2787558.486"></textarea>
         txt = head; cols = head.split(",");
       }
       var val = {
-        "STATION": st, "CODE": C, "EASTING": E, "NORTHING": N, "ELEVATION": Z, "REMARKS": R,
+        "STATION": st, "CODE": C, "ELEVATION": Z, "REMARKS": R,
         "POINT NUMBER": String((READY ? READY.pts.length : 0) + 1)
       };
+      val[cE] = E; val[cN] = N;
       var row, missed = [];
+      /* a sheet on the other kind of coordinates has nowhere to put these: stop rather than add a row with none */
+      if (cols && cols.length && (cols.indexOf(cE) < 0 || cols.indexOf(cN) < 0)) {
+        $("keyFeed").innerHTML = '<span style="color:#B3402C">This sheet has no ' + both + " columns. " +
+          (geo ? "Choose the sheet's grid under Coordinate system to type eastings and northings, "
+            : "Choose Latitude and longitude under Coordinate system to type those, ") +
+          "or press Start a fresh sheet.</span>";
+        return;
+      }
       if (cols && cols.length) {
         /* a sheet without a Remarks or Code column cannot hold one: say so rather than drop it quietly */
         ["CODE", "ELEVATION", "REMARKS"].forEach(function (c) {
@@ -12499,6 +13544,7 @@ TBM-03,513920.113,2787558.486"></textarea>
       var kept = function (c) { return missed.indexOf(c.toLowerCase()) < 0; };
       var list = missed.length === 1 ? missed[0] : missed.slice(0, -1).join(", ") + " or " + missed[missed.length - 1];
       $("keyFeed").innerHTML = "Added <b>" + esc(st) + "</b> at " + esc(E) + ", " + esc(N) +
+        (typed ? " (from " + esc(typed) + ")" : "") +
         (Z && kept("ELEVATION") ? " level " + esc(Z) : "") + (C && kept("CODE") ? " &middot; " + esc(C) : "") +
         (missed.length ? '<br><span style="color:#8A6A00">This sheet has no ' + esc(list) +
           " column, so that part was left out. Start a fresh sheet to get every column.</span>" : "");
@@ -12533,7 +13579,7 @@ TBM-03,513920.113,2787558.486"></textarea>
       $("keyFeed").textContent = "Last row removed.";
     });
     $("kFresh").addEventListener("click", function () {
-      $("data").value = "STATION,CODE,EASTING,NORTHING,ELEVATION,REMARKS";
+      $("data").value = keyHead();
       $("data").dispatchEvent(new Event("input", { bubbles: true }));
       KEYED = 0; $("keySum").textContent = "for a few points off a level book";
       $("keyFeed").textContent = "Fresh sheet ready. Type the first point.";
@@ -12542,8 +13588,18 @@ TBM-03,513920.113,2787558.486"></textarea>
     $("keyToggle").addEventListener("click", function () {
       var z = $("keyin"); z.classList.toggle("shut");
       $("keyToggle").setAttribute("aria-expanded", z.classList.contains("shut") ? "false" : "true");
-      if (!z.classList.contains("shut")) $("kSt").focus();
+      if (!z.classList.contains("shut")) { keyLabels(); $("kSt").focus(); }
     });
+    /* the toolbar button opens the form, which otherwise sits folded under the rows */
+    $("keyBtn").addEventListener("click", function () {
+      var z = $("keyin");
+      if (z.classList.contains("shut")) { z.classList.remove("shut"); $("keyToggle").setAttribute("aria-expanded", "true"); }
+      keyLabels();
+      try { z.scrollIntoView({ block: "nearest", behavior: "smooth" }); } catch (e) { z.scrollIntoView(); }
+      $("kSt").focus({ preventScroll: true });
+    });
+    $("sys").addEventListener("change", keyLabels);
+    keyLabels();
 
     /* ================= balloon contents ================= */
     var BF = { order: [], hide: {}, name: {} };
@@ -13778,7 +14834,7 @@ TBM-03,513920.113,2787558.486"></textarea>
         epsg: CRSSEL ? CRSSEL.c : "", sys: $("sys").value, symcol: SYMCOL, sympick: SYMPICK,
         symtint: SYMTINT, co: $("coName").value, labwhat: $("labWhat").value, bf: BF,
         ctrl: $("ctrlText").value, scon: SC.on, chcode: $("chCode").value,
-        labsize: $("labSize").value, icosize: $("icoSize").value,
+        labsize: $("labSize").value, labhigh: $("labHigh").value, icosize: $("icoSize").value,
         photo: $("photoSize").value, line: $("lineMode").value, shut: $("lineShut").checked,
         near: $("chkNear").value, jump: $("chkJump").value, fname: $("fname").value
       };
@@ -13800,6 +14856,7 @@ TBM-03,513920.113,2787558.486"></textarea>
       if (j.co !== undefined) $("coName").value = j.co;
       if (j.labwhat !== undefined) $("labWhat").value = j.labwhat;
       if (j.labsize) $("labSize").value = j.labsize;
+      $("labHigh").value = j.labhigh || "0";
       if (j.icosize) $("icoSize").value = j.icosize;
       if (j.photo) $("photoSize").value = j.photo;
       $("lineMode").value = j.line || ""; $("lineShut").checked = !!j.shut;
@@ -13857,7 +14914,7 @@ TBM-03,513920.113,2787558.486"></textarea>
     function jobFields() {
       var f = {};
       document.querySelectorAll("#mid [data-in] input[id], #mid [data-in] select[id], #mid [data-in] textarea[id]").forEach(function (el) {
-        if (JOB_SKIP[el.id] || el.type === "file" || el.closest(".jb") || el.closest(".lb")) return;
+        if (JOB_SKIP[el.id] || el.type === "file" || el.closest(".jb") || el.closest(".lb") || el.closest(".tvsec")) return;
         f[el.id] = el.type === "checkbox" || el.type === "radio" ? { c: el.checked } : el.value;
       });
       return f;
@@ -13891,7 +14948,8 @@ TBM-03,513920.113,2787558.486"></textarea>
           scon: SC.on,
           photos: PHOTOS.map(function (p) { return { key: p.key, label: p.label, file: p.file, bytes: p.bytes, w: p.w, h: p.h, gps: p.gps || null }; }),
           logo: LOGO ? { name: LOGO.name, bytes: LOGO.bytes } : null,
-          design: DESIGNTXT
+          design: DESIGNTXT,
+          trav: typeof tvState === "function" ? tvState() : null
         }
       };
     }
@@ -13921,6 +14979,7 @@ TBM-03,513920.113,2787558.486"></textarea>
       if ($("ctrlText").value.trim()) { scRun(); if (s.scon) { $("scApply").checked = true; SC.on = true; } }
       runCompare(); lineReport(); drawThumbs(); refresh();
       if (s.src) $("srcNote").textContent = s.src;
+      if (s.trav && typeof tvLoad === "function") tvLoad(s.trav);
       undoReset();
     }
 
@@ -14724,9 +15783,7 @@ TBM-03,513920.113,2787558.486"></textarea>
         rows.map(function (r) {
           return "<tr><td style='padding:5px 12px;color:#5B7480'>" + r[0] +
             "</td><td align='right' style='padding:5px 12px'>" + r[1] + "</td></tr>";
-        }).join("") + legend + "</table>" +
-        "<div style='padding:7px 2px 0;font-size:11px;color:#8AA3AE'>" +
-        "Produced with Excel to KML Pro, " + esc(appVer()) + " &mdash; " + CREDIT + "</div></div>";
+        }).join("") + legend + "</table></div>";
     }
 
     /* A tile of T metres fills 256 pixels when the camera is at roughly 4.7 T, on a
@@ -15178,6 +16235,11 @@ TBM-03,513920.113,2787558.486"></textarea>
         if (window.location.hostname === "www.exceltokml.com" || window.location.hostname === "exceltokml.com") {
           return "";
         }
+        /* served by the website itself (its /app page), on any address — a preview or a local
+           copy included: the account is on that same site */
+        if (/^https?:$/.test(window.location.protocol) && /^\/(api\/app-html|app)(\/|$)/.test(window.location.pathname)) {
+          return "";
+        }
         return "https://www.exceltokml.com";
       }
 
@@ -15223,8 +16285,42 @@ TBM-03,513920.113,2787558.486"></textarea>
         } catch (e) { }
       }
 
+      /* An export is noted once its file is really written, with that file's name, size and grid:
+         a Save window closed without saving notes nothing. The save buttons note the export first;
+         it waits here for the matching "bm2kml:saved". Several can wait at once — a report
+         still being drawn while another file is saved — each matched by its file type. */
+      var PENDEXP = [];
+      var EXPEXT = { KMZ: "kmz", KML: "kml", CSV: "csv", XLSX: "xlsx", DXF: "dxf", GEOJSON: "geojson", GPX: "gpx",
+        SHAPEFILE: "zip", PDF: "pdf", GSI: "gsi", TXT: "csv" };
+      function sizeText(n) {
+        n = Number(n) || 0;
+        return n < 1048576 ? (n / 1024).toFixed(1) + " KB" : (n / 1048576).toFixed(2) + " MB";
+      }
+      window.addEventListener("bm2kml:saved", function (e) {
+        var d = e.detail || {};
+        var ext = ((String(d.name || "").match(/\.([a-z0-9]+)$/i) || [])[1] || "").toLowerCase();
+        PENDEXP = PENDEXP.filter(function (x) { return Date.now() - x.t < 600000; });
+        var i = -1;
+        PENDEXP.forEach(function (x, k) { if (EXPEXT[String(x.meta.exportFormat || "").toUpperCase()] === ext) i = k; });
+        if (i < 0) return;
+        var p = PENDEXP.splice(i, 1)[0];
+        var m = {};
+        Object.keys(p.meta).forEach(function (k) { m[k] = p.meta[k]; });
+        m.fileName = d.name; m.fileSize = sizeText(d.size); if (d.crs) m.crs = d.crs;
+        m.__saved = 1;
+        window.trackUserActivity("export", p.title, m);
+      });
+
       // Global Activity Logger
       window.trackUserActivity = function (action, title, metadata) {
+        if (action === "export" && !(metadata && metadata.__saved)) {
+          /* a newer export of the same type replaces one whose Save window was closed */
+          var fmtNow = String((metadata || {}).exportFormat || "").toUpperCase();
+          PENDEXP = PENDEXP.filter(function (x) { return String(x.meta.exportFormat || "").toUpperCase() !== fmtNow; });
+          PENDEXP.push({ title: title, meta: metadata || {}, t: Date.now() });
+          return;
+        }
+        if (metadata) delete metadata.__saved;
         var entry = {
           id: "loc_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
           action: action,
@@ -15412,6 +16508,41 @@ TBM-03,513920.113,2787558.486"></textarea>
       }
 
       if (tabBtnLogin) tabBtnLogin.addEventListener("click", function () { switchTab("login"); });
+
+      /* Continue with Google (Windows program): the program opens exceltokml.com in
+         the default browser; after sign-in there it passes the new session back
+         and calls window.__kmlBrowserSignedIn(token). */
+      (function () {
+        var wrap = document.getElementById("authGoogleWrap");
+        var btn = document.getElementById("authGoogleBtn");
+        if (!wrap || !btn || typeof window.kmlBrowserSignIn !== "function") return;
+        wrap.style.display = "block";
+        btn.addEventListener("click", function () {
+          clearAlert();
+          btn.disabled = true;
+          Promise.resolve(window.kmlBrowserSignIn()).then(function () {
+            showAlert("Your browser has opened. Sign in there — this window signs in by itself.", "success");
+            setTimeout(function () { btn.disabled = false; }, 4000);
+          }).catch(function () {
+            btn.disabled = false;
+            showAlert("Couldn't open your browser. Please sign in with email instead.");
+          });
+        });
+        window.__kmlBrowserSignedIn = function (token) {
+          if (!token) return;
+          authToken = token;
+          currentUser = null;
+          try { localStorage.setItem(STORAGE_KEY_TOKEN, authToken); localStorage.removeItem(STORAGE_KEY_USER); } catch (e) { }
+          Promise.resolve(verifySession()).then(function () {
+            if (currentUser) {
+              showAlert("Signed in. Welcome, " + (currentUser.name || currentUser.email).split(" ")[0] + "!", "success");
+              setTimeout(closeAuthModal, 900);
+            } else {
+              showAlert("That sign-in didn't complete. Please try again.");
+            }
+          });
+        };
+      })();
       if (tabBtnRegister) tabBtnRegister.addEventListener("click", function () { switchTab("register"); });
       if (authModalClose) authModalClose.addEventListener("click", closeAuthModal);
       if (authModalOverlay) {
@@ -15685,7 +16816,7 @@ TBM-03,513920.113,2787558.486"></textarea>
           return '<div class="' + (x.n ? "" : "zero") + '" title="' + x.d.toLocaleDateString() + ": " + x.n + '"><span>' + (x.n || "") + '</span><i style="height:' +
             Math.max(2, Math.round(x.n / mx * 80)) + 'px"></i>' + (i % 2 ? "" : x.d.getDate()) + "</div>";
         }).join("") + "</div>";
-        return "<h3>Overview</h3><p class='lead'>What this account has done with Excel to KML Pro.</p>" +
+        return "<h3>Overview</h3><p class='lead'>What this account has done with Excel to KML.</p>" +
           '<div class="acct-tiles">' +
           '<div class="acct-tile"><b>' + aN(s.totalPointsProcessed) + "</b><span>points processed</span></div>" +
           '<div class="acct-tile"><b>' + aN(s.totalConversions) + "</b><span>conversions</span></div>" +
@@ -16021,7 +17152,7 @@ TBM-03,513920.113,2787558.486"></textarea>
             var t = new Date(a.timestamp);
             return [t.toISOString().slice(0, 10), t.toTimeString().slice(0, 8), a.action, a.title, a.fileName, a.pointsCount, a.crs, a.exportFormat, a.__local ? "this computer" : "account"];
           }));
-          saveBlob("﻿" + rows.map(function (r) { return r.map(q2).join(","); }).join("\r\n") + "\r\n", "Excel to KML Pro activity.csv", "text/csv;charset=utf-8", true);
+          saveBlob("﻿" + rows.map(function (r) { return r.map(q2).join(","); }).join("\r\n") + "\r\n", "Excel to KML activity.csv", "text/csv;charset=utf-8", true);
         });
         x = document.getElementById("acctClear"); if (x) x.addEventListener("click", function () {
           var btn = this;
@@ -16122,7 +17253,7 @@ TBM-03,513920.113,2787558.486"></textarea>
         });
         x = document.getElementById("acctPtCsv"); if (x) x.addEventListener("click", function () {
           var rows = []; ptGroups().forEach(function (g) { rows = rows.concat(g.rows); });
-          saveBlob(ptCsv(rows), "Excel to KML Pro points.csv", "text/csv;charset=utf-8", true);
+          saveBlob(ptCsv(rows), "Excel to KML points.csv", "text/csv;charset=utf-8", true);
         });
       }
 
@@ -16248,11 +17379,16 @@ TBM-03,513920.113,2787558.486"></textarea>
           var email = (document.getElementById("regEmail").value || "").trim();
           var password = document.getElementById("regPassword").value || "";
           var organization = (document.getElementById("regOrg").value || "").trim();
-          var role = document.getElementById("regRole").value || "surveyor";
+          var role = (document.getElementById("regRole").value || "").replace(/\s+/g, " ").trim();
           var submitBtn = document.getElementById("regSubmitBtn");
 
           if (!name || !email || !password) {
             showAlert("Name, email, and password are required.");
+            return;
+          }
+          if (!role) {
+            showAlert("Please type your occupation, for example Land Surveyor.");
+            document.getElementById("regRole").focus();
             return;
           }
           if (password.length < 6) {
@@ -16390,6 +17526,1824 @@ TBM-03,513920.113,2787558.486"></textarea>
     })();
 
     refresh();
+
+    /* ================= traverse and level adjustment: the arithmetic =================
+       Pure functions, no page. A traverse is closed (loop or link) or open, adjusted by
+       Bowditch, Transit or least squares; a level run is reduced by rise and fall (or
+       from height differences) and its misclosure spread along it. */
+    var SURV = (function () {
+      var D2R = Math.PI / 180, R2D = 180 / Math.PI, S2R = Math.PI / 648000;
+      function n360(a) { a = a % 360; if (a < 0) a += 360; if (a >= 360 - 1e-12) a = 0; return a; }
+      function n180(a) { a = n360(a); return a > 180 ? a - 360 : a; }
+
+      /* an angle as typed: 123.4530 (DDD.MMSS), 123°45'30", 123 45 30, decimal degrees or gons */
+      function parseAngle(raw, fmt) {
+        if (raw === null || raw === undefined) return null;
+        var s = String(raw).trim();
+        if (s === "") return null;
+        var neg = false, v;
+        if (s.charAt(0) === "-") { neg = true; s = s.slice(1).trim(); }
+        if (/[°'"′″\s:dms]/i.test(s)) {
+          var parts = s.split(/[^0-9.]+/).filter(Boolean).map(Number);
+          if (!parts.length || parts.length > 3 || parts.some(function (x) { return isNaN(x); })) return NaN;
+          var m0 = parts[1] || 0, s0 = parts[2] || 0;
+          if (m0 >= 60 || s0 >= 60) return NaN;
+          v = parts[0] + m0 / 60 + s0 / 3600;
+        } else if (!/^\d*\.?\d*$/.test(s) || s === ".") {
+          return NaN;
+        } else if (fmt === "deg") {
+          v = parseFloat(s);
+        } else if (fmt === "gon") {
+          v = parseFloat(s) * 0.9;
+        } else {
+          var ip = s.split(".")[0], fp = s.split(".")[1] || "";
+          var d = parseInt(ip || "0", 10), f = fp + "0000";
+          var mm = parseInt(f.slice(0, 2), 10);
+          var ss = parseFloat(f.slice(2, 4) + (fp.length > 4 ? "." + fp.slice(4) : ""));
+          if (mm >= 60 || ss >= 60) return NaN;
+          v = d + mm / 60 + ss / 3600;
+        }
+        if (isNaN(v)) return NaN;
+        return neg ? -v : v;
+      }
+
+      function fmtDMS(deg, dp, padDeg) {
+        if (deg === null || deg === undefined || isNaN(deg)) return "";
+        if (dp === undefined) dp = 1;
+        var sign = deg < 0 ? "-" : "", k = Math.pow(10, dp);
+        var t = Math.round(Math.abs(deg) * 3600 * k);
+        var d = Math.floor(t / (3600 * k)); t -= d * 3600 * k;
+        var m = Math.floor(t / (60 * k)); t -= m * 60 * k;
+        var s = (t / k).toFixed(dp);
+        if (s.indexOf(".") === 1 || (dp === 0 && s.length === 1)) s = "0" + s;
+        var ds = String(d);
+        if (padDeg !== false) while (ds.length < 3) ds = "0" + ds;
+        return sign + ds + "°" + (m < 10 ? "0" : "") + m + "'" + s + '"';
+      }
+      function fmtSec(sec, dp) { return (sec >= 0 ? "+" : "") + sec.toFixed(dp === undefined ? 1 : dp) + '"'; }
+      function azimuth(E1, N1, E2, N2) { return n360(Math.atan2(E2 - E1, N2 - N1) * R2D); }
+      function dist2D(E1, N1, E2, N2) { return Math.sqrt((E2 - E1) * (E2 - E1) + (N2 - N1) * (N2 - N1)); }
+      function sum(a) { var s = 0; for (var i = 0; i < a.length; i++) s += a[i]; return s; }
+
+      /* ---- small dense linear algebra ---- */
+      function zeros(n) { var a = []; for (var i = 0; i < n; i++) a.push(new Float64Array(n)); return a; }
+      function cholesky(A, n) {
+        var L = zeros(n);
+        for (var i = 0; i < n; i++) {
+          for (var j = 0; j <= i; j++) {
+            var s = A[i][j];
+            for (var k = 0; k < j; k++) s -= L[i][k] * L[j][k];
+            if (i === j) {
+              if (s <= 1e-30) throw new Error("The traverse geometry is not fixed. Check the control points and the orientation.");
+              L[i][i] = Math.sqrt(s);
+            } else L[i][j] = s / L[j][j];
+          }
+        }
+        return L;
+      }
+      function cholSolve(L, b, n) {
+        var y = new Float64Array(n), x = new Float64Array(n), i, k, s;
+        for (i = 0; i < n; i++) { s = b[i]; for (k = 0; k < i; k++) s -= L[i][k] * y[k]; y[i] = s / L[i][i]; }
+        for (i = n - 1; i >= 0; i--) { s = y[i]; for (k = i + 1; k < n; k++) s -= L[k][i] * x[k]; x[i] = s / L[i][i]; }
+        return x;
+      }
+
+      /* ---- chi-square quantile, from the regularized gamma function ---- */
+      function gammaln(x) {
+        var c = [76.18009172947146, -86.50532032941677, 24.01409824083091, -1.231739572450155, 0.1208650973866179e-2, -0.5395239384953e-5];
+        var y = x, tmp = x + 5.5; tmp -= (x + 0.5) * Math.log(tmp);
+        var ser = 1.000000000190015;
+        for (var j = 0; j < 6; j++) ser += c[j] / ++y;
+        return -tmp + Math.log(2.5066282746310005 * ser / x);
+      }
+      function gammp(a, x) {
+        if (x <= 0) return 0;
+        if (x < a + 1) {
+          var ap = a, sm = 1 / a, del = sm;
+          for (var n = 0; n < 500; n++) { ap++; del *= x / ap; sm += del; if (Math.abs(del) < Math.abs(sm) * 1e-15) break; }
+          return sm * Math.exp(-x + a * Math.log(x) - gammaln(a));
+        }
+        var b = x + 1 - a, c = 1e300, d = 1 / b, h = d;
+        for (var i = 1; i < 500; i++) {
+          var an = -i * (i - a); b += 2;
+          d = an * d + b; if (Math.abs(d) < 1e-300) d = 1e-300;
+          c = b + an / c; if (Math.abs(c) < 1e-300) c = 1e-300;
+          d = 1 / d; var dl = d * c; h *= dl; if (Math.abs(dl - 1) < 1e-15) break;
+        }
+        return 1 - Math.exp(-x + a * Math.log(x) - gammaln(a)) * h;
+      }
+      function chi2inv(p, dof) {
+        var lo = 0, hi = Math.max(10, dof * 10 + 100);
+        for (var i = 0; i < 200; i++) { var mid = (lo + hi) / 2; if (gammp(dof / 2, mid / 2) < p) lo = mid; else hi = mid; }
+        return (lo + hi) / 2;
+      }
+
+      /* ---- one traverse ----
+         t: type loop|link|open, method bowditch|transit|lsq, angleDir cw|ccw, scale,
+            startPt/endPt {name,E,N,H}, startOri/endOri {mode,az}, rows [{name, angle, dist, dh}],
+            tol {angK, ratio, hC}, sigma {ang, dA, dB}, useH */
+      function compute(t) {
+        var warnings = [], rows = t.rows, n = rows.length, legs = n - 1, i;
+        var closed = t.type !== "open";
+        if (n < 2) throw new Error("Add at least two stations, so there is one leg to work out.");
+        if (!t.startPt) throw new Error("Choose a start station with known coordinates.");
+        if (t.type === "link" && !t.endPt) throw new Error("Choose a closing station with known coordinates.");
+        if (!(t.scale > 0)) throw new Error("The scale factor must be a number above 0.");
+        if (t.startOri.az === null || t.startOri.az === undefined || isNaN(t.startOri.az)) throw new Error("The opening orientation is missing. Set a backsight point or bearing.");
+
+        var useStartAngle = t.startOri.mode !== "firstleg";
+        var hasClose = closed && t.endOri.mode !== "none";
+        if (hasClose && (t.endOri.az === null || t.endOri.az === undefined || isNaN(t.endOri.az))) throw new Error("The closing orientation is missing. Set a foresight point or bearing, or choose No closing angle.");
+        var angleRequired = function (k) { return k === 0 ? useStartAngle : k === n - 1 ? hasClose : true; };
+        var label = function (k) { return rows[k].name || "row " + (k + 1); };
+
+        for (i = 0; i < legs; i++) {
+          if (!(rows[i].dist > 0)) throw new Error("The distance " + label(i) + " to " + label(i + 1) + " is missing or not above 0.");
+        }
+        var obsAng = rows.map(function (r, k) {
+          if (!angleRequired(k)) return null;
+          if (r.angle === null || r.angle === undefined) throw new Error("The angle at " + label(k) + " is missing.");
+          if (isNaN(r.angle)) throw new Error("The angle at " + label(k) + " could not be read. Check how it is typed.");
+          return t.angleDir === "ccw" ? n360(360 - r.angle) : n360(r.angle);
+        });
+        var names = rows.map(function (r) { return String(r.name || "").trim(); });
+        names.forEach(function (nm, k) { if (!nm) throw new Error("A station name is missing on row " + (k + 1) + "."); });
+        var seen = {}; seen[names[0]] = 1; if (closed) seen[names[n - 1]] = 1;
+        names.slice(1, closed ? n - 1 : n).forEach(function (nm) {
+          if (seen[nm]) throw new Error("The station name " + nm + " is used more than once in this traverse.");
+          seen[nm] = 1;
+        });
+        var nAng = obsAng.filter(function (a) { return a !== null; }).length;
+
+        var bearings = function (A) {
+          var az = new Array(legs);
+          az[0] = n360(useStartAngle ? t.startOri.az + A[0] : t.startOri.az);
+          for (var k = 1; k < legs; k++) az[k] = n360(az[k - 1] + 180 + A[k]);
+          return { az: az, close: hasClose ? n360(az[legs - 1] + 180 + A[n - 1]) : null };
+        };
+        var raw = bearings(obsAng), angMis = null, corr = 0;
+        if (hasClose) { angMis = n180(raw.close - t.endOri.az) * 3600; corr = -angMis / nAng; }
+        var balAng = obsAng.map(function (a) { return a === null ? null : n360(a + corr / 3600); });
+        var bal = bearings(balAng);
+
+        var sd = rows.slice(0, legs).map(function (r) { return r.dist; });
+        var d = sd.map(function (x) { return x * t.scale; });
+        var sumD = sum(d);
+        var dE = bal.az.map(function (az, k) { return d[k] * Math.sin(az * D2R); });
+        var dN = bal.az.map(function (az, k) { return d[k] * Math.cos(az * D2R); });
+        var S = t.startPt, endPt = t.type === "loop" ? S : t.endPt;
+
+        var fE = null, fN = null, fL = null, precision = null;
+        var cE = [], cN = [];
+        for (i = 0; i < legs; i++) { cE.push(0); cN.push(0); }
+        if (closed) {
+          fE = sum(dE) - (endPt.E - S.E);
+          fN = sum(dN) - (endPt.N - S.N);
+          fL = Math.sqrt(fE * fE + fN * fN);
+          precision = fL > 0 ? sumD / fL : Infinity;
+          var sAE = 0, sAN = 0;
+          for (i = 0; i < legs; i++) { sAE += Math.abs(dE[i]); sAN += Math.abs(dN[i]); }
+          for (i = 0; i < legs; i++) {
+            if (t.method === "transit" && sAE > 0 && sAN > 0) { cE[i] = -fE * Math.abs(dE[i]) / sAE; cN[i] = -fN * Math.abs(dN[i]) / sAN; }
+            else { cE[i] = -fE * d[i] / sumD; cN[i] = -fN * d[i] / sumD; }
+          }
+        }
+        var E = [S.E], N = [S.N];
+        for (i = 0; i < legs; i++) { E.push(E[i] + dE[i] + cE[i]); N.push(N[i] + dN[i] + cN[i]); }
+        if (closed) { E[n - 1] = endPt.E; N[n - 1] = endPt.N; }
+
+        /* heights from the height difference of each leg */
+        var H = null, fH = null, hAllow = null, cH = null, dH = null;
+        var noH = function (v) { return v === null || v === undefined || isNaN(v); };
+        if (t.useH) {
+          var dhs = rows.slice(0, legs).map(function (r) { return r.dh; });
+          var miss = -1;
+          for (i = 0; i < dhs.length; i++) if (noH(dhs[i])) { miss = i; break; }
+          if (noH(S.H)) warnings.push("Heights left out: the start station has no known height.");
+          else if (miss >= 0) warnings.push("Heights left out: the height difference " + names[miss] + " to " + names[miss + 1] + " is missing.");
+          else if (closed && noH(endPt.H)) warnings.push("Heights left out: the closing station has no known height.");
+          else {
+            dH = dhs; cH = dhs.map(function () { return 0; });
+            if (closed) {
+              fH = sum(dhs) - (endPt.H - S.H);
+              for (i = 0; i < legs; i++) cH[i] = -fH * d[i] / sumD;
+              hAllow = t.tol.hC * Math.sqrt(sumD / 1000) / 1000;
+            }
+            H = [S.H];
+            for (i = 0; i < legs; i++) H.push(H[i] + dhs[i] + cH[i]);
+            if (closed) H[n - 1] = endPt.H;
+          }
+        }
+
+        var angAllow = t.tol.angK * Math.sqrt(nAng);
+        var closure = {
+          hasClose: hasClose, nAng: nAng, angMis: angMis, angAllow: angAllow,
+          angPass: hasClose ? Math.abs(angMis) <= angAllow + 1e-9 : null, angCorr: hasClose ? corr : null,
+          fE: fE, fN: fN, fL: fL, sumD: sumD, precision: precision, ratioReq: t.tol.ratio,
+          precPass: closed ? precision >= t.tol.ratio : null,
+          fH: fH, hAllow: hAllow, hPass: fH !== null ? Math.abs(fH) <= hAllow + 1e-12 : null
+        };
+        var res = {
+          type: t.type, method: t.method, closed: closed, names: names, warnings: warnings, closure: closure,
+          rows: rows.map(function (r, k) { return { name: names[k], obs: obsAng[k] }; }),
+          balAng: balAng, rawAz: raw.az, balAz: bal.az, sd: sd, d: d, dE: dE, dN: dN, cE: cE, cN: cN, dH: dH, cH: cH,
+          E: E, N: N, H: H, lsq: null
+        };
+        if (t.method === "lsq") {
+          if (!closed) warnings.push("Least squares needs a closed traverse, so this open traverse is worked out without an adjustment.");
+          else res.lsq = leastSquares(t, res, obsAng, useStartAngle);
+        }
+        if (!closed) warnings.push("An open traverse has no closure, so a mistake in the observations cannot be found.");
+
+        var Ef = res.lsq ? res.lsq.E : E, Nf = res.lsq ? res.lsq.N : N;
+        res.finalE = Ef; res.finalN = Nf;
+        res.adjLegs = [];
+        for (i = 0; i < legs; i++) {
+          res.adjLegs.push({
+            from: names[i], to: names[i + 1], az: azimuth(Ef[i], Nf[i], Ef[i + 1], Nf[i + 1]),
+            d: dist2D(Ef[i], Nf[i], Ef[i + 1], Nf[i + 1]), dh: H ? H[i + 1] - H[i] : null
+          });
+        }
+        res.adjAng = obsAng.map(function (a, k) {
+          if (a === null) return null;
+          if (!res.lsq) return balAng[k];
+          var bsAz = k === 0 ? t.startOri.az : azimuth(Ef[k], Nf[k], Ef[k - 1], Nf[k - 1]), fsAz;
+          if (k === n - 1) fsAz = t.endOri.mode === "firstleg" ? azimuth(Ef[k], Nf[k], Ef[1], Nf[1]) : t.endOri.az;
+          else fsAz = azimuth(Ef[k], Nf[k], Ef[k + 1], Nf[k + 1]);
+          return n360(fsAz - bsAz);
+        });
+        res.stations = names.map(function (nm, k) {
+          var fixed = k === 0 || (closed && k === n - 1);
+          var st = { name: nm, E: Ef[k], N: Nf[k], H: H ? H[k] : null, fixed: fixed };
+          if (res.lsq && !fixed && res.lsq.stat[k]) {
+            var q = res.lsq.stat[k];
+            st.sE = q.sE; st.sN = q.sN; st.ellA = q.ellA; st.ellB = q.ellB; st.ellAz = q.ellAz;
+          }
+          return st;
+        });
+        return res;
+      }
+
+      /* least squares on the angles and distances: coordinates of the new stations are the unknowns */
+      function leastSquares(t, cls, obsAng, useStartAngle) {
+        var rows = t.rows, n = rows.length, legs = n - 1, i, j, k;
+        var S = t.startPt, Ept = t.type === "loop" ? S : t.endPt;
+        var uIdx = rows.map(function (r, q) { return q === 0 || q === n - 1 ? -1 : q - 1; });
+        var u = 2 * (n - 2);
+        if (u === 0) return null;
+        var x = new Float64Array(u);
+        for (i = 1; i < n - 1; i++) { x[2 * (i - 1)] = cls.E[i]; x[2 * (i - 1) + 1] = cls.N[i]; }
+        var coord = function (q) { return q === 0 ? [S.E, S.N] : q === n - 1 ? [Ept.E, Ept.N] : [x[2 * uIdx[q]], x[2 * uIdx[q] + 1]]; };
+
+        var obs = [];
+        for (i = 0; i < legs; i++) {
+          var dd = rows[i].dist * t.scale;
+          var sg = Math.sqrt(Math.pow(t.sigma.dA / 1000, 2) + Math.pow(t.sigma.dB * 1e-6 * dd, 2));
+          obs.push({ type: "dist", from: i, to: i + 1, val: dd, sig: Math.max(sg, 1e-6) });
+        }
+        var sigA = Math.max(t.sigma.ang, 0.01) * S2R;
+        for (i = 0; i < n; i++) {
+          if (obsAng[i] === null) continue;
+          var bs = i === 0 ? { az: t.startOri.az } : { row: i - 1 }, fs;
+          if (i === n - 1) fs = t.endOri.mode === "firstleg" ? { row: 1 } : { az: t.endOri.az };
+          else fs = { row: i + 1 };
+          obs.push({ type: "ang", at: i, bs: bs, fs: fs, val: obsAng[i] * D2R, sig: sigA });
+        }
+        if (!useStartAngle) obs.push({ type: "az", from: 0, to: 1, val: t.startOri.az * D2R, sig: 0.001 * S2R, fixed: true });
+
+        var m = obs.length, r = m - u;
+        var dirAz = function (a1, b1, row, sign) {
+          var p1 = coord(a1), p2 = coord(b1);
+          var de = p2[0] - p1[0], dn = p2[1] - p1[1], d2 = de * de + dn * dn;
+          if (uIdx[b1] >= 0) { row[2 * uIdx[b1]] += sign * dn / d2; row[2 * uIdx[b1] + 1] += sign * -de / d2; }
+          if (uIdx[a1] >= 0) { row[2 * uIdx[a1]] += sign * -dn / d2; row[2 * uIdx[a1] + 1] += sign * de / d2; }
+          return Math.atan2(de, dn);
+        };
+        var wrap = function (v) { v = v % (2 * Math.PI); if (v > Math.PI) v -= 2 * Math.PI; if (v <= -Math.PI) v += 2 * Math.PI; return v; };
+        var evalObs = function (o) {
+          var a = new Float64Array(u), f;
+          if (o.type === "dist") {
+            var p1 = coord(o.from), p2 = coord(o.to);
+            var de = p2[0] - p1[0], dn = p2[1] - p1[1], dl = Math.sqrt(de * de + dn * dn);
+            if (uIdx[o.to] >= 0) { a[2 * uIdx[o.to]] += de / dl; a[2 * uIdx[o.to] + 1] += dn / dl; }
+            if (uIdx[o.from] >= 0) { a[2 * uIdx[o.from]] -= de / dl; a[2 * uIdx[o.from] + 1] -= dn / dl; }
+            return { a: a, misc: o.val - dl, f: dl };
+          }
+          if (o.type === "az") { f = dirAz(o.from, o.to, a, 1); return { a: a, misc: wrap(o.val - f), f: f }; }
+          var fsAz = o.fs.row !== undefined ? dirAz(o.at, o.fs.row, a, 1) : o.fs.az * D2R;
+          var bsAz = o.bs.row !== undefined ? dirAz(o.at, o.bs.row, a, -1) : o.bs.az * D2R;
+          f = fsAz - bsAz;
+          return { a: a, misc: wrap(o.val - f), f: f };
+        };
+        var normals = function (evs) {
+          var Nm = zeros(u), b = new Float64Array(u);
+          evs.forEach(function (ev, q) {
+            var p = 1 / (obs[q].sig * obs[q].sig), nz = [];
+            for (var c = 0; c < u; c++) if (ev.a[c] !== 0) nz.push(c);
+            nz.forEach(function (j1) {
+              b[j1] += ev.a[j1] * p * ev.misc;
+              nz.forEach(function (k1) { Nm[j1][k1] += ev.a[j1] * p * ev.a[k1]; });
+            });
+          });
+          return { Nm: Nm, b: b };
+        };
+
+        var iter = 0, maxDx = Infinity, L;
+        while (iter < 25 && maxDx > 1e-7) {
+          iter++;
+          var ne = normals(obs.map(evalObs));
+          L = cholesky(ne.Nm, u);
+          var dx = cholSolve(L, ne.b, u);
+          maxDx = 0;
+          for (k = 0; k < u; k++) { x[k] += dx[k]; maxDx = Math.max(maxDx, Math.abs(dx[k])); }
+        }
+        if (maxDx > 1e-4) throw new Error("Least squares did not settle. Look for a gross mistake: a wrong angle or distance.");
+        var evals = obs.map(evalObs);
+        L = cholesky(normals(evals).Nm, u);
+        var Q = [];
+        for (k = 0; k < u; k++) { var e = new Float64Array(u); e[k] = 1; Q.push(cholSolve(L, e, u)); }
+        var vtpv = 0;
+        var resid = obs.map(function (o, q) {
+          var v = -evals[q].misc, p = 1 / (o.sig * o.sig);
+          vtpv += v * v * p;
+          var a = evals[q].a, aqa = 0;
+          for (j = 0; j < u; j++) if (a[j]) for (k = 0; k < u; k++) if (a[k]) aqa += a[j] * Q[j][k] * a[k];
+          var qvv = o.sig * o.sig - aqa, sv = qvv > 1e-20 ? Math.sqrt(qvv) : 0;
+          return { v: v, std: sv > 0 && !o.fixed ? v / sv : null };
+        });
+        var s02 = r > 0 ? vtpv / r : 1, chi = null;
+        if (r > 0) {
+          var lo = chi2inv(0.025, r), hi = chi2inv(0.975, r);
+          chi = { value: vtpv, lo: lo, hi: hi, pass: vtpv >= lo && vtpv <= hi };
+        }
+        var E = cls.E.slice(), N = cls.N.slice();
+        for (i = 1; i < n - 1; i++) { E[i] = x[2 * (i - 1)]; N[i] = x[2 * (i - 1) + 1]; }
+        if (t.type === "loop") { E[n - 1] = S.E; N[n - 1] = S.N; }
+        var stat = {}, k95 = Math.sqrt(chi2inv(0.95, 2));
+        for (i = 1; i < n - 1; i++) {
+          j = 2 * (i - 1);
+          var vE = s02 * Q[j][j], vN = s02 * Q[j + 1][j + 1], cEN = s02 * Q[j][j + 1];
+          var mean = (vE + vN) / 2, rad = Math.sqrt(Math.pow((vN - vE) / 2, 2) + cEN * cEN);
+          stat[i] = {
+            sE: Math.sqrt(vE), sN: Math.sqrt(vN),
+            ellA: Math.sqrt(Math.max(mean + rad, 0)) * k95, ellB: Math.sqrt(Math.max(mean - rad, 0)) * k95,
+            ellAz: n360(0.5 * Math.atan2(2 * cEN, vN - vE) * R2D) % 180
+          };
+        }
+        var nm = function (q) { return rows[q].name; };
+        var obsOut = obs.map(function (o, q) {
+          var o2 = { type: o.type, std: resid[q].std, flag: resid[q].std !== null && Math.abs(resid[q].std) > 3 };
+          if (o.type === "dist") {
+            o2.label = "Distance"; o2.at = nm(o.from); o2.to = nm(o.to); o2.obs = o.val; o2.adj = evals[q].f;
+            o2.v = resid[q].v; o2.sigma = o.sig; o2.unit = "m";
+          } else if (o.type === "az") {
+            o2.label = "Fixed bearing"; o2.at = nm(o.from); o2.to = nm(o.to); o2.obs = o.val * R2D; o2.adj = n360(evals[q].f * R2D);
+            o2.v = resid[q].v / S2R; o2.sigma = o.sig / S2R; o2.unit = "sec";
+          } else {
+            o2.label = "Angle"; o2.at = nm(o.at);
+            o2.to = (o.bs.row !== undefined ? nm(o.bs.row) : "BS") + " to " + (o.fs.row !== undefined ? nm(o.fs.row) : "FS");
+            o2.obs = o.val * R2D; o2.adj = n360(evals[q].f * R2D); o2.v = resid[q].v / S2R; o2.sigma = o.sig / S2R; o2.unit = "sec";
+          }
+          return o2;
+        });
+        return { E: E, N: N, iter: iter, m: m, u: u, r: r, vtpv: vtpv, s02: s02, s0: Math.sqrt(s02), chi: chi, stat: stat, obs: obsOut, k95: k95 };
+      }
+
+      /* ---- one level run ----
+         L: mode "staff" (rows {pt, bs, is, fs, dist}) or "dh" (rows {pt, dh, dist}),
+            startRL, closeRL (null: no closing benchmark), C (mm per root km), spread "dist"|"setups".
+         The first row is the starting benchmark; in staff mode it carries the first backsight.
+         A row with both a foresight and a backsight is a change point. */
+      function levels(L) {
+        var rows = L.rows, n = rows.length, i, warnings = [];
+        var bad = function (v) { return v === null || v === undefined || isNaN(v); };
+        if (n < 2) throw new Error("Add at least two rows: the benchmark you start on and one more staff position.");
+        if (bad(L.startRL)) throw new Error("The starting benchmark needs a known level.");
+        rows.forEach(function (r, k) { if (!String(r.pt || "").trim()) throw new Error("A point name is missing on row " + (k + 1) + "."); });
+        var out = [{ pt: rows[0].pt, rise: null, fall: null, raw: L.startRL }];
+        var sBS = 0, sFS = 0, sRise = 0, sFall = 0, setups = 0, setupAt = [0], cum = [0], dist = 0, hasDist = true;
+        if (L.mode === "dh") {
+          for (i = 1; i < n; i++) {
+            var dh = rows[i].dh;
+            if (bad(dh)) throw new Error("The height difference to " + rows[i].pt + " is missing or could not be read.");
+            out.push({ pt: rows[i].pt, rise: dh > 0 ? dh : null, fall: dh < 0 ? -dh : null, raw: out[i - 1].raw + dh });
+            if (dh > 0) sRise += dh; else sFall -= dh;
+            setups++; setupAt.push(setups);
+          }
+        } else {
+          if (bad(rows[0].bs)) throw new Error("The first row needs a backsight on the benchmark.");
+          var last = rows[0].bs; sBS += rows[0].bs; setups = 1;
+          for (i = 1; i < n; i++) {
+            var r = rows[i], hasIS = !bad(r.is), hasFS = !bad(r.fs), hasBS = !bad(r.bs);
+            if (hasIS && hasFS) throw new Error("Row " + (i + 1) + " (" + r.pt + ") has both an intermediate sight and a foresight. Keep one.");
+            if (!hasIS && !hasFS) throw new Error("Row " + (i + 1) + " (" + r.pt + ") needs an intermediate sight or a foresight.");
+            if (hasBS && !hasFS) throw new Error("Row " + (i + 1) + " (" + r.pt + ") has a backsight but no foresight. A change point needs both.");
+            var cur = hasIS ? r.is : r.fs, rf = last - cur;
+            out.push({ pt: r.pt, rise: rf > 0 ? rf : null, fall: rf < 0 ? -rf : null, raw: out[i - 1].raw + rf });
+            if (rf > 0) sRise += rf; else sFall -= rf;
+            if (hasFS) sFS += r.fs;
+            setupAt.push(setups);
+            if (hasBS) { sBS += r.bs; last = r.bs; setups++; } else last = cur;
+            if (i === n - 1 && !hasFS) throw new Error("The last row must be a foresight, on the closing benchmark or the last point.");
+            if (i === n - 1 && hasBS) warnings.push("The last row also has a backsight; it is not used.");
+          }
+        }
+        for (i = 1; i < n; i++) {
+          var dv = rows[i].dist;
+          if (bad(dv) || dv < 0) { hasDist = false; dv = 0; }
+          dist += dv; cum.push(dist);
+        }
+        if (!(dist > 0)) hasDist = false;
+        var lastRaw = out[n - 1].raw, closed = !bad(L.closeRL);
+        var mis = closed ? lastRaw - L.closeRL : null;
+        var spread = L.spread === "setups" || !hasDist ? "setups" : "dist";
+        if (closed && L.spread !== "setups" && !hasDist) warnings.push("Not every row has a distance, so the misclosure is spread by set-ups instead.");
+        var km = hasDist ? dist / 1000 : null;
+        /* without distances the allowable falls back on the set-up count: C x root(n) */
+        var allow = closed ? (km !== null ? L.C * Math.sqrt(km) : L.C * Math.sqrt(Math.max(setups, 1))) / 1000 : null;
+        var totalW = spread === "dist" ? dist : setupAt[n - 1];
+        out.forEach(function (o, k) {
+          var w = spread === "dist" ? cum[k] : setupAt[k];
+          o.corr = closed && totalW > 0 ? -mis * w / totalW : 0;
+          o.rl = o.raw + o.corr;
+          o.cum = hasDist ? cum[k] : null;
+        });
+        if (closed) out[n - 1].rl = L.closeRL;
+        if (!closed) warnings.push("No closing benchmark, so the run has no check and a misread staff cannot be found.");
+        return {
+          rows: out, mode: L.mode, closed: closed, mis: mis, allow: allow,
+          pass: closed ? Math.abs(mis) <= allow + 1e-12 : null,
+          dist: hasDist ? dist : null, km: km, setups: setups, spread: spread, C: L.C,
+          sBS: sBS, sFS: sFS, sRise: sRise, sFall: sFall,
+          arith: L.mode === "staff" ? Math.abs((sBS - sFS) - (sRise - sFall)) < 1e-9 && Math.abs((sRise - sFall) - (lastRaw - L.startRL)) < 1e-9 : null,
+          warnings: warnings
+        };
+      }
+
+      return {
+        parseAngle: parseAngle, fmtDMS: fmtDMS, fmtSec: fmtSec, azimuth: azimuth, dist2D: dist2D,
+        n360: n360, n180: n180, compute: compute, levels: levels, chi2inv: chi2inv
+      };
+    })();
+
+    /* ================= traverse adjust: control points, traverses and level runs =================
+       Three sections of the rail. The inputs sit in the section panel; while one of them is open
+       the right-hand pane shows its results instead of the sheet. Nothing here touches the sheet
+       until "Add to points" is pressed, and then only through the rows on the left, as typed
+       points do. The work is kept on this computer and saved with the job. */
+    var TVSECS = { tvctl: 1, tvtrav: 1, tvlev: 1 };
+    (function () {
+      var KEY = "bm2kml.trav";
+      var LEVEL = { primary: "Primary", secondary: "Secondary", tertiary: "Tertiary" };
+      var DEF_TOL = { primary: { angK: 5, ratio: 20000, hC: 8 }, secondary: { angK: 10, ratio: 10000, hC: 12 }, tertiary: { angK: 20, ratio: 5000, hC: 24 } };
+      var TYPE = { loop: "Closed loop", link: "Closed link", open: "Open" };
+      var METHOD = { bowditch: "Bowditch", transit: "Transit", lsq: "Least squares" };
+      var COLS = ["#1F6F8B", "#B4531B", "#1F9D5B", "#7A4FB0", "#B7791F"];
+
+      var uid = function () { return Math.random().toString(36).slice(2, 9); };
+      var blankRow = function () { return { name: "", angle: "", dist: "", dh: "" }; };
+      var blankLRow = function () { return { pt: "", bs: "", is: "", fs: "", dh: "", dist: "" }; };
+      function newTrav(level, idx) {
+        return {
+          id: uid(), name: "T" + (idx + 1) + " " + LEVEL[level], level: level, type: level === "primary" ? "loop" : "link",
+          method: "bowditch", angleDir: "cw", scale: "1.00000000",
+          start: "", startMode: "point", bsPt: "", bsBrg: "", end: "", endMode: "point", fsPt: "", fsBrg: "",
+          tol: { angK: DEF_TOL[level].angK, ratio: DEF_TOL[level].ratio, hC: DEF_TOL[level].hC },
+          sigma: { ang: 3, dA: 2, dB: 2 }, useH: false,
+          rows: [blankRow(), blankRow(), blankRow(), blankRow()]
+        };
+      }
+      function newLev(idx) {
+        return {
+          id: uid(), name: "L" + (idx + 1) + " Level run", mode: "staff", start: "", startRL: "", close: "=", closeRL: "",
+          C: 12, spread: "dist", rows: [blankLRow(), blankLRow(), blankLRow(), blankLRow()]
+        };
+      }
+      function blank() {
+        return {
+          v: 1, fmt: "dms", control: [{ name: "", E: "", N: "", H: "" }, { name: "", E: "", N: "", H: "" }],
+          travs: [newTrav("primary", 0)], cur: 0, levs: [newLev(0)], lcur: 0,
+          info: { by: "", checked: "", approved: "", instrument: "", ref: "" }
+        };
+      }
+      /* the example: a primary loop on two pillars, a secondary link hung off it, and the loop levelled */
+      function example() {
+        var t1 = newTrav("primary", 0), t2 = newTrav("secondary", 1), l1 = newLev(0);
+        t1.name = "T1 Primary loop"; t1.method = "lsq"; t1.start = "CP-01"; t1.bsPt = "CP-02"; t1.fsPt = "CP-02"; t1.useH = true;
+        t1.sigma = { ang: 2, dA: 1, dB: 1.5 };
+        t1.rows = [["", "81.3127", "316.630", "0.646"], ["TS-01", "124.3129", "308.240", "0.584"], ["TS-02", "125.5354", "308.364", "0.566"],
+        ["TS-03", "104.5917", "293.903", "-0.802"], ["TS-04", "129.2554", "294.528", "-0.478"], ["TS-05", "130.2740", "288.697", "-0.523"],
+        ["", "23.1021", "", ""]].map(function (r) { return { name: r[0], angle: r[1], dist: r[2], dh: r[3] }; });
+        t2.name = "T2 Secondary link"; t2.start = "TS-02"; t2.bsPt = "TS-01"; t2.end = "TS-03"; t2.fsPt = "TS-04"; t2.useH = true;
+        t2.sigma = { ang: 3, dA: 2, dB: 2 };
+        t2.rows = [["", "162.5350", "141.088", "0.463"], ["ST-01", "166.3652", "131.143", "0.426"], ["ST-02", "108.5225", "90.961", "-0.073"],
+        ["ST-03", "148.5015", "71.767", "-0.243"], ["", "183.3946", "", ""]].map(function (r) { return { name: r[0], angle: r[1], dist: r[2], dh: r[3] }; });
+        l1.name = "L1 Level loop"; l1.mode = "staff"; l1.start = "CP-01"; l1.close = "="; l1.C = 8;
+        l1.rows = [["CP-01", "1.425", "", "", "0"], ["TS-01", "1.612", "", "0.779", "316.630"], ["TS-02", "1.508", "", "1.028", "308.240"],
+        ["TS-03", "0.987", "", "0.942", "308.364"], ["TS-04", "1.233", "", "1.789", "293.903"], ["TS-05", "1.104", "", "1.711", "294.528"],
+        ["CP-01", "", "", "1.627", "288.697"]].map(function (r) { return { pt: r[0], bs: r[1], is: "", fs: r[3], dh: "", dist: r[4] }; });
+        var x = blank();
+        x.control = [{ name: "CP-01", E: "228450.312", N: "441203.845", H: "4.215" }, { name: "CP-02", E: "228912.640", N: "441655.118", H: "5.032" }];
+        x.travs = [t1, t2]; x.levs = [l1];
+        return x;
+      }
+
+      var T = null;
+      try { T = JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) { T = null; }
+      if (!T || !T.travs || !T.levs || !T.control) T = blank();
+      if (!T.info) T.info = blank().info;
+      var persistT = 0;
+      function persist() {
+        clearTimeout(persistT);
+        persistT = setTimeout(function () { try { localStorage.setItem(KEY, JSON.stringify(T)); } catch (e) { } }, 300);
+      }
+
+      /* ---------- small helpers ---------- */
+      var tn = function (v) {
+        if (v === null || v === undefined) return null;
+        var s = String(v).replace(/[,\s]/g, "");
+        if (s === "") return null;
+        return /^[+-]?(\d+(\.\d*)?|\.\d+)$/.test(s) ? Number(s) : NaN;
+      };
+      var ok = function (v) { return v !== null && v !== undefined && !isNaN(v); };
+      var f = function (v, dp) { return ok(v) ? Number(v).toFixed(dp) : ""; };
+      var fc = function (v, dp) {
+        if (!ok(v)) return "";
+        var s = Number(v).toFixed(dp).split(".");
+        return s[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + (s[1] ? "." + s[1] : "");
+      };
+      var brg = function (v) { return ok(v) ? SURV.fmtDMS(v, 1) : ""; };
+      var ratioTx = function (r) { return r === Infinity ? "exact" : "1 : " + fc(Math.floor(r), 0); };
+      var mm = function (v) { return ok(v) ? (v * 1000).toFixed(1) + " mm" : ""; };
+      var sgn = function (v, dp) { return ok(v) ? (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v).toFixed(dp) : ""; };
+      var attr = function (s) { return esc(String(s === undefined || s === null ? "" : s)); };
+      function getPath(p) { var o = T, a = p.split("."); for (var i = 0; i < a.length; i++) { if (o === undefined || o === null) return undefined; o = o[a[i]]; } return o; }
+      function setPath(p, v) { var o = T, a = p.split("."); for (var i = 0; i < a.length - 1; i++) o = o[a[i]]; o[a[a.length - 1]] = v; }
+
+      /* ---------- the arithmetic for everything ---------- */
+      var CT = [], CL = [];
+      function ctrlKnown() {
+        var k = {};
+        T.control.forEach(function (c) {
+          var nm = String(c.name || "").trim(), E = tn(c.E), N = tn(c.N), H = tn(c.H);
+          if (nm && ok(E) && ok(N) && !k[nm]) k[nm] = { name: nm, E: E, N: N, H: ok(H) ? H : null, src: "Control" };
+        });
+        return k;
+      }
+      /* control, then every traverse worked out before this one: a secondary hangs off a primary */
+      function knownFor(k) {
+        var kn = ctrlKnown();
+        for (var j = 0; j < k; j++) {
+          var c = CT[j]; if (!c || !c.ok) continue;
+          c.res.stations.forEach(function (s) { if (!kn[s.name]) kn[s.name] = { name: s.name, E: s.E, N: s.N, H: s.H, src: T.travs[j].name }; });
+        }
+        return kn;
+      }
+      function resolve(t, kn) {
+        if (!t.start) throw new Error("Choose the start station: a point with known coordinates.");
+        var startPt = kn[t.start];
+        if (!startPt) throw new Error("The start station " + t.start + " has no known coordinates.");
+        var startOri = { mode: t.startMode }, bsC = null, a;
+        if (t.startMode === "point") {
+          var b = kn[t.bsPt];
+          if (!b) throw new Error("Choose the backsight point.");
+          if (b.name === startPt.name) throw new Error("The backsight must be a different point from the start station.");
+          startOri.az = SURV.azimuth(startPt.E, startPt.N, b.E, b.N); bsC = b;
+        } else {
+          a = SURV.parseAngle(t.bsBrg, T.fmt);
+          if (a === null || isNaN(a)) throw new Error(t.startMode === "bearing" ? "Type the backsight bearing." : "Type the bearing of the first leg.");
+          startOri.az = SURV.n360(a);
+        }
+        var endPt = null, endOri = { mode: "none" }, fsC = null;
+        if (t.type === "link") {
+          if (!t.end) throw new Error("Choose the closing station.");
+          endPt = kn[t.end];
+          if (!endPt) throw new Error("The closing station " + t.end + " has no known coordinates.");
+        }
+        if (t.type !== "open") {
+          var at = t.type === "loop" ? startPt : endPt;
+          if (t.type === "loop" && t.startMode === "firstleg") endOri = { mode: "firstleg", az: startOri.az };
+          else if (t.endMode === "point") {
+            var fp = kn[t.fsPt];
+            if (!fp) throw new Error("Choose the closing foresight point, or set the closing orientation to None.");
+            if (fp.name === at.name) throw new Error("The closing foresight must be a different point from the closing station.");
+            endOri = { mode: "point", az: SURV.azimuth(at.E, at.N, fp.E, fp.N) }; fsC = fp;
+          } else if (t.endMode === "bearing") {
+            a = SURV.parseAngle(t.fsBrg, T.fmt);
+            if (a === null || isNaN(a)) throw new Error("Type the closing foresight bearing.");
+            endOri = { mode: "bearing", az: SURV.n360(a) };
+          }
+        }
+        var n = t.rows.length;
+        var rows = t.rows.map(function (r, i) {
+          var name = String(r.name || "").trim();
+          if (i === 0) name = t.start;
+          else if (i === n - 1 && t.type === "loop") name = t.start;
+          else if (i === n - 1 && t.type === "link") name = t.end;
+          return { name: name, angle: SURV.parseAngle(r.angle, T.fmt), dist: tn(r.dist), dh: tn(r.dh) };
+        });
+        return {
+          type: t.type, method: t.method, angleDir: t.angleDir, scale: tn(t.scale),
+          tol: { angK: +t.tol.angK || 0, ratio: +t.tol.ratio || 0, hC: +t.tol.hC || 0 },
+          sigma: { ang: +t.sigma.ang || 1, dA: +t.sigma.dA || 1, dB: +t.sigma.dB || 0 }, useH: !!t.useH,
+          startPt: startPt, endPt: endPt, startOri: startOri, endOri: endOri, rows: rows, bsC: bsC, fsC: fsC
+        };
+      }
+      function levKnown() {
+        var kn = ctrlKnown();
+        CT.forEach(function (c, j) {
+          if (c && c.ok) c.res.stations.forEach(function (s) { if (!kn[s.name] && ok(s.H)) kn[s.name] = { name: s.name, E: s.E, N: s.N, H: s.H, src: T.travs[j].name }; });
+        });
+        return kn;
+      }
+      function levInput(L) {
+        var kn = levKnown(), startRL, closeRL = null, startName, closeName = "";
+        if (L.start === "#") { startRL = tn(L.startRL); startName = String(L.rows[0] && L.rows[0].pt || "").trim(); }
+        else {
+          if (!L.start) throw new Error("Choose the benchmark the run starts on, or type its level.");
+          if (!kn[L.start] || !ok(kn[L.start].H)) throw new Error("The benchmark " + L.start + " has no known level.");
+          startRL = kn[L.start].H; startName = L.start;
+        }
+        if (!ok(startRL)) throw new Error("Type the level of the starting benchmark.");
+        if (L.close === "=") { closeRL = startRL; closeName = startName; }
+        else if (L.close === "#") { closeRL = tn(L.closeRL); if (!ok(closeRL)) throw new Error("Type the level of the closing benchmark."); }
+        else if (L.close) {
+          if (!kn[L.close] || !ok(kn[L.close].H)) throw new Error("The benchmark " + L.close + " has no known level.");
+          closeRL = kn[L.close].H; closeName = L.close;
+        }
+        var n = L.rows.length;
+        var rows = L.rows.map(function (r, i) {
+          var pt = String(r.pt || "").trim();
+          if (i === 0 && L.start !== "#") pt = startName;
+          if (i === n - 1 && closeName && L.close !== "#") pt = closeName;
+          return { pt: pt, bs: tn(r.bs), is: tn(r.is), fs: tn(r.fs), dh: tn(r.dh), dist: tn(r.dist) };
+        });
+        rows.forEach(function (r, i) {
+          ["bs", "is", "fs", "dh", "dist"].forEach(function (k) {
+            if (r[k] !== null && isNaN(r[k])) throw new Error("Row " + (i + 1) + ": the " + ({ bs: "backsight", is: "intermediate sight", fs: "foresight", dh: "height difference", dist: "distance" })[k] + " is not a number.");
+          });
+        });
+        return { mode: L.mode, startRL: startRL, closeRL: closeRL, C: +L.C || 0, spread: L.spread, rows: rows };
+      }
+      function computeAll() {
+        CT = [];
+        T.travs.forEach(function (t, k) {
+          var kn = knownFor(k);
+          try { var inp = resolve(t, kn); CT[k] = { ok: true, res: SURV.compute(inp), input: inp }; }
+          catch (e) { CT[k] = { ok: false, error: e.message }; }
+        });
+        CL = T.levs.map(function (L) {
+          try { var inp = levInput(L); return { ok: true, res: SURV.levels(inp), input: inp }; }
+          catch (e) { return { ok: false, error: e.message }; }
+        });
+      }
+      function travChecks(c) {
+        if (!c || !c.ok || !c.res.closed) return [];
+        var cl = c.res.closure;
+        return [cl.angPass, cl.precPass, cl.hPass, c.res.lsq && c.res.lsq.chi ? c.res.lsq.chi.pass : null].filter(function (v) { return v !== null; });
+      }
+      function travStatus(k) {
+        var c = CT[k];
+        if (!c) return "idle"; if (!c.ok) return "err"; if (!c.res.closed) return "open";
+        return travChecks(c).every(Boolean) ? "pass" : "fail";
+      }
+      function levStatus(k) {
+        var c = CL[k];
+        if (!c) return "idle"; if (!c.ok) return "err"; if (!c.res.closed) return "open";
+        return c.res.pass ? "pass" : "fail";
+      }
+      var STX = { pass: "Within tolerance", fail: "Outside tolerance", err: "Not complete", open: "No check", idle: "" };
+
+      /* ---------- html bits ---------- */
+      function inp(path, val, cls, extra) {
+        return '<input type="text" data-p="' + path + '" value="' + attr(val) + '" class="' + (cls || "") + '" ' + (extra || "") + ">";
+      }
+      function sel(path, val, opts, extra) {
+        return '<select data-p="' + path + '" ' + (extra || "") + ">" + opts.map(function (o) {
+          return '<option value="' + attr(o[0]) + '"' + (String(o[0]) === String(val) ? " selected" : "") + ">" + esc(o[1]) + "</option>";
+        }).join("") + "</select>";
+      }
+      function seg(path, val, opts, label) {
+        return '<div class="tvseg" role="group" aria-label="' + attr(label) + '">' + opts.map(function (o) {
+          var on = String(o[0]) === String(val);
+          return '<button type="button" data-seg="' + path + '" data-v="' + attr(o[0]) + '" class="' + (on ? "on" : "") + '" aria-pressed="' + on + '">' + esc(o[1]) + "</button>";
+        }).join("") + "</div>";
+      }
+      function fld(label, html, cls) { return '<label class="tvf ' + (cls || "") + '"><span>' + esc(label) + "</span>" + html + "</label>"; }
+      function knownOpts(kn, first, needH) {
+        var o = [["", first]];
+        Object.keys(kn).forEach(function (nm) { if (!needH || ok(kn[nm].H)) o.push([nm, nm + (kn[nm].src !== "Control" ? "  (" + kn[nm].src + ")" : "")]); });
+        return o;
+      }
+      function picker(list, cur, kind) {
+        return '<div class="tvpick">' + list.map(function (x, i) {
+          var st = kind === "t" ? travStatus(i) : levStatus(i);
+          return '<button type="button" class="tvchip' + (i === cur ? " on" : "") + '" data-act="' + kind + 'pick" data-i="' + i + '">' +
+            '<span class="tvdot ' + st + '"></span>' + esc(x.name || "Untitled") + "</button>";
+        }).join("") + '<button type="button" class="tvchip add" data-act="' + kind + 'new">+ New</button></div>';
+      }
+
+      /* ---------- the section panels ---------- */
+      function viewCtl() {
+        var rows = T.control.map(function (c, i) {
+          var p = "control." + i + ".";
+          var bad = function (v) { var x = tn(v); return x !== null && isNaN(x) ? " bad" : ""; };
+          return "<tr><td>" + inp(p + "name", c.name, "nm", 'placeholder="CP-01" aria-label="Name, row ' + (i + 1) + '"') + "</td>" +
+            "<td>" + inp(p + "E", c.E, "n" + bad(c.E), 'aria-label="Easting, row ' + (i + 1) + '"') + "</td>" +
+            "<td>" + inp(p + "N", c.N, "n" + bad(c.N), 'aria-label="Northing, row ' + (i + 1) + '"') + "</td>" +
+            "<td>" + inp(p + "H", c.H, "n sm" + bad(c.H), 'aria-label="Level, row ' + (i + 1) + '"') + "</td>" +
+            '<td><button type="button" class="tvx" data-act="cdel" data-i="' + i + '" aria-label="Remove row ' + (i + 1) + '">×</button></td></tr>';
+        }).join("");
+        var nk = Object.keys(ctrlKnown()).length;
+        return '<div class="tvtop"><button type="button" class="tvbtn" data-act="cfromsheet">Take from the sheet</button>' +
+          '<button type="button" class="tvbtn" data-act="cpaste">Paste rows</button>' +
+          '<span class="tvsp"></span><button type="button" class="tvlink" data-act="example">Try the example</button></div>' +
+          '<div id="tvSheetPick"></div><div id="tvPasteBox"></div>' +
+          '<p class="tvnote">Eastings and northings on the grid chosen under Coordinate system. The level is optional; ' +
+          "level runs start and close on it.</p>" +
+          '<div class="tvgridwrap"><table class="tvgrid ctl"><thead><tr><th>Name</th><th>Easting</th><th>Northing</th><th>Level</th><th></th></tr></thead>' +
+          "<tbody>" + rows + "</tbody></table></div>" +
+          '<div class="tvrow"><button type="button" class="tvbtn" data-act="cadd">+ Add a point</button>' +
+          '<span class="tvhint">' + nk + (nk === 1 ? " point is" : " points are") + " ready to use</span></div>";
+      }
+
+      function viewTrav() {
+        if (!T.travs.length) T.travs.push(newTrav("primary", 0));
+        if (T.cur >= T.travs.length) T.cur = 0;
+        var k = T.cur, t = T.travs[k], p = "travs." + k + ".", kn = knownFor(k), closed = t.type !== "open";
+        var ko = function (first) { return knownOpts(kn, first); };
+        var h = picker(T.travs, k, "t");
+        h += '<div class="tvhead">' + inp(p + "name", t.name, "tvname", 'aria-label="Traverse name"') +
+          sel(p + "level", t.level, [["primary", "Primary"], ["secondary", "Secondary"], ["tertiary", "Tertiary"]], 'class="tvlvl" data-r="1" aria-label="Order"') +
+          '<button type="button" class="tvx big" data-act="tdel" aria-label="Delete this traverse" title="Delete this traverse">×</button></div>';
+        if (!Object.keys(kn).length) h += '<p class="tvwarn">No control points yet. Add the points you start and close on under <button type="button" class="tvlink" data-act="goctl">Control points</button>.</p>';
+        h += '<div class="tvblk"><div class="tvl">Kind of traverse</div>' + seg(p + "type", t.type, [["loop", "Closed loop"], ["link", "Closed link"], ["open", "Open"]], "Kind of traverse") + "</div>";
+        h += '<div class="tvblk"><div class="tvl">Adjustment</div>' + seg(p + "method", t.method, [["bowditch", "Bowditch"], ["transit", "Transit"], ["lsq", "Least squares"]], "Adjustment") + "</div>";
+        h += '<div class="tvsub">Start</div><div class="tvgrid2">' +
+          fld("Start station", sel(p + "start", t.start, ko("Choose…"), 'data-r="1"')) +
+          fld("Opening orientation", sel(p + "startMode", t.startMode, [["point", "Backsight point"], ["bearing", "Backsight bearing"], ["firstleg", "Bearing of the first leg"]], 'data-r="1"')) +
+          (t.startMode === "point" ? fld("Backsight point", sel(p + "bsPt", t.bsPt, ko("Choose…"), 'data-r="1"'), "span2")
+            : fld(t.startMode === "bearing" ? "Backsight bearing" : "First leg bearing", inp(p + "bsBrg", t.bsBrg, "n", 'placeholder="' + (T.fmt === "dms" ? "045.3015" : T.fmt === "gon" ? "50.5602" : "45.5042") + '"'), "span2")) + "</div>";
+        if (closed) {
+          h += '<div class="tvsub">Close</div><div class="tvgrid2">';
+          if (t.type === "link") h += fld("Closing station", sel(p + "end", t.end, ko("Choose…"), 'data-r="1"'));
+          if (t.type === "loop" && t.startMode === "firstleg") h += '<p class="tvnote span2">Closes on the first leg: the last angle, at ' + esc(t.start || "the start") + ", is read to the second station.</p>";
+          else {
+            h += fld("Closing orientation", sel(p + "endMode", t.endMode, [["point", "Foresight point"], ["bearing", "Foresight bearing"], ["none", "None (no angle check)"]], 'data-r="1"'));
+            if (t.endMode === "point") h += fld("Foresight point", sel(p + "fsPt", t.fsPt, ko("Choose…"), 'data-r="1"'), t.type === "link" ? "span2" : "");
+            else if (t.endMode === "bearing") h += fld("Foresight bearing", inp(p + "fsBrg", t.fsBrg, "n"), t.type === "link" ? "span2" : "");
+          }
+          h += "</div>";
+        }
+        /* the field book */
+        var n = t.rows.length, useH = !!t.useH;
+        var needAng = function (i) { return i === 0 ? t.startMode !== "firstleg" : i === n - 1 ? closed && (t.type === "loop" && t.startMode === "firstleg" || t.endMode !== "none") : true; };
+        h += '<div class="tvsub">Observations <span>angle at each station, backsight to foresight; distance to the next station' + (useH ? "; height difference to the next" : "") + "</span></div>";
+        h += '<div class="tvgridwrap"><table class="tvgrid obs' + (useH ? " h" : "") + '"><thead><tr><th></th><th>Station</th><th>Angle</th><th>Distance</th>' + (useH ? "<th>ΔH</th>" : "") + "<th></th></tr></thead><tbody>";
+        t.rows.forEach(function (r, i) {
+          var rp = p + "rows." + i + ".", fixedName = i === 0 ? t.start : (i === n - 1 && closed ? (t.type === "loop" ? t.start : t.end) : null);
+          var role = i === 0 ? "Start" : i === n - 1 && closed ? "Close" : "";
+          var a = SURV.parseAngle(r.angle, T.fmt), aBad = r.angle !== "" && a !== null && isNaN(a) ? " bad" : "";
+          var dBad = r.dist !== "" && !(tn(r.dist) > 0) ? " bad" : "", hBad = r.dh !== "" && isNaN(tn(r.dh)) ? " bad" : "";
+          var lastLeg = i === n - 1;
+          h += "<tr" + (fixedName !== null ? ' class="fixed"' : "") + '><td class="ix">' + (i + 1) + "</td>" +
+            "<td>" + (fixedName !== null ? '<span class="fx">' + esc(fixedName || "—") + '</span><span class="role">' + role + "</span>"
+              : inp(rp + "name", r.name, "nm", 'placeholder="TS-' + (i < 10 ? "0" : "") + i + '" aria-label="Station, row ' + (i + 1) + '"')) + "</td>" +
+            "<td>" + (needAng(i) ? inp(rp + "angle", r.angle, "n" + aBad, 'aria-label="Angle, row ' + (i + 1) + '"') : '<span class="na">—</span>') + "</td>" +
+            "<td>" + (!lastLeg ? inp(rp + "dist", r.dist, "n" + dBad, 'aria-label="Distance, row ' + (i + 1) + '"') : '<span class="na">—</span>') + "</td>" +
+            (useH ? "<td>" + (!lastLeg ? inp(rp + "dh", r.dh, "n sm" + hBad, 'aria-label="Height difference, row ' + (i + 1) + '"') : '<span class="na">—</span>') + "</td>" : "") +
+            "<td>" + (i > 0 && !(closed && i === n - 1) && n > 2 ? '<button type="button" class="tvx" data-act="rdel" data-i="' + i + '" aria-label="Remove row ' + (i + 1) + '">×</button>' : "") + "</td></tr>";
+        });
+        h += "</tbody></table></div>";
+        h += '<div class="tvrow"><button type="button" class="tvbtn" data-act="radd">+ Add a station</button>' +
+          '<button type="button" class="tvbtn" data-act="tpaste">Paste rows</button><span class="tvsp"></span>' +
+          '<span class="tvhint">Enter moves on; paste from Excel into any box</span></div><div id="tvPasteBox"></div>';
+        /* settings */
+        h += '<details class="tvmore"' + (T.openMore ? " open" : "") + ' data-more="1"><summary>Angles, heights and tolerances <span>' +
+          esc(t.tol.angK + '"√N · 1:' + fc(+t.tol.ratio || 0, 0) + (useH ? " · " + t.tol.hC + "√K mm" : "")) + "</span></summary><div class=\"tvgrid2\">" +
+          fld("Angles typed as", sel("fmt", T.fmt, [["dms", "123.4530 (DDD.MMSS)"], ["deg", "Decimal degrees"], ["gon", "Gons (grads)"]], 'data-r="1"')) +
+          fld("Angles turned", sel(p + "angleDir", t.angleDir, [["cw", "Clockwise"], ["ccw", "Anticlockwise"]], 'data-r="1"')) +
+          fld("Combined scale factor", inp(p + "scale", t.scale, "n")) +
+          '<label class="tvf tvchk"><input type="checkbox" data-p="' + p + 'useH" data-r="1"' + (useH ? " checked" : "") + "><span>Carry heights (ΔH per leg)</span></label>" +
+          fld('Angular limit, K" × √N', inp(p + "tol.angK", t.tol.angK, "n")) +
+          fld("Precision, 1 in", inp(p + "tol.ratio", t.tol.ratio, "n")) +
+          (useH ? fld("Height limit, C mm × √K", inp(p + "tol.hC", t.tol.hC, "n")) : "") +
+          (t.method === "lsq" ? fld('Angle std dev, "', inp(p + "sigma.ang", t.sigma.ang, "n")) + fld("Distance, mm + ppm", '<span class="tvpair">' +
+            inp(p + "sigma.dA", t.sigma.dA, "n") + inp(p + "sigma.dB", t.sigma.dB, "n") + "</span>") : "") +
+          '</div><p class="tvnote">Changing the order (Primary, Secondary, Tertiary) loads its usual limits. Set them to your specification.</p></details>';
+        return h;
+      }
+
+      function viewLev() {
+        if (!T.levs.length) T.levs.push(newLev(0));
+        if (T.lcur >= T.levs.length) T.lcur = 0;
+        var k = T.lcur, L = T.levs[k], p = "levs." + k + ".", kn = levKnown();
+        var h = picker(T.levs, k, "l");
+        h += '<div class="tvhead">' + inp(p + "name", L.name, "tvname", 'aria-label="Level run name"') +
+          '<button type="button" class="tvx big" data-act="ldel" aria-label="Delete this level run" title="Delete this level run">×</button></div>';
+        h += '<div class="tvblk"><div class="tvl">Readings</div>' + seg(p + "mode", L.mode, [["staff", "Staff readings"], ["dh", "Height differences"]], "Readings") + "</div>";
+        var bmo = knownOpts(kn, "Choose…", true); bmo.push(["#", "Type its level…"]);
+        var cmo = [["=", "Back on the start (a loop)"]].concat(knownOpts(kn, "", true).slice(1)); cmo.push(["#", "Type its level…"]); cmo.push(["", "None: no check"]);
+        h += '<div class="tvgrid2">' + fld("Starts on benchmark", sel(p + "start", L.start, bmo, 'data-r="1"')) +
+          (L.start === "#" ? fld("Its level", inp(p + "startRL", L.startRL, "n")) : '<span class="tvf"></span>') +
+          fld("Closes on", sel(p + "close", L.close, cmo, 'data-r="1"')) +
+          (L.close === "#" ? fld("Its level", inp(p + "closeRL", L.closeRL, "n")) : '<span class="tvf"></span>') + "</div>";
+        if (!Object.keys(kn).length) h += '<p class="tvnote">No benchmark with a level yet: give a control point its level under <button type="button" class="tvlink" data-act="goctl">Control points</button>, or type the level here.</p>';
+        var n = L.rows.length, staff = L.mode === "staff";
+        var sName = L.start && L.start !== "#" ? L.start : null;
+        var cName = L.close === "=" ? (L.start === "#" ? null : L.start) : L.close && L.close !== "#" ? L.close : null;
+        h += '<div class="tvsub">' + (staff ? "Level book" : "Height differences") + " <span>" +
+          (staff ? "one row per staff position; a change point has a foresight and a backsight" : "rise (+) or fall (−) from the row above") + "; distance from the row above</span></div>";
+        h += '<div class="tvgridwrap"><table class="tvgrid lev ' + (staff ? "st" : "dh") + '"><thead><tr><th></th><th>Point</th>' +
+          (staff ? "<th>BS</th><th>IS</th><th>FS</th>" : "<th>ΔH</th>") + "<th>Dist</th><th></th></tr></thead><tbody>";
+        L.rows.forEach(function (r, i) {
+          var rp = p + "rows." + i + ".", nm = i === 0 ? sName : i === n - 1 ? (L.close === "=" ? (L.start === "#" ? (L.rows[0].pt || null) : sName) : cName) : null;
+          var b = function (k2) { var x = tn(r[k2]); return x !== null && isNaN(x) ? " bad" : ""; };
+          var role = i === 0 ? "Start" : i === n - 1 && L.close ? "Close" : "";
+          h += "<tr" + (nm !== null ? ' class="fixed"' : "") + '><td class="ix">' + (i + 1) + "</td><td>" +
+            (nm !== null ? '<span class="fx">' + esc(nm || "—") + '</span><span class="role">' + role + "</span>" : inp(rp + "pt", r.pt, "nm", 'aria-label="Point, row ' + (i + 1) + '"')) + "</td>";
+          if (staff) {
+            h += "<td>" + (i < n - 1 ? inp(rp + "bs", r.bs, "n" + b("bs"), 'aria-label="Backsight, row ' + (i + 1) + '"') : '<span class="na">—</span>') + "</td>" +
+              "<td>" + (i > 0 && i < n - 1 ? inp(rp + "is", r.is, "n" + b("is"), 'aria-label="Intermediate sight, row ' + (i + 1) + '"') : '<span class="na">—</span>') + "</td>" +
+              "<td>" + (i > 0 ? inp(rp + "fs", r.fs, "n" + b("fs"), 'aria-label="Foresight, row ' + (i + 1) + '"') : '<span class="na">—</span>') + "</td>";
+          } else {
+            h += "<td>" + (i > 0 ? inp(rp + "dh", r.dh, "n" + b("dh"), 'aria-label="Height difference, row ' + (i + 1) + '"') : '<span class="na">—</span>') + "</td>";
+          }
+          h += "<td>" + (i > 0 ? inp(rp + "dist", r.dist, "n sm" + b("dist"), 'aria-label="Distance, row ' + (i + 1) + '"') : '<span class="na">—</span>') + "</td>" +
+            "<td>" + (i > 0 && i < n - 1 && n > 2 ? '<button type="button" class="tvx" data-act="ldelrow" data-i="' + i + '" aria-label="Remove row ' + (i + 1) + '">×</button>' : "") + "</td></tr>";
+        });
+        h += "</tbody></table></div>";
+        h += '<div class="tvrow"><button type="button" class="tvbtn" data-act="ladd">+ Add a row</button>' +
+          '<button type="button" class="tvbtn" data-act="lpaste">Paste rows</button><span class="tvsp"></span>' +
+          '<span class="tvhint">Enter moves on; paste from Excel into any box</span></div><div id="tvPasteBox"></div>';
+        h += '<details class="tvmore"' + (T.openMoreL ? " open" : "") + ' data-more="2"><summary>Tolerance and spreading <span>' + esc(L.C + " mm √K") + "</span></summary><div class=\"tvgrid2\">" +
+          fld("Allowed, C mm × √K", inp(p + "C", L.C, "n")) +
+          fld("Spread the misclosure", sel(p + "spread", L.spread, [["dist", "By distance"], ["setups", "By set-ups"]], 'data-r="1"')) +
+          '</div><p class="tvnote">K is the length of the run in kilometres. Without distances, the misclosure is spread by set-ups and the limit is C × √n.</p></details>';
+        return h;
+      }
+
+      /* ---------- the right-hand pane ---------- */
+      function gauge(lbl, val, sub, frac, pass) {
+        var cls = pass === null || pass === undefined ? "" : pass ? (frac > 0.8 ? "warn" : "good") : "bad";
+        return '<div class="tvg ' + cls + '"><div class="tvgl">' + esc(lbl) + (pass === null || pass === undefined ? "" : '<b>' + (pass ? "Pass" : "Fail") + "</b>") + "</div>" +
+          '<div class="tvgv">' + esc(val) + "</div>" +
+          (frac !== null && frac !== undefined ? '<div class="tvm"><i style="width:' + Math.max(2, Math.min(100, frac * 100)).toFixed(0) + '%"></i></div>' : "") +
+          '<div class="tvgs">' + esc(sub) + "</div></div>";
+      }
+      function actions(kind, can) {
+        return '<div class="tvacts">' +
+          '<button type="button" class="tvbtn pri" data-act="' + kind + 'sheet"' + (can ? "" : " disabled") + ">" + (kind === "l" ? "Put levels on the points" : "Add to the points") + "</button>" +
+          '<button type="button" class="tvbtn" data-act="' + kind + 'csv"' + (can ? "" : " disabled") + ">CSV</button>" +
+          '<button type="button" class="tvbtn" data-act="' + kind + 'pdf"' + (can ? "" : " disabled") + ">PDF report</button></div>";
+      }
+      var TAB = { t: "coords", l: "book" };
+      function tabs(kind, list) {
+        return '<div class="tvtabs" role="tablist">' + list.map(function (x) {
+          var on = TAB[kind] === x[0];
+          return '<button type="button" role="tab" aria-selected="' + on + '" class="' + (on ? "on" : "") + '" data-act="tab" data-k="' + kind + '" data-v="' + x[0] + '">' + esc(x[1]) + "</button>";
+        }).join("") + "</div>";
+      }
+      function table(head, rows, right) {
+        return '<div class="tvtw"><table class="tvres"><thead><tr>' + head.map(function (x, i) { return "<th" + (right && right[i] ? ' class="r"' : "") + ">" + esc(x) + "</th>"; }).join("") +
+          "</tr></thead><tbody>" + rows.map(function (r) {
+            var cls = r.cls ? ' class="' + r.cls + '"' : "";
+            return "<tr" + cls + ">" + (r.c || r).map(function (x, i) { return "<td" + (right && right[i] ? ' class="r"' : "") + ">" + esc(x) + "</td>"; }).join("") + "</tr>";
+          }).join("") + "</tbody></table></div>";
+      }
+
+      function paneTrav() {
+        var k = T.cur, t = T.travs[k], c = CT[k], st = travStatus(k);
+        var h = '<div class="tvph"><div><h3>' + esc(t.name || "Traverse") + '</h3><span class="tvps">' + esc(LEVEL[t.level] + " · " + TYPE[t.type] + " · " + METHOD[t.method]) + "</span></div>" +
+          '<span class="tvpill ' + st + '">' + STX[st] + "</span>" + actions("t", c && c.ok) + "</div>";
+        if (!c || !c.ok) {
+          return h + '<div class="tvempty"><b>Not worked out yet.</b><span>' + esc(c ? c.error : "") + '</span><span class="tvsoft">The results appear here as soon as the start, the orientation and the observations are in.</span></div>';
+        }
+        var r = c.res, cl = r.closure, g = "";
+        if (cl.hasClose) g += gauge("Angular misclosure", SURV.fmtSec(cl.angMis), "limit ±" + f(cl.angAllow, 1) + '" (' + t.tol.angK + '"√' + cl.nAng + ")", Math.abs(cl.angMis) / (cl.angAllow || 1), cl.angPass);
+        else g += gauge("Angular misclosure", "not checked", r.closed ? "no closing orientation" : "open traverse", null, null);
+        if (r.closed) {
+          g += gauge("Linear misclosure", mm(cl.fL), "E " + sgn(cl.fE * 1000, 1) + "  N " + sgn(cl.fN * 1000, 1) + " mm over " + fc(cl.sumD, 1) + " m", null, null);
+          g += gauge("Relative precision", ratioTx(cl.precision), "need 1 : " + fc(cl.ratioReq, 0), cl.precision === Infinity ? 0 : cl.ratioReq / cl.precision, cl.precPass);
+        } else g += gauge("Length", fc(cl.sumD, 3) + " m", (r.names.length - 1) + " legs, no closure", null, null);
+        if (cl.fH !== null) g += gauge("Height misclosure", sgn(cl.fH * 1000, 1) + " mm", "limit ±" + f(cl.hAllow * 1000, 1) + " mm", Math.abs(cl.fH) / (cl.hAllow || 1), cl.hPass);
+        if (r.lsq && r.lsq.chi) g += gauge("Chi-square, 95%", f(r.lsq.chi.value, 2), f(r.lsq.chi.lo, 2) + " to " + f(r.lsq.chi.hi, 2) + " · σ₀ " + f(r.lsq.s0, 2), null, r.lsq.chi.pass);
+        h += '<div class="tvgs4">' + g + "</div>";
+        if (r.warnings.length) h += r.warnings.map(function (w) { return '<p class="tvwarn">' + esc(w) + "</p>"; }).join("");
+        h += '<div class="tvplot">' + plotSvg([{ res: r, col: COLS[0] }], c.input, null) + "</div>";
+        var list = [["coords", "Coordinates"], ["angles", "Angles"], ["legs", "Bearings and distances"]];
+        if (r.lsq) list.push(["resid", "Residuals"]);
+        if (TAB.t === "resid" && !r.lsq) TAB.t = "coords";
+        h += tabs("t", list) + travTable(k, TAB.t);
+        return h;
+      }
+      function travTable(k, which) {
+        var t = T.travs[k], c = CT[k], r = c.res, inpt = c.input, i;
+        if (which === "angles") {
+          var rows = r.names.map(function (nm, j) {
+            var o = r.rows[j].obs, a = r.adjAng[j], corr = o !== null && a !== null ? SURV.n180(a - o) * 3600 : null;
+            var bs = j === 0 ? (inpt.startOri.mode === "point" ? t.bsPt : inpt.startOri.mode === "bearing" ? "bearing" : "—") : r.names[j - 1];
+            var fs = j === r.names.length - 1 ? (r.closed ? (inpt.endOri.mode === "point" ? t.fsPt : inpt.endOri.mode === "bearing" ? "bearing" : inpt.endOri.mode === "firstleg" ? r.names[1] : "—") : "—") : r.names[j + 1];
+            return [nm, bs, fs, o !== null ? brg(o) : "—", corr !== null ? SURV.fmtSec(corr, 2) : "—", a !== null ? brg(a) : "—"];
+          });
+          return table(["Station", "Backsight", "Foresight", "Observed", "Correction", "Adjusted"], rows, [0, 0, 0, 1, 1, 1]);
+        }
+        if (which === "legs") {
+          var lr = r.adjLegs.map(function (l) { var x = [l.from, l.to, brg(l.az), f(l.d, 3)]; if (r.H) x.push(sgn(l.dh, 3)); return x; });
+          var lh = ["From", "To", "Grid bearing", "Distance (m)"]; if (r.H) lh.push("ΔH (m)");
+          return table(lh, lr, [0, 0, 1, 1, 1]);
+        }
+        if (which === "resid" && r.lsq) {
+          var rr = r.lsq.obs.map(function (o) {
+            return {
+              cls: o.flag ? "flag" : "", c: [o.label, o.at, o.to, o.unit === "m" ? f(o.obs, 4) : brg(o.obs), o.unit === "m" ? sgn(o.v * 1000, 1) + " mm" : SURV.fmtSec(o.v, 2),
+              o.std === null ? "—" : f(o.std, 2), o.flag ? "check" : ""]
+            };
+          });
+          return table(["Observation", "At", "To", "Observed", "Residual", "Std. resid.", ""], rr, [0, 0, 0, 1, 1, 1, 0]) +
+            '<p class="tvnote">σ₀ = ' + f(r.lsq.s0, 3) + " from " + r.lsq.m + " observations, " + r.lsq.u + " unknowns, " + r.lsq.r + " degrees of freedom. " +
+            "Standardized residuals over 3 are marked to check.</p>";
+        }
+        var seen = {}, cr = [];
+        for (i = 0; i < r.stations.length; i++) {
+          var s = r.stations[i]; if (seen[s.name]) continue; seen[s.name] = 1;
+          var x = [s.name, fc(s.E, 3), fc(s.N, 3)];
+          if (r.H) x.push(f(s.H, 3));
+          if (r.lsq) x.push(s.fixed ? "—" : f(s.sE * 1000, 1) + " / " + f(s.sN * 1000, 1));
+          x.push(s.fixed ? "Fixed" : r.closed ? "Adjusted" : "Not checked");
+          cr.push({ cls: s.fixed ? "fx" : "", c: x });
+        }
+        var ch = ["Station", "Easting", "Northing"]; if (r.H) ch.push("Level"); if (r.lsq) ch.push("σE / σN mm"); ch.push("");
+        return table(ch, cr, [0, 1, 1, 1, 1, 0]);
+      }
+
+      function paneLev() {
+        var k = T.lcur, L = T.levs[k], c = CL[k], st = levStatus(k);
+        var h = '<div class="tvph"><div><h3>' + esc(L.name || "Level run") + '</h3><span class="tvps">' + (L.mode === "staff" ? "Rise and fall" : "Height differences") + " · C = " + esc(L.C) + " mm√K</span></div>" +
+          '<span class="tvpill ' + st + '">' + STX[st] + "</span>" + actions("l", c && c.ok) + "</div>";
+        if (!c || !c.ok) return h + '<div class="tvempty"><b>Not worked out yet.</b><span>' + esc(c ? c.error : "") + '</span><span class="tvsoft">The reduced levels appear here as soon as the benchmark and the readings are in.</span></div>';
+        var r = c.res, g = "";
+        if (r.closed) g += gauge("Misclosure", sgn(r.mis * 1000, 1) + " mm", "limit ±" + f(r.allow * 1000, 1) + " mm (" + r.C + (r.km !== null ? "√" + f(r.km, 3) + " km" : "√" + r.setups + " set-ups") + ")", Math.abs(r.mis) / (r.allow || 1), r.pass);
+        else g += gauge("Misclosure", "not checked", "no closing benchmark", null, null);
+        g += gauge("Length", r.dist !== null ? fc(r.dist, 1) + " m" : "—", r.setups + " set-up" + (r.setups === 1 ? "" : "s") + " · spread by " + (r.spread === "dist" ? "distance" : "set-ups"), null, null);
+        if (r.mode === "staff") g += gauge("Arithmetic check", r.arith ? "agrees" : "does not agree", "ΣBS − ΣFS = " + sgn(r.sBS - r.sFS, 3) + " = Σrise − Σfall", null, r.arith);
+        h += '<div class="tvgs4">' + g + "</div>";
+        if (r.warnings.length) h += r.warnings.map(function (w) { return '<p class="tvwarn">' + esc(w) + "</p>"; }).join("");
+        h += '<div class="tvplot">' + profileSvg(r) + "</div>";
+        h += tabs("l", [["book", "Reduced levels"]]);
+        var inR = c.input.rows, staff = r.mode === "staff";
+        var rows = r.rows.map(function (o, i) {
+          var x = [o.pt || inR[i].pt];
+          if (staff) x.push(f(inR[i].bs, 3), f(inR[i].is, 3), f(inR[i].fs, 3)); else x.push(i ? sgn(inR[i].dh, 3) : "");
+          x.push(o.rise !== null ? f(o.rise, 3) : "", o.fall !== null ? f(o.fall, 3) : "", f(o.raw, 3), i ? sgn(o.corr * 1000, 1) : "", f(o.rl, 3));
+          return { cls: i === 0 || (i === r.rows.length - 1 && r.closed) ? "fx" : "", c: x };
+        });
+        var hd = staff ? ["Point", "BS", "IS", "FS"] : ["Point", "ΔH"];
+        hd = hd.concat(["Rise", "Fall", "Reduced", "Corr. mm", "Adjusted"]);
+        var right = hd.map(function (x, i) { return i > 0 ? 1 : 0; });
+        h += table(hd, rows, right);
+        if (staff) h += '<p class="tvnote">ΣBS ' + f(r.sBS, 3) + " − ΣFS " + f(r.sFS, 3) + " = " + sgn(r.sBS - r.sFS, 3) + "; Σrise " + f(r.sRise, 3) + " − Σfall " + f(r.sFall, 3) + " = " + sgn(r.sRise - r.sFall, 3) + ".</p>";
+        return h;
+      }
+
+      function register() {
+        var reg = [], seen = {};
+        var kn = ctrlKnown();
+        Object.keys(kn).forEach(function (nm) { seen[nm] = 1; reg.push({ name: nm, E: kn[nm].E, N: kn[nm].N, H: kn[nm].H, src: "Control", fixed: true }); });
+        CT.forEach(function (c, j) {
+          if (!c || !c.ok) return;
+          c.res.stations.forEach(function (s) { if (seen[s.name]) return; seen[s.name] = 1; reg.push({ name: s.name, E: s.E, N: s.N, H: s.H, src: T.travs[j].name, fixed: false, j: j }); });
+        });
+        /* levels from the runs fill in what has none */
+        CL.forEach(function (c, j) {
+          if (!c || !c.ok) return;
+          c.res.rows.forEach(function (o) { reg.forEach(function (p) { if (p.name === o.pt && !ok(p.H)) { p.H = o.rl; p.hsrc = T.levs[j].name; } }); });
+        });
+        return reg;
+      }
+      function paneCtl() {
+        var reg = register(), nk = Object.keys(ctrlKnown()).length;
+        var h = '<div class="tvph"><div><h3>Coordinate register</h3><span class="tvps">' + nk + " control · " + (reg.length - nk) + " from traverses</span></div>" +
+          '<span class="tvpill idle"></span>' + actions("r", reg.length > 0) + "</div>";
+        if (!reg.length) return h + '<div class="tvempty"><b>No points yet.</b><span>Type the control points on the left, take them from the sheet, or try the example.</span></div>';
+        var sets = []; CT.forEach(function (c, j) { if (c && c.ok) sets.push({ res: c.res, col: COLS[j % COLS.length] }); });
+        h += '<div class="tvplot">' + plotSvg(sets, null, reg.filter(function (p) { return p.fixed; })) + "</div>";
+        h += table(["Point", "Easting", "Northing", "Level", "From"], reg.map(function (p) {
+          return { cls: p.fixed ? "fx" : "", c: [p.name, fc(p.E, 3), fc(p.N, 3), f(p.H, 3), p.src + (p.hsrc ? " · level from " + p.hsrc : "")] };
+        }), [0, 1, 1, 1, 0]);
+        return h;
+      }
+
+      /* ---------- drawings ---------- */
+      function niceStep(raw) { var p = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10)), m = raw / p; return (m < 1.5 ? 1 : m < 3.5 ? 2 : m < 7.5 ? 5 : 10) * p; }
+      function plotSvg(sets, inpt, ctrl) {
+        var W = 760, H = 360, pts = [];
+        sets.forEach(function (s) { s.res.stations.forEach(function (q) { pts.push([q.E, q.N]); }); });
+        (ctrl || []).forEach(function (q) { pts.push([q.E, q.N]); });
+        if (inpt && inpt.bsC) pts.push([inpt.bsC.E, inpt.bsC.N]);
+        if (inpt && inpt.fsC) pts.push([inpt.fsC.E, inpt.fsC.N]);
+        if (!pts.length) return "";
+        var mnE = Infinity, mxE = -Infinity, mnN = Infinity, mxN = -Infinity;
+        pts.forEach(function (q) { mnE = Math.min(mnE, q[0]); mxE = Math.max(mxE, q[0]); mnN = Math.min(mnN, q[1]); mxN = Math.max(mxN, q[1]); });
+        var spE = Math.max(mxE - mnE, 1), spN = Math.max(mxN - mnN, 1), pad = 46;
+        var sc = Math.min((W - 2 * pad) / spE, (H - 2 * pad) / spN), cE = (mnE + mxE) / 2, cN = (mnN + mxN) / 2;
+        var X = function (e) { return W / 2 + (e - cE) * sc; }, Y = function (nn) { return H / 2 - (nn - cN) * sc; };
+        var o = ['<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Plan of the traverse">'];
+        var step = niceStep(Math.max(spE, spN) / 6);
+        o.push('<g class="gr">');
+        for (var e = Math.ceil((cE - W / 2 / sc) / step) * step; X(e) < W; e += step) o.push('<line x1="' + X(e).toFixed(1) + '" y1="0" x2="' + X(e).toFixed(1) + '" y2="' + H + '"/>');
+        for (var nn = Math.ceil((cN - H / 2 / sc) / step) * step; Y(nn) > 0; nn += step) o.push('<line x1="0" y1="' + Y(nn).toFixed(1) + '" x2="' + W + '" y2="' + Y(nn).toFixed(1) + '"/>');
+        o.push("</g>");
+        var lab = {}, tri = function (x, y) { return '<path class="ctl" d="M' + x.toFixed(1) + " " + (y - 7).toFixed(1) + "l6.5 11h-13z\"/>"; };
+        var label = function (nm, x, y) { if (lab[nm]) return ""; lab[nm] = 1; return '<text class="lb" x="' + (x + 8).toFixed(1) + '" y="' + (y - 7).toFixed(1) + '">' + esc(nm) + "</text>"; };
+        if (inpt && inpt.bsC && sets[0]) { var s0 = sets[0].res.stations[0]; o.push('<line class="sight" x1="' + X(s0.E).toFixed(1) + '" y1="' + Y(s0.N).toFixed(1) + '" x2="' + X(inpt.bsC.E).toFixed(1) + '" y2="' + Y(inpt.bsC.N).toFixed(1) + '"/>'); }
+        if (inpt && inpt.fsC && sets[0]) { var sl = sets[0].res.stations[sets[0].res.stations.length - 1]; o.push('<line class="sight" x1="' + X(sl.E).toFixed(1) + '" y1="' + Y(sl.N).toFixed(1) + '" x2="' + X(inpt.fsC.E).toFixed(1) + '" y2="' + Y(inpt.fsC.N).toFixed(1) + '"/>'); }
+        /* error ellipses are millimetres on a site of hundreds of metres: drawn enlarged, and the drawing says by how much */
+        var ex = 0, mxA = 0;
+        sets.forEach(function (s) { s.res.stations.forEach(function (q) { if (q.ellA) mxA = Math.max(mxA, q.ellA); }); });
+        if (mxA > 0) ex = niceStep(Math.max(spE, spN) * 0.035 / mxA);
+        sets.forEach(function (s) {
+          var st = s.res.stations;
+          o.push('<polyline class="leg' + (s.res.closed ? "" : " open") + '" style="stroke:' + s.col + '" points="' + st.map(function (q) { return X(q.E).toFixed(1) + "," + Y(q.N).toFixed(1); }).join(" ") + '"/>');
+          st.forEach(function (q) {
+            if (q.ellA && ex) o.push('<ellipse class="ell" cx="' + X(q.E).toFixed(1) + '" cy="' + Y(q.N).toFixed(1) + '" rx="' + (q.ellB * ex * sc).toFixed(1) + '" ry="' + (q.ellA * ex * sc).toFixed(1) + '" transform="rotate(' + q.ellAz.toFixed(1) + " " + X(q.E).toFixed(1) + " " + Y(q.N).toFixed(1) + ')"/>');
+          });
+        });
+        sets.forEach(function (s) {
+          s.res.stations.forEach(function (q) {
+            var x = X(q.E), y = Y(q.N);
+            o.push(q.fixed ? tri(x, y) : '<circle class="stn" cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="5" style="fill:' + s.col + '"><title>' + esc(q.name + "  E " + f(q.E, 3) + "  N " + f(q.N, 3)) + "</title></circle>");
+            o.push(label(q.name, x, y));
+          });
+        });
+        [inpt && inpt.bsC, inpt && inpt.fsC].concat(ctrl || []).forEach(function (q) { if (!q) return; var x = X(q.E), y = Y(q.N); o.push(tri(x, y) + label(q.name, x, y)); });
+        o.push('<g class="na" transform="translate(' + (W - 30) + ',34)"><path d="M0 -18 L-7 4 L0 0 L7 4Z"/><text x="0" y="18" text-anchor="middle">N</text></g>');
+        var sb = niceStep(W * 0.18 / sc);
+        o.push('<g class="sb"><path d="M18 ' + (H - 20) + "h" + (sb * sc).toFixed(1) + '"/><text x="18" y="' + (H - 27) + '">' + (sb >= 1000 ? sb / 1000 + " km" : sb + " m") + "</text>" +
+          (ex ? '<text x="' + (W - 14) + '" y="' + (H - 14) + '" text-anchor="end">error ellipses ×' + fc(ex, 0) + "</text>" : "") + "</g>");
+        o.push("</svg>");
+        return o.join("");
+      }
+      function profileSvg(r) {
+        var W = 760, H = 230, rows = r.rows, n = rows.length;
+        var xs = rows.map(function (o, i) { return r.dist !== null ? o.cum : i; }), x1 = xs[n - 1] || 1;
+        var lo = Infinity, hi = -Infinity;
+        rows.forEach(function (o) { lo = Math.min(lo, o.rl); hi = Math.max(hi, o.rl); });
+        var sp = Math.max(hi - lo, 0.2); lo -= sp * 0.25; hi += sp * 0.25;
+        var L = 56, R = 20, Tp = 26, B = 34;
+        var X = function (v) { return L + v / x1 * (W - L - R); }, Y = function (v) { return Tp + (hi - v) / (hi - lo) * (H - Tp - B); };
+        var o = ['<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Profile of the level run">', '<g class="gr">'];
+        var st = niceStep((hi - lo) / 4);
+        for (var v = Math.ceil(lo / st) * st; v <= hi; v += st) o.push('<line x1="' + L + '" y1="' + Y(v).toFixed(1) + '" x2="' + (W - R) + '" y2="' + Y(v).toFixed(1) + '"/><text class="ax" x="' + (L - 6) + '" y="' + (Y(v) + 4).toFixed(1) + '" text-anchor="end">' + f(v, st < 0.1 ? 2 : st < 1 ? 1 : 0) + "</text>");
+        o.push("</g>");
+        var path = rows.map(function (q, i) { return X(xs[i]).toFixed(1) + "," + Y(q.rl).toFixed(1); }).join(" ");
+        o.push('<polygon class="area" points="' + X(0).toFixed(1) + "," + (H - B) + " " + path + " " + X(x1).toFixed(1) + "," + (H - B) + '"/>');
+        o.push('<polyline class="leg" style="stroke:' + COLS[0] + '" points="' + path + '"/>');
+        var every = Math.max(1, Math.ceil(n / 14));
+        rows.forEach(function (q, i) {
+          var x = X(xs[i]), y = Y(q.rl), end = i === 0 || i === n - 1;
+          o.push(end ? '<path class="ctl" d="M' + x.toFixed(1) + " " + (y - 7).toFixed(1) + 'l6.5 11h-13z"/>' : '<circle class="stn" cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="4" style="fill:' + COLS[0] + '"><title>' + esc(q.pt + "  " + f(q.rl, 3)) + "</title></circle>");
+          if (end || i % every === 0) o.push('<text class="lb" x="' + x.toFixed(1) + '" y="' + (y - 10).toFixed(1) + '" text-anchor="' + (i === 0 ? "start" : i === n - 1 ? "end" : "middle") + '">' + esc(q.pt) + "</text>");
+        });
+        o.push('<text class="ax" x="' + L + '" y="' + (H - 12) + '">0</text><text class="ax" x="' + (W - R) + '" y="' + (H - 12) + '" text-anchor="end">' + (r.dist !== null ? fc(x1, 0) + " m" : (n - 1) + " staff positions") + "</text>");
+        o.push("</svg>");
+        return o.join("");
+      }
+
+      /* ---------- drawing it all ---------- */
+      function railNote() {
+        if (typeof rs !== "function") return;
+        var nk = Object.keys(ctrlKnown()).length;
+        rs("tvctl", nk ? String(nk) : "none", nk ? "num" : "");
+        var pass = 0, fail = 0, inc = 0;
+        T.travs.forEach(function (t, k) { var s = travStatus(k); if (s === "pass") pass++; else if (s === "fail") fail++; else if (s === "err") inc++; });
+        rs("tvtrav", fail ? fail + " fail" : pass ? pass + " pass" : inc ? "not set" : "open", fail ? "bad" : pass ? "ok" : "");
+        var lc = CL[T.lcur], ls = levStatus(T.lcur);
+        rs("tvlev", ls === "pass" || ls === "fail" ? sgn(lc.res.mis * 1000, 1) + " mm" : ls === "open" ? "no check" : "not set", ls === "pass" ? "ok" : ls === "fail" ? "bad" : "");
+      }
+      function renderMid() {
+        $("tvCtl").innerHTML = SEC === "tvctl" ? viewCtl() : "";
+        $("tvTrav").innerHTML = SEC === "tvtrav" ? viewTrav() : "";
+        $("tvLev").innerHTML = SEC === "tvlev" ? viewLev() : "";
+      }
+      function renderPane() {
+        var pane = $("tvPane");
+        if (!TVSECS[SEC]) { pane.innerHTML = ""; return; }
+        var y = pane.scrollTop;
+        pane.innerHTML = SEC === "tvctl" ? paneCtl() : SEC === "tvtrav" ? paneTrav() : paneLev();
+        pane.scrollTop = y;
+      }
+      /* the boxes keep their focus while typing: only the marks on them and the results change */
+      function marks() {
+        document.querySelectorAll(".tvsec input[data-p]").forEach(function (el) {
+          var p = el.getAttribute("data-p"), v = el.value, bad = false;
+          if (/\.angle$|Brg$/.test(p)) { var a = SURV.parseAngle(v, T.fmt); bad = v.trim() !== "" && a !== null && isNaN(a); }
+          else if (/\.dist$/.test(p) && /^travs/.test(p)) bad = v.trim() !== "" && !(tn(v) > 0);
+          else if (el.classList.contains("n")) { var x = tn(v); bad = x !== null && isNaN(x); }
+          el.classList.toggle("bad", bad);
+        });
+        document.querySelectorAll(".tvpick .tvchip[data-i]").forEach(function (b) {
+          var i = +b.getAttribute("data-i"), d = b.querySelector(".tvdot");
+          if (d) d.className = "tvdot " + (b.getAttribute("data-act") === "tpick" ? travStatus(i) : levStatus(i));
+        });
+      }
+      function update(structural) {
+        computeAll();
+        if (structural) renderMid(); else marks();
+        renderPane(); railNote(); persist();
+      }
+
+      /* the rail calls this on every section change */
+      window.tvShow = function (sec) {
+        var on = !!TVSECS[sec];
+        $("prevPane").classList.toggle("tvon", on);
+        $("tvPane").hidden = !on;
+        /* on a phone the results are the second tab */
+        var mt = $("mtabPoints");
+        if (mt && mt.firstChild && mt.firstChild.nodeType === 3) mt.firstChild.nodeValue = on ? "Results " : "Points ";
+        if ($("mcount")) $("mcount").style.display = on ? "none" : "";
+        computeAll(); renderMid(); renderPane(); railNote();
+      };
+      window.tvState = function () { return JSON.parse(JSON.stringify(T)); };
+      window.tvLoad = function (s) {
+        if (!s || !s.travs || !s.levs || !s.control) return;
+        T = JSON.parse(JSON.stringify(s)); if (!T.info) T.info = blank().info;
+        window.tvShow(SEC); persist();
+      };
+
+      /* ---------- typing ---------- */
+      function onInput(e) {
+        var el = e.target, p = el.getAttribute && el.getAttribute("data-p");
+        if (!p) return;
+        var v = el.type === "checkbox" ? el.checked : el.value;
+        setPath(p, v);
+        var lvl = /^travs\.(\d+)\.level$/.exec(p);
+        if (lvl) { var t = T.travs[+lvl[1]]; t.tol = { angK: DEF_TOL[v].angK, ratio: DEF_TOL[v].ratio, hC: DEF_TOL[v].hC }; }
+        update(e.type === "change" && el.hasAttribute("data-r"));
+      }
+      function onKey(e) {
+        if (e.key !== "Enter" || !e.target.matches(".tvgrid input")) return;
+        e.preventDefault();
+        var all = Array.prototype.slice.call(e.target.closest("tbody").querySelectorAll("input"));
+        var i = all.indexOf(e.target);
+        if (all[i + 1]) { all[i + 1].focus(); all[i + 1].select(); return; }
+        var act = SEC === "tvctl" ? "cadd" : SEC === "tvtrav" ? "radd" : "ladd";
+        doAct(act, null, true);
+      }
+      /* several cells from Excel land in the boxes from the one pasted into, rows added as needed */
+      function onPaste(e) {
+        var el = e.target, p = el.getAttribute && el.getAttribute("data-p");
+        if (!p || !el.closest(".tvgrid")) return;
+        var txt = (e.clipboardData || window.clipboardData).getData("text");
+        if (!/[\t\n]/.test(txt.replace(/\s+$/, ""))) return;
+        e.preventDefault();
+        var m = /^(control|travs\.\d+\.rows|levs\.\d+\.rows)\.(\d+)\.(\w+)$/.exec(p);
+        if (!m) return;
+        var list = getPath(m[1]), r0 = +m[2];
+        var cols = colsFor(m[1]), c0 = cols.indexOf(m[3]);
+        var lines = txt.replace(/\r/g, "").replace(/\n+$/, "").split("\n");
+        lines.forEach(function (ln, j) {
+          var cells = ln.split("\t"), ri = r0 + j;
+          if (ri >= list.length - (m[1] === "control" ? 0 : fixedTail(m[1]))) list.splice(ri, 0, m[1] === "control" ? { name: "", E: "", N: "", H: "" } : /^levs/.test(m[1]) ? blankLRow() : blankRow());
+          cells.forEach(function (cv, ci) { var key = cols[c0 + ci]; if (key) list[ri][key] = cv.trim(); });
+        });
+        update(true);
+        say("ok", "<b>Pasted " + lines.length + " row" + (lines.length === 1 ? "" : "s") + ".</b>");
+      }
+      function colsFor(base) {
+        if (base === "control") return ["name", "E", "N", "H"];
+        if (/^travs/.test(base)) return ["name", "angle", "dist", "dh"];
+        var L = T.levs[+base.split(".")[1]];
+        return L.mode === "staff" ? ["pt", "bs", "is", "fs", "dist"] : ["pt", "dh", "dist"];
+      }
+      /* closed traverses and closing runs keep their last row in place: new rows go above it */
+      function fixedTail(base) {
+        if (/^travs/.test(base)) return T.travs[+base.split(".")[1]].type === "open" ? 0 : 1;
+        if (/^levs/.test(base)) return T.levs[+base.split(".")[1]].close ? 1 : 0;
+        return 0;
+      }
+      function say(kind, html) { $("report").innerHTML = logLine(kind, html) + $("report").innerHTML; }
+      /* the account's activity list: what was adjusted and how it closed (no point counts, which
+         the website adds up as converted points) */
+      function note(action, title, extra) {
+        if (!window.trackUserActivity) return;
+        var m = { crs: config().label };
+        Object.keys(extra || {}).forEach(function (k) { m[k] = extra[k]; });
+        try { window.trackUserActivity(action, title, m); } catch (e) { }
+      }
+      function travLine(k) {
+        var c = CT[k], st = travStatus(k);
+        if (!c || !c.ok) return "";
+        var cl = c.res.closure;
+        return [TYPE[c.res.type], METHOD[c.res.method], cl.precision !== null ? ratioTx(cl.precision) : null,
+          cl.hasClose ? SURV.fmtSec(cl.angMis) : null, st === "pass" ? "within tolerance" : st === "fail" ? "outside tolerance" : "no check"].filter(Boolean).join(" \u00b7 ");
+      }
+      function levLine(k) {
+        var c = CL[k], st = levStatus(k);
+        if (!c || !c.ok) return "";
+        return [c.res.closed ? sgn(c.res.mis * 1000, 1) + " mm of \u00b1" + f(c.res.allow * 1000, 1) + " mm" : null,
+          c.res.dist !== null ? fc(c.res.dist, 0) + " m" : null, st === "pass" ? "within tolerance" : st === "fail" ? "outside tolerance" : "no check"].filter(Boolean).join(" \u00b7 ");
+      }
+
+      /* ---------- buttons ---------- */
+      function focusLast(sel) { setTimeout(function () { var ins = document.querySelectorAll(sel); if (ins.length) ins[ins.length - 1].focus(); }, 0); }
+      function doAct(act, b, fromKey) {
+        var t = T.travs[T.cur], L = T.levs[T.lcur], i = b ? +b.getAttribute("data-i") : -1, at;
+        switch (act) {
+          case "goctl": railGo("tvctl"); return;
+          case "example":
+            if (!isBlank() && !confirm("Replace the control points, traverses and level runs here with the example?")) return;
+            T = example(); T.cur = 0; T.lcur = 0; update(true);
+            say("ok", "<b>Example loaded.</b> Two control pillars, a primary loop, a secondary link and a level loop. Open Traverse to see them worked out.");
+            return;
+          case "cadd": T.control.push({ name: "", E: "", N: "", H: "" }); update(true); if (fromKey) focusLast(".tvgrid.ctl tbody tr:last-child input"); return;
+          case "cdel": T.control.splice(i, 1); if (!T.control.length) T.control.push({ name: "", E: "", N: "", H: "" }); update(true); return;
+          case "cfromsheet": sheetPicker(); return;
+          case "cpaste": pasteBox("control"); return;
+          case "tpaste": pasteBox("travs." + T.cur + ".rows"); return;
+          case "lpaste": pasteBox("levs." + T.lcur + ".rows"); return;
+          case "tpick": T.cur = i; update(true); return;
+          case "tnew": T.travs.push(newTrav(T.travs.length ? "secondary" : "primary", T.travs.length)); T.cur = T.travs.length - 1; update(true); return;
+          case "tdel":
+            if (!confirm("Delete " + (t.name || "this traverse") + "?")) return;
+            T.travs.splice(T.cur, 1); if (!T.travs.length) T.travs.push(newTrav("primary", 0)); T.cur = Math.max(0, T.cur - 1); update(true); return;
+          case "radd":
+            at = t.type === "open" ? t.rows.length : t.rows.length - 1;
+            t.rows.splice(at, 0, blankRow()); update(true);
+            if (fromKey) setTimeout(function () { var r = document.querySelectorAll(".tvgrid.obs tbody tr")[at]; var x = r && r.querySelector("input"); if (x) x.focus(); }, 0);
+            return;
+          case "rdel": t.rows.splice(i, 1); update(true); return;
+          case "lpick": T.lcur = i; update(true); return;
+          case "lnew": T.levs.push(newLev(T.levs.length)); T.lcur = T.levs.length - 1; update(true); return;
+          case "ldel":
+            if (!confirm("Delete " + (L.name || "this level run") + "?")) return;
+            T.levs.splice(T.lcur, 1); if (!T.levs.length) T.levs.push(newLev(0)); T.lcur = Math.max(0, T.lcur - 1); update(true); return;
+          case "ladd":
+            at = L.close ? L.rows.length - 1 : L.rows.length;
+            L.rows.splice(at, 0, blankLRow()); update(true);
+            if (fromKey) setTimeout(function () { var r = document.querySelectorAll(".tvgrid.lev tbody tr")[at]; var x = r && r.querySelector("input"); if (x) x.focus(); }, 0);
+            return;
+          case "ldelrow": L.rows.splice(i, 1); update(true); return;
+          case "tab": TAB[b.getAttribute("data-k")] = b.getAttribute("data-v"); renderPane(); return;
+          case "tsheet": toSheetTrav(); return;
+          case "lsheet": toSheetLev(); return;
+          case "rsheet": toSheetReg(); return;
+          case "tcsv": csvTrav(); return;
+          case "lcsv": csvLev(); return;
+          case "rcsv": csvReg(); return;
+          case "tpdf": pdfOut("t"); return;
+          case "lpdf": pdfOut("l"); return;
+          case "rpdf": pdfOut("r"); return;
+        }
+      }
+      function isBlank() {
+        var any = T.control.some(function (c) { return c.name || c.E || c.N; }) ||
+          T.travs.some(function (t) { return t.start || t.rows.some(function (r) { return r.angle || r.dist || r.name; }); }) ||
+          T.levs.some(function (L) { return L.rows.some(function (r) { return r.bs || r.fs || r.dh || r.pt; }); });
+        return !any;
+      }
+      function onClick(e) {
+        var s = e.target.closest("[data-seg]");
+        if (s) {
+          var sp = s.getAttribute("data-seg"), tm = /^travs\.(\d+)\.type$/.exec(sp);
+          /* a link turned open keeps the station it reached as its last one */
+          if (tm) {
+            var tt = T.travs[+tm[1]], last = tt.rows[tt.rows.length - 1];
+            if (s.getAttribute("data-v") === "open" && tt.type === "link" && !String(last.name || "").trim()) last.name = tt.end || "";
+          }
+          setPath(sp, s.getAttribute("data-v")); update(true); return;
+        }
+        var b = e.target.closest("[data-act]");
+        if (b && !b.disabled) doAct(b.getAttribute("data-act"), b, false);
+      }
+      function onToggle(e) {
+        var d = e.target; if (!d.matches || !d.matches("details[data-more]")) return;
+        if (d.getAttribute("data-more") === "1") T.openMore = d.open; else T.openMoreL = d.open;
+        persist();
+      }
+      ["tvCtl", "tvTrav", "tvLev"].forEach(function (id) {
+        var el = $(id);
+        el.addEventListener("input", onInput);
+        el.addEventListener("change", function (e) { if (e.target.tagName === "SELECT" || e.target.type === "checkbox") onInput(e); });
+        el.addEventListener("keydown", onKey);
+        el.addEventListener("paste", onPaste);
+        el.addEventListener("click", onClick);
+        el.addEventListener("toggle", onToggle, true);
+      });
+      $("tvPane").addEventListener("click", onClick);
+
+      /* ---------- paste a block of rows ---------- */
+      function pasteBox(base) {
+        var box = $("tvPasteBox"); if (!box) return;
+        if (box.innerHTML) { box.innerHTML = ""; return; }
+        var cols = colsFor(base), names = { name: "name", E: "easting", N: "northing", H: "level", angle: "angle", dist: "distance", dh: "height difference", pt: "point", bs: "BS", is: "IS", fs: "FS" };
+        box.innerHTML = '<div class="tvpaste"><p class="tvnote">One row per line, columns in this order: <b>' + cols.map(function (c) { return names[c]; }).join(", ") +
+          "</b>. Tabs (from Excel), commas or spaces between them. The rows replace the ones above.</p>" +
+          '<textarea spellcheck="false" aria-label="Rows to paste"></textarea><div class="tvrow"><button type="button" class="tvbtn pri" data-paste="1">Use these rows</button>' +
+          '<button type="button" class="tvbtn" data-paste="0">Cancel</button></div></div>';
+        var ta = box.querySelector("textarea"); ta.focus();
+        box.querySelector("[data-paste='0']").addEventListener("click", function () { box.innerHTML = ""; });
+        box.querySelector("[data-paste='1']").addEventListener("click", function () {
+          var lines = ta.value.replace(/\r/g, "").split("\n").filter(function (l) { return l.trim(); });
+          if (!lines.length) { box.innerHTML = ""; return; }
+          var rows = lines.map(function (l) {
+            var cells = /\t/.test(l) ? l.split("\t") : /[,;]/.test(l) ? l.split(/[,;]/) : l.trim().split(/\s+/);
+            var o = base === "control" ? { name: "", E: "", N: "", H: "" } : /^levs/.test(base) ? blankLRow() : blankRow();
+            cols.forEach(function (c, k) { if (cells[k] !== undefined) o[c] = cells[k].trim(); });
+            return o;
+          });
+          /* a heading row is not a point */
+          if (rows.length && /^[A-Za-z ]+$/.test(String(rows[0][cols[1]] || "")) && isNaN(tn(rows[0][cols[1]]))) rows.shift();
+          var list = getPath(base);
+          if (base !== "control") {
+            /* the station the traverse starts on and the one it closes on are chosen above, so they keep their rows */
+            if (/^travs/.test(base)) {
+              var t = T.travs[+base.split(".")[1]];
+              if (rows.length && rows[0].name === t.start) rows[0].name = "";
+              var lastNm = t.type === "loop" ? t.start : t.type === "link" ? t.end : null;
+              if (lastNm && rows.length > 1 && rows[rows.length - 1].name === lastNm) rows[rows.length - 1].name = "";
+              if (t.type !== "open" && rows.length < 2) rows.push(blankRow());
+            } else if (rows.length < 2) rows.push(blankLRow());
+          }
+          list.splice.apply(list, [0, list.length].concat(rows));
+          box.innerHTML = "";
+          update(true);
+          say("ok", "<b>" + rows.length + " row" + (rows.length === 1 ? "" : "s") + " pasted.</b>");
+        });
+      }
+
+      /* ---------- control from the sheet ---------- */
+      function sheetPts() {
+        var out = [];
+        if (!READY || !READY.pts) return out;
+        READY.pts.forEach(function (g) {
+          var d = g.d || {}, E = num(d["EASTING"]), N = num(d["NORTHING"]), Z = num(d["ELEVATION"]);
+          var nm = String(d["STATION"] || d["POINT NUMBER"] || "").trim();
+          if (nm && !isNaN(E) && !isNaN(N)) out.push({ name: nm, E: E, N: N, H: isNaN(Z) ? null : Z, code: String(d["CODE"] || "") });
+        });
+        return out;
+      }
+      function sheetPicker() {
+        var box = $("tvSheetPick"); if (!box) return;
+        if (box.innerHTML) { box.innerHTML = ""; return; }
+        var pts = sheetPts();
+        if (!pts.length) {
+          box.innerHTML = '<p class="tvwarn">' + (READY && READY.pts && READY.pts.length ? "The sheet's points have no eastings and northings. Choose their grid under Coordinate system, or type the control here."
+            : "The sheet is empty. Open or paste your points under Points in first.") + "</p>";
+          return;
+        }
+        box.innerHTML = '<div class="tvsheet"><div class="tvrow"><input type="text" class="tvfind" placeholder="Find a name or code" aria-label="Find a point">' +
+          '<button type="button" class="tvlink" data-sp="all">Tick all shown</button></div><div class="tvlist">' +
+          pts.map(function (q, k) {
+            return '<label data-s="' + attr((q.name + " " + q.code).toLowerCase()) + '"><input type="checkbox" value="' + k + '"' + (/^(cp|bm|tbm|gcp|ctrl|control|pillar|ref)/i.test(q.code) ? " checked" : "") + "><b>" + esc(q.name) + "</b><span>" + esc(q.code) + "</span><em>" + f(q.E, 3) + "  " + f(q.N, 3) + (q.H !== null ? "  " + f(q.H, 3) : "") + "</em></label>";
+          }).join("") + '</div><div class="tvrow"><button type="button" class="tvbtn pri" data-sp="add">Add the ticked points</button><button type="button" class="tvbtn" data-sp="no">Cancel</button></div></div>';
+        box.querySelector(".tvfind").addEventListener("input", function () {
+          var q = this.value.trim().toLowerCase();
+          box.querySelectorAll(".tvlist label").forEach(function (l) { l.hidden = q && l.getAttribute("data-s").indexOf(q) < 0; });
+        });
+        box.addEventListener("click", function (e) {
+          var b = e.target.closest("[data-sp]"); if (!b) return;
+          var w = b.getAttribute("data-sp");
+          if (w === "no") { box.innerHTML = ""; return; }
+          if (w === "all") { box.querySelectorAll(".tvlist label:not([hidden]) input").forEach(function (c) { c.checked = true; }); return; }
+          var picked = Array.prototype.slice.call(box.querySelectorAll(".tvlist input:checked")).map(function (c) { return pts[+c.value]; });
+          if (!picked.length) return;
+          T.control = T.control.filter(function (c) { return c.name || c.E || c.N; });
+          var added = 0, upd = 0;
+          picked.forEach(function (q) {
+            var ex = null; T.control.forEach(function (c) { if (String(c.name).trim() === q.name) ex = c; });
+            var row = { name: q.name, E: f(q.E, 3), N: f(q.N, 3), H: q.H !== null ? f(q.H, 3) : "" };
+            if (ex) { ex.E = row.E; ex.N = row.N; if (row.H) ex.H = row.H; upd++; } else { T.control.push(row); added++; }
+          });
+          box.innerHTML = "";
+          update(true);
+          say("ok", "<b>Control taken from the sheet.</b> " + added + " added" + (upd ? ", " + upd + " brought up to date" : "") + ".");
+        });
+      }
+
+      /* ---------- results into the sheet ----------
+         New stations are added as rows; a station already in the sheet has its coordinates
+         (and level) replaced. One change to the rows, so one undo takes it back. */
+      function sheetCols() {
+        var txt = $("data").value.replace(/\s+$/, "");
+        if (!txt) return null;
+        var first = txt.split(/\r?\n/)[0];
+        if (!/[A-Za-z]/.test(first)) return [];
+        return splitLine(first, first.indexOf("\t") >= 0 ? "\t" : ",").map(function (c) {
+          var k = key(String(c).trim()); return (k && CANON[k]) || String(c).trim().toUpperCase();
+        });
+      }
+      function putRows(items, what) {
+        var box = $("data"), txt = box.value.replace(/\s+$/, ""), cols = sheetCols(), sep = ",";
+        if (cols === null) { txt = "STATION,CODE,EASTING,NORTHING,ELEVATION,REMARKS"; cols = txt.split(","); }
+        else if (!cols.length) { say("warn", "<b>The sheet has no heading row,</b> so there is nowhere to put the stations. Add a heading such as STATION,CODE,EASTING,NORTHING,ELEVATION first."); return false; }
+        else if (txt.split(/\r?\n/)[0].indexOf("\t") >= 0) sep = "\t";
+        var iS = cols.indexOf("STATION"), iE = cols.indexOf("EASTING"), iN = cols.indexOf("NORTHING"), iZ = cols.indexOf("ELEVATION");
+        if (iS < 0 || ((iE < 0 || iN < 0) && items.some(function (x) { return x.E !== undefined; }))) {
+          say("warn", "<b>The sheet has no " + (iS < 0 ? "STATION" : "EASTING and NORTHING") + " column,</b> so the results cannot go in. Start a fresh sheet under Points in, or add the column.");
+          return false;
+        }
+        var q = function (v) { v = String(v); return sep === "," && /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+        var lines = txt.split(/\r?\n/), at = {};
+        for (var r = 1; r < lines.length; r++) {
+          if (!lines[r].trim()) continue;
+          var cells = splitLine(lines[r], sep), nm = String(cells[iS] || "").trim();
+          if (nm && at[nm] === undefined) at[nm] = r;
+        }
+        var added = 0, changed = 0, skipped = [];
+        items.forEach(function (it) {
+          if (at[it.name] !== undefined) {
+            if (it.keep) return;
+            var cells = splitLine(lines[at[it.name]], sep);
+            while (cells.length < cols.length) cells.push("");
+            if (it.E !== undefined) { cells[iE] = it.E; cells[iN] = it.N; }
+            if (it.Z !== undefined && it.Z !== "") { if (iZ >= 0) cells[iZ] = it.Z; }
+            lines[at[it.name]] = cells.map(q).join(sep); changed++;
+          } else if (it.E !== undefined) {
+            var val = { "STATION": it.name, "CODE": it.code || "", "EASTING": it.E, "NORTHING": it.N, "ELEVATION": it.Z || "", "REMARKS": it.rem || "", "POINT NUMBER": "" };
+            lines.push(cols.map(function (c) { return q(val[c] !== undefined ? val[c] : ""); }).join(sep)); added++;
+          } else skipped.push(it.name);
+        });
+        if (!added && !changed) {
+          say("warn", "<b>Nothing to change.</b> " + (skipped.length ? "None of these points is in the sheet: " + esc(skipped.slice(0, 6).join(", ")) + (skipped.length > 6 ? "…" : "") + "." : "Every station is already in the sheet."));
+          return false;
+        }
+        box.value = lines.join("\n");
+        box.dispatchEvent(new Event("input", { bubbles: true }));
+        var sysv = $("sys").value, grid = sysv === "bad" || sysv === "geo" ? " Choose the grid of these eastings and northings under Coordinate system to see them on the map." : "";
+        say("ok", "<b>" + esc(what) + " in the sheet.</b> " + (added ? added + " added" : "") + (added && changed ? ", " : "") + (changed ? changed + " updated" : "") +
+          (skipped.length ? "; " + skipped.length + " not in the sheet: " + esc(skipped.slice(0, 4).join(", ")) + (skipped.length > 4 ? "…" : "") : "") + ". Undo (Ctrl+Z) takes it back." + grid);
+        return true;
+      }
+      function travItems(k) {
+        var c = CT[k], r = c.res, out = [], seen = {};
+        r.stations.forEach(function (s) {
+          if (seen[s.name]) return; seen[s.name] = 1;
+          out.push({ name: s.name, E: s.E.toFixed(3), N: s.N.toFixed(3), Z: ok(s.H) ? s.H.toFixed(3) : "", code: s.fixed ? "CP" : "TRAV", rem: T.travs[k].name + (s.fixed ? " (control)" : " (adjusted)"), keep: s.fixed });
+        });
+        return out;
+      }
+      function toSheetTrav() {
+        var c = CT[T.cur]; if (!c || !c.ok) return;
+        var st = travStatus(T.cur);
+        if (st === "fail" && !confirm("This traverse is outside tolerance. Put its stations in the sheet anyway?")) return;
+        var tItems = travItems(T.cur);
+        if (putRows(tItems, T.travs[T.cur].name)) {
+          note("traverse", T.travs[T.cur].name + " adjusted: " + travLine(T.cur), { stations: tItems.length, status: st === "fail" ? "warning" : "success" });
+          railGo("points");
+        }
+      }
+      function toSheetLev() {
+        var c = CL[T.lcur]; if (!c || !c.ok) return;
+        if (levStatus(T.lcur) === "fail" && !confirm("This level run is outside tolerance. Put its levels on the points anyway?")) return;
+        var kn = levKnown(), seen = {}, items = [];
+        c.res.rows.slice().reverse().forEach(function (o) {
+          if (seen[o.pt]) return; seen[o.pt] = 1;
+          var it = { name: o.pt, Z: o.rl.toFixed(3) };
+          if (kn[o.pt]) { it.E = kn[o.pt].E.toFixed(3); it.N = kn[o.pt].N.toFixed(3); it.code = "BM"; it.rem = T.levs[T.lcur].name; }
+          items.push(it);
+        });
+        if (putRows(items.reverse(), "Levels from " + T.levs[T.lcur].name)) {
+          note("levelling", T.levs[T.lcur].name + " closed: " + levLine(T.lcur), { stations: items.length, status: levStatus(T.lcur) === "fail" ? "warning" : "success" });
+          railGo("points");
+        }
+      }
+      function toSheetReg() {
+        var items = register().map(function (p) {
+          return { name: p.name, E: p.E.toFixed(3), N: p.N.toFixed(3), Z: ok(p.H) ? p.H.toFixed(3) : "", code: p.fixed ? "CP" : "TRAV", rem: p.src, keep: p.fixed };
+        });
+        if (putRows(items, "The coordinate register")) railGo("points");
+      }
+
+      /* ---------- files ---------- */
+      function fileBase(s) { return String(s || "traverse").replace(/[\\/:*?"<>|]/g, "-").trim() || "traverse"; }
+      function csvOf(head, rows) {
+        var q = function (v) { v = v === null || v === undefined ? "" : String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+        return "﻿" + [head].concat(rows).map(function (r) { return r.map(q).join(","); }).join("\r\n") + "\r\n";
+      }
+      function saved(name) { return function (msg) { say("ok", "<b>" + esc(name) + "</b> " + (msg ? esc(msg) : "saved.")); }; }
+      function csvTrav() {
+        var c = CT[T.cur]; if (!c || !c.ok) return;
+        var r = c.res, seen = {}, rows = [];
+        r.stations.forEach(function (s) {
+          if (seen[s.name]) return; seen[s.name] = 1;
+          rows.push([s.name, f(s.E, 4), f(s.N, 4), f(s.H, 4), s.fixed ? "Fixed" : r.closed ? "Adjusted" : "Not checked", s.sE ? f(s.sE * 1000, 1) : "", s.sN ? f(s.sN * 1000, 1) : ""]);
+        });
+        var name = fileBase(T.travs[T.cur].name) + ".csv";
+        note("export", "Traverse coordinates (CSV): " + T.travs[T.cur].name, { exportFormat: "CSV", fileName: name });
+        var m = saveBlob(csvOf(["STATION", "EASTING", "NORTHING", "ELEVATION", "STATUS", "SD_E_MM", "SD_N_MM"], rows), name, "text/csv", "nopoints");
+        if (m) saved(name)(m);
+      }
+      function csvLev() {
+        var c = CL[T.lcur]; if (!c || !c.ok) return;
+        var r = c.res, inR = c.input.rows;
+        var rows = r.rows.map(function (o, i) {
+          return [o.pt, f(inR[i].bs, 3), f(inR[i].is, 3), f(inR[i].fs, 3), f(inR[i].dh, 3), f(inR[i].dist, 3), f(o.rise, 3), f(o.fall, 3), f(o.raw, 4), f(o.corr * 1000, 1), f(o.rl, 4)];
+        });
+        var name = fileBase(T.levs[T.lcur].name) + ".csv";
+        note("export", "Reduced levels (CSV): " + T.levs[T.lcur].name, { exportFormat: "CSV", fileName: name });
+        var m = saveBlob(csvOf(["POINT", "BS", "IS", "FS", "DH", "DIST", "RISE", "FALL", "REDUCED", "CORR_MM", "ADJUSTED"], rows), name, "text/csv", "nopoints");
+        if (m) saved(name)(m);
+      }
+      function csvReg() {
+        var rows = register().map(function (p) { return [p.name, f(p.E, 4), f(p.N, 4), f(p.H, 4), p.src]; });
+        var name = fileBase(baseName() + " control") + ".csv";
+        note("export", "Coordinate register (CSV)", { exportFormat: "CSV", fileName: name });
+        var m = saveBlob(csvOf(["STATION", "EASTING", "NORTHING", "ELEVATION", "SOURCE"], rows), name, "text/csv", "nopoints");
+        if (m) saved(name)(m);
+      }
+
+      /* ---------- the PDF report ----------
+         The same plain PDF the survey report uses: Helvetica, drawn line by line, no fonts or pictures carried. */
+      function pdfOut(kind) {
+        if (kind === "t" && !(CT[T.cur] && CT[T.cur].ok)) return;
+        if (kind === "l" && !(CL[T.lcur] && CL[T.lcur].ok)) return;
+        var PW = 595, PH = 842, M = 40, FOOT = 34, pages = [], cur = null, y = 0;
+        var INK = "0.07 0.19 0.23", SOFT = "0.36 0.45 0.50", RULE = "0.84 0.88 0.87", HEAD = "0.93 0.95 0.95", DARK = "0.043 0.165 0.208",
+          GOLD = "1 0.82 0", GREEN = "0.12 0.55 0.33", RED = "0.75 0.22 0.17", BLUE = "0.12 0.44 0.55";
+        var job = $("fname").value.trim() || "Survey", co = $("coName").value.trim(), when = new Date();
+        var title = kind === "t" ? "Traverse adjustment" : kind === "l" ? "Level run" : "Control and coordinate register";
+        function page() {
+          cur = []; pages.push(cur); y = PH - M;
+          rect(M, PH - 30, 46, 2.2, GOLD);
+          text(M, PH - 24 + 0, title.toUpperCase(), 7.5, true, SOFT);
+          rtext(PW - M, PH - 24, job, 7.5, false, SOFT);
+          y = PH - 52;
+        }
+        function text(x, yy, s, size, bold, rgb) { cur.push((rgb || INK) + " rg BT /" + (bold ? "F2" : "F1") + " " + size + " Tf " + x.toFixed(2) + " " + yy.toFixed(2) + " Td (" + pdfStr(s) + ") Tj ET"); }
+        function rtext(xr, yy, s, size, bold, rgb) { text(xr - pdfW(s, size, bold), yy, s, size, bold, rgb); }
+        function ctext(xc, yy, s, size, bold, rgb) { text(xc - pdfW(s, size, bold) / 2, yy, s, size, bold, rgb); }
+        function rect(x, yy, w, hh, rgb) { cur.push(rgb + " rg " + x.toFixed(2) + " " + yy.toFixed(2) + " " + w.toFixed(2) + " " + hh.toFixed(2) + " re f"); }
+        function frame(x, yy, w, hh, rgb, wd) { cur.push(rgb + " RG " + (wd || 0.6) + " w " + x.toFixed(2) + " " + yy.toFixed(2) + " " + w.toFixed(2) + " " + hh.toFixed(2) + " re S"); }
+        function line(x1, y1, x2, y2, rgb, wd, dash) { cur.push((dash ? "[2 2] 0 d " : "") + rgb + " RG " + (wd || 0.5) + " w " + x1.toFixed(2) + " " + y1.toFixed(2) + " m " + x2.toFixed(2) + " " + y2.toFixed(2) + " l S" + (dash ? " [] 0 d" : "")); }
+        function need(h) { if (y - h < FOOT + 20) page(); }
+        function h2(s, keep) { need(40 + (keep || 0)); y -= 6; text(M, y, s, 12.5, true, DARK); y -= 5; rect(M, y, 26, 1.4, GOLD); y -= 13; }
+        function para(s, size, rgb) {
+          var words = String(s).split(" "), ln = "", sz = size || 8;
+          words.forEach(function (w) {
+            if (pdfW(ln + (ln ? " " : "") + w, sz, false) > PW - 2 * M) { need(12); text(M, y, ln, sz, false, rgb || SOFT); y -= sz + 3.5; ln = w; }
+            else ln += (ln ? " " : "") + w;
+          });
+          if (ln) { need(12); text(M, y, ln, sz, false, rgb || SOFT); y -= sz + 3.5; }
+          y -= 3;
+        }
+        /* a table: widths as shares of the page, numbers right-aligned, the heading again on a new page */
+        function tbl(head, rows, shares, right, opts) {
+          opts = opts || {};
+          var tw = PW - 2 * M, sum = shares.reduce(function (a, b) { return a + b; }, 0), ws = shares.map(function (s) { return s * tw / sum; });
+          var rh = opts.rh || 14, fs = opts.fs || 7.6;
+          var drawHead = function () {
+            rect(M, y - rh + 4, tw, rh, HEAD);
+            var x = M; head.forEach(function (hd, i) {
+              var s = pdfFit(hd, fs, true, ws[i] - 6);
+              if (right[i]) rtext(x + ws[i] - 3, y - rh + 8.5, s, fs, true, SOFT); else text(x + 3, y - rh + 8.5, s, fs, true, SOFT);
+              x += ws[i];
+            });
+            y -= rh;
+          };
+          need(rh * 3); drawHead();
+          rows.forEach(function (r, ri) {
+            if (y - rh < FOOT + 20) { page(); drawHead(); }
+            var plainRow = Array.isArray(r), cells = plainRow ? r : r.c, x = M;
+            if (!plainRow && r.fill) rect(M, y - rh + 4, tw, rh, r.fill);
+            cells.forEach(function (cv, i) {
+              var rb = !plainRow && !!r.bold, s = pdfFit(cv === null || cv === undefined ? "" : String(cv), fs, rb, ws[i] - 6), col = INK;
+              if (cv === "PASS") col = GREEN; else if (cv === "FAIL" || cv === "CHECK") col = RED;
+              var bold = rb || cv === "PASS" || cv === "FAIL" || cv === "CHECK";
+              if (right[i]) rtext(x + ws[i] - 3, y - rh + 8.5, s, fs, bold, col); else text(x + 3, y - rh + 8.5, s, fs, bold, col);
+              x += ws[i];
+            });
+            line(M, y - rh + 4, M + tw, y - rh + 4, RULE, 0.4);
+            y -= rh;
+            if (ri === rows.length - 1) y -= 10;
+          });
+          if (!rows.length) y -= 10;
+        }
+        function kv(pairs) {
+          var rows = [];
+          for (var i = 0; i < pairs.length; i += 2) rows.push([pairs[i][0], pairs[i][1], pairs[i + 1] ? pairs[i + 1][0] : "", pairs[i + 1] ? pairs[i + 1][1] : ""]);
+          var tw = PW - 2 * M, w = [0.2, 0.3, 0.2, 0.3].map(function (s) { return s * tw; });
+          rows.forEach(function (r) {
+            need(16);
+            var x = M;
+            r.forEach(function (cv, i) { text(x + 3, y - 6, pdfFit(cv, 8, i % 2 === 0, w[i] - 6), 8, i % 2 === 0, i % 2 === 0 ? SOFT : INK); x += w[i]; });
+            line(M, y - 10, M + tw, y - 10, RULE, 0.4); y -= 15;
+          });
+          y -= 8;
+        }
+        function plot(sets, inpt, ctrl, hgt) {
+          var w = PW - 2 * M, h = hgt || 250;
+          need(h + 20);
+          var x0 = M, y0 = y - h;
+          frame(x0, y0, w, h, RULE, 0.6);
+          var pts = [];
+          sets.forEach(function (s) { s.res.stations.forEach(function (q) { pts.push([q.E, q.N]); }); });
+          (ctrl || []).forEach(function (q) { pts.push([q.E, q.N]); });
+          if (inpt && inpt.bsC) pts.push([inpt.bsC.E, inpt.bsC.N]);
+          if (inpt && inpt.fsC) pts.push([inpt.fsC.E, inpt.fsC.N]);
+          var mnE = Infinity, mxE = -Infinity, mnN = Infinity, mxN = -Infinity;
+          pts.forEach(function (q) { mnE = Math.min(mnE, q[0]); mxE = Math.max(mxE, q[0]); mnN = Math.min(mnN, q[1]); mxN = Math.max(mxN, q[1]); });
+          var spE = Math.max(mxE - mnE, 1), spN = Math.max(mxN - mnN, 1), pad = 34;
+          var sc = Math.min((w - 2 * pad) / spE, (h - 2 * pad) / spN), cE = (mnE + mxE) / 2, cN = (mnN + mxN) / 2;
+          var X = function (e) { return x0 + w / 2 + (e - cE) * sc; }, Y = function (nn) { return y0 + h / 2 + (nn - cN) * sc; };
+          var step = niceStep(Math.max(spE, spN) / 6), e, nn;
+          for (e = Math.ceil((cE - w / 2 / sc) / step) * step; X(e) < x0 + w; e += step) if (X(e) > x0) line(X(e), y0, X(e), y0 + h, "0.93 0.95 0.94", 0.4);
+          for (nn = Math.ceil((cN - h / 2 / sc) / step) * step; Y(nn) < y0 + h; nn += step) if (Y(nn) > y0) line(x0, Y(nn), x0 + w, Y(nn), "0.93 0.95 0.94", 0.4);
+          var lab = {}, tri = function (x, yy) { cur.push(INK + " rg " + x.toFixed(2) + " " + (yy + 4.5).toFixed(2) + " m " + (x - 4).toFixed(2) + " " + (yy - 2.5).toFixed(2) + " l " + (x + 4).toFixed(2) + " " + (yy - 2.5).toFixed(2) + " l f"); };
+          var lbl = function (nm, x, yy) { if (lab[nm]) return; lab[nm] = 1; text(x + 5, yy + 4, nm, 6.6, false, INK); };
+          if (inpt && inpt.bsC && sets[0]) { var s0 = sets[0].res.stations[0]; line(X(s0.E), Y(s0.N), X(inpt.bsC.E), Y(inpt.bsC.N), SOFT, 0.5, true); }
+          if (inpt && inpt.fsC && sets[0]) { var sl = sets[0].res.stations[sets[0].res.stations.length - 1]; line(X(sl.E), Y(sl.N), X(inpt.fsC.E), Y(inpt.fsC.N), SOFT, 0.5, true); }
+          var cols = [BLUE, "0.71 0.33 0.11", GREEN, "0.48 0.31 0.69", "0.72 0.47 0.12"];
+          sets.forEach(function (s, si) {
+            var st = s.res.stations, col = cols[si % cols.length];
+            for (var i = 0; i < st.length - 1; i++) line(X(st[i].E), Y(st[i].N), X(st[i + 1].E), Y(st[i + 1].N), col, 1.1);
+            st.forEach(function (q) {
+              var x = X(q.E), yy = Y(q.N);
+              if (q.fixed) tri(x, yy); else { cur.push(col + " rg " + (x - 2).toFixed(2) + " " + (yy - 2).toFixed(2) + " 4 4 re f"); }
+              lbl(q.name, x, yy);
+            });
+          });
+          [inpt && inpt.bsC, inpt && inpt.fsC].concat(ctrl || []).forEach(function (q) { if (!q) return; tri(X(q.E), Y(q.N)); lbl(q.name, X(q.E), Y(q.N)); });
+          var nx = x0 + w - 20, ny = y0 + h - 30;
+          cur.push(INK + " rg " + nx.toFixed(2) + " " + (ny + 14).toFixed(2) + " m " + (nx - 5).toFixed(2) + " " + ny.toFixed(2) + " l " + (nx + 5).toFixed(2) + " " + ny.toFixed(2) + " l f");
+          ctext(nx, ny - 9, "N", 7, true, INK);
+          var sb = niceStep(w * 0.18 / sc);
+          line(x0 + 12, y0 + 12, x0 + 12 + sb * sc, y0 + 12, INK, 1);
+          text(x0 + 12, y0 + 17, (sb >= 1000 ? sb / 1000 + " km" : sb + " m"), 6.6, false, INK);
+          rtext(x0 + w - 8, y0 + 8, "Grid " + step + " m", 6.4, false, SOFT);
+          y = y0 - 14;
+        }
+        function signoff() {
+          need(90); h2("Sign-off");
+          var tw = PW - 2 * M, bw = (tw - 16) / 3;
+          ["Computed by", "Checked by", "Approved by"].forEach(function (lb, i) {
+            var x = M + i * (bw + 8);
+            frame(x, y - 62, bw, 62, RULE, 0.6);
+            text(x + 8, y - 13, lb, 8, true, DARK);
+            text(x + 8, y - 30, "Name", 7.2, false, SOFT); line(x + 38, y - 31, x + bw - 8, y - 31, RULE, 0.5);
+            text(x + 8, y - 44, "Signature", 7.2, false, SOFT); line(x + 50, y - 45, x + bw - 8, y - 45, RULE, 0.5);
+            text(x + 8, y - 57, "Date", 7.2, false, SOFT); line(x + 30, y - 58, x + bw - 8, y - 58, RULE, 0.5);
+          });
+          y -= 76;
+        }
+
+        page();
+        text(M, y, title, 20, true, DARK); y -= 18;
+        var sub = kind === "t" ? T.travs[T.cur].name : kind === "l" ? T.levs[T.lcur].name : T.travs.length + " traverse" + (T.travs.length === 1 ? "" : "s");
+        text(M, y, sub + "  ·  " + job, 10, false, SOFT); y -= 12;
+        text(M, y, (co ? co + "  ·  " : "") + when.toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" }) + "  ·  " + config().label, 8, false, SOFT); y -= 22;
+
+        if (kind === "t") {
+          var t = T.travs[T.cur], c = CT[T.cur], r = c.res, cl = r.closure, ip = c.input;
+          h2("The traverse");
+          kv([["Order", LEVEL[t.level]], ["Kind", TYPE[t.type]], ["Adjustment", METHOD[t.method]], ["Angles", (t.angleDir === "ccw" ? "Anticlockwise" : "Clockwise") + ", backsight to foresight"],
+          ["Start station", ip.startPt.name], ["Opening", ip.startOri.mode === "point" ? "Backsight " + t.bsPt + " (" + brg(ip.startOri.az) + ")" : (ip.startOri.mode === "bearing" ? "Backsight bearing " : "First leg ") + brg(ip.startOri.az)],
+          ["Closing station", t.type === "open" ? "—" : t.type === "loop" ? ip.startPt.name : ip.endPt.name],
+          ["Closing", t.type === "open" ? "—" : ip.endOri.mode === "point" ? "Foresight " + t.fsPt + " (" + brg(ip.endOri.az) + ")" : ip.endOri.mode === "bearing" ? "Foresight bearing " + brg(ip.endOri.az) : ip.endOri.mode === "firstleg" ? "On the first leg" : "No closing angle"],
+          ["Stations / legs", r.names.length + " / " + (r.names.length - 1)], ["Length", fc(cl.sumD, 3) + " m"],
+          ["Scale factor", ip.scale.toFixed(8)], ["Limits", t.tol.angK + '" x sqrt N;  1 : ' + fc(t.tol.ratio, 0) + (r.H ? ";  " + t.tol.hC + " mm x sqrt K" : "")]]);
+          h2("Closure");
+          var cb = [];
+          cb.push(cl.hasClose ? ["Angular misclosure", SURV.fmtSec(cl.angMis), "+/-" + f(cl.angAllow, 1) + '"  (' + t.tol.angK + '" x sqrt ' + cl.nAng + ")", cl.angPass ? "PASS" : "FAIL"] : ["Angular misclosure", "not checked", "no closing orientation", ""]);
+          if (r.closed) {
+            cb.push(["Misclosure E / N", sgn(cl.fE * 1000, 1) + " / " + sgn(cl.fN * 1000, 1) + " mm", "", ""]);
+            cb.push(["Linear misclosure", mm(cl.fL) + " over " + fc(cl.sumD, 3) + " m", "", ""]);
+            cb.push(["Relative precision", ratioTx(cl.precision), "1 : " + fc(cl.ratioReq, 0) + " or better", cl.precPass ? "PASS" : "FAIL"]);
+          }
+          if (cl.fH !== null) cb.push(["Height misclosure", sgn(cl.fH * 1000, 1) + " mm", "+/-" + f(cl.hAllow * 1000, 1) + " mm  (" + t.tol.hC + " x sqrt " + f(cl.sumD / 1000, 3) + " km)", cl.hPass ? "PASS" : "FAIL"]);
+          if (r.lsq && r.lsq.chi) cb.push(["Chi-square test, 95%", f(r.lsq.chi.value, 3), f(r.lsq.chi.lo, 3) + " to " + f(r.lsq.chi.hi, 3) + "  (" + r.lsq.r + " degrees of freedom)", r.lsq.chi.pass ? "PASS" : "FAIL"]);
+          tbl(["Check", "Result", "Allowed", "Status"], cb, [3, 3, 4, 1.2], [0, 0, 0, 0]);
+          r.warnings.forEach(function (w) { para("Note: " + w, 8, RED); });
+          h2("Angles");
+          tbl(["Station", "Backsight", "Foresight", "Observed", "Correction", "Adjusted"], r.names.map(function (nm, j) {
+            var o = r.rows[j].obs, a = r.adjAng[j], corr = o !== null && a !== null ? SURV.n180(a - o) * 3600 : null;
+            var bs = j === 0 ? (ip.startOri.mode === "point" ? t.bsPt : ip.startOri.mode === "bearing" ? "bearing" : "-") : r.names[j - 1];
+            var fs = j === r.names.length - 1 ? (r.closed ? (ip.endOri.mode === "point" ? t.fsPt : ip.endOri.mode === "bearing" ? "bearing" : ip.endOri.mode === "firstleg" ? r.names[1] : "-") : "-") : r.names[j + 1];
+            return [nm, bs, fs, o !== null ? brg(o) : "-", corr !== null ? SURV.fmtSec(corr, 2) : "-", a !== null ? brg(a) : "-"];
+          }), [1.2, 1.2, 1.2, 1.4, 1, 1.4], [0, 0, 0, 1, 1, 1]);
+          h2(r.closed ? "Departures, latitudes and corrections" : "Departures and latitudes");
+          var ld = r.balAz.map(function (az, i) {
+            return [r.names[i] + " - " + r.names[i + 1], brg(az), f(r.d[i], 3), f(r.dE[i], 4), f(r.dN[i], 4),
+            f((r.finalE[i + 1] - r.finalE[i]) - r.dE[i], 4), f((r.finalN[i + 1] - r.finalN[i]) - r.dN[i], 4)];
+          });
+          ld.push({ bold: true, fill: HEAD, c: ["Totals", "", f(cl.sumD, 3), f(r.dE.reduce(function (a, b) { return a + b; }, 0), 4), f(r.dN.reduce(function (a, b) { return a + b; }, 0), 4), "", ""] });
+          tbl(["Leg", "Bearing", "Grid dist.", "Dep. dE", "Lat. dN", "Corr. E", "Corr. N"], ld, [1.8, 1.5, 1.1, 1.1, 1.1, 0.9, 0.9], [0, 1, 1, 1, 1, 1, 1], { fs: 7.2 });
+          h2("Adjusted coordinates");
+          var seen = {}, crow = [];
+          r.stations.forEach(function (s) {
+            if (seen[s.name]) return; seen[s.name] = 1;
+            var x = [s.name, fc(s.E, 3), fc(s.N, 3)];
+            if (r.H) x.push(f(s.H, 3));
+            if (r.lsq) x.push(s.fixed ? "-" : f(s.sE * 1000, 1) + " / " + f(s.sN * 1000, 1), s.fixed ? "-" : f(s.ellA * 1000, 1) + " / " + f(s.ellB * 1000, 1));
+            x.push(s.fixed ? "Fixed" : r.closed ? "Adjusted" : "Not checked");
+            crow.push(x);
+          });
+          var chd = ["Station", "Easting (m)", "Northing (m)"], csh = [1.2, 1.6, 1.6], cr = [0, 1, 1];
+          if (r.H) { chd.push("Level (m)"); csh.push(1.1); cr.push(1); }
+          if (r.lsq) { chd.push("sE / sN mm", "95% ellipse mm"); csh.push(1.2, 1.3); cr.push(1, 1); }
+          chd.push("Status"); csh.push(1); cr.push(0);
+          tbl(chd, crow, csh, cr);
+          h2("Adjusted bearings and distances");
+          tbl(r.H ? ["From", "To", "Grid bearing", "Distance (m)", "Height diff. (m)"] : ["From", "To", "Grid bearing", "Distance (m)"], r.adjLegs.map(function (l) {
+            var x = [l.from, l.to, brg(l.az), f(l.d, 3)]; if (r.H) x.push(sgn(l.dh, 3)); return x;
+          }), r.H ? [1, 1, 1.4, 1.2, 1.2] : [1, 1, 1.4, 1.2], [0, 0, 1, 1, 1]);
+          if (r.lsq) {
+            h2("Least squares");
+            kv([["Observations", String(r.lsq.m)], ["Unknowns", String(r.lsq.u)], ["Degrees of freedom", String(r.lsq.r)], ["Iterations", String(r.lsq.iter)],
+            ["Sum of weighted squares", f(r.lsq.vtpv, 4)], ["Std. error of unit weight", f(r.lsq.s0, 4)]]);
+            tbl(["Observation", "At", "To", "Observed", "Residual", "Std. resid.", ""], r.lsq.obs.map(function (o) {
+              return [o.label, o.at, o.to, o.unit === "m" ? f(o.obs, 4) : brg(o.obs), o.unit === "m" ? sgn(o.v * 1000, 1) + " mm" : SURV.fmtSec(o.v, 2), o.std === null ? "-" : f(o.std, 2), o.flag ? "CHECK" : ""];
+            }), [1.1, 0.9, 1.6, 1.4, 1.1, 0.9, 0.7], [0, 0, 0, 1, 1, 1, 0], { fs: 7.2 });
+            para("Standardized residuals over 3.0 are marked CHECK. Coordinate standard deviations are scaled by the a-posteriori variance factor; error ellipses are at 95% confidence.");
+          }
+          h2("Plan", 280);
+          plot([{ res: r }], ip, null, 260);
+        } else if (kind === "l") {
+          var L = T.levs[T.lcur], lc = CL[T.lcur], lr = lc.res, li = lc.input.rows, staff = lr.mode === "staff";
+          h2("The run");
+          kv([["Readings", staff ? "Staff readings, rise and fall" : "Height differences"], ["Starts on", li[0].pt + "  (" + f(lc.input.startRL, 3) + " m)"],
+          ["Closes on", lr.closed ? li[li.length - 1].pt + "  (" + f(lc.input.closeRL, 3) + " m)" : "No closing benchmark"], ["Length", lr.dist !== null ? fc(lr.dist, 1) + " m" : "-"],
+          ["Set-ups", String(lr.setups)], ["Misclosure spread", lr.spread === "dist" ? "By distance" : "By set-ups"]]);
+          h2("Closure");
+          var lcb = [];
+          if (lr.closed) lcb.push(["Misclosure", sgn(lr.mis * 1000, 1) + " mm", "+/-" + f(lr.allow * 1000, 1) + " mm  (" + lr.C + (lr.km !== null ? " x sqrt " + f(lr.km, 3) + " km" : " x sqrt " + lr.setups + " set-ups") + ")", lr.pass ? "PASS" : "FAIL"]);
+          else lcb.push(["Misclosure", "not checked", "no closing benchmark", ""]);
+          if (staff) lcb.push(["Arithmetic check", "BS - FS " + sgn(lr.sBS - lr.sFS, 3) + " = rise - fall " + sgn(lr.sRise - lr.sFall, 3), "", lr.arith ? "PASS" : "FAIL"]);
+          tbl(["Check", "Result", "Allowed", "Status"], lcb, [2.2, 3.4, 3.4, 1], [0, 0, 0, 0]);
+          lr.warnings.forEach(function (w) { para("Note: " + w, 8, RED); });
+          h2("Reduced levels");
+          var lh = staff ? ["Point", "BS", "IS", "FS"] : ["Point", "Height diff."], lsh = staff ? [1.3, 0.9, 0.9, 0.9] : [1.3, 1.1];
+          lh = lh.concat(["Rise", "Fall", "Reduced", "Corr. mm", "Adjusted", "Dist. m"]); lsh = lsh.concat([0.9, 0.9, 1, 0.8, 1, 0.9]);
+          var lrows = lr.rows.map(function (o, i) {
+            var x = [o.pt];
+            if (staff) x.push(f(li[i].bs, 3), f(li[i].is, 3), f(li[i].fs, 3)); else x.push(i ? sgn(li[i].dh, 3) : "");
+            x.push(o.rise !== null ? f(o.rise, 3) : "", o.fall !== null ? f(o.fall, 3) : "", f(o.raw, 3), i ? sgn(o.corr * 1000, 1) : "", f(o.rl, 3), i ? f(li[i].dist, 1) : "");
+            return x;
+          });
+          if (staff) lrows.push({ bold: true, fill: HEAD, c: ["Sums", f(lr.sBS, 3), "", f(lr.sFS, 3), f(lr.sRise, 3), f(lr.sFall, 3), "", "", "", lr.dist !== null ? f(lr.dist, 1) : ""] });
+          tbl(lh, lrows, lsh, lh.map(function (x, i) { return i > 0 ? 1 : 0; }), { fs: 7.2 });
+        } else {
+          var reg = register();
+          h2("Coordinate register");
+          tbl(["Point", "Easting (m)", "Northing (m)", "Level (m)", "From"], reg.map(function (p) {
+            return [p.name, fc(p.E, 3), fc(p.N, 3), f(p.H, 3), p.src + (p.hsrc ? "; level " + p.hsrc : "")];
+          }), [1.1, 1.5, 1.5, 1, 2.4], [0, 1, 1, 1, 0]);
+          var rs2 = []; CT.forEach(function (c) { if (c && c.ok) rs2.push({ res: c.res }); });
+          if (rs2.length) {
+            h2("Traverses");
+            tbl(["Traverse", "Kind", "Adjustment", "Angular", "Linear", "Precision", "Result"], T.travs.map(function (t, k) {
+              var c = CT[k];
+              if (!c || !c.ok) return [t.name, TYPE[t.type], METHOD[t.method], "-", "-", "-", "not worked out"];
+              var cl2 = c.res.closure, st = travStatus(k);
+              return [t.name, TYPE[t.type], METHOD[t.method], cl2.hasClose ? SURV.fmtSec(cl2.angMis) : "-", cl2.fL !== null ? mm(cl2.fL) : "-", cl2.precision !== null ? ratioTx(cl2.precision) : "-", st === "pass" ? "PASS" : st === "fail" ? "FAIL" : "no check"];
+            }), [1.8, 1.1, 1.1, 0.9, 0.9, 1.1, 0.8], [0, 0, 0, 1, 1, 1, 0]);
+            h2("Plan", 320);
+            plot(rs2, null, reg.filter(function (p) { return p.fixed; }), 300);
+          }
+        }
+        para(kind === "l" ? "Levels in metres, reduced by " + (CL[T.lcur].res.mode === "staff" ? "rise and fall" : "height differences") + ". The misclosure is spread " + (CL[T.lcur].res.spread === "dist" ? "in proportion to the distance from the start" : "equally over the set-ups") + ". Allowed misclosure = C x sqrt(K km) mm."
+          : "Angles in degrees, minutes and seconds. Bearings are grid bearings, clockwise from grid north. Distances are horizontal, times the scale factor. Angular limit = K x sqrt(N) seconds; height limit = C x sqrt(K km) mm.");
+        signoff();
+
+        pages.forEach(function (pg, i) {
+          cur = pg;
+          line(M, FOOT - 6, PW - M, FOOT - 6, RULE, 0.6);
+          text(M, FOOT - 18, co, 6.8, false, SOFT);
+          ctext(PW / 2, FOOT - 18, pdfFit(job, 6.8, false, 200), 6.8, false, SOFT);
+          rtext(PW - M, FOOT - 18, "Page " + (i + 1) + " of " + pages.length, 6.8, true, SOFT);
+        });
+        var objs = [], kids = [];
+        objs[1] = "<< /Type /Catalog /Pages 2 0 R >>";
+        objs[3] = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>";
+        objs[4] = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>";
+        var next = 5;
+        pages.forEach(function (pg) {
+          var body = pg.join("\n"), cid = next++, pid = next++;
+          objs[cid] = "<< /Length " + body.length + " >>\nstream\n" + body + "\nendstream";
+          objs[pid] = "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 " + PW + " " + PH + "] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents " + cid + " 0 R >>";
+          kids.push(pid + " 0 R");
+        });
+        objs[2] = "<< /Type /Pages /Kids [" + kids.join(" ") + "] /Count " + kids.length + " >>";
+        var info = next++, plain = function (s) { return pdfStr(String(s).replace(/[–—·−]/g, "-").replace(/[^\x20-\x7e]/g, "")); };
+        objs[info] = "<< /Title (" + plain(title + " - " + sub) + ")" + (co ? " /Author (" + plain(co) + ")" : "") + " >>";
+        var out = "%PDF-1.4\n%âãÏÓ\n", offs = [];
+        for (var o = 1; o < next; o++) { offs[o] = out.length; out += o + " 0 obj\n" + objs[o] + "\nendobj\n"; }
+        var xref = out.length;
+        out += "xref\n0 " + next + "\n0000000000 65535 f \n";
+        for (var o2 = 1; o2 < next; o2++) out += ("0000000000" + offs[o2]).slice(-10) + " 00000 n \n";
+        out += "trailer\n<< /Size " + next + " /Root 1 0 R /Info " + info + " 0 R >>\nstartxref\n" + xref + "\n%%EOF\n";
+        var u8 = new Uint8Array(out.length);
+        for (var b = 0; b < out.length; b++) u8[b] = out.charCodeAt(b) & 255;
+        var name = fileBase(kind === "r" ? baseName() + " control register" : sub + " report") + ".pdf";
+        note("export", (kind === "t" ? "Traverse report (PDF): " : kind === "l" ? "Level run report (PDF): " : "Control register (PDF): ") + sub, { exportFormat: "PDF", fileName: name });
+        var m = saveBlob(u8, name, "application/pdf", "nopoints");
+        if (m) saved(name)(m);
+        window.TVLASTPDF = u8;
+      }
+
+      computeAll(); railNote();
+      if (TVSECS[SEC]) window.tvShow(SEC);
+    })();
   </script>
 </body>
 
