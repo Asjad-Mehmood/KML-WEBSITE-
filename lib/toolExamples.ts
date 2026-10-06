@@ -4,6 +4,7 @@ import {
   AREA_UNITS, LENGTH_UNITS, compassPoint, convertUnit, fmt, formatBearing, formatDdm, formatDms, gridInverse, inverse,
   parseDms, planarArea, slopeFromRiseRun, toUtm, fromUtm,
 } from "@/lib/toolMath";
+import { SURV, computeAll, exampleState } from "@/lib/traverseModel";
 
 export interface Example {
   title: string;
@@ -92,6 +93,25 @@ export function toolExample(slug: string): Example | null {
           ["Percent", `${fmt(s.percent, 3)} %`],
           ["Degrees", `${fmt(s.degrees, 3)}°`],
           ["1 in N", `1 in ${fmt(s.oneIn, 1)} (falling)`],
+        ],
+      };
+    }
+    case "traverse-adjustment": {
+      const T = exampleState();
+      const c = computeAll(T).CT[0];
+      if (!c.ok) return null;
+      const f3 = (v: number) => v.toLocaleString("en-US", { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+      const r = c.res, cl = r.closure, ts = r.stations.find((s) => s.name === "TS-01")!;
+      return {
+        title: "A six-station closed loop, adjusted by least squares",
+        input: [
+          ["Control", "CP-01 228450.312 441203.845 · reference object CP-02"],
+          ["Observed", "6 angles in d.mmss and 6 distances round CP-01 → TS-01 … TS-05 → CP-01"],
+        ],
+        output: [
+          ["Angular misclosure", `${SURV.fmtSec(cl.angMis ?? 0, 1).replace('"', "″")} (allowed ±${cl.angAllow.toFixed(1)}″)`],
+          ["Linear precision", `1 : ${fmt(Math.floor(cl.precision ?? 0), 0)}`],
+          ["TS-01 adjusted", `E ${f3(ts.E)} · N ${f3(ts.N)}`],
         ],
       };
     }

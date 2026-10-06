@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Compass, Ruler, Scale } from "lucide-react";
+import { ArrowRight, Compass, Ruler, Scale, Waypoints } from "lucide-react";
 import PageShell from "../../components/PageShell";
 import PageIntro from "../../components/PageIntro";
 import NextSteps from "../../components/NextSteps";
@@ -10,7 +10,7 @@ import { openGraphFor } from "@/lib/site";
 
 const TITLE = "Free Survey and Coordinate Tools";
 const DESCRIPTION =
-  "Free calculators for surveyors, engineers and landowners: coordinates on a map, DMS and UTM converters, distance and bearing, plot area, slope, and land area and length units. They work in your browser, with no sign-up.";
+  "Free calculators for surveyors, engineers and landowners: coordinates on a map, DMS and UTM converters, distance and bearing, plot area, slope, traverse and level adjustment, and land area and length units. They work in your browser, with no sign-up.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -22,6 +22,7 @@ export const metadata: Metadata = {
 const ICONS: Record<ToolGroup, React.ElementType> = {
   Coordinates: Compass,
   Measure: Ruler,
+  "Survey calculations": Waypoints,
   "Convert units": Scale,
 };
 

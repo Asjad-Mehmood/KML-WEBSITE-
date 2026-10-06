@@ -161,6 +161,32 @@ export const TOOL_PAGES: Record<string, ToolPage> = {
       { q: "What fall does a drain need?", a: "Often about 1 in 40 to 1 in 80 for a 100 mm foul drain, but always follow the code or specification for your job." },
     ],
   },
+  "traverse-adjustment": {
+    tagline: "Type the angles and distances of a closed traverse and get the misclosures, precision and adjusted coordinates — by Bowditch, Transit or least squares — and close a level run in the same place.",
+    features: [
+      { title: "Loop, link or open", text: "A closed loop back to its start, a link between two known points, or an open traverse. A secondary traverse can hang off stations a primary one just fixed." },
+      { title: "Three adjustments", text: "Bowditch, Transit, or least squares with residuals, a chi-square test and error ellipses — checked against C√n and 1 : N tolerances." },
+      { title: "Level runs too", text: "Rise and fall or height of instrument from staff readings, or height differences, closed against C√K." },
+      { title: "Reports to keep", text: "A plan or profile of each run, a CSV of every point, and a printable report with the closure and final coordinates." },
+    ],
+    steps: [
+      "Press Use the tool, or Try the example to see a worked loop, link and level run.",
+      "Type or paste the control points, then each station's angle and distance — or the staff readings under Level run.",
+      "Read the misclosures and adjusted coordinates, then download the CSV or print the report.",
+    ],
+    audience: [
+      "Land and engineering surveyors closing a control traverse",
+      "Civil engineering students checking a field-book traverse or level run",
+      "Site engineers carrying a level or coordinates round a site",
+    ],
+    faqs: [
+      { q: "Which adjustment should I use?", a: "Bowditch spreads the misclosure in proportion to the leg lengths and suits angles and distances of similar quality. Transit spreads it by the size of each easting and northing change and suits better angles than distances. Least squares weighs every angle and distance by its standard error and gives residuals and a statistical test, so it is the most rigorous." },
+      { q: "What format do the angles take?", a: "By default d.mmss, so 81.3127 is 81°31'27\". You can switch to decimal degrees or gon. Each angle is turned clockwise from the back station to the forward station; anticlockwise angles are an option." },
+      { q: "How is the angular misclosure allowed?", a: "As C√n seconds, where n is the number of angles. The primary, secondary and tertiary presets set C and the linear precision required; you can change both." },
+      { q: "Does it adjust heights?", a: "Yes, if you type the height difference for each leg the heights are carried round and their misclosure is spread too. For proper levelling use the Level run tab." },
+      { q: "Is my work saved?", a: "Only in this browser, so it is there when you come back. Nothing is sent anywhere. Start again clears it." },
+    ],
+  },
   "area-converter": {
     tagline: "Convert land and floor areas between m², ft², acres, hectares, kanal, marla, feddan, dunam, guntha and cents — type once, see every unit.",
     features: [
