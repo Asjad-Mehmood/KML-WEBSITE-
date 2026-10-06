@@ -19,14 +19,14 @@ export default function Guide() {
       <h2>Step 1: identify the coordinate system</h2>
       <p>
         Survey drawings and reports state the grid, often with an EPSG code — a number that identifies one coordinate system exactly,
-        such as EPSG:3997 for Dubai DLTM or EPSG:32642 for UTM zone 42N. Our <Link href="/convert">grid pages</Link> cover the common
+        such as EPSG:2932 for the Qatar National Grid or EPSG:32642 for UTM zone 42N. Our <Link href="/convert">grid pages</Link> cover the common
         ones, and the web and Windows apps search all 5,800+ EPSG systems.
       </p>
 
       <h2>UTM zones</h2>
       <p>
         UTM divides the world into 60 zones, each 6° of longitude wide, numbered eastwards from 180°W. The zone number is{" "}
-        <strong>floor((longitude + 180) ÷ 6) + 1</strong> — Dubai, at about 55.3°E, is in zone 40. Add N or S for the hemisphere:
+        <strong>floor((longitude + 180) ÷ 6) + 1</strong> — Doha, at about 51.5°E, is in zone 39. Add N or S for the hemisphere:
         northings in the south start from 10,000,000 m at the equator. Using the neighbouring zone moves points by hundreds of
         kilometres.
       </p>

@@ -37,10 +37,10 @@ export const TOOL_PAGES: Record<string, ToolPage> = {
     ],
   },
   "dms-to-decimal": {
-    tagline: "Turn 25°11'35.1\"N into 25.193083 — and back — for one point or a whole column pasted from Excel.",
+    tagline: "Turn 25°17'06.1\"N into 25.285028 — and back — for one point or a whole column pasted from Excel.",
     features: [
       { title: "Both directions", text: "Type either form and get the other: decimal degrees, DMS and GPS-style degrees and decimal minutes." },
-      { title: "Reads what you have", text: "25°11'35\"N, 25 11 35 N, N 25°11.585', 25d11m35s or plain decimals — with N, S, E, W or a minus sign." },
+      { title: "Reads what you have", text: "25°17'06\"N, 25 17 06 N, N 25°17.102', 25d17m06s or plain decimals — with N, S, E, W or a minus sign." },
       { title: "Whole lists", text: "Paste up to 5,000 lines straight from Excel; lines it can't read are marked, not silently dropped." },
       { title: "Copy back out", text: "Copy the results as decimal or DMS columns, ready to paste back into a spreadsheet." },
     ],
@@ -55,7 +55,7 @@ export const TOOL_PAGES: Record<string, ToolPage> = {
       "Anyone with coordinates from a document that a map won't accept",
     ],
     faqs: [
-      { q: "How do I convert DMS to decimal degrees by hand?", a: "Decimal degrees = degrees + minutes ÷ 60 + seconds ÷ 3600, negative for south and west. 25°11'35.1\"N = 25 + 11/60 + 35.1/3600 = 25.193083." },
+      { q: "How do I convert DMS to decimal degrees by hand?", a: "Decimal degrees = degrees + minutes ÷ 60 + seconds ÷ 3600, negative for south and west. 25°17'06.1\"N = 25 + 17/60 + 6.1/3600 = 25.285028." },
       { q: "How many decimal places should I keep?", a: "Six decimal places of a degree is about 0.1 m on the ground, eight about a millimetre. Keep at least six for survey work." },
       { q: "Why does my map put the point in the wrong hemisphere?", a: "South latitudes and west longitudes must be negative in decimal degrees. The tool applies the S and W letters for you." },
       { q: "Can I do this inside Excel?", a: "Yes — the guide 'DMS to decimal degrees in Excel' has formulas for both separate columns and text values." },
@@ -64,7 +64,7 @@ export const TOOL_PAGES: Record<string, ToolPage> = {
   "latlong-to-utm": {
     tagline: "Convert latitude and longitude to UTM easting, northing and zone on WGS 84 — or UTM back to latitude and longitude. The zone is worked out for you.",
     features: [
-      { title: "Zone found automatically", text: "Including the Norway and Svalbard exceptions and the latitude band letter (40R, 43R, 56H…)." },
+      { title: "Zone found automatically", text: "Including the Norway and Svalbard exceptions and the latitude band letter (39R, 43R, 56H…)." },
       { title: "Both directions", text: "Lat/long to UTM and UTM back to lat/long, with range checks that catch a wrong zone or hemisphere." },
       { title: "Lists", text: "Paste a list of points and get eastings and northings for all of them, with a warning when they span several zones." },
       { title: "Millimetre accurate", text: "Checked against the USGS formulas to under a millimetre at places around the world." },

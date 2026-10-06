@@ -6,7 +6,7 @@ import GridSearch from "./GridSearch";
 import { GRID_PAGES } from "@/lib/gridPages";
 import { GUIDES } from "@/lib/guides";
 
-const POPULAR = ["dubai-dltm", "qatar-national-grid", "utm-zone-40n", "utm-zone-39n", "utm-zone-42n", "utm-zone-43n", "british-national-grid", "australia-mga-zone-56"];
+const POPULAR = ["qatar-national-grid", "dubai-dltm", "utm-zone-40n", "utm-zone-39n", "utm-zone-42n", "utm-zone-43n", "british-national-grid", "australia-mga-zone-56"];
 const FEATURED = ["survey-points-to-google-earth", "find-your-utm-zone", "total-station-csv-to-kmz-with-photos", "kml-vs-kmz"];
 
 // Home page: jump to a grid's converter page, or read a guide

@@ -75,6 +75,19 @@ interface DatasetPreset {
 }
 
 const DATASETS: Record<string, DatasetPreset> = {
+  qatar: {
+    name: "Qatar National Grid",
+    country: "Qatar",
+    flag: "🇶🇦",
+    grid: "EPSG:2932",
+    datum: "Qatar 1995 / QNG",
+    points: [
+      { id: "QNG-01", name: "Doha Primary Trig", easting: 231956.844, northing: 392642.945, elev: 11.20, code: "CONTROL", lat: 25.2867, lon: 51.5332 },
+      { id: "QNG-02", name: "Harbor Boundary West", easting: 232117.645, northing: 392787.335, elev: 8.50, code: "BOUNDARY", lat: 25.2880, lon: 51.5348 },
+      { id: "QNG-03", name: "Infrastructure Hub Stn", easting: 232259.038, northing: 392621.505, elev: 14.70, code: "FACILITY", lat: 25.2865, lon: 51.5362 },
+      { id: "QNG-04", name: "Pavement Edge Level", easting: 232037.728, northing: 392510.204, elev: 9.90, code: "TOPO", lat: 25.2855, lon: 51.5340 },
+    ],
+  },
   dubai: {
     name: "Dubai DLTM",
     country: "UAE",
@@ -88,19 +101,6 @@ const DATASETS: Record<string, DatasetPreset> = {
       { id: "BS-04", name: "Traverse Tie Station", easting: 494241.483, northing: 2787567.767, elev: 19.00, code: "TRAVERSE", lat: 25.1942, lon: 55.2762 },
       { id: "CL-05", name: "Road Centerline Stn 0+120", easting: 494170.991, northing: 2787711.806, elev: 16.30, code: "ROAD", lat: 25.1955, lon: 55.2755 },
       { id: "MH-06", name: "Storm Drainage Manhole", easting: 494604.489, northing: 2787966.411, elev: 21.15, code: "UTILITY", lat: 25.1978, lon: 55.2798 },
-    ],
-  },
-  qatar: {
-    name: "Qatar National Grid",
-    country: "Qatar",
-    flag: "🇶🇦",
-    grid: "EPSG:2932",
-    datum: "Qatar 1995 / QNG",
-    points: [
-      { id: "QNG-01", name: "Doha Primary Trig", easting: 231956.844, northing: 392642.945, elev: 11.20, code: "CONTROL", lat: 25.2867, lon: 51.5332 },
-      { id: "QNG-02", name: "Harbor Boundary West", easting: 232117.645, northing: 392787.335, elev: 8.50, code: "BOUNDARY", lat: 25.2880, lon: 51.5348 },
-      { id: "QNG-03", name: "Infrastructure Hub Stn", easting: 232259.038, northing: 392621.505, elev: 14.70, code: "FACILITY", lat: 25.2865, lon: 51.5362 },
-      { id: "QNG-04", name: "Pavement Edge Level", easting: 232037.728, northing: 392510.204, elev: 9.90, code: "TOPO", lat: 25.2855, lon: 51.5340 },
     ],
   },
   pakistan: {
@@ -161,6 +161,29 @@ interface CalibrationPreset {
 }
 
 const CALIBRATION_PRESETS: Record<string, CalibrationPreset> = {
+  qatar: {
+    name: "Qatar National Network",
+    country: "Qatar",
+    flag: "🇶🇦",
+    grid: "EPSG:2932",
+    datum: "Qatar 1995 / QNG",
+    scaleFactor: "0.999992",
+    scalePpm: "-8.0 ppm",
+    rotation: "+0° 00' 06.8\"",
+    rotationDeg: 4.2,
+    originShiftShort: "+232.0k, +392.6k",
+    originShiftFull: "+231,956.84m, +392,642.95m",
+    confidence: "99.99%",
+    rmsResidual: "0.28 mm",
+    maxError: "0.36 mm",
+    kmlDatasetKey: "qatar",
+    points: [
+      { id: "QNG-01", name: "Doha Primary Trig", role: "Primary Trig", dx: "+0.1 mm", dy: "+0.1 mm", residual: "0.14 mm", color: "blue" },
+      { id: "QNG-02", name: "Harbor Boundary West", role: "Site Perimeter", dx: "+0.2 mm", dy: "-0.2 mm", residual: "0.28 mm", color: "indigo" },
+      { id: "QNG-03", name: "Infrastructure Hub Stn", role: "Master Station", dx: "-0.2 mm", dy: "+0.2 mm", residual: "0.28 mm", color: "emerald" },
+      { id: "QNG-04", name: "Pavement Edge Level", role: "Aux Station", dx: "+0.2 mm", dy: "+0.3 mm", residual: "0.36 mm", color: "amber" },
+    ],
+  },
   dubai: {
     name: "Dubai DLTM Baseline",
     country: "UAE",
@@ -205,29 +228,6 @@ const CALIBRATION_PRESETS: Record<string, CalibrationPreset> = {
       { id: "OSGB-02", name: "Property Boundary Wall", role: "Site Perimeter", dx: "+0.3 mm", dy: "+0.2 mm", residual: "0.36 mm", color: "indigo" },
       { id: "OSGB-03", name: "Railway Track Baseline", role: "Rail Control", dx: "-0.2 mm", dy: "+0.4 mm", residual: "0.44 mm", color: "emerald" },
       { id: "OSGB-04", name: "Site Entrance Level", role: "Tunnel Datum", dx: "+0.3 mm", dy: "+0.3 mm", residual: "0.42 mm", color: "amber" },
-    ],
-  },
-  qatar: {
-    name: "Qatar National Network",
-    country: "Qatar",
-    flag: "🇶🇦",
-    grid: "EPSG:2932",
-    datum: "Qatar 1995 / QNG",
-    scaleFactor: "0.999992",
-    scalePpm: "-8.0 ppm",
-    rotation: "+0° 00' 06.8\"",
-    rotationDeg: 4.2,
-    originShiftShort: "+232.0k, +392.6k",
-    originShiftFull: "+231,956.84m, +392,642.95m",
-    confidence: "99.99%",
-    rmsResidual: "0.28 mm",
-    maxError: "0.36 mm",
-    kmlDatasetKey: "qatar",
-    points: [
-      { id: "QNG-01", name: "Doha Primary Trig", role: "Primary Trig", dx: "+0.1 mm", dy: "+0.1 mm", residual: "0.14 mm", color: "blue" },
-      { id: "QNG-02", name: "Harbor Boundary West", role: "Site Perimeter", dx: "+0.2 mm", dy: "-0.2 mm", residual: "0.28 mm", color: "indigo" },
-      { id: "QNG-03", name: "Infrastructure Hub Stn", role: "Master Station", dx: "-0.2 mm", dy: "+0.2 mm", residual: "0.28 mm", color: "emerald" },
-      { id: "QNG-04", name: "Pavement Edge Level", role: "Aux Station", dx: "+0.2 mm", dy: "+0.3 mm", residual: "0.36 mm", color: "amber" },
     ],
   },
   pakistan: {
@@ -277,11 +277,11 @@ interface ShowcaseProps {
 export default function Showcase({ versionTag, onToast }: ShowcaseProps) {
   const { requireAuth, trackDownload } = useAuth();
   const [activeTab, setActiveTab] = useState<TabId>("map");
-  const [selectedDatasetKey, setSelectedDatasetKey] = useState<string>("dubai");
-  const [selectedCalibrationKey, setSelectedCalibrationKey] = useState<string>("dubai");
+  const [selectedDatasetKey, setSelectedDatasetKey] = useState<string>("qatar");
+  const [selectedCalibrationKey, setSelectedCalibrationKey] = useState<string>("qatar");
   const [searchFilter, setSearchFilter] = useState<string>("");
 
-  const currentDataset = DATASETS[selectedDatasetKey] || DATASETS.dubai;
+  const currentDataset = DATASETS[selectedDatasetKey] || DATASETS.qatar;
 
   const filteredPoints = currentDataset.points.filter((pt) => {
     if (!searchFilter.trim()) return true;
@@ -437,12 +437,12 @@ ${placemarks}
                   </span>
                   <span className="text-slate-300 hidden sm:inline">·</span>
                   <span className="text-xs text-slate-500 font-mono hidden sm:inline">
-                    EPSG:3997 (Dubai DLTM)
+                    EPSG:2932 (Qatar National Grid)
                   </span>
                 </div>
 
                 <button
-                  onClick={() => handleDownloadDatasetKml("Dubai_Site", DATASETS.dubai.points.slice(0, 4))}
+                  onClick={() => handleDownloadDatasetKml("Doha_Site", DATASETS.qatar.points.slice(0, 4))}
                   className="inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-xs font-semibold shadow-[0_2px_10px_rgba(0,113,227,0.25)] hover:shadow-[0_4px_14px_rgba(0,113,227,0.35)] transition-all active:translate-y-0.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                 >
                   <Download className="w-3.5 h-3.5" />
@@ -609,7 +609,7 @@ ${placemarks}
               TAB 3: SITE CALIBRATION (HELMERT)
              ══════════════════════════════════════════════════════════════════ */}
           {activeTab === "calibration" && (() => {
-            const cal = CALIBRATION_PRESETS[selectedCalibrationKey] || CALIBRATION_PRESETS.dubai;
+            const cal = CALIBRATION_PRESETS[selectedCalibrationKey] || CALIBRATION_PRESETS.qatar;
             const maxErrorMm = parseFloat(cal.maxError);
             const tolerancePct = Math.min(100, (maxErrorMm / TOLERANCE_MM) * 100);
 
@@ -888,7 +888,7 @@ ${placemarks}
 
                     <button
                       onClick={() =>
-                        handleDownloadDatasetKml(cal.name, (DATASETS[cal.kmlDatasetKey] || DATASETS.dubai).points)
+                        handleDownloadDatasetKml(cal.name, (DATASETS[cal.kmlDatasetKey] || DATASETS.qatar).points)
                       }
                       className="mt-auto w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-sm font-semibold shadow-[0_4px_14px_rgba(0,113,227,0.28)] hover:shadow-[0_6px_20px_rgba(0,113,227,0.38)] active:translate-y-0.5 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                     >

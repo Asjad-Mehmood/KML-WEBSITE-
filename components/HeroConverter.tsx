@@ -41,10 +41,10 @@ export type EpsgRow = [number, string, string, [number, number, number, number],
 /* ─── Curated systems (proj4 definitions from the EPSG registry) ───
    Each sample point is a real benchmark location; the comment gives its WGS84 lat, lon. */
 const POPULAR_SYSTEMS: CoordSystem[] = [
-  // → 25.1932, 55.4678
-  { id: "dubai-dltm", code: 3997, grid: "EPSG:3997", name: "Dubai DLTM", flag: "🇦🇪", station: "BM-DUB-01", datum: "WGS-84 / DLTM", accuracy: "< 1 mm", def: "+proj=tmerc +lat_0=0 +lon_0=55.3333333333333 +k=1 +x_0=500000 +y_0=0 +datum=WGS84 +units=m", unit: "m", defaultE: 513556.612, defaultN: 2787467.856, defaultZ: 14.85 },
   // → 25.2846, 51.5291
   { id: "qatar-qng", code: 2932, grid: "EPSG:2932", name: "Qatar National Grid (QNG)", flag: "🇶🇦", station: "QNG-DOH-12", datum: "Qatar 1995", accuracy: "< 1 mm", def: "+proj=tmerc +lat_0=24.45 +lon_0=51.2166666666667 +k=0.99999 +x_0=200000 +y_0=300000 +ellps=intl +towgs84=-119.4248,-303.65872,-11.00061,1.164298,0.174458,1.096259,3.657065 +units=m", unit: "m", defaultE: 231540.25, defaultN: 392410.8, defaultZ: 11.2 },
+  // → 25.1932, 55.4678
+  { id: "dubai-dltm", code: 3997, grid: "EPSG:3997", name: "Dubai DLTM", flag: "🇦🇪", station: "BM-DUB-01", datum: "WGS-84 / DLTM", accuracy: "< 1 mm", def: "+proj=tmerc +lat_0=0 +lon_0=55.3333333333333 +k=1 +x_0=500000 +y_0=0 +datum=WGS84 +units=m", unit: "m", defaultE: 513556.612, defaultN: 2787467.856, defaultZ: 14.85 },
   // → 24.8607, 67.0011
   { id: "pakistan-utm42n", code: 32642, grid: "EPSG:32642", name: "Pakistan Karachi (UTM 42N)", flag: "🇵🇰", station: "PAK-KHI-07", datum: "WGS-84", accuracy: "< 1 mm", def: "+proj=utm +zone=42 +datum=WGS84 +units=m", unit: "m", defaultE: 298038.084, defaultN: 2751004.904, defaultZ: 10 },
   // → 24.6886, 46.6925

@@ -29,7 +29,7 @@ const STEPS: { n: number; title: string; text: string }[] = [
   {
     n: 2,
     title: "Choose the grid",
-    text: "Search 5,800+ grids by name, country or EPSG code — DLTM, UTM 40N, OSGB, 3997 — or type a rough position to list only the grids that cover it.",
+    text: "Search 5,800+ grids by name, country or EPSG code — QNG, DLTM, UTM 39N, OSGB, 2932 — or type a rough position to list only the grids that cover it.",
   },
   {
     n: 3,

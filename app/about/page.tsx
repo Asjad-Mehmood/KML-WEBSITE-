@@ -27,7 +27,7 @@ const POINTS: { icon: React.ElementType; title: string; text: string }[] = [
   {
     icon: Globe2,
     title: "Any grid",
-    text: "5,800+ coordinate systems from the EPSG dataset, from Dubai DLTM and the Qatar National Grid to UTM, State Plane and the British National Grid, with the shift to WGS 84 applied.",
+    text: "5,800+ coordinate systems from the EPSG dataset, from the Qatar National Grid and Dubai DLTM to UTM, State Plane and the British National Grid, with the shift to WGS 84 applied.",
   },
   {
     icon: Cpu,

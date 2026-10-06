@@ -49,10 +49,10 @@ function Distances({ m }: { m: number }) {
 function Geo() {
   const get = useShared();
   const here = { key: "m", value: "geo", isDefault: true };
-  const [a1, setA1] = useState(() => get("a1", "25.197200", here));
-  const [o1, setO1] = useState(() => get("o1", "55.274400", here));
-  const [a2, setA2] = useState(() => get("a2", "24.453884", here));
-  const [o2, setO2] = useState(() => get("o2", "54.377344", here));
+  const [a1, setA1] = useState(() => get("a1", "25.285028", here));
+  const [o1, setO1] = useState(() => get("o1", "51.499862", here));
+  const [a2, setA2] = useState(() => get("a2", "25.683900", here));
+  const [o2, setO2] = useState(() => get("o2", "51.505800", here));
   const la1 = parseDms(a1), lo1 = parseDms(o1), la2 = parseDms(a2), lo2 = parseDms(o2);
   const ok = validLat(la1) && validLon(lo1) && validLat(la2) && validLon(lo2);
   const r = ok ? inverse(la1, lo1, la2, lo2) : null;
@@ -89,11 +89,11 @@ function Geo() {
 function Grid() {
   const get = useShared();
   const here = { key: "m", value: "grid" };
-  const [e1, setE1] = useState(() => get("e1", "1000.000", here));
-  const [n1, setN1] = useState(() => get("n1", "1000.000", here));
+  const [e1, setE1] = useState(() => get("e1", "228600.000", here));
+  const [n1, setN1] = useState(() => get("n1", "392450.000", here));
   const [z1, setZ1] = useState(() => get("z1", "10.000", here));
-  const [e2, setE2] = useState(() => get("e2", "1100.000", here));
-  const [n2, setN2] = useState(() => get("n2", "900.000", here));
+  const [e2, setE2] = useState(() => get("e2", "228700.000", here));
+  const [n2, setN2] = useState(() => get("n2", "392350.000", here));
   const [z2, setZ2] = useState(() => get("z2", "12.500", here));
   const E1 = parseNumber(e1), N1 = parseNumber(n1), E2 = parseNumber(e2), N2 = parseNumber(n2);
   const Z1 = z1.trim() ? parseNumber(z1) : null, Z2 = z2.trim() ? parseNumber(z2) : null;
@@ -143,8 +143,8 @@ function Grid() {
 function Direct() {
   const get = useShared();
   const here = { key: "m", value: "direct" };
-  const [a, setA] = useState(() => get("a", "25.197200", here));
-  const [o, setO] = useState(() => get("o", "55.274400", here));
+  const [a, setA] = useState(() => get("a", "25.285028", here));
+  const [o, setO] = useState(() => get("o", "51.499862", here));
   const [b, setB] = useState(() => get("b", "45", here));
   const [d, setD] = useState(() => get("d", "1000", here));
   const la = parseDms(a), lo = parseDms(o), br = parseDms(b), dist = parseNumber(d);

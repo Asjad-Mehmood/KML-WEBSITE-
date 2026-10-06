@@ -38,7 +38,7 @@ export default function Guide() {
           Open your sheet in the <WebAppLink>web app</WebAppLink> or the Windows app.
         </li>
         <li>
-          Under <strong>Coordinate system</strong>, choose the map grid the control coordinates are on (for example Dubai DLTM or a UTM
+          Under <strong>Coordinate system</strong>, choose the map grid the control coordinates are on (for example the Qatar National Grid or a UTM
           zone).
         </li>
         <li>

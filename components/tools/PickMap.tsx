@@ -45,7 +45,7 @@ export default function PickMap({ point, zone, accuracy, view, mapType, onPick }
       const lib = await import("leaflet");
       if (dead || !box.current || map.current) return;
       L.current = lib;
-      const m = lib.map(box.current, { center: [25.19308, 55.46899], zoom: 4, worldCopyJump: true });
+      const m = lib.map(box.current, { center: [25.285028, 51.499862], zoom: 4, worldCopyJump: true });
       m.on("click", (e: Leaflet.LeafletMouseEvent) => pick.current(e.latlng.lat, lib.Util.wrapNum(e.latlng.lng, [-180, 180], true)));
       map.current = m;
       tiles.current = lib.tileLayer(mapType === "satellite" ? SATELLITE_URL : STREET_URL, { maxZoom: 19, subdomains: ["a", "b", "c"], attribution: ATTRIBUTION[mapType] }).addTo(m);

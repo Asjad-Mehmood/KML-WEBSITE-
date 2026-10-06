@@ -21,19 +21,19 @@ export default function DmsClient() {
 function One() {
   const get = useShared();
   const here = { key: "m", value: "one", isDefault: true };
-  const [latT, setLatT] = useState(() => get("lat", `25°11'35.1"N`, here));
-  const [lonT, setLonT] = useState(() => get("lon", `55°28'08.4"E`, here));
+  const [latT, setLatT] = useState(() => get("lat", `25°17'06.1"N`, here));
+  const [lonT, setLonT] = useState(() => get("lon", `51°29'59.5"E`, here));
   const lat = latT.trim() ? parseDms(latT) : null;
   const lon = lonT.trim() ? parseDms(lonT) : null;
-  const latErr = latT.trim() && !validLat(lat) ? "Not a latitude: use -90 to 90, e.g. 25.193080 or 25°11'35.1\"N" : null;
-  const lonErr = lonT.trim() && !validLon(lon) ? "Not a longitude: use -180 to 180, e.g. 55.468990 or 55°28'08.4\"E" : null;
+  const latErr = latT.trim() && !validLat(lat) ? "Not a latitude: use -90 to 90, e.g. 25.285028 or 25°17'06.1\"N" : null;
+  const lonErr = lonT.trim() && !validLon(lon) ? "Not a longitude: use -180 to 180, e.g. 51.499862 or 51°29'59.5\"E" : null;
   const ok = validLat(lat) && validLon(lon);
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
       <Card title="Type the point">
         <div className="space-y-4">
-          <Field label="Latitude" value={latT} onChange={setLatT} error={latErr} inputMode="text" placeholder={`25.193080 or 25°11'35.1"N`} />
-          <Field label="Longitude" value={lonT} onChange={setLonT} error={lonErr} inputMode="text" placeholder={`55.468990 or 55°28'08.4"E`} />
+          <Field label="Latitude" value={latT} onChange={setLatT} error={latErr} inputMode="text" placeholder={`25.285028 or 25°17'06.1"N`} />
+          <Field label="Longitude" value={lonT} onChange={setLonT} error={lonErr} inputMode="text" placeholder={`51.499862 or 51°29'59.5"E`} />
         </div>
       </Card>
       <Card title="The same point">
@@ -67,7 +67,7 @@ function One() {
 
 function List() {
   const get = useShared();
-  const [text, setText] = useState(() => get("pts", `25°11'35.1"N\t55°28'08.4"E\n24.453884, 54.377344\n33°52'10"S 151°12'30"E`, { key: "m", value: "list" }));
+  const [text, setText] = useState(() => get("pts", `25°17'06.1"N\t51°29'59.5"E\n25.683900, 51.505800\n33°52'10"S 151°12'30"E`, { key: "m", value: "list" }));
   const rows = useMemo(
     () =>
       text
@@ -98,7 +98,7 @@ function List() {
           rows={7}
           spellCheck={false}
           className={`${inputCls} text-[13.5px] leading-relaxed`}
-          placeholder={"25.193080\t55.468990\n25°11'35.1\"N 55°28'08.4\"E"}
+          placeholder={"25.285028\t51.499862\n25°17'06.1\"N 51°29'59.5\"E"}
         />
         <p className="mt-2 text-[12.5px] text-slate-500">
           {rows.length} line{rows.length === 1 ? "" : "s"} · {good.length} read

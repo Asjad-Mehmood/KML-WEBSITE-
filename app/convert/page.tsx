@@ -10,7 +10,7 @@ import WebAppLink from "@/components/WebAppLink";
 
 const TITLE = "Survey Grid to KML Converters";
 const DESCRIPTION =
-  "Convert eastings and northings from popular national and UTM grids (Dubai DLTM, Qatar QNG, UTM zones, British National Grid and more) to Google Earth KML and KMZ.";
+  "Convert eastings and northings from popular national and UTM grids (Qatar QNG, Dubai DLTM, UTM zones, British National Grid and more) to Google Earth KML and KMZ.";
 
 export const metadata: Metadata = {
   title: TITLE,

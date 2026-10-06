@@ -52,8 +52,8 @@ const DATUMS: { name: string; code?: string }[] = [
   { name: "GDA2020" },
   { name: "NAD83" },
   { name: "ED50" },
-  { name: "Dubai DLTM", code: "EPSG:3997" },
   { name: "Qatar QNG", code: "EPSG:2932" },
+  { name: "Dubai DLTM", code: "EPSG:3997" },
   { name: "Pakistan UTM 42N", code: "EPSG:32642" },
   { name: "Saudi Arabia UTM 38N", code: "EPSG:32638" },
   { name: "British National Grid", code: "EPSG:27700" },
@@ -66,8 +66,8 @@ const ADJUSTMENTS = [
 ];
 
 const POPULAR_GRIDS = [
-  { name: "Dubai DLTM", epsg: "EPSG:3997", region: "United Arab Emirates", datum: "WGS 84 / Dubai Local TM", href: "/convert/dubai-dltm" },
   { name: "Qatar National Grid", epsg: "EPSG:2932", region: "State of Qatar", datum: "Qatar 1995 / QNG", href: "/convert/qatar-national-grid" },
+  { name: "Dubai DLTM", epsg: "EPSG:3997", region: "United Arab Emirates", datum: "WGS 84 / Dubai Local TM", href: "/convert/dubai-dltm" },
   { name: "Pakistan UTM 42N", epsg: "EPSG:32642", region: "Pakistan / Central Asia", datum: "WGS 84 / UTM Zone 42N", href: "/convert/utm-zone-42n" },
   { name: "Saudi Arabia UTM 38N", epsg: "EPSG:32638", region: "Kingdom of Saudi Arabia", datum: "WGS 84 / UTM Zone 38N", href: "/convert/utm-zone-38n" },
   { name: "British National Grid", epsg: "EPSG:27700", region: "United Kingdom (OSGB36)", datum: "OSGB 1936 / British National Grid", href: "/convert/british-national-grid" },

@@ -8,8 +8,8 @@ import { AREA_UNITS, convertUnit, fmt, geoArea, parseCorner, parsePair, planarAr
 
 type Kind = "grid" | "geo";
 
-const GRID_SAMPLE = "P1 1000.000 1000.000\nP2 1045.250 1002.100\nP3 1047.800 1030.600\nP4 1001.500 1028.900";
-const GEO_SAMPLE = "25.193080, 55.468990\n25.193080, 55.469490\n25.193530, 55.469490\n25.193530, 55.468990";
+const GRID_SAMPLE = "P1 228600.000 392450.000\nP2 228645.250 392452.100\nP3 228647.800 392480.600\nP4 228601.500 392478.900";
+const GEO_SAMPLE = "25.285028, 51.499862\n25.285028, 51.500362\n25.285478, 51.500362\n25.285478, 51.499862";
 
 const SHOW = ["m2", "ha", "acre", "ft2", "kanal", "marla", "yd2", "feddan", "dunam"];
 
