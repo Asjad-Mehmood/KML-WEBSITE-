@@ -12,7 +12,8 @@ export default function Home() {
   return (
     <>
       <HomeStructuredData />
-      <FaqStructuredData />
+      {/* the home page shows the shorter FAQ (components/Faq.tsx, short) */}
+      <FaqStructuredData short />
       <HomeClient />
     </>
   );

@@ -27,6 +27,7 @@ import {
   ArrowRight,
   MapPinned,
 } from "lucide-react";
+import Link from "next/link";
 import WebAppLink from "./WebAppLink";
 import { INSTALLER_NAME } from "@/lib/site";
 
@@ -43,6 +44,9 @@ interface DownloadHubProps {
   onToast: (msg: string) => void;
   /** On the download page this section is the page's heading (h1) */
   asPage?: boolean;
+  /** The home page's version: the installer card only, with a link to the download page for the
+   *  installation guide, system requirements and other options (all kept here, shown on /download) */
+  compact?: boolean;
 }
 
 
@@ -64,6 +68,7 @@ export default function DownloadHub({
   sha256Hash,
   onToast,
   asPage = false,
+  compact = false,
 }: DownloadHubProps) {
   const HeadingTag = asPage ? "h1" : "h2";
   const { requireAuth, trackDownload } = useAuth();
@@ -260,7 +265,43 @@ BLDG-C2,513620.000,2787440.000,15.15,STRUCTURE,Building Column Corner B
               </p>
             </div>
 
-            {/* Right: build details + verification */}
+            {/* Right, on the home page (compact): the build at a glance and a light note on checking it.
+                The full build details and SHA-256 tools below are on /download. */}
+            {compact && (
+              <div className="lg:col-span-5 border-t lg:border-t-0 lg:border-l border-slate-200/80 bg-gradient-to-b from-slate-50/80 to-white p-6 sm:p-8 flex flex-col gap-5">
+                <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-500">This release</h4>
+                <dl className="grid grid-cols-2 gap-3">
+                  {[
+                    { k: "Version", v: displayVersion, mono: true },
+                    { k: "Download size", v: fileSizeText, title: bytesText },
+                    { k: "Runs on", v: "Windows 10 / 11" },
+                    { k: "Install time", v: "Under 2 min" },
+                  ].map(({ k, v, mono, title }) => (
+                    <div key={k} className="rounded-xl bg-white border border-slate-200/80 px-3.5 py-3">
+                      <dt className="text-[11px] text-slate-500">{k}</dt>
+                      <dd className={`mt-0.5 text-[14px] sm:text-[15px] font-semibold text-slate-900 leading-snug break-words ${mono ? "font-mono" : ""}`} title={title}>
+                        {v}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+                <p className="text-[12px] text-slate-500 -mt-1 truncate" title={fileName}>
+                  File: <span className="font-mono text-slate-700">{fileName}</span>
+                </p>
+                <div className="mt-auto flex items-start gap-3 rounded-xl bg-emerald-50/70 border border-emerald-100 px-4 py-3">
+                  <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" aria-hidden />
+                  <p className="text-[12.5px] text-emerald-900 leading-relaxed">
+                    <span className="font-semibold">Safe to install.</span> Every installer is listed with its SHA-256 fingerprint.{" "}
+                    <Link href="/download#verify" className="font-semibold text-emerald-700 underline underline-offset-2 hover:text-emerald-800">
+                      How to check it
+                    </Link>
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Right, on /download: build details + verification */}
+            {!compact && (
             <div className="lg:col-span-5 bg-white border-t lg:border-t-0 lg:border-l border-slate-200/80 p-6 sm:p-8 flex flex-col">
               <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-3">
                 Build details
@@ -279,7 +320,7 @@ BLDG-C2,513620.000,2787440.000,15.15,STRUCTURE,Building Column Corner B
                 ))}
               </dl>
 
-              <div className="mt-auto">
+              <div id="verify" className="mt-auto scroll-mt-28">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
                     Verify your download
@@ -324,9 +365,21 @@ BLDG-C2,513620.000,2787440.000,15.15,STRUCTURE,Building Column Corner B
                 </p>
               </div>
             </div>
+            )}
           </div>
         </div>
 
+        {compact && (
+          <p className="-mt-8 text-center text-[13.5px] text-slate-600">
+            <Link href="/download" className="inline-flex items-center gap-1.5 font-semibold text-[#0071e3] hover:underline">
+              Installation guide, system requirements and other downloads <ArrowRight className="w-4 h-4" aria-hidden />
+            </Link>
+          </p>
+        )}
+
+        {/* The guide, requirements and other options: on /download (the home page shows the card only) */}
+        {!compact && (
+          <>
         {/* ── Installation Steps ── */}
         <div className="mb-14">
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 mb-8">
@@ -454,6 +507,8 @@ BLDG-C2,513620.000,2787440.000,15.15,STRUCTURE,Building Column Corner B
             <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-slate-700 group-hover:translate-x-0.5 transition-all shrink-0 mt-1" />
           </a>
         </div>
+          </>
+        )}
 
       </div>
     </section>

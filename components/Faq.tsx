@@ -13,7 +13,8 @@ import {
   ShieldCheck,
   Lightbulb,
 } from "lucide-react";
-import { FAQS } from "@/lib/faqs";
+import Link from "next/link";
+import { FAQS, faqHighlights } from "@/lib/faqs";
 
 type FaqCategory = "all" | "grids" | "import" | "earth" | "security";
 
@@ -26,15 +27,18 @@ const CATEGORIES: { id: FaqCategory; label: string; icon: React.ElementType }[] 
 ];
 
 // headingLevel: "h1" when the FAQ is the page itself (/faq), "h2" inside the home page
-export default function Faq({ headingLevel = "h2" }: { headingLevel?: "h1" | "h2" }) {
+// short: the home page's version, one question per topic and a link to them all on /faq
+export default function Faq({ headingLevel = "h2", short = false }: { headingLevel?: "h1" | "h2"; short?: boolean }) {
   const Heading = headingLevel;
   const SubHeading = headingLevel === "h1" ? "h2" : "h3";
   const [selectedCategory, setSelectedCategory] = useState<FaqCategory>("all");
   const [openId, setOpenId] = useState<number | null>(1);
 
-  const filteredFaqs = selectedCategory === "all"
-    ? FAQS
-    : FAQS.filter(f => f.category === selectedCategory);
+  const filteredFaqs = short
+    ? faqHighlights()
+    : selectedCategory === "all"
+      ? FAQS
+      : FAQS.filter(f => f.category === selectedCategory);
 
   const countFor = (id: FaqCategory) =>
     id === "all" ? FAQS.length : FAQS.filter(f => f.category === id).length;
@@ -63,7 +67,9 @@ export default function Faq({ headingLevel = "h2" }: { headingLevel?: "h1" | "h2
           </p>
         </div>
 
-        {/* Category Filter */}
+        {/* Category Filter: only on /faq; the home page's short list has one question per topic */}
+        {!short && (
+          <>
         <div
           role="tablist"
           aria-label="Filter questions by topic"
@@ -97,6 +103,8 @@ export default function Faq({ headingLevel = "h2" }: { headingLevel?: "h1" | "h2
             );
           })}
         </div>
+          </>
+        )}
 
         {/* 2-Column Split Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
@@ -160,6 +168,14 @@ export default function Faq({ headingLevel = "h2" }: { headingLevel?: "h1" | "h2
                 </div>
               );
             })}
+            {short && (
+              <Link
+                href="/faq"
+                className="inline-flex items-center gap-1.5 pt-2 text-[13.5px] font-semibold text-[#0071e3] hover:underline"
+              >
+                All {FAQS.length} questions <ArrowRight className="w-4 h-4" aria-hidden />
+              </Link>
+            )}
           </div>
 
           {/* Support Card */}

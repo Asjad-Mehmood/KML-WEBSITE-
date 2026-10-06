@@ -7,13 +7,16 @@ import React, { useState } from "react";
 import Navbar from "../components/Navbar";
 import Hero from "../components/Hero";
 import Showcase from "../components/Showcase";
-import MetricsRibbon from "../components/MetricsRibbon";
+// Hidden from the home page to keep it short; uncomment here and below to bring it back
+// import MetricsRibbon from "../components/MetricsRibbon";
 import Features from "../components/Features";
-import Workflow from "../components/Workflow";
+// Hidden from the home page (the tutorial steps below cover it; still on /how-it-works)
+// import Workflow from "../components/Workflow";
 import TutorialTeaser from "../components/TutorialTeaser";
 import ProductSpotlight from "../components/ProductSpotlight";
 import DownloadHub from "../components/DownloadHub";
-import SpecsTable from "../components/SpecsTable";
+// Hidden from the home page (the same ground as /formats and the grids section)
+// import SpecsTable from "../components/SpecsTable";
 import Faq from "../components/Faq";
 import GridsAndGuides from "../components/GridsAndGuides";
 import CtaBanner from "../components/CtaBanner";
@@ -74,14 +77,18 @@ export default function HomeClient() {
         {/* Showcase Window */}
         <Showcase versionTag={versionTag} onToast={showToast} />
 
-        {/* Metrics Ribbon */}
+        {/* Metrics Ribbon: hidden to keep the page short (the hero carries the same figures).
+            Uncomment this and its import to bring it back.
         <MetricsRibbon />
+        */}
 
         {/* Key Features */}
         <Features />
 
-        {/* 3-Step Workflow */}
+        {/* 3-Step Workflow: hidden to keep the page short (the tutorial steps below say the same
+            with screenshots; it is still on /how-it-works). Uncomment this and its import to bring it back.
         <Workflow />
+        */}
         <TutorialTeaser />
 
         {/* Download Hub */}
@@ -95,16 +102,22 @@ export default function HomeClient() {
           releaseDateText={releaseDateText}
           sha256Hash={sha256Hash}
           onToast={showToast}
+          // the installer card only; the guide and requirements are on /download.
+          // Remove this line to show the whole section again.
+          compact
         />
 
-        {/* Technical Specifications */}
+        {/* Technical Specifications: hidden to keep the page short (see /formats and the grids
+            section). Uncomment this and its import to bring it back.
         <SpecsTable />
+        */}
 
         {/* Grid converter pages and guides */}
         <GridsAndGuides />
 
-        {/* FAQ */}
-        <Faq />
+        {/* FAQ: one question per topic and a link to /faq. Remove `short` to show them all
+            (and in app/page.tsx, `short` on FaqStructuredData). */}
+        <Faq short />
 
         {/* Bottom CTA Banner */}
         <CtaBanner
