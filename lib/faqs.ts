@@ -14,7 +14,7 @@ export const FAQS: FaqItem[] = [
     category: "grids",
     categoryLabel: "Coordinate Grids",
     q: "How do I find my regional government map grid?",
-    a: "You can search by country name (like Dubai, Qatar, Pakistan, Saudi Arabia, UK) or standard EPSG number (like EPSG:3997, EPSG:2932, EPSG:32642). If you use AutoCAD Civil 3D, you can type the same drawing zone code. The tool automatically handles the math so your points land in the exact real-world spot on Google Earth.",
+    a: "You can search by country name (like Qatar, Dubai, Pakistan, Saudi Arabia, UK) or standard EPSG number (like EPSG:2932, EPSG:3997, EPSG:32642). If you use AutoCAD Civil 3D, you can type the same drawing zone code. The tool automatically handles the math so your points land in the exact real-world spot on Google Earth.",
   },
   {
     id: 2,

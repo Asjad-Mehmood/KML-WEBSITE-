@@ -18,6 +18,8 @@ export interface ExtraSettings {
   announcementLink: string;
   /** ISO date (YYYY-MM-DD); the announcement hides itself after this day. Empty = no end */
   announcementEndsAt: string;
+  /** Traverse adjust (control points, traverses, level runs) in the app. Off: hidden everywhere in it */
+  traverseEnabled: boolean;
 }
 
 export const EXTRA_DEFAULTS: ExtraSettings = {
@@ -27,6 +29,7 @@ export const EXTRA_DEFAULTS: ExtraSettings = {
   announcementTone: "info",
   announcementLink: "",
   announcementEndsAt: "",
+  traverseEnabled: true,
 };
 
 let ready: Promise<void> | null = null;

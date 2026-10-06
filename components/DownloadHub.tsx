@@ -91,29 +91,29 @@ export default function DownloadHub({
     e.preventDefault();
     requireAuth(() => {
       const csvData = `STATION,EASTING,NORTHING,ELEVATION,CODE,REMARKS
-TBM-01,513556.612,2787467.856,14.85,BENCHMARK,Concrete Pillar on Site Boundary
-TBM-02,513642.180,2787510.320,15.22,BENCHMARK,Brass Pin in Rock Outcrop
-CORNER-NW,513490.100,2787590.450,14.10,BOUNDARY,Perimeter Fence Post NW
-CORNER-NE,513720.500,2787610.200,15.40,BOUNDARY,Perimeter Fence Post NE
-CORNER-SE,513745.300,2787400.800,16.05,BOUNDARY,Perimeter Fence Post SE
-CORNER-SW,513510.800,2787380.150,14.50,BOUNDARY,Perimeter Fence Post SW
-TREE-01,513580.400,2787490.000,14.90,TREE,Heritage Date Palm #1
-TREE-02,513610.200,2787475.600,15.05,TREE,Heritage Date Palm #2
-BLDG-C1,513560.000,2787440.000,15.10,STRUCTURE,Building Column Corner A
-BLDG-C2,513620.000,2787440.000,15.15,STRUCTURE,Building Column Corner B
+TBM-01,228600.000,392450.000,10.85,BENCHMARK,Concrete Pillar on Site Boundary
+TBM-02,228685.568,392492.464,11.22,BENCHMARK,Brass Pin in Rock Outcrop
+CORNER-NW,228533.488,392572.594,10.10,BOUNDARY,Perimeter Fence Post NW
+CORNER-NE,228763.888,392592.344,11.40,BOUNDARY,Perimeter Fence Post NE
+CORNER-SE,228788.688,392382.944,12.05,BOUNDARY,Perimeter Fence Post SE
+CORNER-SW,228554.188,392362.294,10.50,BOUNDARY,Perimeter Fence Post SW
+TREE-01,228623.788,392472.144,10.90,TREE,Heritage Date Palm #1
+TREE-02,228653.588,392457.744,11.05,TREE,Heritage Date Palm #2
+BLDG-C1,228603.388,392422.144,11.10,STRUCTURE,Building Column Corner A
+BLDG-C2,228663.388,392422.144,11.15,STRUCTURE,Building Column Corner B
 `;
       const blob = new Blob([csvData], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = "Survey_Sample_Coordinates_DLTM.csv";
+      link.download = "Survey_Sample_Coordinates_QNG.csv";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      trackDownload("sample_csv", "Survey_Sample_Coordinates_DLTM.csv", versionTag);
-      onToast("Downloaded Survey_Sample_Coordinates_DLTM.csv");
+      trackDownload("sample_csv", "Survey_Sample_Coordinates_QNG.csv", versionTag);
+      onToast("Downloaded Survey_Sample_Coordinates_QNG.csv");
     }, "Please sign in or register to download the sample survey coordinates dataset.");
   };
 

@@ -13,8 +13,8 @@ import {
 import { FEATURES, type FeatureCard } from "@/lib/featureGroups";
 
 const GRID_PREVIEW = [
-  { name: "Dubai DLTM", epsg: "EPSG:3997" },
   { name: "Qatar National Grid", epsg: "EPSG:2932" },
+  { name: "Dubai DLTM", epsg: "EPSG:3997" },
   { name: "Pakistan UTM 42N", epsg: "EPSG:32642" },
   { name: "Saudi Arabia UTM 38N", epsg: "EPSG:32638" },
 ];

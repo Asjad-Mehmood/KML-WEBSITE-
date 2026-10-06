@@ -14,6 +14,7 @@ import {
   Server,
   UserPlus,
   Wrench,
+  Waypoints,
 } from "lucide-react";
 import SignInSecurity from "./SignInSecurity";
 import SystemHealth from "./SystemHealth";
@@ -34,6 +35,7 @@ export interface AllSettings {
   announcementEndsAt: string;
   allowSignups: boolean;
   googleSignInEnabled: boolean;
+  traverseEnabled: boolean;
 }
 
 type Draft = AllSettings;
@@ -46,6 +48,7 @@ const SECTIONS = [
   ["status", "Status"],
   ["access", "Access"],
   ["notices", "Notices"],
+  ["features", "App features"],
   ["release", "Release"],
   ["security", "Security"],
   ["system", "System"],
@@ -175,8 +178,9 @@ export default function SettingsPanel({
       <div className="space-y-6">
         {/* Status at a glance (what is live now, not the unsaved draft) */}
         <Section id="status" icon={CheckCircle2} title="Live now" text="What visitors see right now, from the saved settings.">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
             <Pill label="Web app" value={saved.maintenanceMode ? "Maintenance" : "Running"} warn={saved.maintenanceMode} />
+            <Pill label="Traverse adjust" value={saved.traverseEnabled ? "Shown" : "Hidden"} warn={!saved.traverseEnabled} />
             <Pill label="New sign-ups" value={saved.allowSignups ? "Open" : "Paused"} warn={!saved.allowSignups} />
             <Pill label="Downloads" value={saved.requireAuthForDownload ? "Sign-in needed" : "Open to all"} />
             <Pill label="Announcement" value={announcementLive ? "Showing" : "Off"} />
@@ -208,6 +212,17 @@ export default function SettingsPanel({
             text="On: visitors sign in or create an account before the Windows download starts. Off: it starts straight away."
             checked={draft.requireAuthForDownload}
             onChange={(v) => set("requireAuthForDownload", v)}
+          />
+        </Section>
+
+        {/* App features: sections of the app the admin can show or hide */}
+        <Section id="features" icon={Waypoints} title="App features" text="Sections of the app you can show or hide, in the web app and the Windows and phone apps.">
+          <Toggle
+            label="Traverse adjust"
+            text="On: Control points, Traverse and Level run show in the app's side panel. Off: none of them show anywhere in the app; work already typed is kept and comes back when it is turned on. The web app follows on its next open or refresh; the Windows and phone apps when they next start online."
+            checked={draft.traverseEnabled}
+            onChange={(v) => set("traverseEnabled", v)}
+            tone="emerald"
           />
         </Section>
 

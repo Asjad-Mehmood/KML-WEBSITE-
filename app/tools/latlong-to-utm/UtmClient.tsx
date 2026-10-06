@@ -36,8 +36,8 @@ const m3 = (v: number) => v.toFixed(3);
 function ToUtm() {
   const get = useShared();
   const here = { key: "m", value: "toUtm", isDefault: true };
-  const [latT, setLatT] = useState(() => get("lat", "25.193080", here));
-  const [lonT, setLonT] = useState(() => get("lon", "55.468990", here));
+  const [latT, setLatT] = useState(() => get("lat", "25.285028", here));
+  const [lonT, setLonT] = useState(() => get("lon", "51.499862", here));
   const [zoneT, setZoneT] = useState(() => get("z", "auto", here));
   const lat = parseDms(latT), lon = parseDms(lonT);
   const ok = validLat(lat) && validLon(lon) && Math.abs(lat) <= 84;
@@ -51,7 +51,7 @@ function ToUtm() {
         <div className="space-y-4">
           <Field label="Latitude" value={latT} onChange={setLatT} inputMode="text"
             error={latT.trim() && !validLat(lat) ? "Not a latitude (-90 to 90)" : validLat(lat) && Math.abs(lat) > 84 ? "UTM covers 80°S to 84°N; polar areas use UPS" : null}
-            hint={`Decimal or DMS, e.g. 25°11'35.1"N`} />
+            hint={`Decimal or DMS, e.g. 25°17'06.1"N`} />
           <Field label="Longitude" value={lonT} onChange={setLonT} inputMode="text" error={lonT.trim() && !validLon(lon) ? "Not a longitude (-180 to 180)" : null} />
           {ok && (
             <Choice
@@ -91,10 +91,10 @@ function ToUtm() {
 function FromUtm() {
   const get = useShared();
   const here = { key: "m", value: "fromUtm" };
-  const [zoneT, setZoneT] = useState(() => get("z", "40", here));
+  const [zoneT, setZoneT] = useState(() => get("z", "39", here));
   const [hemi, setHemi] = useState<"N" | "S">(() => (get("h", "N", here) === "S" ? "S" : "N"));
-  const [eT, setET] = useState(() => get("e", "345736.747", here));
-  const [nT, setNT] = useState(() => get("n", "2787204.964", here));
+  const [eT, setET] = useState(() => get("e", "550324.350", here));
+  const [nT, setNT] = useState(() => get("n", "2796602.862", here));
   const zone = parseNumber(zoneT), e = parseNumber(eT), n = parseNumber(nT);
   const zoneOk = zone !== null && Number.isInteger(zone) && zone >= 1 && zone <= 60;
   const eOk = e !== null && e > 100000 && e < 900000;
@@ -134,7 +134,7 @@ function FromUtm() {
 
 function ListToUtm() {
   const get = useShared();
-  const [text, setText] = useState(() => get("pts", "25.193080\t55.468990\n24.453884, 54.377344\n31.520400 74.358700", { key: "m", value: "list" }));
+  const [text, setText] = useState(() => get("pts", "25.285028\t51.499862\n25.683900, 51.505800\n31.520400 74.358700", { key: "m", value: "list" }));
   const rows = useMemo(
     () => text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean).slice(0, 5000).map((line) => {
       const p = parsePair(line);

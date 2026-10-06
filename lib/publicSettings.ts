@@ -16,6 +16,8 @@ export interface PublicSettings {
   announcementTone?: "info" | "success" | "warning";
   announcementLink?: string;
   maintenanceMessage?: string;
+  /** Traverse adjust shown in the app */
+  traverseEnabled?: boolean;
 }
 
 let pending: Promise<PublicSettings | null> | null = null;

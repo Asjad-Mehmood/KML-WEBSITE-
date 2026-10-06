@@ -1,5 +1,5 @@
 // The free tools at /tools/<slug>. Each page file lives in app/tools/<slug>/.
-export type ToolGroup = "Coordinates" | "Measure" | "Convert units";
+export type ToolGroup = "Coordinates" | "Measure" | "Survey calculations" | "Convert units";
 
 export interface Tool {
   slug: string;
@@ -11,7 +11,7 @@ export interface Tool {
   group: ToolGroup;
 }
 
-export const TOOL_GROUPS: ToolGroup[] = ["Coordinates", "Measure", "Convert units"];
+export const TOOL_GROUPS: ToolGroup[] = ["Coordinates", "Measure", "Survey calculations", "Convert units"];
 
 export const TOOLS: Tool[] = [
   {
@@ -61,6 +61,14 @@ export const TOOLS: Tool[] = [
     description:
       "Work out a slope from rise and run, or convert between percent grade, degrees and 1 in N — for roads, drains, ramps and roofs.",
     group: "Measure",
+  },
+  {
+    slug: "traverse-adjustment",
+    name: "Traverse and level adjustment",
+    title: "Traverse Adjustment Calculator: Bowditch, Transit and Least Squares",
+    description:
+      "Adjust a closed loop or link traverse by Bowditch, Transit or least squares, and close a level run by rise and fall or height of instrument — with misclosures, precision, adjusted coordinates and a printable report.",
+    group: "Survey calculations",
   },
   {
     slug: "area-converter",

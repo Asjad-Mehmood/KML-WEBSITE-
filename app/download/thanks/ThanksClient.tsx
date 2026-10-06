@@ -94,7 +94,7 @@ export default function ThanksClient() {
             {[
               ["Run the installer", `Open ${fileName} from your Downloads folder and follow the steps.`],
               ["If Windows asks", "If a blue SmartScreen message appears, click More info, then Run anyway."],
-              ["Try the sample", "Open the app and click Try the sample: a finished job on the Dubai grid, ready to save as KMZ."],
+              ["Try the sample", "Open the app and click Try the sample: a finished job in Doha on the Qatar National Grid, ready to save as KMZ."],
               ["Open your own sheet", "Load your Excel or CSV, choose your grid, check one known mark and save for Google Earth."],
             ].map(([t, d], i) => (
               <li key={t} className="flex gap-4">

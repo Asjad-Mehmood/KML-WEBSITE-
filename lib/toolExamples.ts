@@ -4,6 +4,7 @@ import {
   AREA_UNITS, LENGTH_UNITS, compassPoint, convertUnit, fmt, formatBearing, formatDdm, formatDms, gridInverse, inverse,
   parseDms, planarArea, slopeFromRiseRun, toUtm, fromUtm,
 } from "@/lib/toolMath";
+import { SURV, computeAll, exampleState } from "@/lib/traverseModel";
 
 export interface Example {
   title: string;
@@ -17,10 +18,10 @@ const len = (id: string) => LENGTH_UNITS.find((u) => u.id === id)!;
 export function toolExample(slug: string): Example | null {
   switch (slug) {
     case "coordinates-on-map": {
-      const lat = 25.197197, lon = 55.274376;
+      const lat = 25.295700, lon = 51.539000;
       const u = toUtm(lat, lon);
       return {
-        title: "The Burj Khalifa, Dubai",
+        title: "The Museum of Islamic Art, Doha",
         input: [["Clicked on the map", `${lat.toFixed(6)}, ${lon.toFixed(6)}`]],
         output: [
           ["DMS", `${formatDms(lat, "lat", 1)}  ${formatDms(lon, "lon", 1)}`],
@@ -30,10 +31,10 @@ export function toolExample(slug: string): Example | null {
       };
     }
     case "dms-to-decimal": {
-      const lat = parseDms(`24°51'36.2"N`)!, lon = parseDms(`67°00'36.4"E`)!;
+      const lat = parseDms(`25°17'06.1"N`)!, lon = parseDms(`51°29'59.5"E`)!;
       return {
-        title: "Karachi, from a survey document",
-        input: [["Typed", `24°51'36.2"N  67°00'36.4"E`]],
+        title: "Doha, from a survey document",
+        input: [["Typed", `25°17'06.1"N  51°29'59.5"E`]],
         output: [
           ["Decimal degrees", `${lat.toFixed(6)}, ${lon.toFixed(6)}`],
           ["GPS style", `${formatDdm(lat, "lat", 3)}  ${formatDdm(lon, "lon", 3)}`],
@@ -41,11 +42,11 @@ export function toolExample(slug: string): Example | null {
       };
     }
     case "latlong-to-utm": {
-      const lat = 31.520400, lon = 74.358700;
+      const lat = 25.285028, lon = 51.499862;
       const u = toUtm(lat, lon);
       const back = fromUtm(u.easting, u.northing, u.zone, u.hemisphere);
       return {
-        title: "Lahore",
+        title: "Doha",
         input: [["Latitude, longitude", `${lat.toFixed(6)}, ${lon.toFixed(6)}`]],
         output: [
           ["Zone", `${u.zone}${u.band} (EPSG:${u.epsg})`],
@@ -55,27 +56,27 @@ export function toolExample(slug: string): Example | null {
       };
     }
     case "distance-bearing": {
-      const r = inverse(25.197197, 55.274376, 24.453884, 54.377344);
-      const g = gridInverse(1000, 1000, 1100, 900);
+      const r = inverse(25.295700, 51.539000, 25.683900, 51.505800);
+      const g = gridInverse(228600, 392450, 228700, 392350);
       return {
-        title: "Dubai to Abu Dhabi, and a grid leg",
+        title: "Doha to Al Khor, and a leg on the Qatar National Grid",
         input: [
-          ["From", "Burj Khalifa  25.197197, 55.274376"],
-          ["To", "Abu Dhabi Corniche  24.453884, 54.377344"],
+          ["From", "Museum of Islamic Art, Doha  25.295700, 51.539000"],
+          ["To", "Al Khor  25.683900, 51.505800"],
         ],
         output: [
           ["Distance", `${fmt(r.distance / 1000, 3)} km`],
           ["Bearing", `${formatBearing(r.initialBearing)} (${compassPoint(r.initialBearing)})`],
-          ["Grid 1000,1000 → 1100,900", `${g.distance.toFixed(3)} m at ${formatBearing(g.bearing)}`],
+          ["QNG 228600, 392450 → 228700, 392350", `${g.distance.toFixed(3)} m at ${formatBearing(g.bearing)}`],
         ],
       };
     }
     case "plot-area": {
-      const pts: [number, number][] = [[1000, 1000], [1045.25, 1002.1], [1047.8, 1030.6], [1001.5, 1028.9]];
+      const pts: [number, number][] = [[228600, 392450], [228645.25, 392452.1], [228647.8, 392480.6], [228601.5, 392478.9]];
       const a = planarArea(pts);
       return {
-        title: "A four-corner plot from a survey",
-        input: [["Corners (E, N)", "1000.00 1000.00 · 1045.25 1002.10 · 1047.80 1030.60 · 1001.50 1028.90"]],
+        title: "A four-corner plot in Doha, on the Qatar National Grid",
+        input: [["Corners (E, N)", "228600.00 392450.00 · 228645.25 392452.10 · 228647.80 392480.60 · 228601.50 392478.90"]],
         output: [
           ["Area", `${fmt(a.area, 2)} m² · ${fmt(convertUnit(a.area, area("m2"), area("ft2")), 0)} ft²`],
           ["Kanal / marla", `${fmt(convertUnit(a.area, area("m2"), area("kanal")), 3)} kanal · ${fmt(convertUnit(a.area, area("m2"), area("marla")), 2)} marla`],
@@ -92,6 +93,25 @@ export function toolExample(slug: string): Example | null {
           ["Percent", `${fmt(s.percent, 3)} %`],
           ["Degrees", `${fmt(s.degrees, 3)}°`],
           ["1 in N", `1 in ${fmt(s.oneIn, 1)} (falling)`],
+        ],
+      };
+    }
+    case "traverse-adjustment": {
+      const T = exampleState();
+      const c = computeAll(T).CT[0];
+      if (!c.ok) return null;
+      const f3 = (v: number) => v.toLocaleString("en-US", { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+      const r = c.res, cl = r.closure, ts = r.stations.find((s) => s.name === "TS-01")!;
+      return {
+        title: "A six-station closed loop, adjusted by least squares",
+        input: [
+          ["Control", "CP-01 228450.312 441203.845 · reference object CP-02"],
+          ["Observed", "6 angles in d.mmss and 6 distances round CP-01 → TS-01 … TS-05 → CP-01"],
+        ],
+        output: [
+          ["Angular misclosure", `${SURV.fmtSec(cl.angMis ?? 0, 1).replace('"', "″")} (allowed ±${cl.angAllow.toFixed(1)}″)`],
+          ["Linear precision", `1 : ${fmt(Math.floor(cl.precision ?? 0), 0)}`],
+          ["TS-01 adjusted", `E ${f3(ts.E)} · N ${f3(ts.N)}`],
         ],
       };
     }

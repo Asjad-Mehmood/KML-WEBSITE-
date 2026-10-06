@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import "leaflet/dist/leaflet.css";
 import { Layers, MapPin, CheckCircle2, Globe } from "lucide-react";
 import MapSearchBar, { type MapTarget } from "./MapSearchBar";
-import { formatLatLng, toDltm } from "@/lib/mapSearch";
+import { formatLatLng, toQng } from "@/lib/mapSearch";
 
 // Credit lines the tile providers require on the map
 const SATELLITE_URL = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
@@ -34,43 +34,43 @@ interface SurveyMarker {
 
 const SURVEY_STATIONS: SurveyMarker[] = [
   {
-    id: "BM-01",
-    name: "Control Datum BM-01",
-    lat: 25.1972,
-    lng: 55.2744,
-    easting: "494,060.20",
-    northing: "2,787,900.17",
-    elev: "+14.85m",
+    id: "QNG-01",
+    name: "Doha Primary Trig QNG-01",
+    lat: 25.2867,
+    lng: 51.5332,
+    easting: "231,956.84",
+    northing: "392,642.95",
+    elev: "+11.20m",
     code: "PRIMARY_BENCHMARK",
   },
   {
-    id: "CP-02",
-    name: "Corner Monument CP-02",
-    lat: 25.1995,
-    lng: 55.2785,
-    easting: "494,473.54",
-    northing: "2,788,154.78",
-    elev: "+26.50m",
+    id: "QNG-02",
+    name: "Boundary Corner QNG-02",
+    lat: 25.288,
+    lng: 51.5348,
+    easting: "232,117.65",
+    northing: "392,787.34",
+    elev: "+8.50m",
     code: "BOUNDARY_CORNER",
   },
   {
-    id: "CR-03",
-    name: "Survey Station CR-03",
-    lat: 25.1962,
-    lng: 55.2810,
-    easting: "494,725.37",
-    northing: "2,787,789.12",
-    elev: "+38.20m",
-    code: "HIGH_CREST",
+    id: "QNG-03",
+    name: "Survey Station QNG-03",
+    lat: 25.2865,
+    lng: 51.5362,
+    easting: "232,259.04",
+    northing: "392,621.51",
+    elev: "+14.70m",
+    code: "SURVEY_STATION",
   },
   {
-    id: "BS-04",
-    name: "Traverse Peg BS-04",
-    lat: 25.1942,
-    lng: 55.2762,
-    easting: "494,241.48",
-    northing: "2,787,567.77",
-    elev: "+19.00m",
+    id: "QNG-04",
+    name: "Traverse Peg QNG-04",
+    lat: 25.2855,
+    lng: 51.534,
+    easting: "232,037.73",
+    northing: "392,510.20",
+    elev: "+9.90m",
     code: "TRAVERSE_PEG",
   },
 ];
@@ -106,7 +106,7 @@ export default function RealSatelliteMap() {
 
       // Initialize map centered on the survey site
       const map = L.map(mapContainerRef.current, {
-        center: [25.1968, 55.2775],
+        center: [25.2867, 51.5346],
         zoom: 15,
         zoomControl: false,
         attributionControl: false,
@@ -165,7 +165,7 @@ export default function RealSatelliteMap() {
               <div><strong>EAST:</strong> ${station.easting}</div>
               <div><strong>NORTH:</strong> ${station.northing}</div>
               <div style="color: #059669; font-weight: bold;"><strong>ELEV:</strong> ${station.elev}</div>
-              <div style="margin-top: 4px; font-size: 10px; color: #64748b;">DATUM: EPSG:3997 DLTM</div>
+              <div style="margin-top: 4px; font-size: 10px; color: #64748b;">DATUM: EPSG:2932 QNG</div>
             </div>
           </div>
         `;
@@ -242,7 +242,7 @@ export default function RealSatelliteMap() {
       popupAnchor: [0, -28],
     });
 
-    const grid = toDltm(t.lat, t.lng);
+    const grid = toQng(t.lat, t.lng);
     const popup = `
       <div style="font-size:12px;line-height:1.45;color:#1e293b;min-width:180px;max-width:240px">
         <div style="font-weight:700;color:#b45309;margin-bottom:3px;font-size:13px">${esc(t.label)}</div>
@@ -250,7 +250,7 @@ export default function RealSatelliteMap() {
         <div style="font-family:monospace;font-size:11px;color:#475569">${formatLatLng(t.lat, t.lng)}</div>
         ${
           grid
-            ? `<div style="font-family:monospace;font-size:11px;color:#0071e3;margin-top:2px">DLTM E ${grid.easting.toFixed(2)} · N ${grid.northing.toFixed(2)}</div>`
+            ? `<div style="font-family:monospace;font-size:11px;color:#0071e3;margin-top:2px">QNG E ${grid.easting.toFixed(2)} · N ${grid.northing.toFixed(2)}</div>`
             : ""
         }
       </div>`;
@@ -286,7 +286,7 @@ export default function RealSatelliteMap() {
             <span className="hidden sm:inline">Satellite Inspection &amp; Boundary Map</span>
           </span>
           <span className="text-slate-300 hidden sm:inline">·</span>
-          <span className="text-slate-500 font-mono text-[11px] hidden sm:inline">EPSG:3997 (Dubai DLTM)</span>
+          <span className="text-slate-500 font-mono text-[11px] hidden sm:inline">EPSG:2932 (Qatar National Grid)</span>
         </div>
 
         {/* Map Layer Switcher: Satellite / Street */}
@@ -355,7 +355,7 @@ export default function RealSatelliteMap() {
 
         {/* Live Datum Tag */}
         <div className="absolute bottom-8 right-3 z-[1000] bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-md border border-slate-200/80 shadow-xs font-mono text-[11px] text-slate-600 hidden sm:block">
-          EPSG:3997 DLTM ➔ WGS84
+          EPSG:2932 QNG ➔ WGS84
         </div>
       </div>
 

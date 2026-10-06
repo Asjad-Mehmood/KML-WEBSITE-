@@ -26,6 +26,7 @@ const LABELS: Record<keyof AllSettings, string> = {
   webDisableReports: "Web PDF reports locked",
   allowSignups: "New sign-ups",
   googleSignInEnabled: "Google sign-in",
+  traverseEnabled: "Traverse adjust in the app",
 };
 
 async function allSettings(): Promise<AllSettings> {
@@ -104,6 +105,7 @@ function cleanSettings(body: Record<string, unknown>): Partial<AllSettings> | { 
   const out: Record<string, string | number | boolean> = {};
   const bools = [
     "requireAuthForDownload", "maintenanceMode", "announcementActive", "allowSignups", "googleSignInEnabled",
+    "traverseEnabled",
   ];
   for (const k of bools) if (typeof body[k] === "boolean") out[k] = body[k] as boolean;
   const texts: [string, number][] = [

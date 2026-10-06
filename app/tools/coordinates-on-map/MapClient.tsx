@@ -91,7 +91,7 @@ export default function MapClient() {
               id="map-q"
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Search a place, or type 25.1930, 55.4690"
+              placeholder="Search a place, or type 25.2850, 51.4999"
               className="flex-1 min-w-0 px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <button type="submit" disabled={busy} className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-[14px] font-semibold disabled:opacity-60 cursor-pointer">

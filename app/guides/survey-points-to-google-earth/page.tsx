@@ -26,7 +26,7 @@ export default function Guide() {
       <h2>2. Find out which grid the numbers are on</h2>
       <p>
         Easting and northing only mean something on a particular grid. Look at the drawing&apos;s title block, the survey report or the
-        control sheet for the grid name or EPSG code — for example Dubai DLTM (EPSG:3997), Qatar National Grid (EPSG:2932) or a UTM
+        control sheet for the grid name or EPSG code — for example Qatar National Grid (EPSG:2932), Dubai DLTM (EPSG:3997) or a UTM
         zone. Our <Link href="/convert">grid pages</Link> list the common ones with their parameters. If you only know roughly where the
         site is, the app can list the grids used at that latitude and longitude.
       </p>

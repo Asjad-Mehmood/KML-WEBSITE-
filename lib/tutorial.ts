@@ -1,6 +1,6 @@
 // The app tutorial: the full walkthrough at /tutorial and its four-step
 // summary on the home page. Screenshots are of the web app with the built-in
-// sample job (12 points on Dubai DLTM), in public/tutorial/.
+// sample job (12 points in Doha on the Qatar National Grid), in public/tutorial/.
 
 export interface TutorialStep {
   id: string;
@@ -39,11 +39,11 @@ export const MAIN_STEPS: TutorialStep[] = [
     title: "Choose your coordinate system",
     short: "Pick the grid your eastings and northings are on — 5,800+ systems, searchable.",
     image: "/tutorial/choose-grid.webp",
-    width: 1410,
+    width: 1500,
     height: 940,
-    alt: "Coordinate system panel showing WGS 84 / Dubai Local TM selected, with its area of use and definition",
+    alt: "Coordinate system panel with the Qatar National Grid (QND95) chosen, its definition and a check against a known point",
     body: [
-      "Go to Coordinate system and tell the app which grid your eastings and northings are on. Search by grid name, country, EPSG code or AutoCAD code — for example Dubai, Qatar, 32639 or British National Grid.",
+      "Go to Coordinate system and tell the app which grid your eastings and northings are on. The Qatar National Grid is built in: pick it straight from the list. For any other grid, search by name, country, EPSG code or AutoCAD code — for example Dubai, 32639 or British National Grid.",
       "Not sure which one? Type a rough latitude and longitude for the site and the list narrows to the grids used there.",
       "The panel shows the grid's area of use and how closely its datum ties to WGS 84, the datum Google Earth uses. Every system is stored inside the app, so nothing is looked up online.",
     ],

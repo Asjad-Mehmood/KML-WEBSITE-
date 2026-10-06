@@ -29,8 +29,8 @@ export default function Guide() {
         <strong>zone = floor((longitude + 180) ÷ 6) + 1</strong>
       </p>
       <p>
-        Use negative longitudes for the west. For example, Dubai at 55.3°E: (55.3 + 180) ÷ 6 = 39.2, so floor gives 39, plus 1 is{" "}
-        <strong>zone 40</strong>. London at 0.1°W: (−0.1 + 180) ÷ 6 = 29.98 → 29 + 1 = <strong>zone 30</strong>.
+        Use negative longitudes for the west. For example, Doha at 51.5°E: (51.5 + 180) ÷ 6 = 38.6, so floor gives 38, plus 1 is{" "}
+        <strong>zone 39</strong>. London at 0.1°W: (−0.1 + 180) ÷ 6 = 29.98 → 29 + 1 = <strong>zone 30</strong>.
       </p>
 
       <h2>North or south</h2>

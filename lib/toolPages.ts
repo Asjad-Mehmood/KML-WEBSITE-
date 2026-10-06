@@ -37,10 +37,10 @@ export const TOOL_PAGES: Record<string, ToolPage> = {
     ],
   },
   "dms-to-decimal": {
-    tagline: "Turn 25°11'35.1\"N into 25.193083 — and back — for one point or a whole column pasted from Excel.",
+    tagline: "Turn 25°17'06.1\"N into 25.285028 — and back — for one point or a whole column pasted from Excel.",
     features: [
       { title: "Both directions", text: "Type either form and get the other: decimal degrees, DMS and GPS-style degrees and decimal minutes." },
-      { title: "Reads what you have", text: "25°11'35\"N, 25 11 35 N, N 25°11.585', 25d11m35s or plain decimals — with N, S, E, W or a minus sign." },
+      { title: "Reads what you have", text: "25°17'06\"N, 25 17 06 N, N 25°17.102', 25d17m06s or plain decimals — with N, S, E, W or a minus sign." },
       { title: "Whole lists", text: "Paste up to 5,000 lines straight from Excel; lines it can't read are marked, not silently dropped." },
       { title: "Copy back out", text: "Copy the results as decimal or DMS columns, ready to paste back into a spreadsheet." },
     ],
@@ -55,7 +55,7 @@ export const TOOL_PAGES: Record<string, ToolPage> = {
       "Anyone with coordinates from a document that a map won't accept",
     ],
     faqs: [
-      { q: "How do I convert DMS to decimal degrees by hand?", a: "Decimal degrees = degrees + minutes ÷ 60 + seconds ÷ 3600, negative for south and west. 25°11'35.1\"N = 25 + 11/60 + 35.1/3600 = 25.193083." },
+      { q: "How do I convert DMS to decimal degrees by hand?", a: "Decimal degrees = degrees + minutes ÷ 60 + seconds ÷ 3600, negative for south and west. 25°17'06.1\"N = 25 + 17/60 + 6.1/3600 = 25.285028." },
       { q: "How many decimal places should I keep?", a: "Six decimal places of a degree is about 0.1 m on the ground, eight about a millimetre. Keep at least six for survey work." },
       { q: "Why does my map put the point in the wrong hemisphere?", a: "South latitudes and west longitudes must be negative in decimal degrees. The tool applies the S and W letters for you." },
       { q: "Can I do this inside Excel?", a: "Yes — the guide 'DMS to decimal degrees in Excel' has formulas for both separate columns and text values." },
@@ -64,7 +64,7 @@ export const TOOL_PAGES: Record<string, ToolPage> = {
   "latlong-to-utm": {
     tagline: "Convert latitude and longitude to UTM easting, northing and zone on WGS 84 — or UTM back to latitude and longitude. The zone is worked out for you.",
     features: [
-      { title: "Zone found automatically", text: "Including the Norway and Svalbard exceptions and the latitude band letter (40R, 43R, 56H…)." },
+      { title: "Zone found automatically", text: "Including the Norway and Svalbard exceptions and the latitude band letter (39R, 43R, 56H…)." },
       { title: "Both directions", text: "Lat/long to UTM and UTM back to lat/long, with range checks that catch a wrong zone or hemisphere." },
       { title: "Lists", text: "Paste a list of points and get eastings and northings for all of them, with a warning when they span several zones." },
       { title: "Millimetre accurate", text: "Checked against the USGS formulas to under a millimetre at places around the world." },
@@ -159,6 +159,32 @@ export const TOOL_PAGES: Record<string, ToolPage> = {
       { q: "How do I convert percent to degrees?", a: "Degrees = arctan(percent ÷ 100). 100% is 45°, 10% is about 5.71°." },
       { q: "What does 1 in 12 mean?", a: "One unit up for every 12 along — 8.33%, about 4.76°. It is a common maximum for wheelchair ramps." },
       { q: "What fall does a drain need?", a: "Often about 1 in 40 to 1 in 80 for a 100 mm foul drain, but always follow the code or specification for your job." },
+    ],
+  },
+  "traverse-adjustment": {
+    tagline: "Type the angles and distances of a closed traverse and get the misclosures, precision and adjusted coordinates — by Bowditch, Transit or least squares — and close a level run in the same place.",
+    features: [
+      { title: "Loop, link or open", text: "A closed loop back to its start, a link between two known points, or an open traverse. A secondary traverse can hang off stations a primary one just fixed." },
+      { title: "Three adjustments", text: "Bowditch, Transit, or least squares with residuals, a chi-square test and error ellipses — checked against C√n and 1 : N tolerances." },
+      { title: "Level runs too", text: "Rise and fall or height of instrument from staff readings, or height differences, closed against C√K." },
+      { title: "Reports to keep", text: "A plan or profile of each run, a CSV of every point, and a printable report with the closure and final coordinates." },
+    ],
+    steps: [
+      "Press Use the tool, or Try the example to see a worked loop, link and level run.",
+      "Type or paste the control points, then each station's angle and distance — or the staff readings under Level run.",
+      "Read the misclosures and adjusted coordinates, then download the CSV or print the report.",
+    ],
+    audience: [
+      "Land and engineering surveyors closing a control traverse",
+      "Civil engineering students checking a field-book traverse or level run",
+      "Site engineers carrying a level or coordinates round a site",
+    ],
+    faqs: [
+      { q: "Which adjustment should I use?", a: "Bowditch spreads the misclosure in proportion to the leg lengths and suits angles and distances of similar quality. Transit spreads it by the size of each easting and northing change and suits better angles than distances. Least squares weighs every angle and distance by its standard error and gives residuals and a statistical test, so it is the most rigorous." },
+      { q: "What format do the angles take?", a: "By default d.mmss, so 81.3127 is 81°31'27\". You can switch to decimal degrees or gon. Each angle is turned clockwise from the back station to the forward station; anticlockwise angles are an option." },
+      { q: "How is the angular misclosure allowed?", a: "As C√n seconds, where n is the number of angles. The primary, secondary and tertiary presets set C and the linear precision required; you can change both." },
+      { q: "Does it adjust heights?", a: "Yes, if you type the height difference for each leg the heights are carried round and their misclosure is spread too. For proper levelling use the Level run tab." },
+      { q: "Is my work saved?", a: "Only in this browser, so it is there when you come back. Nothing is sent anywhere. Start again clears it." },
     ],
   },
   "area-converter": {

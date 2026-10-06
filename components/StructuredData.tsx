@@ -58,7 +58,7 @@ export function HomeStructuredData() {
             featureList: [
               "Convert Excel (XLSX) and CSV survey coordinates to Google Earth KML and KMZ",
               "Export DXF for AutoCAD and Civil 3D",
-              "5,800+ EPSG coordinate systems, including UTM, DLTM, QNG and British National Grid",
+              "5,800+ EPSG coordinate systems, including QNG, UTM, DLTM and British National Grid",
               "Local site calibration from known control points (Helmert 2D)",
               "Point levels in Google Earth balloons, level profiles and level checks",
               "Boundary lines with length, perimeter and area in m² and hectares",

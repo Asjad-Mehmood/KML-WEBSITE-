@@ -51,12 +51,12 @@ const STEPS: StepItem[] = [
     accentBorder: "border-emerald-200",
     accentGlow: "shadow-emerald-500/10",
     title: "Choose Your Map Grid",
-    desc: "Select country or EPSG coordinate system — Dubai DLTM, Qatar QNG, Pakistan UTM, or UK Grid. Datum shifts calculate automatically.",
+    desc: "Select country or EPSG coordinate system — Qatar QNG, Dubai DLTM, Pakistan UTM, or UK Grid. Datum shifts calculate automatically.",
     previewHeader: "Coordinate Datum",
     previewLines: [
-      { label: "Target Grid", val: "EPSG:3997 (Dubai DLTM)", highlight: true },
-      { label: "Ellipsoid", val: "Direct WGS84 Shift" },
-      { label: "Accuracy", val: "Under 1 mm precision" },
+      { label: "Target Grid", val: "EPSG:2932 (Qatar National Grid)", highlight: true },
+      { label: "Ellipsoid", val: "International 1924, shifted to WGS84" },
+      { label: "Accuracy", val: "7-parameter shift to WGS84" },
     ],
   },
   {

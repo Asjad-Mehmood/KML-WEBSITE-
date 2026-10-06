@@ -57,14 +57,14 @@ export default function MapSearchBar({ stations, onStation, onTarget, onClear }:
     if (coord) {
       const pos = formatLatLng(coord.lat, coord.lng);
       out.push(
-        coord.kind === "dltm"
+        coord.kind === "qng"
           ? {
               key: "coord",
               type: "coord",
-              title: `DLTM E ${coord.easting.toFixed(2)}, N ${coord.northing.toFixed(2)}`,
+              title: `QNG E ${coord.easting.toFixed(2)}, N ${coord.northing.toFixed(2)}`,
               sub: pos,
-              // The map popup adds the lat/long and DLTM lines itself
-              target: { lat: coord.lat, lng: coord.lng, label: "Dubai DLTM point" },
+              // The map popup adds the lat/long and QNG lines itself
+              target: { lat: coord.lat, lng: coord.lng, label: "Qatar National Grid point" },
             }
           : {
               key: "coord",
@@ -177,7 +177,7 @@ export default function MapSearchBar({ stations, onStation, onTarget, onClear }:
             ref={inputRef}
             type="text"
             role="combobox"
-            aria-label="Search the map: place, station, latitude and longitude, or DLTM easting and northing"
+            aria-label="Search the map: place, station, latitude and longitude, or QNG easting and northing"
             aria-expanded={showList}
             aria-controls={listId}
             aria-autocomplete="list"
@@ -185,7 +185,7 @@ export default function MapSearchBar({ stations, onStation, onTarget, onClear }:
             autoComplete="off"
             spellCheck={false}
             value={query}
-            placeholder="Search a place, station, lat, long or DLTM E, N…"
+            placeholder="Search a place, station, lat, long or QNG E, N…"
             onChange={(e) => {
               setQuery(e.target.value);
               setOpen(true);

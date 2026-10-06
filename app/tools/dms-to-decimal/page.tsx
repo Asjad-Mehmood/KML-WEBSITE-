@@ -14,12 +14,12 @@ export default function Page() {
           <h2>How the conversion works</h2>
           <p>
             Decimal degrees = degrees + minutes ÷ 60 + seconds ÷ 3600. South latitudes and west longitudes are negative. For example,
-            25°11&apos;35.1&quot;N is 25 + 11/60 + 35.1/3600 = 25.193083.
+            25°17&apos;06.1&quot;N is 25 + 17/60 + 6.1/3600 = 25.285028.
           </p>
           <h2>What you can type</h2>
           <ul>
-            <li>Decimal degrees: <code>25.193080</code>, <code>-33.8688</code></li>
-            <li>Degrees, minutes, seconds: <code>25°11&apos;35.1&quot;N</code>, <code>25 11 35.1 N</code>, <code>N 25°11&apos;35.1&quot;</code>, <code>25d11m35.1s</code></li>
+            <li>Decimal degrees: <code>25.285028</code>, <code>-33.8688</code></li>
+            <li>Degrees, minutes, seconds: <code>25°17&apos;06.1&quot;N</code>, <code>25 17 06.1 N</code>, <code>N 25°17&apos;06.1&quot;</code>, <code>25d17m06.1s</code></li>
             <li>Degrees and decimal minutes (GPS style): <code>25°11.585&apos;N</code></li>
           </ul>
           <p>
