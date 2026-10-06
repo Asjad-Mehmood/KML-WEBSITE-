@@ -1,5 +1,5 @@
 import type React from "react";
-import { Globe, Layers, FileSpreadsheet, Compass, Camera, Shapes } from "lucide-react";
+import { Globe, Layers, FileSpreadsheet, Compass, Camera, Shapes, Waypoints } from "lucide-react";
 
 // The feature cards: shown on the home page (components/Features.tsx) and in full on /features.
 // Each chip names an entry in lib/featureDetails.ts.
@@ -15,7 +15,7 @@ export interface FeatureCard {
   desc: string;
   chips: string[];
   layout?: "wide" | "banner";
-  preview?: "grids" | "photo";
+  preview?: "grids" | "photo" | "traverse";
 }
 
 export const FEATURES: FeatureCard[] = [
@@ -75,6 +75,19 @@ export const FEATURES: FeatureCard[] = [
     title: "Boundary Lines & Land Area",
     desc: "Connects survey points to draw property perimeter lines. Calculates boundary fence length and land area in square metres and hectares.",
     chips: ["Boundary Traverse", "Perimeter", "Hectares"],
+  },
+  {
+    icon: Waypoints,
+    accent: "text-orange-700",
+    accentLight: "bg-orange-50",
+    accentBorder: "border-orange-200/70",
+    accentBar: "bg-orange-500",
+    badge: "Traverse Adjust",
+    title: "Traverse & Level Adjustment",
+    desc: "Close loop, link and open traverses on your control points, adjusted by Bowditch, Transit or least squares, and reduce level runs by rise and fall. The adjusted stations drop straight into your points, ready for Google Earth.",
+    chips: ["Bowditch · Transit · LSQ", "Closure Checks", "Level Runs", "Adjustment Report"],
+    layout: "banner",
+    preview: "traverse",
   },
   {
     icon: Camera,

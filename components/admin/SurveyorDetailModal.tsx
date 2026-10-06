@@ -31,6 +31,7 @@ import {
   Briefcase,
 } from "lucide-react";
 import FileViewer, { type ViewerFile } from "@/components/FileViewer";
+import { actionLabel, adminActionTag } from "@/lib/activityKinds";
 
 export interface UserItem {
   id: string;
@@ -112,6 +113,7 @@ interface UserJobItem {
   photosLeft: number;
   grid: string;
   size: number;
+  survey?: string;
   updated: number;
   keptAt: string;
 }
@@ -887,8 +889,8 @@ export default function SurveyorDetailModal({
                                   {new Date(act.timestamp).toLocaleString()}
                                 </td>
                                 <td className="px-4 py-3">
-                                  <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-blue-500/10 text-blue-400 border border-blue-500/20 whitespace-nowrap">
-                                    {act.action.replace("_", " ")}
+                                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border whitespace-nowrap ${adminActionTag(act.action)}`}>
+                                    {actionLabel(act.action)}
                                   </span>
                                 </td>
                                 <td className="px-4 py-3">
@@ -1056,7 +1058,10 @@ export default function SurveyorDetailModal({
                           <tbody className="divide-y divide-slate-800/50">
                             {jobs.map((j) => (
                               <tr key={j.jobId} className="hover:bg-slate-800/30 transition-colors">
-                                <td className="px-4 py-3 font-medium text-white">{j.name}</td>
+                                <td className="px-4 py-3 font-medium text-white">
+                                  {j.name}
+                                  {j.survey ? <div className="text-[11px] font-normal text-amber-300/90">{j.survey}</div> : null}
+                                </td>
                                 <td className="px-4 py-3 text-right text-cyan-400 font-mono">{j.points.toLocaleString()}</td>
                                 <td className="px-4 py-3 text-right text-slate-300 font-mono">
                                   {j.photos}

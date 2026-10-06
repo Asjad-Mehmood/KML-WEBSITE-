@@ -13,6 +13,60 @@ export interface FeatureDetail {
 }
 
 export const FEATURE_DETAILS: Record<string, FeatureDetail> = {
+  // ── Traverse & Level Adjustment ───────────────────────────────────────
+  "Bowditch · Transit · LSQ": {
+    title: "Traverse Adjustment",
+    summary:
+      "Under Traverse adjust in the app, type the angles and distances from the field book and the traverse is closed on your control and adjusted as you type.",
+    specs: [
+      ["Kinds", "Closed loop, closed link, open"],
+      ["Adjustment", "Bowditch (compass rule), Transit, least squares"],
+      ["Angles", "123.4530 (DDD.MMSS), 123°45'30\", decimal degrees, gons"],
+      ["Orientation", "Backsight point or bearing; foresight point or bearing"],
+    ],
+    points: [
+      "Primary, secondary and tertiary traverses: a secondary starts and closes on stations the primary adjusted.",
+      "Heights are optional: a height difference per leg is carried and closed too.",
+      "Paste the field book columns straight from Excel, or type them row by row with Enter.",
+    ],
+  },
+  "Closure Checks": {
+    title: "Closure Checks",
+    summary:
+      "Every closed traverse is checked against the limits you set, and each check says pass or fail before anything goes into your points.",
+    specs: [
+      ["Angular misclosure", "K\u2033 \u00d7 \u221aN"],
+      ["Relative precision", "1 : X"],
+      ["Height misclosure", "C mm \u00d7 \u221aK km"],
+      ["Least squares", "Chi-square test, standard deviations, 95% error ellipses"],
+    ],
+    points: [
+      "Primary, secondary and tertiary orders load their usual limits; set them to your project specification.",
+      "A box that cannot be read is marked straight away, and the results say what is missing.",
+      "An open traverse is worked out but flagged: with no closure, a mistake cannot be found.",
+    ],
+  },
+  "Level Runs": {
+    title: "Level Runs",
+    summary:
+      "Staff readings reduced by rise and fall, or plain height differences, closed on your benchmarks.",
+    points: [
+      "Backsight, intermediate and foresight per staff position; a change point carries both a foresight and a backsight.",
+      "The arithmetic check \u03a3BS \u2212 \u03a3FS = \u03a3rise \u2212 \u03a3fall is shown with the results.",
+      "The misclosure is checked against C\u221aK and spread by distance or by set-ups; the adjusted levels can be written onto the points of the same name.",
+    ],
+  },
+  "Adjustment Report": {
+    title: "Adjustment Report & Results",
+    summary:
+      "One click puts the adjusted stations into your sheet, so they reach Google Earth, Excel and the survey report like any other point.",
+    points: [
+      "New stations are added; a station already in the sheet has its coordinates brought up to date. One undo takes it back.",
+      "A PDF report for each traverse or level run: closure checks, angles, departures and latitudes, adjusted coordinates, a plan and boxes to sign.",
+      "CSV of the adjusted coordinates or reduced levels, and a coordinate register of every control point and station.",
+    ],
+  },
+
   // ── Official Regional Map Grids ────────────────────────────────────────
   "Dubai DLTM": {
     title: "Dubai Local Transverse Mercator (DLTM)",

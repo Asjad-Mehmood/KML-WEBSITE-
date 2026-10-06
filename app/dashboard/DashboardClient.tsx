@@ -24,13 +24,16 @@ import {
   Settings2,
   Sparkles,
   Trash2,
+  TrendingUp,
   UserRound,
+  Waypoints,
 } from "lucide-react";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import { useAuth } from "../../context/AuthContext";
 import { GITHUB_REPO_URL, LATEST_VERSION } from "@/lib/site";
 import FileViewer, { type ViewerFile } from "@/components/FileViewer";
+import { actionLabel } from "@/lib/activityKinds";
 
 export interface DashboardData {
   user: {
@@ -47,6 +50,9 @@ export interface DashboardData {
     conversions: number;
     exports: number;
     pointsConverted: number;
+    /** Traverses adjusted and level runs closed in the app (Traverse adjust) */
+    traverses: number;
+    levelRuns: number;
     formats: Record<string, number>;
     systems: Record<string, number>;
   };
@@ -82,6 +88,7 @@ export interface DashboardData {
     photosLeft: number;
     grid: string;
     size: number;
+    survey: string;
     updated: number;
     keptAt: string;
   }[];
@@ -150,16 +157,6 @@ function downloadText(text: string, name: string) {
 }
 
 type Tab = "overview" | "jobs" | "files" | "points" | "activity" | "downloads" | "account";
-
-const ACTION_LABEL: Record<string, string> = {
-  conversion: "Conversion",
-  export: "Export",
-  file_upload: "File opened",
-  batch_process: "Batch conversion",
-  photos_attached: "Photos attached",
-  project_save: "Job saved",
-  settings_update: "Account updated",
-};
 
 const ASSET_LABEL: Record<string, string> = {
   windows_installer: "Windows installer",
@@ -297,7 +294,11 @@ function ActivityRow({ a }: { a: DashboardData["activities"][number] }) {
               ? "bg-blue-50 text-blue-600"
               : a.action === "settings_update"
                 ? "bg-slate-100 text-slate-500"
-                : "bg-indigo-50 text-indigo-600"
+                : a.action === "traverse"
+                  ? "bg-amber-50 text-amber-700"
+                  : a.action === "levelling"
+                    ? "bg-violet-50 text-violet-600"
+                    : "bg-indigo-50 text-indigo-600"
         }`}
       >
         {a.action === "export" ? (
@@ -306,6 +307,10 @@ function ActivityRow({ a }: { a: DashboardData["activities"][number] }) {
           <Settings2 className="w-4 h-4" aria-hidden />
         ) : a.action === "file_upload" ? (
           <FileUp className="w-4 h-4" aria-hidden />
+        ) : a.action === "traverse" ? (
+          <Waypoints className="w-4 h-4" aria-hidden />
+        ) : a.action === "levelling" ? (
+          <TrendingUp className="w-4 h-4" aria-hidden />
         ) : (
           <RefreshCw className="w-4 h-4" aria-hidden />
         )}
@@ -316,7 +321,7 @@ function ActivityRow({ a }: { a: DashboardData["activities"][number] }) {
           {failed && <span className="text-[11px] font-semibold text-rose-600">Failed</span>}
         </div>
         <p className="text-[11.5px] text-slate-500 mt-0.5 break-words">
-          {ACTION_LABEL[a.action] || a.action}
+          {actionLabel(a.action)}
           {meta.length > 0 && <> · {meta.join(" · ")}</>}
         </p>
       </div>
@@ -537,7 +542,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
           </section>
 
           {/* Totals */}
-          <section aria-label="Your totals" className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 mt-4 sm:mt-5">
+          <section aria-label="Your totals" className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4 mt-4 sm:mt-5">
             <StatCard icon={RefreshCw} label="Conversions" value={num(stats.conversions)} tint="bg-blue-50 text-blue-600" />
             <StatCard icon={MapPinned} label="Points converted" value={num(stats.pointsConverted)} tint="bg-indigo-50 text-indigo-600" />
             <StatCard icon={FileDown} label="Exports" value={num(stats.exports)} tint="bg-emerald-50 text-emerald-600" />
@@ -553,8 +558,13 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
               label="App downloads"
               value={num(user.downloadCount)}
               tint="bg-rose-50 text-rose-600"
-              // Fifth card: full width on the two-column phone grid
-              className="col-span-2 lg:col-span-1"
+            />
+            <StatCard
+              icon={Waypoints}
+              label="Traverses & levels"
+              value={num(stats.traverses + stats.levelRuns)}
+              sub={`${num(stats.traverses)} traverse${stats.traverses === 1 ? "" : "s"} · ${num(stats.levelRuns)} level run${stats.levelRuns === 1 ? "" : "s"}`}
+              tint="bg-orange-50 text-orange-600"
             />
           </section>
 
@@ -706,6 +716,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
                             {j.photos > 0 && <span>· {num(j.photos)} photo{j.photos === 1 ? "" : "s"}</span>}
                             {j.photosLeft > 0 && <span className="text-amber-700">· photos too large, kept on the computer only</span>}
                             {j.grid && <span>· {j.grid}</span>}
+                            {j.survey && <span className="text-amber-800">· {j.survey}</span>}
                             <span>· {fmtJobBytes(j.size)}</span>
                             <span>
                               · <When iso={new Date(j.updated || Date.parse(j.keptAt)).toISOString()} />
@@ -930,7 +941,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
                           actFilter === k ? "bg-slate-900 border-slate-900 text-white" : "bg-white border-slate-200 text-slate-600 hover:text-slate-900"
                         }`}
                       >
-                        {k === "all" ? "All" : ACTION_LABEL[k] || k}
+                        {k === "all" ? "All" : actionLabel(k)}
                       </button>
                     ))}
                   </div>

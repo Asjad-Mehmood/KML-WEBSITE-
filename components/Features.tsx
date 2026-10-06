@@ -73,6 +73,47 @@ function PhotoPreview() {
   );
 }
 
+/* T1 of the app's example: a closed loop on two pillars, and how it closed */
+function TraversePreview() {
+  const pts: [number, number, string][] = [
+    [40, 104, "CP-01"], [96, 142, "TS-01"], [160, 124, "TS-02"], [180, 64, "TS-03"], [126, 30, "TS-04"], [64, 50, "TS-05"],
+  ];
+  const line = pts.map(([x, y]) => `${x},${y}`).join(" ");
+  return (
+    <div className="relative rounded-xl border border-slate-200/80 bg-white shadow-[0_8px_24px_-12px_rgba(15,23,42,0.2)] overflow-hidden" aria-hidden>
+      <div className="flex items-center justify-between px-3.5 pt-2.5">
+        <div className="text-[12px] font-bold text-slate-900">T1 Primary loop</div>
+        <span className="rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-0.5">Within tolerance</span>
+      </div>
+      <svg viewBox="0 0 220 160" className="w-full h-28 sm:h-32">
+        <line x1="40" y1="104" x2="146" y2="14" stroke="#94A3B8" strokeWidth="1" strokeDasharray="3 3" />
+        <polygon points={line} fill="rgba(234,88,12,0.06)" stroke="#C2410C" strokeWidth="2" strokeLinejoin="round" />
+        <path d="M146 8l5 9h-10z" fill="#0F172A" />
+        {pts.map(([x, y, n], i) =>
+          i === 0 ? (
+            <path key={n} d={`M${x} ${y - 6}l5.5 9.5h-11z`} fill="#0F172A" />
+          ) : (
+            <circle key={n} cx={x} cy={y} r="3.6" fill="#C2410C" stroke="#fff" strokeWidth="1.5" />
+          )
+        )}
+        {pts.map(([x, y, n]) => (
+          <text key={`t${n}`} x={x + 6} y={y - 5} fontSize="8.5" fontFamily="ui-monospace, monospace" fill="#334155">
+            {n}
+          </text>
+        ))}
+      </svg>
+      <div className="grid grid-cols-3 border-t border-slate-100 text-center">
+        {[["Angular", "+2.0″"], ["Precision", "1 : 125,383"], ["Height", "−7.0 mm"]].map(([k, v]) => (
+          <div key={k} className="px-2 py-2">
+            <div className="text-[9.5px] uppercase tracking-wider text-slate-400 font-semibold">{k}</div>
+            <div className="text-[11.5px] font-mono font-semibold text-slate-900">{v}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function FeatureItem({ f, idx, onOpen }: { f: FeatureCard; idx: number; onOpen: (chip: string) => void }) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
@@ -164,6 +205,11 @@ function FeatureItem({ f, idx, onOpen }: { f: FeatureCard; idx: number; onOpen: 
           </div>
 
           {f.preview === "grids" && <GridsPreview onOpen={onOpen} />}
+          {f.preview === "traverse" && (
+            <div className="md:max-w-[340px] md:justify-self-end w-full">
+              <TraversePreview />
+            </div>
+          )}
           {f.preview === "photo" && (
             <div className="md:max-w-[340px] md:justify-self-end w-full">
               <PhotoPreview />

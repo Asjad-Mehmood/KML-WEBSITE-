@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
 import { countJobs, deleteJob, getJob, jobFileResponse, putJob } from "@/lib/userJobs";
+import { surveySummary } from "@/lib/activityKinds";
 import { MAX_JOB_BYTES, MAX_USER_JOBS, MAX_USER_STORAGE_BYTES, formatBytes } from "@/lib/uploadLimits";
 
 const CORS_HEADERS = {
@@ -71,7 +72,8 @@ export async function PUT(req: NextRequest, ctx: Ctx) {
     if (!body || typeof body.state !== "string" || !body.state) return json({ error: "state is required" }, 400);
     const size = Buffer.byteLength(body.state, "utf8");
     if (size > MAX_JOB_BYTES) return json({ error: `A job over ${formatBytes(MAX_JOB_BYTES)} stays on this computer.` }, 413);
-    try { JSON.parse(body.state); } catch { return json({ error: "state is not a job." }, 400); }
+    let parsed: unknown;
+    try { parsed = JSON.parse(body.state); } catch { return json({ error: "state is not a job." }, 400); }
 
     const existing = await getJob(user.id, id);
     if (!existing && (await countJobs(user.id)) >= MAX_USER_JOBS) {
@@ -86,6 +88,7 @@ export async function PUT(req: NextRequest, ctx: Ctx) {
       name: String(body.name || "Job").slice(0, 120),
       points: int(body.points), photos: int(body.photos), photosLeft: int(body.photosLeft),
       grid: String(body.grid || "").slice(0, 200),
+      survey: surveySummary(parsed),
       state: body.state,
       updated: millis(body.updated) || Date.now(),
     });

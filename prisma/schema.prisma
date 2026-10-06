@@ -145,6 +145,8 @@ model UserJob {
   photosLeft    Int      @default(0)
   grid          String   @default("")
   size          Int      @default(0)
+  /// "2 traverses · 1 level run": the Traverse adjust work in the job, for lists
+  survey        String   @default("")
   state         String   @db.Text
   clientUpdated BigInt   @default(0)
   createdAt     DateTime @default(now())
