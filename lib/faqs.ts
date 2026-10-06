@@ -66,3 +66,9 @@ export const FAQS: FaqItem[] = [
     a: "Windows SmartScreen routinely shows this safety prompt on new software that isn't signed with an expensive commercial code-signing certificate yet. Click \"More info\" and then \"Run anyway\". You can also verify the official SHA-256 binary hash on GitHub.",
   },
 ];
+
+/** The shorter FAQ on the home page: the first question of each topic. The /faq page keeps every one. */
+export function faqHighlights(): FaqItem[] {
+  const seen = new Set<string>();
+  return FAQS.filter((f) => (seen.has(f.category) ? false : (seen.add(f.category), true)));
+}

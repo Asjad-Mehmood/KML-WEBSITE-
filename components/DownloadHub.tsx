@@ -27,6 +27,7 @@ import {
   ArrowRight,
   MapPinned,
 } from "lucide-react";
+import Link from "next/link";
 import WebAppLink from "./WebAppLink";
 import { INSTALLER_NAME } from "@/lib/site";
 
@@ -43,6 +44,9 @@ interface DownloadHubProps {
   onToast: (msg: string) => void;
   /** On the download page this section is the page's heading (h1) */
   asPage?: boolean;
+  /** The home page's version: the installer card only, with a link to the download page for the
+   *  installation guide, system requirements and other options (all kept here, shown on /download) */
+  compact?: boolean;
 }
 
 
@@ -64,6 +68,7 @@ export default function DownloadHub({
   sha256Hash,
   onToast,
   asPage = false,
+  compact = false,
 }: DownloadHubProps) {
   const HeadingTag = asPage ? "h1" : "h2";
   const { requireAuth, trackDownload } = useAuth();
@@ -327,6 +332,17 @@ BLDG-C2,513620.000,2787440.000,15.15,STRUCTURE,Building Column Corner B
           </div>
         </div>
 
+        {compact && (
+          <p className="-mt-8 text-center text-[13.5px] text-slate-600">
+            <Link href="/download" className="inline-flex items-center gap-1.5 font-semibold text-[#0071e3] hover:underline">
+              Installation guide, system requirements and other downloads <ArrowRight className="w-4 h-4" aria-hidden />
+            </Link>
+          </p>
+        )}
+
+        {/* The guide, requirements and other options: on /download (the home page shows the card only) */}
+        {!compact && (
+          <>
         {/* ── Installation Steps ── */}
         <div className="mb-14">
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 mb-8">
@@ -454,6 +470,8 @@ BLDG-C2,513620.000,2787440.000,15.15,STRUCTURE,Building Column Corner B
             <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-slate-700 group-hover:translate-x-0.5 transition-all shrink-0 mt-1" />
           </a>
         </div>
+          </>
+        )}
 
       </div>
     </section>
