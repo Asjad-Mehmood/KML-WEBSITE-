@@ -6282,6 +6282,13 @@
       }
     }
 
+    /* ---- traverse adjust: hidden from the whole app when the site's admin turns it off ---- */
+    body.tvoff .tvrail,
+    body.tvoff .tvsec,
+    body.tvoff .tvpane {
+      display: none !important
+    }
+
     /* ---- traverse adjust: the section panels ---- */
     .tvsec {
       padding: 6px 24px 28px;
@@ -7954,10 +7961,10 @@
       <button class="ritem" type="button" data-sec="lines" title="Lines and areas"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l5-6 4 3 4-7 5 4"/></svg><span class="rl">Lines and areas</span><span class="rs" id="rs-lines"></span><span class="rdot" id="rd-lines"></span></button>
       <div class="rgroup">Simulate</div>
       <button class="ritem" type="button" data-sec="radar" title="Radar simulator"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><path d="M12 12l6.4-6.4"/></svg><span class="rl">Radar simulator</span><span class="rs" id="rs-radar"></span><span class="rdot" id="rd-radar"></span></button>
-      <div class="rgroup">Traverse adjust</div>
-      <button class="ritem" type="button" data-sec="tvctl" title="Control points"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 15H4z"/><circle cx="12" cy="13" r="1.6" fill="currentColor"/></svg><span class="rl">Control points</span><span class="rs" id="rs-tvctl"></span><span class="rdot" id="rd-tvctl"></span></button>
-      <button class="ritem" type="button" data-sec="tvtrav" title="Traverse"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 18L8 5l11 3-3 12z"/><circle cx="4" cy="18" r="1.8" fill="currentColor"/></svg><span class="rl">Traverse</span><span class="rs" id="rs-tvtrav"></span><span class="rdot" id="rd-tvtrav"></span></button>
-      <button class="ritem" type="button" data-sec="tvlev" title="Level run"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l5-4 4 2 5-7 4 2"/><path d="M3 21h18"/><path d="M7 3v7M5 5h4M5 8h4"/></svg><span class="rl">Level run</span><span class="rs" id="rs-tvlev"></span><span class="rdot" id="rd-tvlev"></span></button>
+      <div class="rgroup tvrail">Traverse adjust</div>
+      <button class="ritem tvrail" type="button" data-sec="tvctl" title="Control points"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 15H4z"/><circle cx="12" cy="13" r="1.6" fill="currentColor"/></svg><span class="rl">Control points</span><span class="rs" id="rs-tvctl"></span><span class="rdot" id="rd-tvctl"></span></button>
+      <button class="ritem tvrail" type="button" data-sec="tvtrav" title="Traverse"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 18L8 5l11 3-3 12z"/><circle cx="4" cy="18" r="1.8" fill="currentColor"/></svg><span class="rl">Traverse</span><span class="rs" id="rs-tvtrav"></span><span class="rdot" id="rd-tvtrav"></span></button>
+      <button class="ritem tvrail" type="button" data-sec="tvlev" title="Level run"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l5-4 4 2 5-7 4 2"/><path d="M3 21h18"/><path d="M7 3v7M5 5h4M5 8h4"/></svg><span class="rl">Level run</span><span class="rs" id="rs-tvlev"></span><span class="rdot" id="rd-tvlev"></span></button>
       <div class="rspacer"></div>
       <div class="rgroup">This job</div>
       <button class="ritem" type="button" data-sec="balloon" title="Balloon contents"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg><span class="rl">Balloon contents</span><span class="rs" id="rs-balloon"></span><span class="rdot" id="rd-balloon"></span></button>
@@ -12885,6 +12892,7 @@ TBM-03,513920.113,2787558.486"></textarea>
 
     function railGo(sec) {
       if (!SECS[sec]) sec = "points";
+      if (/^tv/.test(sec) && document.body.classList.contains("tvoff")) sec = "points";
       SEC = sec;
       var mid = $("mid");
       mid.setAttribute("data-sec", sec);
@@ -12919,7 +12927,7 @@ TBM-03,513920.113,2787558.486"></textarea>
       b.addEventListener("keydown", function (e) {
         if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
         e.preventDefault();
-        var all = Array.prototype.slice.call(document.querySelectorAll(".ritem"));
+        var all = Array.prototype.slice.call(document.querySelectorAll(".ritem")).filter(function (x) { return x.offsetParent !== null; });
         var i = all.indexOf(b) + (e.key === "ArrowDown" ? 1 : -1);
         if (all[i]) { all[i].focus(); all[i].click(); }
       });
@@ -16243,6 +16251,8 @@ TBM-03,513920.113,2787558.486"></textarea>
         return "https://www.exceltokml.com";
       }
 
+      window.bm2kmlApiBase = getApiBase;
+
       function setApiBase(url) {
         url = (url || "").trim().replace(/\/+$/, "");
         if (url) {
@@ -18723,27 +18733,6 @@ TBM-03,513920.113,2787558.486"></textarea>
         return 0;
       }
       function say(kind, html) { $("report").innerHTML = logLine(kind, html) + $("report").innerHTML; }
-      /* the account's activity list: what was adjusted and how it closed (no point counts, which
-         the website adds up as converted points) */
-      function note(action, title, extra) {
-        if (!window.trackUserActivity) return;
-        var m = { crs: config().label };
-        Object.keys(extra || {}).forEach(function (k) { m[k] = extra[k]; });
-        try { window.trackUserActivity(action, title, m); } catch (e) { }
-      }
-      function travLine(k) {
-        var c = CT[k], st = travStatus(k);
-        if (!c || !c.ok) return "";
-        var cl = c.res.closure;
-        return [TYPE[c.res.type], METHOD[c.res.method], cl.precision !== null ? ratioTx(cl.precision) : null,
-          cl.hasClose ? SURV.fmtSec(cl.angMis) : null, st === "pass" ? "within tolerance" : st === "fail" ? "outside tolerance" : "no check"].filter(Boolean).join(" \u00b7 ");
-      }
-      function levLine(k) {
-        var c = CL[k], st = levStatus(k);
-        if (!c || !c.ok) return "";
-        return [c.res.closed ? sgn(c.res.mis * 1000, 1) + " mm of \u00b1" + f(c.res.allow * 1000, 1) + " mm" : null,
-          c.res.dist !== null ? fc(c.res.dist, 0) + " m" : null, st === "pass" ? "within tolerance" : st === "fail" ? "outside tolerance" : "no check"].filter(Boolean).join(" \u00b7 ");
-      }
 
       /* ---------- buttons ---------- */
       function focusLast(sel) { setTimeout(function () { var ins = document.querySelectorAll(sel); if (ins.length) ins[ins.length - 1].focus(); }, 0); }
@@ -18934,6 +18923,10 @@ TBM-03,513920.113,2787558.486"></textarea>
         });
       }
       function putRows(items, what) {
+        if ($("sys").value === "geo" && $("data").value.trim()) {
+          say("warn", "<b>The sheet is on latitude and longitude.</b> Choose the grid of your eastings and northings under Coordinate system first, or start a fresh sheet.");
+          return false;
+        }
         var box = $("data"), txt = box.value.replace(/\s+$/, ""), cols = sheetCols(), sep = ",";
         if (cols === null) { txt = "STATION,CODE,EASTING,NORTHING,ELEVATION,REMARKS"; cols = txt.split(","); }
         else if (!cols.length) { say("warn", "<b>The sheet has no heading row,</b> so there is nowhere to put the stations. Add a heading such as STATION,CODE,EASTING,NORTHING,ELEVATION first."); return false; }
@@ -18987,11 +18980,7 @@ TBM-03,513920.113,2787558.486"></textarea>
         var c = CT[T.cur]; if (!c || !c.ok) return;
         var st = travStatus(T.cur);
         if (st === "fail" && !confirm("This traverse is outside tolerance. Put its stations in the sheet anyway?")) return;
-        var tItems = travItems(T.cur);
-        if (putRows(tItems, T.travs[T.cur].name)) {
-          note("traverse", T.travs[T.cur].name + " adjusted: " + travLine(T.cur), { stations: tItems.length, status: st === "fail" ? "warning" : "success" });
-          railGo("points");
-        }
+        if (putRows(travItems(T.cur), T.travs[T.cur].name)) railGo("points");
       }
       function toSheetLev() {
         var c = CL[T.lcur]; if (!c || !c.ok) return;
@@ -19003,10 +18992,7 @@ TBM-03,513920.113,2787558.486"></textarea>
           if (kn[o.pt]) { it.E = kn[o.pt].E.toFixed(3); it.N = kn[o.pt].N.toFixed(3); it.code = "BM"; it.rem = T.levs[T.lcur].name; }
           items.push(it);
         });
-        if (putRows(items.reverse(), "Levels from " + T.levs[T.lcur].name)) {
-          note("levelling", T.levs[T.lcur].name + " closed: " + levLine(T.lcur), { stations: items.length, status: levStatus(T.lcur) === "fail" ? "warning" : "success" });
-          railGo("points");
-        }
+        if (putRows(items.reverse(), "Levels from " + T.levs[T.lcur].name)) railGo("points");
       }
       function toSheetReg() {
         var items = register().map(function (p) {
@@ -19030,7 +19016,6 @@ TBM-03,513920.113,2787558.486"></textarea>
           rows.push([s.name, f(s.E, 4), f(s.N, 4), f(s.H, 4), s.fixed ? "Fixed" : r.closed ? "Adjusted" : "Not checked", s.sE ? f(s.sE * 1000, 1) : "", s.sN ? f(s.sN * 1000, 1) : ""]);
         });
         var name = fileBase(T.travs[T.cur].name) + ".csv";
-        note("export", "Traverse coordinates (CSV): " + T.travs[T.cur].name, { exportFormat: "CSV", fileName: name });
         var m = saveBlob(csvOf(["STATION", "EASTING", "NORTHING", "ELEVATION", "STATUS", "SD_E_MM", "SD_N_MM"], rows), name, "text/csv", "nopoints");
         if (m) saved(name)(m);
       }
@@ -19041,14 +19026,12 @@ TBM-03,513920.113,2787558.486"></textarea>
           return [o.pt, f(inR[i].bs, 3), f(inR[i].is, 3), f(inR[i].fs, 3), f(inR[i].dh, 3), f(inR[i].dist, 3), f(o.rise, 3), f(o.fall, 3), f(o.raw, 4), f(o.corr * 1000, 1), f(o.rl, 4)];
         });
         var name = fileBase(T.levs[T.lcur].name) + ".csv";
-        note("export", "Reduced levels (CSV): " + T.levs[T.lcur].name, { exportFormat: "CSV", fileName: name });
         var m = saveBlob(csvOf(["POINT", "BS", "IS", "FS", "DH", "DIST", "RISE", "FALL", "REDUCED", "CORR_MM", "ADJUSTED"], rows), name, "text/csv", "nopoints");
         if (m) saved(name)(m);
       }
       function csvReg() {
         var rows = register().map(function (p) { return [p.name, f(p.E, 4), f(p.N, 4), f(p.H, 4), p.src]; });
         var name = fileBase(baseName() + " control") + ".csv";
-        note("export", "Coordinate register (CSV)", { exportFormat: "CSV", fileName: name });
         var m = saveBlob(csvOf(["STATION", "EASTING", "NORTHING", "ELEVATION", "SOURCE"], rows), name, "text/csv", "nopoints");
         if (m) saved(name)(m);
       }
@@ -19335,10 +19318,39 @@ TBM-03,513920.113,2787558.486"></textarea>
         var u8 = new Uint8Array(out.length);
         for (var b = 0; b < out.length; b++) u8[b] = out.charCodeAt(b) & 255;
         var name = fileBase(kind === "r" ? baseName() + " control register" : sub + " report") + ".pdf";
-        note("export", (kind === "t" ? "Traverse report (PDF): " : kind === "l" ? "Level run report (PDF): " : "Control register (PDF): ") + sub, { exportFormat: "PDF", fileName: name });
         var m = saveBlob(u8, name, "application/pdf", "nopoints");
         if (m) saved(name)(m);
         window.TVLASTPDF = u8;
+      }
+
+      /* The site's admin can turn Traverse adjust off (Admin -> Settings -> App features). The web app
+         is told in its page; the Windows and phone apps ask the site when they start, and keep the last
+         answer for when they are offline. Off hides every part of it; the work typed is kept. */
+      var FEATKEY = "bm2kml.feat.trav";
+      function tvFeature(on, keep) {
+        document.body.classList.toggle("tvoff", !on);
+        if (keep) try { localStorage.setItem(FEATKEY, on ? "1" : "0"); } catch (e) { }
+        if (!on && TVSECS[SEC]) railGo("points");
+      }
+      window.tvFeature = tvFeature;
+      var lastOn = true;
+      try { lastOn = localStorage.getItem(FEATKEY) !== "0"; } catch (e) { }
+      if (window.BM2KML_FEATURES && typeof window.BM2KML_FEATURES.traverse === "boolean") tvFeature(window.BM2KML_FEATURES.traverse, true);
+      else {
+        tvFeature(lastOn, false);
+        try {
+          var base = typeof window.bm2kmlApiBase === "function" ? window.bm2kmlApiBase() : "https://www.exceltokml.com";
+          if (window.fetch && /^https?:/.test(base || window.location.protocol)) {
+            var ctl = window.AbortController ? new AbortController() : null;
+            if (ctl) setTimeout(function () { ctl.abort(); }, 8000);
+            /* fresh each start: the site lets browsers keep the settings for half a minute */
+            var fo = { cache: "no-store" }; if (ctl) fo.signal = ctl.signal;
+            fetch((base || "") + "/api/settings/public", fo)
+              .then(function (r) { return r.ok ? r.json() : null; })
+              .then(function (j) { if (j && typeof j.traverseEnabled === "boolean") tvFeature(j.traverseEnabled, true); })
+              .catch(function () { /* offline: the last answer stands */ });
+          }
+        } catch (e) { }
       }
 
       computeAll(); railNote();
