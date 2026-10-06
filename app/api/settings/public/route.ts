@@ -24,10 +24,20 @@ export async function GET() {
         installerFileName: s.installerFileName,
         installerFileSize: s.installerFileSize,
         googleSignIn: isGoogleConfigured() && x.googleSignInEnabled,
+        // read by the Windows and phone apps too (another origin), so it is open to any
+        traverseEnabled: x.traverseEnabled,
       },
-      { headers: { "Cache-Control": "public, max-age=30, s-maxage=30, stale-while-revalidate=300" } }
+      {
+        headers: {
+          "Cache-Control": "public, max-age=30, s-maxage=30, stale-while-revalidate=300",
+          "Access-Control-Allow-Origin": "*",
+        },
+      }
     );
   } catch {
-    return NextResponse.json({ requireAuthForDownload: true, maintenanceMode: false, announcement: "", signupsOpen: true, googleSignIn: isGoogleConfigured() });
+    return NextResponse.json(
+      { requireAuthForDownload: true, maintenanceMode: false, announcement: "", signupsOpen: true, googleSignIn: isGoogleConfigured(), traverseEnabled: true },
+      { headers: { "Access-Control-Allow-Origin": "*" } }
+    );
   }
 }

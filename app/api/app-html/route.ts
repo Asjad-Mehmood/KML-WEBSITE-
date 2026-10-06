@@ -4,6 +4,7 @@ import path from "path";
 import { db } from "@/lib/db";
 import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
 import { WEB_APP_LOGIN_URL } from "@/lib/authRedirect";
+import { getExtraSettings } from "@/lib/siteSettings";
 import { appSourceToken, fetchAppSource } from "@/lib/appSource";
 
 export const dynamic = "force-dynamic";
@@ -13,9 +14,11 @@ export const dynamic = "force-dynamic";
 // httpOnly cookie, so a signed-in visitor looked signed out inside it. Hand it
 // the same session before its scripts run: the site's sign-in wins, and
 // signing out on the site ends it here too (the session is deleted).
-function withSiteSession(html: string, token: string, user: unknown): string {
+function withSiteSession(html: string, token: string, user: unknown, features: { traverse: boolean } = { traverse: true }): string {
   const json = (v: unknown) => JSON.stringify(v).replace(/</g, "\\u003c");
   const tag =
+    // admin switches for the app's sections (Admin → Settings → App features)
+    "<script>window.BM2KML_FEATURES=" + json(features) + ";</script>" +
     "<script>try{" +
     "localStorage.setItem('surveyor_auth_token'," + json(token) + ");" +
     "localStorage.setItem('surveyor_user_profile'," + json(JSON.stringify(user)) + ");" +
@@ -320,7 +323,7 @@ export async function GET(req: NextRequest) {
         }
       }
 
-      const protectedContent = withSiteSession(withFileVault(rawContent), token, db.sanitizeUser(session.user));
+      const protectedContent = withSiteSession(withFileVault(rawContent), token, db.sanitizeUser(session.user), { traverse: (await getExtraSettings()).traverseEnabled });
 
       return new NextResponse(protectedContent, {
         status: 200,
@@ -343,7 +346,7 @@ export async function GET(req: NextRequest) {
     const localFilePath = path.join(process.cwd(), "public", "app.html");
     if (fs.existsSync(localFilePath)) {
       const rawContent = await fs.promises.readFile(localFilePath, "utf-8");
-      const protectedContent = withSiteSession(withFileVault(rawContent), token, db.sanitizeUser(session.user));
+      const protectedContent = withSiteSession(withFileVault(rawContent), token, db.sanitizeUser(session.user), { traverse: (await getExtraSettings()).traverseEnabled });
       return new NextResponse(protectedContent, {
         status: 200,
         headers: {
