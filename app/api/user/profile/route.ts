@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { describeAccountChanges } from "@/lib/accountChanges";
 import { revokeTrustedBrowsers } from "@/lib/adminOtp";
 import { db, isAdminRole } from "@/lib/db";
 import { cleanOccupation } from "@/lib/occupations";
@@ -90,15 +91,18 @@ export async function PATCH(req: NextRequest) {
     // A new password ends every browser's trust for the admin email code
     if (updates.password) await revokeTrustedBrowsers(user.id);
 
-    // Record activity for profile update
-    await db.recordActivity({
-      userId: user.id,
-      userEmail: user.email,
-      userName: updated.name,
-      action: "settings_update",
-      title: "Updated account profile",
-      details: "User updated personal profile details",
-    });
+    // Activity log: exactly what changed (a save with no change isn't logged)
+    const change = describeAccountChanges(user, updated, Boolean(updates.password));
+    if (change.changed) {
+      await db.recordActivity({
+        userId: user.id,
+        userEmail: user.email,
+        userName: updated.name,
+        action: "settings_update",
+        title: change.title,
+        details: change.details,
+      });
+    }
 
     return NextResponse.json(
       {

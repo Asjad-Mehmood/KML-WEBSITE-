@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/adminAuth";
 import { db } from "@/lib/db";
 import { listJobs } from "@/lib/userJobs";
+import { describeAccountChanges } from "@/lib/accountChanges";
 
 export async function GET(
   req: NextRequest,
@@ -76,7 +77,25 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await req.json();
+    const before = await db.findUserById(id);
     const updated = await db.updateUser(id, body);
+
+    // Activity log on the surveyor's account: what the admin changed
+    if (before) {
+      const change = describeAccountChanges(before, updated, typeof body.password === "string" && body.password.trim() !== "");
+      if (change.changed) {
+        await db
+          .recordActivity({
+            userId: updated.id,
+            userEmail: updated.email,
+            userName: updated.name,
+            action: "settings_update",
+            title: `${change.title} (by admin)`,
+            details: `${change.details}\nChanged by: ${admin.user.email}`,
+          })
+          .catch((e) => console.error("Couldn't log the account change:", e));
+      }
+    }
 
     return NextResponse.json({
       success: true,

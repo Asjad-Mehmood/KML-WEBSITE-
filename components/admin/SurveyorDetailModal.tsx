@@ -897,6 +897,9 @@ export default function SurveyorDetailModal({
                                   <div className="font-semibold text-white max-w-[200px] truncate" title={act.title}>
                                     {act.title}
                                   </div>
+                                  {(act.action === "settings_update" || act.action === "settings_changed") && act.details && (
+                                    <div className="mt-0.5 text-[11px] text-slate-400 whitespace-pre-line break-words max-w-[260px]">{act.details}</div>
+                                  )}
                                   {act.fileName && (
                                     <div className="text-[11px] text-slate-400 font-mono flex items-center gap-1">
                                       <span className="truncate max-w-[150px]">{act.fileName}</span>

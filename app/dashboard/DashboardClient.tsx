@@ -60,6 +60,7 @@ export interface DashboardData {
     id: string;
     action: string;
     title: string;
+    details: string | null;
     fileName: string | null;
     pointsCount: number | null;
     crs: string | null;
@@ -320,6 +321,7 @@ function ActivityRow({ a }: { a: DashboardData["activities"][number] }) {
           <p className="text-[13.5px] font-semibold text-slate-900 break-words">{a.title}</p>
           {failed && <span className="text-[11px] font-semibold text-rose-600">Failed</span>}
         </div>
+        {a.details && <p className="text-[12px] text-slate-600 mt-0.5 whitespace-pre-line break-words">{a.details}</p>}
         <p className="text-[11.5px] text-slate-500 mt-0.5 break-words">
           {actionLabel(a.action)}
           {meta.length > 0 && <> · {meta.join(" · ")}</>}
