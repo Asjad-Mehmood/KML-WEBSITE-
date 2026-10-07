@@ -481,6 +481,7 @@ export const db = {
         id: true,
         action: true,
         title: true,
+        details: true,
         fileName: true,
         pointsCount: true,
         crs: true,

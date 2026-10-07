@@ -76,6 +76,8 @@ export default async function DashboardPage() {
       id: a.id,
       action: a.action,
       title: a.title,
+      // what changed, for "Account updated" (not which admin changed it)
+      details: a.action === "settings_update" && a.details ? a.details.replace(/\nChanged by: .*$/, "") : null,
       fileName: a.fileName,
       pointsCount: a.pointsCount,
       crs: a.crs,

@@ -9,6 +9,7 @@ export const ACTION_LABEL: Record<string, string> = {
   photos_attached: "Photos attached",
   project_save: "Job saved",
   settings_update: "Account updated",
+  settings_changed: "Site settings changed",
   traverse: "Traverse adjusted",
   levelling: "Level run closed",
 };

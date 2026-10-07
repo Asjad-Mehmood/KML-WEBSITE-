@@ -915,6 +915,9 @@ export default function AdminClient() {
                             <div className="font-semibold text-white truncate max-w-md">
                               {act.title}
                             </div>
+                            {(act.action === "settings_update" || act.action === "settings_changed") && act.details && (
+                              <div className="mt-0.5 text-[11px] text-slate-400 whitespace-pre-line break-words max-w-md">{act.details}</div>
+                            )}
                             <div className="text-[11px] text-slate-400 flex items-center gap-2">
                               {act.userId ? (
                                 <button
@@ -1352,6 +1355,9 @@ export default function AdminClient() {
                             <div className="font-semibold text-white max-w-[220px] truncate" title={act.title}>
                               {act.title}
                             </div>
+                            {(act.action === "settings_update" || act.action === "settings_changed") && act.details && (
+                              <div className="mt-0.5 text-[11px] text-slate-400 whitespace-pre-line break-words max-w-[280px]">{act.details}</div>
+                            )}
                             {act.fileName && (
                               <div className="text-[11px] text-slate-400 font-mono flex items-center gap-1 whitespace-nowrap">
                                 <span className="truncate max-w-[170px]">{act.fileName}</span>
