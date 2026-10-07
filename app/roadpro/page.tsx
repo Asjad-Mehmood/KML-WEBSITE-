@@ -20,6 +20,7 @@ import {
   Spline,
   Sheet,
   SlidersHorizontal,
+  Sparkles,
   SquareStack,
   TrendingUp,
 } from "lucide-react";
@@ -31,7 +32,10 @@ import {
   ROADPRO_FEATURES,
   ROADPRO_FILES,
   ROADPRO_FIXES,
+  ROADPRO_GUIDE_DIR,
+  ROADPRO_GUIDE_PAGE_COUNT,
   ROADPRO_GUIDE_PAGES,
+  ROADPRO_WHATS_NEW,
   ROADPRO_INSTALL,
   ROADPRO_KEYS,
   ROADPRO_LAYERS,
@@ -163,6 +167,21 @@ export default function RoadProPage() {
           </figure>
         </header>
 
+        {/* What's new in this version */}
+        <section aria-labelledby="new-h" className="mt-14 rounded-3xl border border-amber-200/80 bg-amber-50/60 p-6 sm:p-8">
+          <h2 id="new-h" className="flex items-center gap-2 text-lg sm:text-xl font-extrabold text-slate-900">
+            <Sparkles className="w-5 h-5 text-amber-500" aria-hidden /> New in RoadPro {ROADPRO_VERSION}
+          </h2>
+          <ul className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {ROADPRO_WHATS_NEW.map((n) => (
+              <li key={n.title} className="rounded-2xl bg-white border border-amber-200/70 p-4">
+                <h3 className="font-bold text-slate-900">{n.title}</h3>
+                <p className="mt-1 text-[13.5px] text-slate-600 leading-relaxed">{n.text}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+
         {/* Demo video */}
         <section id="demo" aria-labelledby="demo-h" className="scroll-mt-28 mt-20">
           <SectionHead id="demo-h" eyebrow="Demo" title="Watch RoadPro build a road" text="Three minutes in AutoCAD Civil 3D: the dialog, the centre line, the finished road, the report and the Excel file, the sign legend and the cross section." Icon={PlayCircle} />
@@ -189,7 +208,7 @@ export default function RoadProPage() {
               id="guide-h"
               eyebrow="User guide"
               title="Look inside the user guide"
-              text="Sixteen illustrated pages: every command, setting, layer and sign. Here are eight of them; tap a page to open it in the guide."
+              text={`${ROADPRO_GUIDE_PAGE_COUNT} illustrated pages: every command, setting, layer and sign. Here are ${ROADPRO_GUIDE_PAGES.length} of them; tap a page to open it in the guide.`}
               Icon={BookOpen}
             />
             <a
@@ -198,7 +217,7 @@ export default function RoadProPage() {
               rel="noopener"
               className="shrink-0 self-start md:self-auto inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-sm font-semibold"
             >
-              <FileText className="w-4 h-4" aria-hidden /> Read all 16 pages
+              <FileText className="w-4 h-4" aria-hidden /> Read all {ROADPRO_GUIDE_PAGE_COUNT} pages
             </a>
           </div>
           <ul className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -212,7 +231,7 @@ export default function RoadProPage() {
                 >
                   <div className="rounded-xl overflow-hidden border border-slate-100 bg-slate-50">
                     <Image
-                      src={`/roadpro/guide/page-${String(g.page).padStart(2, "0")}.webp`}
+                      src={`${ROADPRO_GUIDE_DIR}/page-${String(g.page).padStart(2, "0")}.webp`}
                       alt={`RoadPro user guide, page ${g.page}: ${g.title}`}
                       width={1280}
                       height={720}
@@ -317,7 +336,7 @@ export default function RoadProPage() {
 
         {/* Commands */}
         <section id="commands" aria-labelledby="commands-h" className="scroll-mt-28 mt-20">
-          <SectionHead id="commands-h" eyebrow="Commands" title="All commands and shortcuts" text="Every command except RDP starts by asking you to select the road's centre line (layer ROAD-CL)." Icon={Keyboard} />
+          <SectionHead id="commands-h" eyebrow="Commands" title="All commands and shortcuts" text="Every command except RDP starts by asking you to select the road's centre line (layer ROAD-CL). Chainage boxes accept 100 or 0+100." Icon={Keyboard} />
           <div className="mt-6 overflow-x-auto rounded-2xl border border-slate-200">
             <table className="w-full text-[14px]">
               <thead className="bg-slate-50 text-left text-[12px] uppercase tracking-wider text-slate-500">
@@ -349,7 +368,8 @@ export default function RoadProPage() {
           </ul>
           <p className="mt-4 text-[14px] text-slate-600">
             <strong className="text-slate-800">Widening vs taper:</strong> RDW adds an extra lane that comes back (W1, W2 …); RDT changes the width
-            from one chainage onwards. Keep them on different chainage ranges of the same side.
+            from one chainage onwards. Keep them on different chainage ranges of the same side. <strong className="text-slate-800">Junctions:</strong>{" "}
+            run RDJ again for more branches (J1, J2 …) on either side; for a crossroads add one branch on each side at the same chainage.
           </p>
         </section>
 

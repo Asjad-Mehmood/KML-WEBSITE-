@@ -36,7 +36,7 @@ export const PRODUCTS: Product[] = [
     version: ROADPRO_VERSION,
     tagline: "A complete road in AutoCAD from one command",
     description:
-      "Draw the centre line and RoadPro adds the edges, turning radius, barricades, signs, chainage, cross section and an Excel report. Free plugin for AutoCAD, Civil 3D and Map 3D.",
+      "Draw the centre line and RoadPro adds the edges, turning radius, barricades, signs, road markings, chainage, cross section and an Excel report, and joins new roads with junctions. Free plugin for AutoCAD, Civil 3D and Map 3D.",
     href: "/roadpro",
     demoHref: "/roadpro#demo",
     image: {
@@ -45,7 +45,7 @@ export const PRODUCTS: Product[] = [
       height: 560,
       alt: "RoadPro road in AutoCAD with red and white barricades, lane arrows and chainage",
     },
-    highlights: ["Barricades and signs", "Widening and tapers", "Cross sections", "Excel report"],
+    highlights: ["Junctions and tie-ins", "Road markings", "Barricades and signs", "Widening and tapers", "Cross sections", "Excel report"],
     newUntil: "2027-01-31",
     inHero: true,
     inNav: true,
