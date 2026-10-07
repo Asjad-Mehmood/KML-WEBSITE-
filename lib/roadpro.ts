@@ -5,7 +5,7 @@ export const ROADPRO_VERSION = "3.0";
 export const ROADPRO_RELEASED = "2026-10-07";
 
 export const ROADPRO_FILES = {
-  plugin: { href: "/roadpro/RoadPro.zip", name: "RoadPro.zip", label: "RoadPro plugin", detail: "RoadPro.lsp in a zip, 37 KB" },
+  plugin: { href: "/roadpro/RoadPro.zip", name: "RoadPro.zip", label: "RoadPro plugin", detail: "RoadPro.lsp in a zip, 48 KB" },
   guidePdf: { href: "/roadpro/RoadPro_User_Guide.pdf", name: "RoadPro_User_Guide.pdf", label: "User guide", detail: "PDF, 19 pages, 390 KB" },
   guide: { href: "/roadpro/RoadPro_User_Guide.pptx", name: "RoadPro_User_Guide.pptx", label: "User guide", detail: "PowerPoint, 19 slides, 215 KB" },
   shortcuts: { href: "/roadpro/RoadPro_Shortcuts.xlsx", name: "RoadPro_Shortcuts.xlsx", label: "Shortcut keys", detail: "Excel sheet, 7 KB" },
