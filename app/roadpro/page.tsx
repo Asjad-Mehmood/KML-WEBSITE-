@@ -75,7 +75,7 @@ const structuredData = {
       datePublished: ROADPRO_RELEASED,
       downloadUrl: `${SITE_URL}${ROADPRO_FILES.plugin.href}`,
       url: `${SITE_URL}/roadpro`,
-      image: `${SITE_URL}/roadpro/road-plan.webp`,
+      image: `${SITE_URL}/roadpro/roadpro-3-network.webp`,
       offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
       publisher: { "@id": `${SITE_URL}/#organization` },
     },
@@ -94,6 +94,7 @@ const structuredData = {
 const FEATURE_ICONS = [Ruler, Spline, Shield, TrendingUp, Signpost, CircleDot, SquareStack, FileSpreadsheet];
 
 const SHOTS = [
+  { src: "/roadpro/roadpro-3-network.webp", w: 1600, h: 636, title: "Junctions, widening and markings (3.0)", alt: "Road network drawn with RoadPro 3.0: widening W1 on both sides with curve tapers, junction J1 at 90 degrees and junction J2 at a skew, edge and lane lines, barricades and chainage" },
   { src: "/roadpro/road-plan.webp", w: 1500, h: 560, title: "The road on the plan", alt: "Road plan in AutoCAD: red and white barricades, centre line, lane arrows and chainage marks every 20 m" },
   { src: "/roadpro/signs.webp", w: 1330, h: 600, title: "Signs and the S1 straight label", alt: "Sign legend next to the road: keep right, give way, road works ahead, speed limit, road closed board, chevron and lane arrows" },
   { src: "/roadpro/report.webp", w: 1330, h: 620, title: "The Excel report", alt: "RoadPro report open in Excel: geometry, barricade counts by side and colour, signs and markings" },
@@ -156,10 +157,10 @@ export default function RoadProPage() {
           </div>
           <figure className="rounded-2xl border border-slate-200 bg-slate-900 p-1.5 shadow-[0_16px_40px_rgba(15,23,42,0.18)]">
             <Image
-              src="/roadpro/road-plan.webp"
-              alt="A road built by RoadPro in AutoCAD: red and white barricades, lane arrows, centre line and chainage"
-              width={1500}
-              height={560}
+              src="/roadpro/roadpro-3-network.webp"
+              alt="RoadPro 3.0 in AutoCAD: a road with lane widening and curve tapers, a T-junction and a skewed junction with kerb returns, road markings, barricades and chainage"
+              width={1600}
+              height={636}
               priority
               sizes="(min-width: 1024px) 600px, 100vw"
               className="w-full h-auto rounded-xl"
@@ -180,6 +181,22 @@ export default function RoadProPage() {
               </li>
             ))}
           </ul>
+          <figure className="mt-6">
+            <a href="/roadpro/roadpro-3-network.webp" target="_blank" rel="noopener" className="block rounded-2xl border border-slate-800 bg-black p-1.5 shadow-[0_16px_40px_rgba(15,23,42,0.18)]">
+              <Image
+                src="/roadpro/roadpro-3-network.webp"
+                alt="RoadPro 3.0 in AutoCAD: a road with lane widening and curve tapers, a T-junction and a skewed junction with kerb returns, road markings, barricades and chainage"
+                width={1600}
+                height={636}
+                sizes="(min-width: 1140px) 1060px, 100vw"
+                className="w-full h-auto rounded-xl"
+              />
+            </a>
+            <figcaption className="mt-2 text-[13px] text-slate-600">
+              RoadPro {ROADPRO_VERSION} in AutoCAD: lane widening W1 on both sides with curve tapers, a T-junction (J1) and a skewed junction (J2)
+              with kerb returns, edge and lane lines, barricades and chainage. Tap to open full size.
+            </figcaption>
+          </figure>
         </section>
 
         {/* Demo video */}
@@ -272,7 +289,7 @@ export default function RoadProPage() {
         {/* Screenshots */}
         <section aria-labelledby="shots-h" className="mt-20">
           <SectionHead id="shots-h" eyebrow="Screenshots" title="From the demo drawing" Icon={SquareStack} />
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {SHOTS.map((s) => (
               <figure key={s.src}>
                 <a href={s.src} target="_blank" rel="noopener" className="block rounded-2xl border border-slate-200 bg-slate-900 p-1.5 hover:shadow-[0_12px_32px_rgba(15,23,42,0.18)] transition-shadow">
