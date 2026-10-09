@@ -42,6 +42,7 @@ import {
   ROADPRO_RELEASED,
   ROADPRO_REPORT,
   ROADPRO_REQUIREMENTS,
+  ROADPRO_STANDARDS_NOTE,
   ROADPRO_STEPS,
   ROADPRO_VERSION,
 } from "@/lib/roadpro";
@@ -94,7 +95,7 @@ const structuredData = {
 const FEATURE_ICONS = [Ruler, Spline, Shield, TrendingUp, Signpost, CircleDot, SquareStack, FileSpreadsheet];
 
 const SHOTS = [
-  { src: "/roadpro/roadpro-3-network.webp", w: 1600, h: 636, title: "Junctions, widening and markings (3.0)", alt: "Road network drawn with RoadPro 3.0: widening W1 on both sides with curve tapers, junction J1 at 90 degrees and junction J2 at a skew, edge and lane lines, barricades and chainage" },
+  { src: "/roadpro/roadpro-3-network.webp", w: 1600, h: 636, title: "Junctions, widening and markings", alt: "Road network drawn with RoadPro: widening W1 on both sides with curve tapers, junction J1 at 90 degrees and junction J2 at a skew, edge and lane lines, barricades and chainage" },
   { src: "/roadpro/road-plan.webp", w: 1500, h: 560, title: "The road on the plan", alt: "Road plan in AutoCAD: red and white barricades, centre line, lane arrows and chainage marks every 20 m" },
   { src: "/roadpro/signs.webp", w: 1330, h: 600, title: "Signs and the S1 straight label", alt: "Sign legend next to the road: keep right, give way, road works ahead, speed limit, road closed board, chevron and lane arrows" },
   { src: "/roadpro/report.webp", w: 1330, h: 620, title: "The Excel report", alt: "RoadPro report open in Excel: geometry, barricade counts by side and colour, signs and markings" },
@@ -158,7 +159,7 @@ export default function RoadProPage() {
           <figure className="rounded-2xl border border-slate-200 bg-slate-900 p-1.5 shadow-[0_16px_40px_rgba(15,23,42,0.18)]">
             <Image
               src="/roadpro/roadpro-3-network.webp"
-              alt="RoadPro 3.0 in AutoCAD: a road with lane widening and curve tapers, a T-junction and a skewed junction with kerb returns, road markings, barricades and chainage"
+              alt="RoadPro in AutoCAD: a road with lane widening and curve tapers, a T-junction and a skewed junction with kerb returns, road markings, barricades and chainage"
               width={1600}
               height={636}
               priority
@@ -181,22 +182,31 @@ export default function RoadProPage() {
               </li>
             ))}
           </ul>
-          <figure className="mt-6">
-            <a href="/roadpro/roadpro-3-network.webp" target="_blank" rel="noopener" className="block rounded-2xl border border-slate-800 bg-black p-1.5 shadow-[0_16px_40px_rgba(15,23,42,0.18)]">
-              <Image
-                src="/roadpro/roadpro-3-network.webp"
-                alt="RoadPro 3.0 in AutoCAD: a road with lane widening and curve tapers, a T-junction and a skewed junction with kerb returns, road markings, barricades and chainage"
-                width={1600}
-                height={636}
-                sizes="(min-width: 1140px) 1060px, 100vw"
-                className="w-full h-auto rounded-xl"
-              />
-            </a>
-            <figcaption className="mt-2 text-[13px] text-slate-600">
-              RoadPro {ROADPRO_VERSION} in AutoCAD: lane widening W1 on both sides with curve tapers, a T-junction (J1) and a skewed junction (J2)
-              with kerb returns, edge and lane lines, barricades and chainage. Tap to open full size.
-            </figcaption>
-          </figure>
+          <p className="mt-4 text-[13.5px] text-slate-600 leading-relaxed">
+            <strong className="text-slate-800">Standards:</strong> {ROADPRO_STANDARDS_NOTE}
+          </p>
+          <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-5">
+            {[17, 19].map((n) => {
+              const g = ROADPRO_GUIDE_PAGES.find((x) => x.page === n)!;
+              return (
+                <figure key={n}>
+                  <a href={`${ROADPRO_FILES.guidePdf.href}#page=${n}`} target="_blank" rel="noopener" className="block rounded-2xl border border-amber-200/70 bg-white p-1.5 shadow-[0_12px_32px_rgba(15,23,42,0.10)]">
+                    <Image
+                      src={`${ROADPRO_GUIDE_DIR}/page-${String(n).padStart(2, "0")}.webp`}
+                      alt={`RoadPro ${ROADPRO_VERSION} user guide, page ${n}: ${g.title}`}
+                      width={1280}
+                      height={720}
+                      sizes="(min-width: 1140px) 520px, 100vw"
+                      className="w-full h-auto rounded-xl"
+                    />
+                  </a>
+                  <figcaption className="mt-2 text-[13px] text-slate-600">
+                    {g.title}: page {n} of the user guide. Tap to open it.
+                  </figcaption>
+                </figure>
+              );
+            })}
+          </div>
         </section>
 
         {/* Demo video */}
