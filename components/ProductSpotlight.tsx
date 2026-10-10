@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, PlayCircle, Sparkles } from "lucide-react";
-import { PRODUCTS, isNew, type Product } from "@/lib/products";
+import { PRODUCTS, badgeLabel, type Product } from "@/lib/products";
 
 // Home page, right after the hero: our other software (lib/products.ts).
 // One product gets the full spotlight; several are shown as a grid of cards.
@@ -22,7 +22,7 @@ export default function ProductSpotlight() {
             <h2 id="spotlight-heading" className="mt-2 text-2xl sm:text-3xl lg:text-[36px] font-extrabold tracking-tight">
               More tools for surveyors and engineers
             </h2>
-            <ul className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <ul className={`mt-8 grid grid-cols-1 md:grid-cols-2 gap-5 ${PRODUCTS.length > 2 ? "lg:grid-cols-3" : ""}`}>
               {PRODUCTS.map((p) => (
                 <li key={p.id}>
                   <Card p={p} />
@@ -39,7 +39,7 @@ export default function ProductSpotlight() {
 function Label({ p }: { p: Product }) {
   return (
     <span className="inline-flex items-center gap-2 rounded-full bg-amber-400/10 border border-amber-400/30 px-3 py-1 text-[12px] font-bold text-amber-300">
-      {isNew(p) && <span className="px-1.5 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[10px] uppercase tracking-wider">New</span>}
+      {badgeLabel(p) && <span className="px-1.5 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[10px] uppercase tracking-wider">{badgeLabel(p)}</span>}
       {p.name} {p.version} · {p.platform}
     </span>
   );

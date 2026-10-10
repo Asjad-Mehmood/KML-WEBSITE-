@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import WebAppLink from "./WebAppLink";
-import { PRODUCTS, isNew } from "@/lib/products";
+import { PRODUCTS, badgeLabel } from "@/lib/products";
 
 // Dynamically import HeroConverter with radar without SSR
 const HeroConverter = dynamic(() => import("./HeroConverter"), {
@@ -70,8 +70,8 @@ export default function Hero({ versionTag, fileSizeText, onDownloadClick }: Hero
                 href={p.href}
                 className="group inline-flex items-center gap-2 pl-1.5 pr-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 shadow-xs hover:border-amber-300 hover:bg-amber-100/70 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
               >
-                {isNew(p) && (
-                  <span className="px-1.5 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold uppercase tracking-wider">New</span>
+                {badgeLabel(p) && (
+                  <span className="px-1.5 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">{badgeLabel(p)}</span>
                 )}
                 <span className="text-xs font-semibold text-slate-800">
                   {p.name} <span className="text-amber-700 font-bold">{p.version}</span>
