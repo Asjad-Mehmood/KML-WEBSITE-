@@ -3,6 +3,7 @@
 // the menu, the footer and the sitemap. To add a tool, add an entry here and
 // give it a page at its href.
 import { ROADPRO_VERSION } from "@/lib/roadpro";
+import { TRAVERSE_FILES, TRAVERSE_SHORT, TRAVERSE_VERSION } from "@/lib/traverse";
 
 export interface Product {
   id: string;
@@ -20,6 +21,8 @@ export interface Product {
   demoHref?: string;
   image: { src: string; width: number; height: number; alt: string };
   highlights: string[];
+  /** Shows "Coming soon" instead of "New" (not downloadable yet) */
+  comingSoon?: boolean;
   /** Shows a "New" label until this date (YYYY-MM-DD) */
   newUntil?: string;
   /** Show a badge in the home page hero */
@@ -50,6 +53,31 @@ export const PRODUCTS: Product[] = [
     inHero: true,
     inNav: true,
   },
+  {
+    id: "traverse",
+    name: TRAVERSE_SHORT,
+    platform: "Windows app",
+    version: TRAVERSE_VERSION,
+    tagline: "Traverse and level adjustment, checked and reported",
+    description:
+      "Enter the traverse and level books, adjust with Bowditch, Transit or least squares, check the misclosure against your tolerances, and deliver registers, a plot, a report and an Excel workbook.",
+    href: "/traverse",
+    demoHref: "/traverse#video",
+    image: {
+      src: "/traverse/intro-cover.webp",
+      width: 1024,
+      height: 576,
+      alt: "Professional Traverse and Level Adjustment Software: precision in every point",
+    },
+    highlights: ["Traverse and level books", "Bowditch, Transit, least squares", "QA / QC against your limits", "Report and Excel export"],
+    comingSoon: !TRAVERSE_FILES.setup.href,
+    newUntil: "2027-01-31",
+    inHero: true,
+    inNav: true,
+  },
 ];
+
+/** The small label on badges and cards: "Coming soon", "New" or nothing */
+export const badgeLabel = (p: Product) => (p.comingSoon ? "Coming soon" : isNew(p) ? "New" : null);
 
 export const isNew = (p: Product, today = new Date().toISOString().slice(0, 10)) => Boolean(p.newUntil && today <= p.newUntil);

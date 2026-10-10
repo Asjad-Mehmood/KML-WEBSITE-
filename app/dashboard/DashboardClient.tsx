@@ -165,6 +165,7 @@ const ASSET_LABEL: Record<string, string> = {
   test_kml: "Test KML",
   web_app: "Web app",
   roadpro: "RoadPro (AutoCAD)",
+  traverse: "Traverse & Level (Windows)",
 };
 
 const num = (n: number) => n.toLocaleString("en-US");
