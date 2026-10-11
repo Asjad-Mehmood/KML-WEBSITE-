@@ -1,6 +1,6 @@
 // Professional Traverse & Level Adjustment Software by SurveyX Digital. Version 2.0 is a web
-// app at /traverse/app (accounts and jobs on this website) plus a portable Windows program that
-// opens the same web app in its own window (built with Neutralino; see traverse-app/desktop/).
+// app at /traverse/app (accounts and jobs on this website) plus a Windows program that opens the
+// same web app in its own window. The program is built and released from Asjad-Mehmood/Traiverse.
 // Content from its user manual (version 2.0, downloadable from /traverse).
 
 export const TRAVERSE_NAME = "Professional Traverse & Level Adjustment Software";
@@ -11,14 +11,18 @@ export const TRAVERSE_RELEASED = "2026-10-11";
 // The web app, served from public/traverse/app (built from traverse-app/)
 export const TRAVERSE_APP = "/traverse/app";
 
+// Where the Windows program is released (installer, latest.json, release notes)
+export const TRAVERSE_RELEASES = "https://github.com/Asjad-Mehmood/Traiverse/releases";
+
 export const TRAVERSE_FILES = {
-  // The Windows program. While href is null the page says "coming soon"; put
-  // the file in public/traverse/ and set href to turn the download on.
+  // The Windows installer, from the latest release of Asjad-Mehmood/Traiverse (public), the
+  // same way Excel to KML's installer comes from its releases repository. While href is null
+  // the page says "coming soon".
   setup: {
-    href: "/traverse/Traverse-Level-Adjustment-2.0.1.exe" as string | null,
-    name: "Traverse-Level-Adjustment-2.0.1.exe",
+    href: `${TRAVERSE_RELEASES}/latest/download/TraverseLevel-Setup.exe` as string | null,
+    name: "TraverseLevel-Setup.exe",
     label: "Windows program",
-    detail: "Portable program for Windows 10 and 11 (64-bit), version 2.0.1, 2.7 MB",
+    detail: "Installer for Windows 10 and 11, no administrator rights needed; updates itself",
   },
   manualPdf: { href: "/traverse/Traverse-Level-User-Manual.pdf", name: "Traverse-Level-User-Manual.pdf", label: "User manual", detail: "PDF, 30 pages, 6.6 MB" },
   manual: { href: "/traverse/Traverse-Level-User-Manual.pptx", name: "Traverse-Level-User-Manual.pptx", label: "User manual", detail: "PowerPoint, 51 slides, 7.1 MB" },

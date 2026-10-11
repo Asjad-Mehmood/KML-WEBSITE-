@@ -10,8 +10,13 @@ const nextConfig: NextConfig = {
       // Traverse & Level 1.0 manuals, replaced by the 2.0 manual
       { source: "/traverse/Traverse_Level_User_Manual.pdf", destination: "/traverse/Traverse-Level-User-Manual.pdf", statusCode: 301 },
       { source: "/traverse/Traverse_Level_User_Manual.pptx", destination: "/traverse/Traverse-Level-User-Manual.pptx", statusCode: 301 },
-      // The 2.0 Windows program kept its accounts on the PC; 2.0.1 signs in with the website
-      { source: "/traverse/Traverse-Level-Adjustment-2.0.exe", destination: "/traverse/Traverse-Level-Adjustment-2.0.1.exe", statusCode: 302 },
+      // The 2.0 Windows program kept its accounts on the PC; the installer now comes from the
+      // program's releases and signs in with the website
+      {
+        source: "/traverse/Traverse-Level-Adjustment-2.0.exe",
+        destination: "https://github.com/Asjad-Mehmood/Traiverse/releases/latest/download/TraverseLevel-Setup.exe",
+        statusCode: 302,
+      },
     ];
   },
   // The Traverse & Level app lives at /traverse/app, one level above its service worker

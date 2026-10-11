@@ -33,6 +33,7 @@ import {
   TRAVERSE_NAME,
   TRAVERSE_NOTES,
   TRAVERSE_RELEASED,
+  TRAVERSE_RELEASES,
   TRAVERSE_SAMPLES,
   TRAVERSE_SCREENS,
   TRAVERSE_STEPS,
@@ -66,7 +67,9 @@ const structuredData = {
       operatingSystem: "Web browser, Windows 10, Windows 11",
       softwareVersion: TRAVERSE_VERSION,
       datePublished: TRAVERSE_RELEASED,
-      ...(TRAVERSE_FILES.setup.href ? { downloadUrl: `${SITE_URL}${TRAVERSE_FILES.setup.href}` } : {}),
+      ...(TRAVERSE_FILES.setup.href
+        ? { downloadUrl: TRAVERSE_FILES.setup.href.startsWith("http") ? TRAVERSE_FILES.setup.href : `${SITE_URL}${TRAVERSE_FILES.setup.href}` }
+        : {}),
       url: `${SITE_URL}/traverse`,
       image: `${SITE_URL}/traverse/screens/v2-traverse.webp`,
       offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
@@ -329,10 +332,13 @@ export default function TraversePage() {
               <Monitor className="w-6 h-6 text-slate-500" aria-hidden />
               <h3 className="mt-2 font-bold text-slate-900">{TRAVERSE_FILES.setup.label}</h3>
               <p className="text-[13.5px] text-slate-500 flex-1">
-                {comingSoon ? "Coming soon for Windows." : `${TRAVERSE_FILES.setup.detail}.`} No installation: run it and log in with your Excel to KML
-                account. Same jobs as the web app.
+                {comingSoon ? "Coming soon for Windows." : `${TRAVERSE_FILES.setup.detail}.`} Log in with your Excel to KML account: the same jobs as
+                the web app.
               </p>
               <TraverseDownload className="mt-4 inline-flex justify-center items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50 cursor-pointer" label="Download for Windows" />
+              <a href={`${TRAVERSE_RELEASES}/latest`} target="_blank" rel="noopener" className="mt-2 text-center text-[12.5px] text-[#0071e3] hover:underline">
+                Release notes
+              </a>
             </div>
             <div className="rounded-2xl border border-slate-200 bg-white p-5 flex flex-col">
               <FileText className="w-6 h-6 text-slate-500" aria-hidden />
