@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/adminAuth";
 import { db } from "@/lib/db";
 import { listJobs } from "@/lib/userJobs";
+import { countOwn } from "@/lib/traverseJobs";
 import { describeAccountChanges } from "@/lib/accountChanges";
 
 export async function GET(
@@ -48,6 +49,7 @@ export async function GET(
 
     // Jobs kept from the app (names and sizes; the contents download separately)
     const jobs = await listJobs(user.id).catch(() => []);
+    const traverseJobs = await countOwn(user.id).catch(() => 0);
 
     return NextResponse.json({
       success: true,
@@ -58,6 +60,7 @@ export async function GET(
       files,
       points,
       jobs,
+      traverseJobs,
     });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Failed to retrieve user details";

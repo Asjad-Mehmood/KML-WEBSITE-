@@ -130,3 +130,75 @@ export async function unshare(jobId: string, email: string) {
   await ensureTraverseTables();
   await prisma.$executeRawUnsafe(`DELETE FROM "traverse_job_shares" WHERE "jobId" = $1 AND "email" = $2`, jobId, email.toLowerCase());
 }
+
+// ---------------------------------------------------------------- admin
+
+export type AdminTraverseGroup = {
+  userId: string; email: string | null; name: string | null; organization: string | null;
+  jobs: number; traverses: number; levels: number; accepted: number; rejected: number; lastSaved: string | null;
+};
+
+/** Admin → Traverse & Level: one row per surveyor, newest first, with the totals. */
+export async function adminGroups() {
+  await ensureTraverseTables();
+  const rows = await prisma.$queryRawUnsafe<
+    { userId: string; email: string | null; name: string | null; organization: string | null; jobs: bigint; traverses: bigint; levels: bigint; accepted: bigint; rejected: bigint; lastSaved: Date | null }[]
+  >(
+    `SELECT j."ownerId" AS "userId", u."email", u."name", u."organization",
+       COUNT(*) AS "jobs",
+       COUNT(*) FILTER (WHERE j."kind" = 'traverse') AS "traverses",
+       COUNT(*) FILTER (WHERE j."kind" = 'level') AS "levels",
+       COUNT(*) FILTER (WHERE j."summary"::jsonb->>'status' = 'accepted') AS "accepted",
+       COUNT(*) FILTER (WHERE j."summary"::jsonb->>'status' = 'rejected') AS "rejected",
+       MAX(j."updatedAt") AS "lastSaved"
+     FROM "traverse_jobs" j LEFT JOIN "users" u ON u."id" = j."ownerId"
+     GROUP BY j."ownerId", u."email", u."name", u."organization"
+     ORDER BY MAX(j."updatedAt") DESC`
+  );
+  const groups: AdminTraverseGroup[] = rows.map((r) => ({
+    userId: r.userId, email: r.email, name: r.name, organization: r.organization,
+    jobs: Number(r.jobs), traverses: Number(r.traverses), levels: Number(r.levels),
+    accepted: Number(r.accepted), rejected: Number(r.rejected), lastSaved: r.lastSaved ? new Date(r.lastSaved).toISOString() : null,
+  }));
+  const totals = groups.reduce(
+    (t, g) => ({ jobs: t.jobs + g.jobs, traverses: t.traverses + g.traverses, levels: t.levels + g.levels, accepted: t.accepted + g.accepted, rejected: t.rejected + g.rejected }),
+    { jobs: 0, traverses: 0, levels: 0, accepted: 0, rejected: 0 }
+  );
+  return { groups, totals: { ...totals, surveyors: groups.length } };
+}
+
+/** One surveyor's jobs for the admin, with what was saved, the result and who they are shared with. */
+export async function adminJobsOf(userId: string) {
+  await ensureTraverseTables();
+  const rows = await prisma.$queryRawUnsafe<(Row & { size: number; createdAt: Date; updatedAt: Date })[]>(
+    `SELECT j."id", j."ownerId", j."kind", j."name", j."data", j."summary", j."clientUpdated", j."size", j."createdAt", j."updatedAt",
+       u."email" AS "ownerEmail", u."name" AS "ownerName"
+     FROM "traverse_jobs" j LEFT JOIN "users" u ON u."id" = j."ownerId"
+     WHERE j."ownerId" = $1 ORDER BY j."updatedAt" DESC`,
+    userId
+  );
+  const shares = rows.length
+    ? await prisma.$queryRawUnsafe<{ jobId: string; email: string }[]>(
+        `SELECT "jobId", "email" FROM "traverse_job_shares" WHERE "jobId" = ANY($1::text[]) ORDER BY "createdAt"`,
+        rows.map((r) => r.id)
+      )
+    : [];
+  const sharedWith = new Map<string, string[]>();
+  for (const s of shares) sharedWith.set(s.jobId, [...(sharedWith.get(s.jobId) ?? []), s.email]);
+  return rows.map((r) => ({
+    ...out(r),
+    size: Number(r.size),
+    created_at: new Date(r.createdAt).toISOString(),
+    saved_at: new Date(r.updatedAt).toISOString(),
+    shared_with: sharedWith.get(r.id) ?? [],
+  }));
+}
+
+/** Delete any job (admin). */
+export async function adminRemove(jobId: string) {
+  await ensureTraverseTables();
+  const r = await prisma.$queryRawUnsafe<{ ownerId: string; name: string; kind: string }[]>(
+    `DELETE FROM "traverse_jobs" WHERE "id" = $1 RETURNING "ownerId", "name", "kind"`, jobId
+  );
+  return r[0] ?? null;
+}

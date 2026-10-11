@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/adminAuth";
 import { db } from "@/lib/db";
+import { adminGroups } from "@/lib/traverseJobs";
 
 export async function GET(req: NextRequest) {
   try {
@@ -16,6 +17,8 @@ export async function GET(req: NextRequest) {
     const activityCount = await db.countActivities();
     const settings = await db.getSettings();
     const fileTotals = await db.getFileTotals();
+    // Traverse & Level jobs (their own tables, created on first use)
+    const traverse = await adminGroups().then((g) => g.totals).catch(() => null);
 
     // Breakdown by role
     const roleCounts: Record<string, number> = {};
@@ -56,6 +59,7 @@ export async function GET(req: NextRequest) {
         totalFilesWithCopy: fileTotals.stored,
         totalStorageBytes: fileTotals.bytes,
         totalPointsKept: conversions.total,
+        traverse,
         totalPointsProcessed,
         roleCounts,
         assetCounts,
