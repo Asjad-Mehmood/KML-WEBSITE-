@@ -1,5 +1,6 @@
 // Professional Traverse & Level Adjustment Software by SurveyX Digital. Version 2.0 is a web
-// app at /traverse/app (accounts and jobs on this website) plus a portable Windows program.
+// app at /traverse/app (accounts and jobs on this website) plus a Windows program that opens the
+// same web app in its own window. The program is built and released from Asjad-Mehmood/Traiverse.
 // Content from its user manual (version 2.0, downloadable from /traverse).
 
 export const TRAVERSE_NAME = "Professional Traverse & Level Adjustment Software";
@@ -10,18 +11,33 @@ export const TRAVERSE_RELEASED = "2026-10-11";
 // The web app, served from public/traverse/app (built from traverse-app/)
 export const TRAVERSE_APP = "/traverse/app";
 
+// Where the Windows program is released (installer, latest.json, release notes)
+export const TRAVERSE_RELEASES = "https://github.com/Asjad-Mehmood/Traiverse/releases";
+export const TRAVERSE_RELEASES_API = "https://api.github.com/repos/Asjad-Mehmood/Traiverse/releases/latest";
+export const TRAVERSE_INSTALLER = "TraverseLevel-Setup.exe";
+
 export const TRAVERSE_FILES = {
-  // The Windows program. While href is null the page says "coming soon"; put
-  // the file in public/traverse/ and set href to turn the download on.
+  // The Windows installer, from the latest release of Asjad-Mehmood/Traiverse (public), the
+  // same way Excel to KML's installer comes from its releases repository. While href is null
+  // the page says "coming soon".
   setup: {
-    href: "/traverse/Traverse-Level-Adjustment-2.0.exe" as string | null,
-    name: "Traverse-Level-Adjustment-2.0.exe",
+    href: `${TRAVERSE_RELEASES}/latest/download/${TRAVERSE_INSTALLER}` as string | null,
+    name: TRAVERSE_INSTALLER,
     label: "Windows program",
-    detail: "Portable program for Windows 10 and 11 (64-bit), version 2.0, 3.8 MB",
+    detail: "Installer for Windows 10 and 11. Adds Start menu and desktop shortcuts, needs no administrator rights and updates itself",
   },
   manualPdf: { href: "/traverse/Traverse-Level-User-Manual.pdf", name: "Traverse-Level-User-Manual.pdf", label: "User manual", detail: "PDF, 30 pages, 6.6 MB" },
   manual: { href: "/traverse/Traverse-Level-User-Manual.pptx", name: "Traverse-Level-User-Manual.pptx", label: "User manual", detail: "PowerPoint, 51 slides, 7.1 MB" },
-  video: { href: "/traverse/traverse-intro.mp4", poster: "/traverse/intro-cover.webp", duration: "PT34S" },
+  // the intro (with sound), and a silent, lighter copy that loops on the home page card
+  // (WebM copies for browsers without H.264)
+  video: {
+    href: "/traverse/traverse-promo.mp4",
+    webm: "/traverse/traverse-promo.webm",
+    poster: "/traverse/traverse-promo-cover.webp",
+    duration: "PT30S",
+    loop: "/traverse/traverse-promo-loop.mp4",
+    loopWebm: "/traverse/traverse-promo-loop.webm",
+  },
   clips: [
     { href: "/traverse/traverse-title.mp4", poster: "/traverse/title-cover.webp", w: 672, h: 448, aspect: "aspect-[3/2]", wide: true, title: "Title animation" },
     { href: "/traverse/traverse-logo.mp4", poster: "/traverse/logo-poster.webp", w: 448, h: 672, aspect: "aspect-square", wide: false, title: "Logo animation" },
@@ -106,6 +122,6 @@ export const TRAVERSE_NOTES = [
   "Never lower the required precision just to make a traverse pass. Check the closing point, then each point against the field book.",
   "The plan sketch and the plots are guides, not certified drawings.",
   "Jobs saved in the web app go to your exceltokml.com account. Jobs saved offline upload by themselves when you are back online.",
-  "The Windows program keeps its own accounts and jobs on that PC; they are not shared with the web app.",
+  "The Windows program is the web app in its own window: log in with the same account and you see the same jobs. Open it once with internet; after that it also opens offline.",
   "Logging out of the app also logs you out of exceltokml.com. Change your password from your account page on this website.",
 ];

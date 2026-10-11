@@ -223,14 +223,24 @@ async function importCSV(which) {
   if (!rows.length) { toast('No rows found in that file.'); return; }
   if (which === 't') { S.trav.points = rows; touched('t'); renderTGrid(); computeT(); } else { S.level.rows = rows; touched('l'); renderLGrid(); computeL(); }
   toast(`Imported ${rows.length} rows from ${f.name}.`);
+  log({ action: 'file_upload', title: `Imported ${f.name} into ${which === 't' ? 'a traverse' : 'a level book'}`, fileName: f.name, pointsCount: rows.length, details: jobLabel(which) });
 }
+// ---------- activity: what the user did, for the website's activity log ----------
+const log = e => { try { ctx && ctx.log && ctx.log(e); } catch (err) { /* never in the way */ } };
+const jobLabel = which => { const o = which === 't' ? S.trav : S.level; return o.jobName || S.info.project || (which === 't' ? 'unsaved traverse' : 'unsaved level run'); };
+const kb = n => (n < 1048576 ? (n / 1024).toFixed(1) + ' KB' : (n / 1048576).toFixed(2) + ' MB');
+const resultLine = (which, r) => which === 't'
+  ? (r.type === 'open' ? 'Open traverse' : `${r.pass ? 'Accepted' : 'Rejected'} · ${ratioText(r.ratio)} · ${METHODS[r.method] || r.method}`)
+  : (r.type === 'open' ? 'Open run' : `${r.pass ? 'Accepted' : 'Rejected'} · misclosure ${fmt(r.mis * 1000, 1)} mm`);
 const fileBase = (kind, o) => [kind, slug(o.jobName || S.info.project), S.info.date || today()].filter(Boolean).join('-');
 async function exportPDF(which) {
   if (!window.jspdf || !window.jspdf.jsPDF) { toast('The PDF component is still loading. Try again in a moment.'); return; }
   try {
     const r = which === 't' ? lastT : lastL; if (!r || !r.ok) { toast('Complete the data first.'); return; }
     const doc = which === 't' ? traverseReport(window.jspdf.jsPDF, r, S.info) : levelReport(window.jspdf.jsPDF, r, S.info);
-    await saveFile(fileBase(which === 't' ? 'traverse-report' : 'level-report', which === 't' ? S.trav : S.level) + '.pdf', doc.output('blob'));
+    const name = fileBase(which === 't' ? 'traverse-report' : 'level-report', which === 't' ? S.trav : S.level) + '.pdf', blob = doc.output('blob');
+    await saveFile(name, blob);
+    log({ action: 'export', title: `${which === 't' ? 'Traverse' : 'Levelling'} PDF report: ${jobLabel(which)}`, fileName: name, fileSize: kb(blob.size), exportFormat: 'PDF', pointsCount: which === 't' ? r.points.length : r.rows.length, details: resultLine(which, r) });
   } catch (e) { console.error(e); toast('Could not make the PDF: ' + e.message); }
 }
 async function exportCSV(which) {
@@ -238,7 +248,9 @@ async function exportCSV(which) {
   const rows = which === 't'
     ? [['Point', 'Measured E', 'Measured N', 'Corr dE (mm)', 'Corr dN (mm)', 'Output E', 'Output N', 'Remark'], ...r.points.map(p => [p.name, fmt(p.measE), fmt(p.measN), fmt(p.cE * 1000, 1), fmt(p.cN * 1000, 1), fmt(p.E), fmt(p.N), p.remark])]
     : [['Station', 'BS', 'IS', 'FS', 'Rise', 'Fall', 'RL', 'Corr (mm)', 'Adjusted RL', 'Remark'], ...r.rows.map(x => [x.station, fmt(x.bs), fmt(x.is), fmt(x.fs), fmt(x.rise), fmt(x.fall), fmt(x.rl), fmt(x.corr * 1000, 1), fmt(x.adjRL), x.remark])];
-  await saveFile(fileBase(which === 't' ? 'traverse-coordinates' : 'level-book', which === 't' ? S.trav : S.level) + '.csv', toCSV(rows));
+  const name = fileBase(which === 't' ? 'traverse-coordinates' : 'level-book', which === 't' ? S.trav : S.level) + '.csv';
+  await saveFile(name, toCSV(rows));
+  log({ action: 'export', title: `${which === 't' ? 'Coordinates' : 'Levels'} CSV: ${jobLabel(which)}`, fileName: name, exportFormat: 'CSV', pointsCount: rows.length - 1, details: resultLine(which, r) });
 }
 function addRow(which, silent) {
   if (which === 't') { S.trav.points.push({ name: '', E: '', N: '', remark: '' }); if (!silent) { renderTGrid(); computeT(); } }

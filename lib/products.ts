@@ -20,6 +20,8 @@ export interface Product {
   /** Link to the demo (optional) */
   demoHref?: string;
   image: { src: string; width: number; height: number; alt: string };
+  /** A short silent loop shown in place of the image (the image is its poster) */
+  video?: { src: string; webm?: string };
   highlights: string[];
   /** Shows "Coming soon" instead of "New" (not downloadable yet) */
   comingSoon?: boolean;
@@ -64,11 +66,12 @@ export const PRODUCTS: Product[] = [
     href: "/traverse",
     demoHref: "/traverse#video",
     image: {
-      src: "/traverse/intro-cover.webp",
+      src: TRAVERSE_FILES.video.poster,
       width: 1024,
       height: 576,
       alt: "Professional Traverse and Level Adjustment Software: precision in every point",
     },
+    video: { src: TRAVERSE_FILES.video.loop, webm: TRAVERSE_FILES.video.loopWebm },
     highlights: ["Coordinate traverse and levelling", "Bowditch, Transit, Equal", "PDF reports and sharing", "Works offline and on a phone"],
     comingSoon: !TRAVERSE_FILES.setup.href,
     newUntil: "2027-01-31",

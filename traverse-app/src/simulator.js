@@ -3,7 +3,7 @@ import { simulate } from './simcore.js';
 import { dms, fmt, ratioText } from './core.js';
 import { $, esc, toast } from './util.js';
 
-let sim = null, step = 0, phase = 0, t0 = 0, playing = false, raf = 0, speed = 1, onSend = null;
+let sim = null, step = 0, phase = 0, t0 = 0, playing = false, raf = 0, speed = 1, onSend = null, onLog = null;
 const PH = [700, 650, 800, 350];   // move, backsight, foresight, record (ms)
 const reduce = () => window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -111,6 +111,11 @@ function finish() {
   $('#sim-back').setAttribute('d', ''); $('#sim-beam').setAttribute('d', ''); $('#sim-prism').setAttribute('transform', 'translate(-99 -99)');
   const last = sim.meas[sim.meas.length - 1]; $('#sim-ts').setAttribute('transform', `translate(${view.X(last.E)} ${view.Y(last.N)})`);
   measuredUpTo(sim.meas.length - 1); setLog(); readout(sim.obs[sim.obs.length - 1], sim.obs.length - 1); summary();
+  if (onLog) {
+    const p = params(), s = sim;
+    onLog({ action: 'tl_simulation', title: `Simulator run: ${p.shape === 'loop' ? 'loop' : 'link'}, ${p.stations} new points, ${ratioText(s.ratio)}`,
+      pointsCount: s.meas.length, details: `${s.ratio >= 10000 ? 'Closes within' : 'Outside'} 1 : 10,000 · ${p.angleSec}″ angles · ${p.distMm} mm + ${p.distPpm} ppm · scenario ${p.seed} · linear ${fmt(s.linear * 1000, 1)} mm over ${fmt(s.length, 1)} m` });
+  }
 }
 function reset() {
   playing = false; cancelAnimationFrame(raf); step = 0; phase = 0;
@@ -126,8 +131,8 @@ function run() {
 export function stopSim() { if (playing) { playing = false; cancelAnimationFrame(raf); $('#sim-run').textContent = 'Resume'; } }
 
 let bound = false;
-export function initSimulator(send) {
-  onSend = send;
+export function initSimulator(send, log) {
+  onSend = send; onLog = log || null;
   if (!bound) {
     bound = true;
     ['#sim-shape', '#sim-n', '#sim-leg', '#sim-ang', '#sim-dist', '#sim-seed'].forEach(id => $(id).addEventListener('change', reset));

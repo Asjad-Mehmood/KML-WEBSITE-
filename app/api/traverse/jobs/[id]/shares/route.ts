@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
-import { MAX_TRAVERSE_SHARES, ownerOf, share, sharesOf, unshare } from "@/lib/traverseJobs";
+import { logTraverseActivity } from "@/lib/traverseActivity";
+import { MAX_TRAVERSE_SHARES, jobInfo, share, sharesOf, unshare } from "@/lib/traverseJobs";
 
 type Ctx = { params: Promise<{ id: string }> };
 const ID = /^[A-Za-z0-9-]{8,64}$/;
@@ -12,10 +13,10 @@ async function asOwner(req: NextRequest, ctx: Ctx) {
   if (!s?.user) return { err: NextResponse.json({ error: "Log in first." }, { status: 401 }) };
   const { id } = await ctx.params;
   if (!ID.test(id)) return { err: NextResponse.json({ error: "Not a valid job." }, { status: 400 }) };
-  const owner = await ownerOf(id);
-  if (!owner) return { err: NextResponse.json({ error: "Save the job to your account before sharing it." }, { status: 404 }) };
-  if (owner !== s.user.id) return { err: NextResponse.json({ error: "Only the job's owner can change its sharing." }, { status: 403 }) };
-  return { id, user: s.user };
+  const job = await jobInfo(id);
+  if (!job) return { err: NextResponse.json({ error: "Save the job to your account before sharing it." }, { status: 404 }) };
+  if (job.ownerId !== s.user.id) return { err: NextResponse.json({ error: "Only the job's owner can change its sharing." }, { status: 403 }) };
+  return { id, user: s.user, job };
 }
 
 export async function GET(req: NextRequest, ctx: Ctx) {
@@ -40,6 +41,7 @@ export async function POST(req: NextRequest, ctx: Ctx) {
       return NextResponse.json({ error: `A job can be shared with up to ${MAX_TRAVERSE_SHARES} people.` }, { status: 409 });
     }
     await share(o.id, email);
+    if (!now.includes(email)) logTraverseActivity(req, o.user, "tl_share", `Shared "${o.job.name}" with ${email}`);
     return NextResponse.json({ success: true });
   } catch (e) {
     console.error("[traverse shares] add", e);
@@ -53,6 +55,7 @@ export async function DELETE(req: NextRequest, ctx: Ctx) {
     const email = (req.nextUrl.searchParams.get("email") || "").trim().toLowerCase();
     if (!email) return NextResponse.json({ error: "Which email?" }, { status: 400 });
     await unshare(o.id, email);
+    logTraverseActivity(req, o.user, "tl_unshare", `Stopped sharing "${o.job.name}" with ${email}`);
     return NextResponse.json({ success: true });
   } catch (e) {
     console.error("[traverse shares] remove", e);

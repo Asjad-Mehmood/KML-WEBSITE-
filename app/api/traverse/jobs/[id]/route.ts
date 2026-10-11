@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
 import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
-import { MAX_TRAVERSE_JOB_BYTES, MAX_TRAVERSE_JOBS, countOwn, ownerOf, remove, upsert } from "@/lib/traverseJobs";
+import { logTraverseActivity } from "@/lib/traverseActivity";
+import { MAX_TRAVERSE_JOB_BYTES, MAX_TRAVERSE_JOBS, countOwn, jobInfo, ownerOf, remove, upsert } from "@/lib/traverseJobs";
 
 type Ctx = { params: Promise<{ id: string }> };
 const ID = /^[A-Za-z0-9-]{8,64}$/;
@@ -31,17 +31,17 @@ export async function PUT(req: NextRequest, ctx: Ctx) {
       return NextResponse.json({ error: `You can keep up to ${MAX_TRAVERSE_JOBS} jobs. Delete some old ones first.` }, { status: 409 });
     }
     await upsert(s.user.id, id, { kind, name, data, summary, updated });
-    if (!owner) {
-      // a new job shows in the account's activity, like adjustments made in the Excel to KML app
-      const status = (body.summary && typeof body.summary.status === "string" ? body.summary.status : "") as string;
-      db.recordActivity({
-        userId: s.user.id, userEmail: s.user.email, userName: s.user.name,
-        action: (kind === "level" ? "levelling" : "traverse") as string as Parameters<typeof db.recordActivity>[0]["action"],
-        title: `${kind === "level" ? "Level run" : "Traverse"} saved in Traverse & Level: ${name}`,
-        details: status ? `Status: ${status}` : undefined,
-        status: status === "rejected" ? "warning" : "success",
-      }).catch(() => {});
-    }
+    // every save shows in the account's activity, like work done in the Excel to KML app: a new
+    // job as a traverse or level run (counted on the account page), a later save as an update
+    const status = (body.summary && typeof body.summary.status === "string" ? body.summary.status : "") as string;
+    const what = kind === "level" ? "Level run" : "Traverse";
+    logTraverseActivity(
+      req,
+      s.user,
+      owner ? "tl_update" : kind === "level" ? "levelling" : "traverse",
+      `${what} ${owner ? "updated" : "saved"} in Traverse & Level: ${name}`,
+      { details: status ? `Status: ${status}` : undefined, status: status === "rejected" ? "warning" : "success" }
+    );
     return NextResponse.json({ success: true });
   } catch (e) {
     console.error("[traverse jobs] save", e);
@@ -56,9 +56,10 @@ export async function DELETE(req: NextRequest, ctx: Ctx) {
   const { id } = await ctx.params;
   if (!ID.test(id)) return NextResponse.json({ error: "Not a valid job." }, { status: 400 });
   try {
-    const owner = await ownerOf(id);
-    if (owner && owner !== s.user.id) return NextResponse.json({ error: "This job belongs to someone else." }, { status: 403 });
+    const job = await jobInfo(id);
+    if (job && job.ownerId !== s.user.id) return NextResponse.json({ error: "This job belongs to someone else." }, { status: 403 });
     await remove(s.user.id, id);
+    if (job) logTraverseActivity(req, s.user, "tl_delete", `${job.kind === "level" ? "Level run" : "Traverse"} deleted in Traverse & Level: ${job.name}`);
     return NextResponse.json({ success: true });
   } catch (e) {
     console.error("[traverse jobs] delete", e);

@@ -5,6 +5,7 @@ import Link from "next/link";
 import AdminMessages from "../../components/admin/AdminMessages";
 import SettingsPanel from "../../components/admin/SettingsPanel";
 import AdminPoints from "../../components/admin/AdminPoints";
+import AdminTraverse from "../../components/admin/AdminTraverse";
 import AdminFiles from "../../components/admin/AdminFiles";
 import {
   Users,
@@ -37,7 +38,7 @@ import {
 } from "lucide-react";
 import SurveyorDetailModal from "@/components/admin/SurveyorDetailModal";
 import FileViewer, { type ViewerFile } from "@/components/FileViewer";
-import { actionLabel, adminActionTag } from "@/lib/activityKinds";
+import { TRAVERSE_LEVEL_ACTIONS, actionLabel, adminActionTag } from "@/lib/activityKinds";
 
 interface UserItem {
   id: string;
@@ -178,11 +179,13 @@ const ASSET_NAME: Record<string, string> = {
   web_app: "Web app",
   roadpro: "RoadPro (AutoCAD)",
   traverse: "Traverse & Level (Windows)",
+  traverse_manual: "Traverse & Level manual",
+  traverse_sample: "Traverse & Level sample file",
 };
 
 export default function AdminClient() {
   const [activeTab, setActiveTab] = useState<
-    "overview" | "users" | "activities" | "downloads" | "files" | "conversions" | "messages" | "settings"
+    "overview" | "users" | "activities" | "downloads" | "files" | "conversions" | "traverse" | "messages" | "settings"
   >("overview");
   const [newMessages, setNewMessages] = useState(0);
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean | null>(null);
@@ -206,6 +209,8 @@ export default function AdminClient() {
     totalFilesStored?: number;
     totalFilesWithCopy?: number;
     totalStorageBytes?: number;
+    /** Traverse & Level jobs: null when their tables could not be read */
+    traverse?: { jobs: number; traverses: number; levels: number; accepted: number; rejected: number; surveyors: number } | null;
     roleCounts: Record<string, number>;
     assetCounts: Record<string, number>;
     locationCounts?: Record<string, number>;
@@ -584,7 +589,10 @@ export default function AdminClient() {
     downloadFilter === "all" ? downloads : downloads.filter((d) => d.assetType === downloadFilter);
 
   const filteredActivities = allActivities.filter((act) => {
-    const matchesAction = activityFilter === "all" || act.action === activityFilter;
+    const matchesAction =
+      activityFilter === "all" ||
+      act.action === activityFilter ||
+      (activityFilter === "traverse_level" && TRAVERSE_LEVEL_ACTIONS.includes(act.action));
     if (!matchesAction) return false;
     if (!activitySearch.trim()) return true;
     const q = activitySearch.toLowerCase();
@@ -672,6 +680,7 @@ export default function AdminClient() {
             { id: "downloads", label: "Downloads", icon: Download, count: downloads.length },
             { id: "files", label: "Files", icon: Files, count: stats?.totalFilesStored },
             { id: "conversions", label: "Points", icon: Globe, count: conversionsTotal },
+            { id: "traverse", label: "Traverse & Level", icon: Compass, count: stats?.traverse?.jobs },
             { id: "messages", label: "Messages", icon: Inbox, count: newMessages || undefined },
             { id: "settings", label: "Settings", icon: Settings },
           ].map((tab) => {
@@ -1267,6 +1276,7 @@ export default function AdminClient() {
                   { id: "photos_attached", label: "Photos Attached" },
                   { id: "traverse", label: "Traverses" },
                   { id: "levelling", label: "Level Runs" },
+                  { id: "traverse_level", label: "Traverse & Level app" },
                 ].map((item) => (
                   <button
                     key={item.id}
@@ -1579,6 +1589,7 @@ export default function AdminClient() {
         )}
 
         {activeTab === "conversions" && <AdminPoints adminFetch={adminFetch} onToast={showToast} />}
+        {activeTab === "traverse" && <AdminTraverse adminFetch={adminFetch} onToast={showToast} />}
 
         {/* ================================================================== */}
         {/* TAB 6: SETTINGS & RELEASE MANAGEMENT */}
