@@ -52,7 +52,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/traverse" },
   openGraph: {
     ...openGraphFor("/traverse", `${TITLE} | Excel to KML`, DESCRIPTION),
-    images: [{ url: "/traverse/intro-cover.webp", width: 1024, height: 576, alt: "Professional Traverse and Level Adjustment Software: precision in every point" }],
+    images: [{ url: TRAVERSE_FILES.video.poster, width: 1024, height: 576, alt: "Professional Traverse and Level Adjustment Software: precision in every point" }],
   },
 };
 
@@ -178,6 +178,7 @@ export default function TraversePage() {
                 aria-label="Professional Traverse and Level Adjustment Software intro video"
               >
                 <source src={TRAVERSE_FILES.video.href} type="video/mp4" />
+                <source src={TRAVERSE_FILES.video.webm} type="video/webm" />
                 Your browser can&apos;t play this video. <a href={TRAVERSE_FILES.video.href}>Download it</a> instead.
               </video>
             </div>

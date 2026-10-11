@@ -28,7 +28,16 @@ export const TRAVERSE_FILES = {
   },
   manualPdf: { href: "/traverse/Traverse-Level-User-Manual.pdf", name: "Traverse-Level-User-Manual.pdf", label: "User manual", detail: "PDF, 30 pages, 6.6 MB" },
   manual: { href: "/traverse/Traverse-Level-User-Manual.pptx", name: "Traverse-Level-User-Manual.pptx", label: "User manual", detail: "PowerPoint, 51 slides, 7.1 MB" },
-  video: { href: "/traverse/traverse-intro.mp4", poster: "/traverse/intro-cover.webp", duration: "PT34S" },
+  // the intro (with sound), and a silent, lighter copy that loops on the home page card
+  // (WebM copies for browsers without H.264)
+  video: {
+    href: "/traverse/traverse-promo.mp4",
+    webm: "/traverse/traverse-promo.webm",
+    poster: "/traverse/traverse-promo-cover.webp",
+    duration: "PT30S",
+    loop: "/traverse/traverse-promo-loop.mp4",
+    loopWebm: "/traverse/traverse-promo-loop.webm",
+  },
   clips: [
     { href: "/traverse/traverse-title.mp4", poster: "/traverse/title-cover.webp", w: 672, h: 448, aspect: "aspect-[3/2]", wide: true, title: "Title animation" },
     { href: "/traverse/traverse-logo.mp4", poster: "/traverse/logo-poster.webp", w: 448, h: 672, aspect: "aspect-square", wide: false, title: "Logo animation" },

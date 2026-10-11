@@ -36,6 +36,30 @@ export default function ProductSpotlight() {
   );
 }
 
+/** The product's picture, or its silent loop (with the picture as the poster) when it has one */
+function Media({ p, sizes, className }: { p: Product; sizes: string; className: string }) {
+  if (p.video) {
+    return (
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        poster={p.image.src}
+        width={p.image.width}
+        height={p.image.height}
+        aria-label={p.image.alt}
+        className={className}
+      >
+        <source src={p.video.src} type="video/mp4" />
+        {p.video.webm && <source src={p.video.webm} type="video/webm" />}
+      </video>
+    );
+  }
+  return <Image src={p.image.src} alt={p.image.alt} width={p.image.width} height={p.image.height} sizes={sizes} className={className} />;
+}
+
 function Label({ p }: { p: Product }) {
   return (
     <span className="inline-flex items-center gap-2 rounded-full bg-amber-400/10 border border-amber-400/30 px-3 py-1 text-[12px] font-bold text-amber-300">
@@ -73,7 +97,7 @@ function Feature({ p }: { p: Product }) {
         </div>
       </div>
       <Link href={p.href} aria-label={`${p.name}: ${p.tagline}`} className="block rounded-2xl border border-white/10 bg-black p-1.5 shadow-[0_24px_60px_rgba(0,0,0,0.45)] hover:border-white/25 transition-colors">
-        <Image src={p.image.src} alt={p.image.alt} width={p.image.width} height={p.image.height} sizes="(min-width: 1024px) 600px, 100vw" className="w-full h-auto rounded-xl" />
+        <Media p={p} sizes="(min-width: 1024px) 600px, 100vw" className="w-full h-auto rounded-xl" />
       </Link>
     </div>
   );
@@ -83,7 +107,7 @@ function Card({ p }: { p: Product }) {
   return (
     <Link href={p.href} className="group flex flex-col h-full rounded-2xl border border-white/10 bg-white/[0.03] p-3 hover:border-white/25 hover:bg-white/[0.06] transition-colors">
       <div className="rounded-xl overflow-hidden bg-black">
-        <Image src={p.image.src} alt={p.image.alt} width={p.image.width} height={p.image.height} sizes="(min-width: 1024px) 360px, (min-width: 768px) 45vw, 100vw" className="w-full aspect-[16/9] object-cover" />
+        <Media p={p} sizes="(min-width: 1024px) 360px, (min-width: 768px) 45vw, 100vw" className="w-full aspect-[16/9] object-cover" />
       </div>
       <div className="px-1.5 pt-4 pb-1 flex-1 flex flex-col">
         <Label p={p} />
