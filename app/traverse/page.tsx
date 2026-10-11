@@ -25,7 +25,7 @@ import {
   Workflow,
 } from "lucide-react";
 import PageShell from "../../components/PageShell";
-import TraverseDownload from "../../components/TraverseDownload";
+import TraverseDownload, { TraverseReleaseInfo } from "../../components/TraverseDownload";
 import {
   TRAVERSE_APP,
   TRAVERSE_FEATURES,
@@ -33,7 +33,6 @@ import {
   TRAVERSE_NAME,
   TRAVERSE_NOTES,
   TRAVERSE_RELEASED,
-  TRAVERSE_RELEASES,
   TRAVERSE_SAMPLES,
   TRAVERSE_SCREENS,
   TRAVERSE_STEPS,
@@ -336,9 +335,7 @@ export default function TraversePage() {
                 the web app.
               </p>
               <TraverseDownload className="mt-4 inline-flex justify-center items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50 cursor-pointer" label="Download for Windows" />
-              <a href={`${TRAVERSE_RELEASES}/latest`} target="_blank" rel="noopener" className="mt-2 text-center text-[12.5px] text-[#0071e3] hover:underline">
-                Release notes
-              </a>
+              <TraverseReleaseInfo />
             </div>
             <div className="rounded-2xl border border-slate-200 bg-white p-5 flex flex-col">
               <FileText className="w-6 h-6 text-slate-500" aria-hidden />

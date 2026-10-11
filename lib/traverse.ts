@@ -13,14 +13,16 @@ export const TRAVERSE_APP = "/traverse/app";
 
 // Where the Windows program is released (installer, latest.json, release notes)
 export const TRAVERSE_RELEASES = "https://github.com/Asjad-Mehmood/Traiverse/releases";
+export const TRAVERSE_RELEASES_API = "https://api.github.com/repos/Asjad-Mehmood/Traiverse/releases/latest";
+export const TRAVERSE_INSTALLER = "TraverseLevel-Setup.exe";
 
 export const TRAVERSE_FILES = {
   // The Windows installer, from the latest release of Asjad-Mehmood/Traiverse (public), the
   // same way Excel to KML's installer comes from its releases repository. While href is null
   // the page says "coming soon".
   setup: {
-    href: `${TRAVERSE_RELEASES}/latest/download/TraverseLevel-Setup.exe` as string | null,
-    name: "TraverseLevel-Setup.exe",
+    href: `${TRAVERSE_RELEASES}/latest/download/${TRAVERSE_INSTALLER}` as string | null,
+    name: TRAVERSE_INSTALLER,
     label: "Windows program",
     detail: "Installer for Windows 10 and 11. Adds Start menu and desktop shortcuts, needs no administrator rights and updates itself",
   },
