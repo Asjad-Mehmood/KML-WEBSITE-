@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<base href="/traverse/app/">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Traverse &amp; Level Adjustment</title>
+<meta name="description" content="Professional Traverse and Level Adjustment Software. Precision in every point.">
+<meta name="theme-color" content="#0b1a2e">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="styles.css">
+<script>try{var t=localStorage.getItem('sx.theme');if(t==='"dark"'||t==='"light"')document.documentElement.setAttribute('data-theme',JSON.parse(t));}catch(e){}</script>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="goldg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3dc8f"/><stop offset=".45" stop-color="#c9a24a"/><stop offset="1" stop-color="#8a6a22"/></linearGradient>
+    <symbol id="rose" viewBox="-100 -100 200 200">
+      <circle r="58" fill="none" stroke="url(#goldg)" stroke-width="2.4"/><circle r="47" fill="none" stroke="url(#goldg)" stroke-width="1.2"/><circle r="36" fill="none" stroke="url(#goldg)" stroke-width="1"/>
+      <g fill="url(#goldg)">
+        <path d="M0-96 L9-9 L0 0Z" opacity=".95"/><path d="M0-96 L-9-9 L0 0Z" opacity=".7"/>
+        <path d="M96 0 L9 9 L0 0Z" opacity=".95"/><path d="M96 0 L9-9 L0 0Z" opacity=".7"/>
+        <path d="M0 96 L-9 9 L0 0Z" opacity=".95"/><path d="M0 96 L9 9 L0 0Z" opacity=".7"/>
+        <path d="M-96 0 L-9-9 L0 0Z" opacity=".95"/><path d="M-96 0 L-9 9 L0 0Z" opacity=".7"/>
+        <g transform="rotate(45)"><path d="M0-62 L7-7 L0 0Z" opacity=".9"/><path d="M0-62 L-7-7 L0 0Z" opacity=".65"/><path d="M62 0 L7 7 L0 0Z" opacity=".9"/><path d="M62 0 L7-7 L0 0Z" opacity=".65"/><path d="M0 62 L-7 7 L0 0Z" opacity=".9"/><path d="M0 62 L7 7 L0 0Z" opacity=".65"/><path d="M-62 0 L-7-7 L0 0Z" opacity=".9"/><path d="M-62 0 L-7 7 L0 0Z" opacity=".65"/></g>
+      </g>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="gold-flash" id="gold-flash" hidden></div>
+
+<header class="top" id="top">
+  <a class="brand" href="#/" aria-label="Home">
+    <svg class="brand-rose"><use href="#rose"/></svg>
+    <span class="brand-text"><b>Traverse &amp; Level</b><small>Professional Adjustment Software</small></span>
+  </a>
+  <div class="clock" id="clock">
+    <button class="clock-btn" id="clock-btn" aria-haspopup="dialog" aria-expanded="false" aria-controls="calendar">
+      <span class="clock-time" id="clock-time">--:--:--</span>
+      <span class="clock-date" id="clock-date"></span>
+    </button>
+    <div class="calendar" id="calendar" role="dialog" aria-label="Calendar" hidden>
+      <div class="cal-head"><button class="cal-nav" id="cal-prev" aria-label="Previous month">‹</button><b id="cal-title"></b><button class="cal-nav" id="cal-next" aria-label="Next month">›</button></div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <button class="link cal-today" id="cal-today">Today</button>
+    </div>
+  </div>
+  <div class="top-right">
+    <button class="icon-btn" id="theme-btn" aria-label="Switch to dark mode" title="Light / dark mode">
+      <svg class="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>
+      <svg class="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>
+    </button>
+    <div class="guest-only"><a class="btn ghost" href="#/login">Log in</a><a class="btn gold" href="#/register">Register</a></div>
+    <div class="user-only">
+      <a class="btn ghost" href="#/dashboard" id="dash-link">Dashboard</a>
+      <div class="user-menu">
+        <button class="avatar" id="avatar-btn" aria-haspopup="menu" aria-expanded="false" title="Account"><span id="avatar-initials">?</span></button>
+        <div class="menu" id="user-menu" role="menu" hidden>
+          <div class="menu-who"><b id="menu-name"></b><span id="menu-email"></span></div>
+          <a role="menuitem" href="#/dashboard">Dashboard</a>
+          <a role="menuitem" href="#/traverse">Traverse</a>
+          <a role="menuitem" href="#/level">Levelling</a>
+          <a role="menuitem" href="#/simulator">Simulator</a>
+          <button role="menuitem" id="logout-btn">Log out</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<nav class="appnav user-only" id="appnav" aria-label="Sections">
+  <a href="#/dashboard" data-nav="dashboard">Dashboard</a>
+  <a href="#/traverse" data-nav="traverse">Traverse</a>
+  <a href="#/level" data-nav="level">Levelling</a>
+  <a href="#/simulator" data-nav="simulator">Simulator</a>
+  <span class="net" id="net-state"></span>
+</nav>
+
+<div class="demo-banner" id="demo-banner" hidden>Demo mode: this site is not connected to the account server yet, so accounts and jobs are kept only in this browser. Add your Supabase keys in <code>config.js</code> to go live.</div>
+
+<main>
+<!-- ===================== LANDING ===================== -->
+<section class="view landing" data-view="landing" hidden>
+  <div class="hero">
+    <svg class="hero-bg" viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs><pattern id="gridp" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" class="gridline"/></pattern></defs>
+      <rect width="1200" height="700" fill="url(#gridp)"/>
+      <g class="contours" id="hero-contours"></g>
+      <g class="hero-trav">
+        <path class="ht-line" d="M640 600 L730 560 L820 578 L905 540 L990 556 L1075 516 L1160 530"/>
+        <g class="ht-pts"><circle cx="640" cy="600" r="4"/><circle cx="730" cy="560" r="4"/><circle cx="820" cy="578" r="4"/><circle cx="905" cy="540" r="4"/><circle cx="990" cy="556" r="4"/><circle cx="1075" cy="516" r="4"/><circle cx="1160" cy="530" r="4"/></g>
+      </g>
+    </svg>
+    <div class="hero-inner">
+      <div class="hero-copy">
+        <p class="h-pre">Professional</p>
+        <h1><span class="h-main">Traverse and</span><span class="h-sub">Level Adjustment Software</span></h1>
+        <div class="ornament" aria-hidden="true"><i></i><svg viewBox="0 0 40 12"><path d="M20 0 L24 6 L20 12 L16 6Z M8 6 L11 3.5 L14 6 L11 8.5Z M26 6 L29 3.5 L32 6 L29 8.5Z"/></svg><i></i></div>
+        <p class="tagline">Precision in every point</p>
+        <p class="lead">Enter the coordinates you measure on site, close on a known point and get an adjusted, checked result with a signed PDF report. Level books are reduced, checked and adjusted the same way.</p>
+        <div class="cta"><a class="btn gold big" href="#/register">Create your account</a><a class="btn ghost big light" href="#/login">Log in</a></div>
+        <p class="cta-note">Free to register · Works offline after your first login</p>
+      </div>
+      <div class="hero-rose" aria-hidden="true">
+        <span class="n">N</span>
+        <svg class="rose-big"><use href="#rose"/></svg>
+      </div>
+    </div>
+    <div class="hero-rule" aria-hidden="true"><i></i><svg viewBox="0 0 24 24"><path d="M4 20 L16 8 L19 11 L7 23Z M16 8 L19 5 L22 8 L19 11"/></svg></div>
+  </div>
+
+  <section class="features" aria-labelledby="f-title">
+    <h2 id="f-title" class="sec-title">Everything the field team needs <em>and nothing it doesn't</em></h2>
+    <div class="f-grid">
+      <article class="f-card"><svg viewBox="0 0 48 48"><path d="M8 38 L18 14 L32 18 L40 34"/><circle cx="18" cy="14" r="3"/><circle cx="32" cy="18" r="3"/><path d="M5 41 L8 35 L11 41Z"/><path d="M37 37 L40 31 L43 37Z"/></svg><h3>Coordinate traverse</h3><p>Station, backsight, site points and closing point. Open or closed. Bowditch, Transit or Equal adjustment with precision 1 : N.</p></article>
+      <article class="f-card"><svg viewBox="0 0 48 48"><path d="M6 34 H42"/><path d="M14 34 V18 M24 34 V12 M34 34 V22"/><path d="M10 18 H18 M20 12 H28 M30 22 H38"/></svg><h3>Levelling</h3><p>Rise &amp; Fall or Height of Instrument. Arithmetic checks, misclosure against your allowable, adjusted RLs.</p></article>
+      <article class="f-card"><svg viewBox="0 0 48 48"><circle cx="24" cy="20" r="8"/><path d="M24 28 L14 44 M24 28 L34 44 M24 28 V44"/><path d="M32 20 H44" class="beam"/></svg><h3>Traverse simulator</h3><p>Watch a total station observe a traverse with real instrument errors, then adjust the result. Ideal for training.</p></article>
+      <article class="f-card"><svg viewBox="0 0 48 48"><rect x="6" y="8" width="36" height="32" rx="3"/><path d="M6 16 H42 M14 24 H26 M14 31 H34"/></svg><h3>Your dashboard</h3><p>Every traverse and level run you save is kept in your account, ready to open, copy or share.</p></article>
+      <article class="f-card"><svg viewBox="0 0 48 48"><circle cx="14" cy="24" r="5"/><circle cx="34" cy="14" r="5"/><circle cx="34" cy="34" r="5"/><path d="M19 22 L29 16 M19 26 L29 32"/></svg><h3>Share with your team</h3><p>Share a job with a checker or client by email. They see it in their own dashboard.</p></article>
+      <article class="f-card"><svg viewBox="0 0 48 48"><path d="M10 6 H30 L38 14 V42 H10Z"/><path d="M30 6 V14 H38"/><path d="M16 24 H32 M16 30 H32 M16 36 H26"/></svg><h3>PDF reports</h3><p>Input and output coordinates, closure check, bearings, sketch and signature boxes on every report.</p></article>
+    </div>
+  </section>
+
+  <section class="how" aria-labelledby="h-title">
+    <h2 id="h-title" class="sec-title">From field book to signed report</h2>
+    <ol class="steps">
+      <li><b>Register</b><span>Create your account once. After that the app also opens without internet.</span></li>
+      <li><b>Enter site data</b><span>Type or paste from Excel: station, backsight, points and the closing point.</span></li>
+      <li><b>Check and adjust</b><span>See the misclosure and precision at once, choose the method, read the result.</span></li>
+      <li><b>Report and share</b><span>Save to your dashboard, download the PDF, share with the people who need it.</span></li>
+    </ol>
+  </section>
+
+  <section class="preview" aria-label="Result preview">
+    <div class="pv-card">
+      <div class="status pass"><div class="ic">✓</div><div><h3>Accepted</h3><p>Precision 1 : 62,105 is better than the required 1 : 10,000. Adjusted by Bowditch (Compass rule).</p></div></div>
+      <div class="stats"><div class="stat"><span>Misclosure E</span><b>12.0 <small>mm</small></b></div><div class="stat"><span>Misclosure N</span><b>-9.0 <small>mm</small></b></div><div class="stat"><span>Linear</span><b>15.0 <small>mm</small></b></div><div class="stat hl"><span>Precision</span><b>1 : 62,105</b></div></div>
+      <p class="pv-cap">Example result from the built-in sample traverse.</p>
+    </div>
+    <div class="pv-copy"><h2 class="sec-title">Know in a second if the traverse closes</h2><p>Green means accepted, red means re-check the field data. Corrections, adjusted coordinates, bearings and distances are listed point by point, exactly as they appear in the PDF report.</p><a class="btn gold big" href="#/register">Start now</a></div>
+  </section>
+  <footer class="foot"><svg class="brand-rose"><use href="#rose"/></svg><span>Professional Traverse and Level Adjustment Software · by SurveyX Digital · <a href="/traverse">exceltokml.com/traverse</a></span><span id="foot-year"></span></footer>
+</section>
+
+<!-- ===================== AUTH ===================== -->
+<section class="view auth" data-view="login" hidden>
+  <form class="auth-card" id="login-form" novalidate>
+    <svg class="auth-rose"><use href="#rose"/></svg>
+    <h1>Welcome back</h1><p class="sub">Log in to open your dashboard and tools.</p>
+    <label>Email<input type="email" id="login-email" autocomplete="email" required></label>
+    <label>Password<input type="password" id="login-pass" autocomplete="current-password" required></label>
+    <p class="form-msg" id="login-msg" role="alert"></p>
+    <button class="btn gold big full" type="submit" id="login-submit">Log in</button>
+    <div class="auth-links"><a href="#/reset">Forgot password?</a><span>New here? <a href="#/register">Create an account</a></span></div>
+  </form>
+</section>
+<section class="view auth" data-view="register" hidden>
+  <form class="auth-card" id="register-form" novalidate>
+    <svg class="auth-rose"><use href="#rose"/></svg>
+    <h1>Create your account</h1><p class="sub">Register once on this website. After your first login the app works offline too.</p>
+    <label>Full name<input id="reg-name" autocomplete="name" required></label>
+    <label>Company <small>(optional)</small><input id="reg-company" autocomplete="organization"></label>
+    <label>Email<input type="email" id="reg-email" autocomplete="email" required></label>
+    <div class="two"><label>Password<input type="password" id="reg-pass" autocomplete="new-password" minlength="8" required></label><label>Confirm password<input type="password" id="reg-pass2" autocomplete="new-password" required></label></div>
+    <p class="hint">At least 8 characters.</p>
+    <p class="form-msg" id="register-msg" role="alert"></p>
+    <button class="btn gold big full" type="submit" id="register-submit">Create account</button>
+    <div class="auth-links"><span>Already registered? <a href="#/login">Log in</a></span></div>
+  </form>
+</section>
+<section class="view auth" data-view="reset" hidden>
+  <form class="auth-card" id="reset-form" novalidate>
+    <svg class="auth-rose"><use href="#rose"/></svg>
+    <h1>Reset password</h1><p class="sub">We will email you a link to set a new password.</p>
+    <label>Email<input type="email" id="reset-email" autocomplete="email" required></label>
+    <p class="form-msg" id="reset-msg" role="alert"></p>
+    <button class="btn gold big full" type="submit">Send reset link</button>
+    <div class="auth-links"><a href="#/login">Back to log in</a></div>
+  </form>
+</section>
+<section class="view auth" data-view="newpass" hidden>
+  <form class="auth-card" id="newpass-form" novalidate>
+    <svg class="auth-rose"><use href="#rose"/></svg>
+    <h1>Set a new password</h1>
+    <label>New password<input type="password" id="np-pass" autocomplete="new-password" minlength="8" required></label>
+    <p class="form-msg" id="newpass-msg" role="alert"></p>
+    <button class="btn gold big full" type="submit">Save password</button>
+  </form>
+</section>
+
+<!-- ===================== DASHBOARD ===================== -->
+<section class="view wrap dash" data-view="dashboard" hidden>
+  <div class="dash-head">
+    <div><p class="eyebrow" id="dash-date"></p><h1 id="dash-hello">Welcome</h1><p class="sub" id="dash-sync"></p></div>
+    <div class="quick"><a class="btn gold" href="#/traverse" data-new="traverse">+ New traverse</a><a class="btn" href="#/level" data-new="level">+ New level run</a><a class="btn ghost" href="#/simulator">Open simulator</a></div>
+  </div>
+  <div class="kpis" id="kpis"></div>
+  <div class="dash-cols">
+    <section class="card jobs-card">
+      <div class="jobs-tools">
+        <h2>My jobs</h2>
+        <div class="filters" role="tablist" aria-label="Filter jobs">
+          <button data-filter="all" aria-selected="true">All</button><button data-filter="traverse">Traverse</button><button data-filter="level">Levelling</button>
+        </div>
+        <input type="search" id="job-search" placeholder="Search jobs" aria-label="Search jobs">
+      </div>
+      <div id="job-list" class="job-list"></div>
+    </section>
+    <aside class="side">
+      <section class="card"><h2>Shared with me</h2><div id="shared-list" class="mini-list"></div></section>
+      <section class="card"><h2>Activity</h2><div id="activity" class="activity"></div></section>
+    </aside>
+  </div>
+</section>
+
+<!-- share dialog -->
+<div class="modal" id="share-modal" hidden role="dialog" aria-modal="true" aria-labelledby="share-title">
+  <div class="modal-card">
+    <h2 id="share-title">Share job</h2>
+    <p class="sub" id="share-job"></p>
+    <form id="share-form" class="share-row" novalidate><input type="email" id="share-email" placeholder="name@company.com" aria-label="Email to share with"><button class="btn gold" type="submit">Share</button></form>
+    <p class="form-msg" id="share-msg" role="alert"></p>
+    <p class="hint">The person logs in (or registers) with this email and finds the job under <b>Shared with me</b>. They can open a copy; your job stays unchanged.</p>
+    <ul class="share-list" id="share-list"></ul>
+    <div class="modal-actions"><button class="btn ghost" id="share-close">Done</button></div>
+  </div>
+</div>
+
+<!-- ===================== TOOLS ===================== -->
+<section class="view wrap tools" data-view="tools" hidden>
+  <details class="details card" id="report-details">
+    <summary><span>Report details</span><em id="details-summary"></em></summary>
+    <div class="details-grid">
+      <label>Project<input id="i-project" data-info="project" autocomplete="off"></label>
+      <label>Location<input id="i-location" data-info="location" autocomplete="off"></label>
+      <label>Surveyor<input id="i-surveyor" data-info="surveyor" autocomplete="off"></label>
+      <label>Checked by<input id="i-checker" data-info="checker" autocomplete="off"></label>
+      <label>Instrument<input id="i-instrument" data-info="instrument" autocomplete="off"></label>
+      <label>Date<input id="i-date" data-info="date" type="date"></label>
+    </div>
+  </details>
+
+  <!-- TRAVERSE -->
+  <div class="panel" id="panel-traverse" data-panel="traverse">
+    <div class="jobbar">
+      <label class="jobname"><span>Job</span><input id="t-jobname" placeholder="Job name, e.g. Al Khor TP loop 1" autocomplete="off"></label>
+      <button class="btn gold" id="t-save">Save</button><button class="btn ghost" id="t-saveas">Save as new</button>
+      <span class="jobstate" id="t-jobstate"></span>
+      <span class="sp"></span>
+      <button class="btn ghost" id="t-example">Example</button><button class="btn ghost" id="t-new">New</button>
+    </div>
+    <div class="confirm" id="t-confirm" hidden><span>Start a new traverse? Unsaved changes on this screen will be lost.</span><button class="btn danger" id="t-confirm-yes">Start new</button><button class="btn ghost" id="t-confirm-no">Cancel</button></div>
+    <section class="col input">
+      <div class="seg" role="radiogroup" aria-label="Traverse type">
+        <button data-ttype="closed" id="tt-closed" role="radio">Closed traverse</button>
+        <button data-ttype="open" id="tt-open" role="radio">Open traverse</button>
+      </div>
+      <div class="card">
+        <h2><b>1</b> Known points</h2>
+        <div class="known">
+          <div class="kh"></div><div class="kh">Point</div><div class="kh">Easting</div><div class="kh">Northing</div>
+          <div class="kl">Station</div>
+          <input id="t-st-name" data-t="station.name" placeholder="CP-01" aria-label="Station name"><input placeholder="Easting" id="t-st-E" data-t="station.E" class="num" inputmode="decimal" aria-label="Station Easting"><input placeholder="Northing" id="t-st-N" data-t="station.N" class="num" inputmode="decimal" aria-label="Station Northing">
+          <div class="kl">Backsight</div>
+          <input id="t-bs-name" data-t="backsight.name" placeholder="CP-02" aria-label="Backsight name"><input placeholder="Easting" id="t-bs-E" data-t="backsight.E" class="num" inputmode="decimal" aria-label="Backsight Easting"><input placeholder="Northing" id="t-bs-N" data-t="backsight.N" class="num" inputmode="decimal" aria-label="Backsight Northing">
+          <div class="kl closed-only">Closing</div>
+          <input id="t-cl-name" data-t="closing.name" class="closed-only" placeholder="CP-03" aria-label="Closing point name"><input placeholder="Easting" id="t-cl-E" data-t="closing.E" class="num closed-only" inputmode="decimal" aria-label="Closing point known Easting"><input placeholder="Northing" id="t-cl-N" data-t="closing.N" class="num closed-only" inputmode="decimal" aria-label="Closing point known Northing">
+        </div>
+        <div class="row-actions closed-only"><button class="link" id="t-same">Closing point = station (loop)</button></div>
+      </div>
+      <div class="card">
+        <h2><b>2</b> Site coordinates <small>as measured, in order</small></h2>
+        <div class="grid-wrap"><table class="grid" id="t-grid"><thead><tr><th class="n">#</th><th>Point</th><th>Easting</th><th>Northing</th><th>Remark</th><th class="x"></th></tr></thead><tbody></tbody></table></div>
+        <div class="row-actions"><button class="btn" id="t-add">+ Add point</button><button class="btn ghost" id="t-import">Import CSV</button><span class="hint">Tip: copy rows in Excel (Point, Easting, Northing, Remark) and paste into any cell.</span></div>
+      </div>
+      <div class="card closed-only">
+        <h2><b>3</b> Adjustment</h2>
+        <div class="methods" role="radiogroup" aria-label="Adjustment method">
+          <label class="m"><input type="radio" name="t-method" value="bowditch" id="tm-bowditch"><span><b>Bowditch</b><small>Correction in proportion to distance. The usual choice.</small></span></label>
+          <label class="m"><input type="radio" name="t-method" value="transit" id="tm-transit"><span><b>Transit</b><small>Easting and Northing corrected by their own changes.</small></span></label>
+          <label class="m"><input type="radio" name="t-method" value="equal" id="tm-equal"><span><b>Equal</b><small>Same share of the error at every point.</small></span></label>
+        </div>
+        <label class="inline">Required precision <span class="ratio">1 :</span><input id="t-precision" data-t="precision" class="num short" inputmode="numeric"></label>
+      </div>
+    </section>
+    <section class="col output" aria-live="polite"><div id="t-result" class="result"></div></section>
+  </div>
+
+  <!-- LEVELLING -->
+  <div class="panel" id="panel-level" data-panel="level">
+    <div class="jobbar">
+      <label class="jobname"><span>Job</span><input id="l-jobname" placeholder="Job name, e.g. BM loop Block A" autocomplete="off"></label>
+      <button class="btn gold" id="l-save">Save</button><button class="btn ghost" id="l-saveas">Save as new</button>
+      <span class="jobstate" id="l-jobstate"></span>
+      <span class="sp"></span>
+      <button class="btn ghost" id="l-example">Example</button><button class="btn ghost" id="l-new">New</button>
+    </div>
+    <div class="confirm" id="l-confirm" hidden><span>Start a new level run? Unsaved changes on this screen will be lost.</span><button class="btn danger" id="l-confirm-yes">Start new</button><button class="btn ghost" id="l-confirm-no">Cancel</button></div>
+    <section class="col input">
+      <div class="seg" role="radiogroup" aria-label="Level run type">
+        <button data-ltype="closed" id="lt-closed" role="radio">Closed loop / to a BM</button>
+        <button data-ltype="open" id="lt-open" role="radio">Open run</button>
+      </div>
+      <div class="card">
+        <h2><b>1</b> Benchmarks</h2>
+        <div class="known lv">
+          <div class="kh"></div><div class="kh">Name</div><div class="kh">RL (m)</div>
+          <div class="kl">Start BM</div>
+          <input id="l-st-name" data-l="startName" placeholder="BM-01" aria-label="Start benchmark name"><input placeholder="RL" id="l-st-rl" data-l="startRL" class="num" inputmode="decimal" aria-label="Start benchmark RL">
+          <div class="kl closed-only">Closing BM</div>
+          <input id="l-cl-name" data-l="closeName" class="closed-only" placeholder="BM-01" aria-label="Closing benchmark name"><input placeholder="RL" id="l-cl-rl" data-l="closeRL" class="num closed-only" inputmode="decimal" aria-label="Closing benchmark RL">
+        </div>
+        <div class="row-actions closed-only"><button class="link" id="l-same">Closing BM = start BM (loop)</button></div>
+      </div>
+      <div class="card">
+        <h2><b>2</b> Staff readings <small>one row per point, in order</small></h2>
+        <div class="grid-wrap"><table class="grid" id="l-grid"><thead><tr><th class="n">#</th><th>Station</th><th>BS</th><th>IS</th><th>FS</th><th>Remark</th><th class="x"></th></tr></thead><tbody></tbody></table></div>
+        <div class="row-actions"><button class="btn" id="l-add">+ Add row</button><button class="btn ghost" id="l-import">Import CSV</button><span class="hint">First row: BS only. Change point: FS and BS on the same row. Last row: FS only.</span></div>
+      </div>
+      <div class="card">
+        <h2><b>3</b> Method</h2>
+        <div class="methods two" role="radiogroup" aria-label="Reduction method">
+          <label class="m"><input type="radio" name="l-method" value="rise" id="lm-rise"><span><b>Rise &amp; Fall</b><small>Report shows rise and fall columns.</small></span></label>
+          <label class="m"><input type="radio" name="l-method" value="hi" id="lm-hi"><span><b>Height of Instrument</b><small>Report shows the HI column.</small></span></label>
+        </div>
+        <label class="inline closed-only">Allowable misclosure ± <input id="l-allow" data-l="allow" class="num short" inputmode="decimal" placeholder="auto"> mm <span class="hint">Blank = 10 mm × √set-ups</span></label>
+      </div>
+    </section>
+    <section class="col output" aria-live="polite"><div id="l-result" class="result"></div></section>
+  </div>
+</section>
+
+<!-- ===================== SIMULATOR ===================== -->
+<section class="view wrap sim" data-view="simulator" hidden>
+  <div class="sim-head"><div><p class="eyebrow">Training</p><h1>Traverse simulator</h1><p class="sub">A total station observes a traverse with realistic random errors, carrying the bearing forward by backsighting each station. Then adjust the result in the Traverse tool.</p></div></div>
+  <div class="sim-layout">
+    <aside class="card sim-ctrl">
+      <label>Traverse<select id="sim-shape"><option value="link">Link: CP-01 to CP-03</option><option value="loop">Loop: back to CP-01</option></select></label>
+      <label>New points <b id="sim-n-val">5</b><input type="range" id="sim-n" min="2" max="12" value="5"></label>
+      <label>Average leg (m)<input type="number" id="sim-leg" value="200" min="30" max="1000" step="10" class="num"></label>
+      <label>Angle accuracy<select id="sim-ang"><option value="1">1″ instrument</option><option value="2" selected>2″ instrument</option><option value="5">5″ instrument</option><option value="10">10″ instrument</option><option value="30">30″ (poor set-up)</option></select></label>
+      <label>Distance accuracy<select id="sim-dist"><option value="1,1.5" selected>1 mm + 1.5 ppm</option><option value="2,2">2 mm + 2 ppm</option><option value="3,2">3 mm + 2 ppm</option><option value="10,5">10 mm + 5 ppm (poor)</option></select></label>
+      <label>Scenario number<span class="seed"><input type="number" id="sim-seed" value="2026" min="1" class="num"><button class="btn ghost" id="sim-dice" type="button" title="New random scenario">New</button></span></label>
+      <label>Speed<select id="sim-speed"><option value="0.6">Slow</option><option value="1" selected>Normal</option><option value="2">Fast</option><option value="4">Very fast</option></select></label>
+      <label class="check"><input type="checkbox" id="sim-true"> Show true positions</label>
+      <div class="sim-btns"><button class="btn gold big" id="sim-run">Run</button><button class="btn ghost big" id="sim-reset">Reset</button></div>
+    </aside>
+    <div class="sim-main">
+      <div class="card sim-stage-card">
+        <div class="sim-bar"><div class="sim-prog"><i id="sim-progress"></i></div><span id="sim-step">0 / 0</span></div>
+        <div id="sim-stage" class="sim-stage"></div>
+        <div class="sim-read" id="sim-read"></div>
+      </div>
+      <div id="sim-summary" class="sim-summary" hidden></div>
+      <div class="card"><h2>Field book</h2><div class="tw"><table class="res" id="sim-log"><thead><tr><th>Station</th><th>BS</th><th>FS</th><th>Angle</th><th>Angle err ″</th><th>HD m</th><th>Dist err mm</th><th>Measured E</th><th>Measured N</th></tr></thead><tbody></tbody></table></div></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<div class="toast" id="toast" role="status" hidden></div>
+<noscript><p style="padding:24px">This app needs JavaScript.</p></noscript>
+<script src="config.js"></script>
+<script src="vendor/pdf.js" defer></script>
+<script src="app.js" defer></script>
+</body>
+</html>
