@@ -10,6 +10,8 @@ const nextConfig: NextConfig = {
       // Traverse & Level 1.0 manuals, replaced by the 2.0 manual
       { source: "/traverse/Traverse_Level_User_Manual.pdf", destination: "/traverse/Traverse-Level-User-Manual.pdf", statusCode: 301 },
       { source: "/traverse/Traverse_Level_User_Manual.pptx", destination: "/traverse/Traverse-Level-User-Manual.pptx", statusCode: 301 },
+      // the first intro video, replaced by the 30 s intro
+      { source: "/traverse/traverse-intro.mp4", destination: "/traverse/traverse-promo.mp4", statusCode: 301 },
       // The 2.0 Windows program kept its accounts on the PC; the installer now comes from the
       // program's releases and signs in with the website
       {

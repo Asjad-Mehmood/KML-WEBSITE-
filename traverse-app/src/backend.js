@@ -56,6 +56,8 @@ export class SupabaseRemote {
 // ---------------------------------------------------------------- Excel to KML website accounts
 // On exceltokml.com the app is served from the same site, so the website's sign-in cookie
 // carries the session and jobs are kept in the website's database (/api/traverse/jobs).
+const LOGQ = 'tl.activity.queue';
+
 export class SiteRemote {
   constructor(api = '') { this.kind = 'site'; this.api = api; }
   static userFrom(u) { return u && { id: u.id, email: normEmail(u.email), name: u.name || '', company: u.organization || '' }; }
@@ -87,6 +89,30 @@ export class SiteRemote {
   async signOut() { await this.call('POST', '/api/auth/logout'); }
   async resetPassword(email) { await this.call('POST', '/api/auth/forgot-password', { email: normEmail(email) }); }
   async setPassword() { throw new AuthError('Change your password from your account page on exceltokml.com.'); }
+  /**
+   * Record what the user did (a report downloaded, a file imported, a simulator run…) in the
+   * website's activity log, the same one Excel to KML writes to. Offline, entries wait on this
+   * device and are sent when the connection is back. Never throws.
+   */
+  log(entry) {
+    const q = LS.get(LOGQ, []);
+    q.push({ ...entry, at: new Date().toISOString() });
+    LS.set(LOGQ, q.slice(-200));
+    return this.flushLog();
+  }
+  async flushLog() {
+    if (this.flushing) return; this.flushing = true;
+    try {
+      let q = LS.get(LOGQ, []);
+      while (q.length) {
+        const { at, ...e } = q[0];
+        const details = [e.details, at && Date.now() - Date.parse(at) > 120000 ? `Done offline at ${new Date(at).toLocaleString()}` : ''].filter(Boolean).join(' · ');
+        try { await this.call('POST', '/api/user/activity', { ...e, details: details || undefined }); }
+        catch (err) { if (err.code === 'network' || err.code >= 500) break; /* rejected for good: drop it */ }
+        q = LS.get(LOGQ, []).slice(1); LS.set(LOGQ, q);
+      }
+    } finally { this.flushing = false; }
+  }
   async listOwn() { return (await this.call('GET', '/api/traverse/jobs?scope=own')).jobs || []; }
   async listShared() { return (await this.call('GET', '/api/traverse/jobs?scope=shared')).jobs || []; }
   async upsert(user, job) {
@@ -107,6 +133,7 @@ async function hash(password, salt) {
 }
 export class DemoRemote {
   constructor() { this.kind = 'demo'; this.key = 'sx.demo.db'; this.listeners = []; }
+  log() { /* demo mode: nothing leaves this browser */ }
   db() { return LS.get(this.key, { users: [], jobs: [], shares: [] }); }
   put(db) { LS.set(this.key, db); }
   async session() { const id = LS.get('sx.demo.session'); const u = id && this.db().users.find(x => x.id === id); return u ? this.pub(u) : null; }

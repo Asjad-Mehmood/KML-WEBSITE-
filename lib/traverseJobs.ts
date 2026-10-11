@@ -89,6 +89,15 @@ export async function ownerOf(jobId: string): Promise<string | null> {
   return r[0]?.ownerId ?? null;
 }
 
+/** A job's owner, name and kind, for checks and the activity log. */
+export async function jobInfo(jobId: string): Promise<{ ownerId: string; name: string; kind: string } | null> {
+  await ensureTraverseTables();
+  const r = await prisma.$queryRawUnsafe<{ ownerId: string; name: string; kind: string }[]>(
+    `SELECT "ownerId", "name", "kind" FROM "traverse_jobs" WHERE "id" = $1`, jobId
+  );
+  return r[0] ?? null;
+}
+
 export async function countOwn(userId: string): Promise<number> {
   await ensureTraverseTables();
   const r = await prisma.$queryRawUnsafe<{ n: bigint }[]>(`SELECT COUNT(*) AS n FROM "traverse_jobs" WHERE "ownerId" = $1`, userId);

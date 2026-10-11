@@ -59,12 +59,15 @@ function route() {
   $$('[data-nav]').forEach(a => a.toggleAttribute('aria-current', a.dataset.nav === r) || a.removeAttribute('aria-current'));
   $$('[data-nav]').forEach(a => { if (a.dataset.nav === r) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
   if (view === 'tools') { $$('.panel').forEach(p => (p.hidden = p.dataset.panel !== r)); recompute(r); refreshJobStates(); }
-  if (view !== 'simulator') stopSim(); else initSimulator(sendToTraverse);
+  if (view !== 'simulator') stopSim(); else initSimulator(sendToTraverse, logActivity);
   if (view === 'dashboard') renderDashboard();
   document.title = { landing: 'Traverse & Level Adjustment', login: 'Log in · Traverse & Level', register: 'Register · Traverse & Level', dashboard: 'Dashboard · Traverse & Level', tools: (r === 'level' ? 'Levelling' : 'Traverse') + ' · Traverse & Level', simulator: 'Simulator · Traverse & Level' }[view] || 'Traverse & Level';
   window.scrollTo(0, 0);
   ['#calendar', '#user-menu'].forEach(s => ($(s).hidden = true));
 }
+/** Record what the user did in the website's activity log (signed in only; queued while offline). */
+const logActivity = entry => { if (user) remote.log(entry); };
+const WHERE = APP_MODE ? (/[?&]app=1(&|$)/.test(location.search) ? 'Windows program' : 'Installed app') : 'Web browser';
 function sendToTraverse(trav, name) { loadTraverseData(trav, name); location.hash = '#/traverse'; toast('Simulated traverse loaded. Choose the method and save it as a job.'); }
 
 // ---------------------------------------------------------------- auth
@@ -79,7 +82,12 @@ function setUser(u, { celebrate = false } = {}) {
     $('#avatar-initials').textContent = initials(u);
     $('#menu-name').textContent = u.name || 'Surveyor';
     $('#menu-email').textContent = u.email;
-    initTools(u, { store: () => store, onSaved: () => { if (!$('[data-view="dashboard"]').hidden) renderDashboard(); } });
+    initTools(u, { store: () => store, log: logActivity, onSaved: () => { if (!$('[data-view="dashboard"]').hidden) renderDashboard(); } });
+    // once per sitting: the app was opened, and where (Windows program, installed app or browser)
+    if (sessionStorage.getItem('tl.opened') !== u.id) {
+      try { sessionStorage.setItem('tl.opened', u.id); } catch (e) { /* private mode */ }
+      logActivity({ action: 'tl_open', title: `Opened Traverse & Level (${WHERE})`, details: navigator.onLine ? '' : 'Opened offline' });
+    } else if (remote.flushLog) remote.flushLog();
     store.sync().then(() => { refreshJobStates(); if (!$('[data-view="dashboard"]').hidden) renderDashboard(); }).catch(() => {});
     if (celebrate) goldFlash();
   } else { store = null; }
@@ -283,7 +291,7 @@ function bind() {
     const j = store.shared().find(x => x.id === b.closest('.mini').dataset.sid); if (!j) return;
     location.hash = '#/' + openJob(j, true); toast('Opened a copy. Press Save to keep it in your own jobs.');
   });
-  window.addEventListener('online', () => { netState(); if (store) store.sync().then(() => { refreshJobStates(); if (!$('[data-view="dashboard"]').hidden) renderDashboard(); toast('Back online. Your jobs are synced.'); }).catch(() => {}); });
+  window.addEventListener('online', () => { netState(); if (user && remote.flushLog) remote.flushLog(); if (store) store.sync().then(() => { refreshJobStates(); if (!$('[data-view="dashboard"]').hidden) renderDashboard(); toast('Back online. Your jobs are synced.'); }).catch(() => {}); });
   window.addEventListener('offline', () => { netState(); toast('You are offline. You can keep working; jobs are saved on this device.'); });
   if (window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', themeLabel);
 }

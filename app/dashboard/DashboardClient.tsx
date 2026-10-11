@@ -166,6 +166,8 @@ const ASSET_LABEL: Record<string, string> = {
   web_app: "Web app",
   roadpro: "RoadPro (AutoCAD)",
   traverse: "Traverse & Level (Windows)",
+  traverse_manual: "Traverse & Level manual",
+  traverse_sample: "Traverse & Level sample file",
 };
 
 const num = (n: number) => n.toLocaleString("en-US");
