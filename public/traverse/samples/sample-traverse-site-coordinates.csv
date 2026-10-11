@@ -1,0 +1,9 @@
+# Sample traverse - Professional Traverse and Level Adjustment Software
+# Step 1, type the known points:  Station CP-01  E 228450.312  N 441203.845  |  Backsight CP-02  E 228912.640  N 441655.118  |  Closing CP-03  E 229265.871  N 441392.006
+# Closing point CP-03 as measured on site:  E 229265.883  N 441391.997
+# Step 2, import this file (or paste the rows below) into Site coordinates. Lines starting with # are ignored.
+Point,Easting,Northing,Remark
+TP-01,228610.458,441118.300,Steel pin
+TP-02,228795.123,441090.770,Steel pin
+TP-03,228968.548,441162.410,Steel pin
+TP-04,229120.243,441281.652,Steel pin

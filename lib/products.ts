@@ -56,11 +56,11 @@ export const PRODUCTS: Product[] = [
   {
     id: "traverse",
     name: TRAVERSE_SHORT,
-    platform: "Windows app",
+    platform: "Web app and Windows",
     version: TRAVERSE_VERSION,
     tagline: "Traverse and level adjustment, checked and reported",
     description:
-      "Enter the traverse and level books, adjust with Bowditch, Transit or least squares, check the misclosure against your tolerances, and deliver registers, a plot, a report and an Excel workbook.",
+      "Enter the coordinates measured on site, close on a known point, adjust with Bowditch, Transit or Equal and get a signed PDF report. Level books by Rise & Fall or HI. Jobs saved to your account and shared with your team.",
     href: "/traverse",
     demoHref: "/traverse#video",
     image: {
@@ -69,7 +69,7 @@ export const PRODUCTS: Product[] = [
       height: 576,
       alt: "Professional Traverse and Level Adjustment Software: precision in every point",
     },
-    highlights: ["Traverse and level books", "Bowditch, Transit, least squares", "QA / QC against your limits", "Report and Excel export"],
+    highlights: ["Coordinate traverse and levelling", "Bowditch, Transit, Equal", "PDF reports and sharing", "Works offline and on a phone"],
     comingSoon: !TRAVERSE_FILES.setup.href,
     newUntil: "2027-01-31",
     inHero: true,

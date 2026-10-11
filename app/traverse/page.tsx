@@ -2,34 +2,38 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import {
+  AppWindow,
   BookOpen,
   CheckCircle2,
-  Compass,
   Download,
   FileSpreadsheet,
   FileText,
+  Globe,
   Info,
+  LayoutDashboard,
   LayoutGrid,
-  LineChart,
   ListChecks,
   MapPinned,
   Monitor,
   Mountain,
   Package,
   PlayCircle,
-  Ruler,
-  ShieldCheck,
+  Share2,
   Sigma,
+  Smartphone,
+  Telescope,
   Workflow,
 } from "lucide-react";
 import PageShell from "../../components/PageShell";
 import TraverseDownload from "../../components/TraverseDownload";
 import {
+  TRAVERSE_APP,
   TRAVERSE_FEATURES,
   TRAVERSE_FILES,
   TRAVERSE_NAME,
   TRAVERSE_NOTES,
   TRAVERSE_RELEASED,
+  TRAVERSE_SAMPLES,
   TRAVERSE_SCREENS,
   TRAVERSE_STEPS,
   TRAVERSE_VERSION,
@@ -38,7 +42,7 @@ import { SITE_URL, jsonLd, openGraphFor } from "@/lib/site";
 
 const TITLE = "Traverse & Level Adjustment Software for Surveyors";
 const DESCRIPTION =
-  "Windows software for traverse and level books: Bowditch, Transit and least squares adjustment, level adjustment, QA / QC, coordinate and RL registers, plot, report and Excel export.";
+  "Coordinate traverse and levelling for surveyors, in the browser or on Windows: Bowditch, Transit or Equal adjustment, Rise & Fall or HI, PDF reports, a dashboard of saved jobs, sharing, a traverse simulator, offline use and dark mode.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -59,12 +63,12 @@ const structuredData = {
       description: DESCRIPTION,
       applicationCategory: "BusinessApplication",
       applicationSubCategory: "Surveying software",
-      operatingSystem: "Windows",
+      operatingSystem: "Web browser, Windows 10, Windows 11",
       softwareVersion: TRAVERSE_VERSION,
       datePublished: TRAVERSE_RELEASED,
       ...(TRAVERSE_FILES.setup.href ? { downloadUrl: `${SITE_URL}${TRAVERSE_FILES.setup.href}` } : {}),
       url: `${SITE_URL}/traverse`,
-      image: `${SITE_URL}/traverse/screens/traverse-book.webp`,
+      image: `${SITE_URL}/traverse/screens/v2-traverse.webp`,
       offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
       publisher: { "@id": `${SITE_URL}/#organization` },
     },
@@ -80,7 +84,7 @@ const structuredData = {
   ],
 };
 
-const FEATURE_ICONS = [MapPinned, Mountain, Sigma, Compass, Ruler, ShieldCheck, LineChart, FileSpreadsheet];
+const FEATURE_ICONS = [MapPinned, Sigma, Mountain, FileText, LayoutDashboard, Share2, Telescope, Smartphone];
 
 function SectionHead({ id, eyebrow, title, text, Icon }: { id: string; eyebrow: string; title: string; text?: string; Icon: React.ElementType }) {
   return (
@@ -117,35 +121,34 @@ export default function TraversePage() {
               <Image src="/traverse/logo.webp" alt="" width={448} height={448} priority className="w-12 h-12 rounded-xl border border-amber-300/60" />
               <p className="inline-flex items-center gap-2 rounded-full bg-amber-50 border border-amber-200 px-3 py-1 text-[12px] font-bold text-amber-800">
                 <span className="px-1.5 py-0.5 rounded-full bg-amber-500 text-white text-[10px] uppercase tracking-wider whitespace-nowrap">{comingSoon ? "Coming soon" : "New"}</span>
-                Windows app · version {TRAVERSE_VERSION}
+                Web app and Windows · version {TRAVERSE_VERSION}
               </p>
             </div>
             <h1 className="mt-4 text-[30px] sm:text-[42px] font-extrabold tracking-tight text-slate-900 leading-[1.1]">
               Professional Traverse &amp; Level Adjustment: <span className="text-[#0071e3]">precision in every point</span>
             </h1>
             <p className="mt-4 text-[16px] sm:text-[17px] text-slate-600 leading-relaxed">
-              Enter the traverse and level books, see the stations and the profile as you type, adjust with Bowditch, Transit or least squares,
-              check the misclosure against your tolerances, and deliver registers, a plot, a report and an Excel workbook.
+              Enter the coordinates you measure on site, close on a known point and get an adjusted, checked result with a signed PDF report.
+              Level books are reduced, checked and adjusted the same way. Every job is saved to your account, ready to open, copy or share.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
-              <TraverseDownload />
-              <a href="#video" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50">
-                <PlayCircle className="w-4 h-4" aria-hidden /> Watch the intro
+              <a href={TRAVERSE_APP} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-sm font-semibold">
+                <Globe className="w-4 h-4" aria-hidden /> Open the web app
               </a>
+              <TraverseDownload className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50 cursor-pointer" />
               <a href={TRAVERSE_FILES.manualPdf.href} target="_blank" rel="noopener" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50">
                 <FileText className="w-4 h-4" aria-hidden /> User manual (PDF)
               </a>
             </div>
             <p className="mt-3 text-[12.5px] text-slate-500">
-              {comingSoon
-                ? "The Windows setup will be here soon. Read the manual now; the download will need a free account."
-                : `${TRAVERSE_FILES.setup.detail} · Free account needed`}
+              Free with your Excel to KML account · Works offline after your first login ·{" "}
+              <a href="#video" className="text-[#0071e3] hover:underline">Watch the intro</a>
             </p>
           </div>
           <figure className="rounded-2xl border border-slate-200 bg-slate-900 p-1.5 shadow-[0_16px_40px_rgba(15,23,42,0.18)]">
             <Image
-              src="/traverse/screens/traverse-book.webp"
-              alt="Traverse book screen: closed loop traverse with Bowditch adjustment, observation book and a live plan of stations A to D"
+              src="/traverse/screens/v2-traverse.webp"
+              alt="Traverse screen: known points CP-01 to CP-03, site coordinates and an Accepted result with precision 1 : 62,105 after a Bowditch adjustment"
               width={1440}
               height={900}
               priority
@@ -200,7 +203,7 @@ export default function TraversePage() {
 
         {/* Features */}
         <section aria-labelledby="features-h" className="mt-20">
-          <SectionHead id="features-h" eyebrow="What it does" title="From the field book to the final report" Icon={Package} />
+          <SectionHead id="features-h" eyebrow="What it does" title="From the field book to the signed report" Icon={Package} />
           <ul className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {TRAVERSE_FEATURES.map((f, i) => {
               const Icon = FEATURE_ICONS[i] ?? CheckCircle2;
@@ -222,9 +225,9 @@ export default function TraversePage() {
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
             <SectionHead
               id="screens-h"
-              eyebrow="Inside the program"
-              title="13 screens, in the order you work"
-              text="Field, reduce, deliver. Tap a screen to read its page in the user manual."
+              eyebrow="Inside the app"
+              title={`${TRAVERSE_SCREENS.reduce((n, g) => n + g.items.length, 0)} screens, in the order you work`}
+              text="Account, traverse, levelling, simulator and sharing. Tap a screen to read its page in the user manual."
               Icon={LayoutGrid}
             />
             <a
@@ -275,7 +278,7 @@ export default function TraversePage() {
 
         {/* Steps */}
         <section aria-labelledby="steps-h" className="mt-20">
-          <SectionHead id="steps-h" eyebrow="How it works" title="Six steps from install to report" Icon={Workflow} />
+          <SectionHead id="steps-h" eyebrow="How it works" title="Six steps from login to report" Icon={Workflow} />
           <ol className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {TRAVERSE_STEPS.map((s, i) => (
               <li key={s.title} className="rounded-2xl border border-slate-200 p-5">
@@ -301,29 +304,41 @@ export default function TraversePage() {
           </ul>
         </section>
 
-        {/* Downloads */}
+        {/* Get it */}
         <section id="download" aria-labelledby="download-h" className="scroll-mt-28 mt-20 mb-6">
           <SectionHead
             id="download-h"
-            eyebrow="Download"
-            title={comingSoon ? `Traverse & Level ${TRAVERSE_VERSION}: coming soon` : `Get Traverse & Level ${TRAVERSE_VERSION}`}
-            text={comingSoon ? "The user manual is ready now. The Windows setup will need a free account." : "Free. Sign in or create a free account, then the download starts."}
+            eyebrow="Get it"
+            title={`Use Traverse & Level ${TRAVERSE_VERSION}`}
+            text="Free. Open it in the browser with your Excel to KML account, or download the Windows program."
             Icon={Download}
           />
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="rounded-2xl border border-blue-200 bg-blue-50/40 p-5 flex flex-col">
-              <Monitor className="w-6 h-6 text-[#0071e3]" aria-hidden />
+              <Globe className="w-6 h-6 text-[#0071e3]" aria-hidden />
+              <h3 className="mt-2 font-bold text-slate-900">Web app</h3>
+              <p className="text-[13.5px] text-slate-500 flex-1">
+                Chrome, Edge, Safari or Firefox, on a computer or a phone. Jobs are saved to your account, shared with your team, and the app keeps
+                working offline after your first login.
+              </p>
+              <a href={TRAVERSE_APP} className="mt-4 inline-flex justify-center items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-sm font-semibold">
+                <AppWindow className="w-4 h-4" aria-hidden /> Open the web app
+              </a>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 flex flex-col">
+              <Monitor className="w-6 h-6 text-slate-500" aria-hidden />
               <h3 className="mt-2 font-bold text-slate-900">{TRAVERSE_FILES.setup.label}</h3>
               <p className="text-[13.5px] text-slate-500 flex-1">
-                {comingSoon ? "Coming soon for Windows." : TRAVERSE_FILES.setup.detail}. After installing, open the desktop shortcut and create your user.
+                {comingSoon ? "Coming soon for Windows." : `${TRAVERSE_FILES.setup.detail}.`} No installation: run it and create a user. Works offline;
+                its jobs stay on that PC.
               </p>
-              <TraverseDownload className="mt-4 inline-flex justify-center items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-sm font-semibold cursor-pointer" label="Download setup" />
+              <TraverseDownload className="mt-4 inline-flex justify-center items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50 cursor-pointer" label="Download for Windows" />
             </div>
             <div className="rounded-2xl border border-slate-200 bg-white p-5 flex flex-col">
               <FileText className="w-6 h-6 text-slate-500" aria-hidden />
               <h3 className="mt-2 font-bold text-slate-900">{TRAVERSE_FILES.manualPdf.label}</h3>
               <p className="text-[13.5px] text-slate-500 flex-1">
-                Every screen, step by step. {TRAVERSE_FILES.manualPdf.detail}; also as {TRAVERSE_FILES.manual.detail.split(",")[0]}.
+                Every step with a screenshot. {TRAVERSE_FILES.manualPdf.detail}; also as {TRAVERSE_FILES.manual.detail.split(",")[0]}.
               </p>
               <div className="mt-4 grid grid-cols-2 gap-2">
                 <a href={TRAVERSE_FILES.manualPdf.href} target="_blank" rel="noopener" className="inline-flex justify-center items-center gap-1.5 px-3 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50">
@@ -334,6 +349,27 @@ export default function TraversePage() {
                 </a>
               </div>
             </div>
+          </div>
+
+          <div className="mt-6 rounded-2xl border border-slate-200 bg-[#fafbfc] p-5">
+            <h3 className="flex items-center gap-2 font-bold text-slate-900">
+              <FileSpreadsheet className="w-5 h-5 text-[#0071e3]" aria-hidden /> Sample files
+            </h3>
+            <p className="mt-1 text-[13.5px] text-slate-500">
+              Practise before your own job. The manual&apos;s{" "}
+              <a href={`${TRAVERSE_FILES.manualPdf.href}#page=28`} target="_blank" rel="noopener" className="text-[#0071e3] hover:underline">Sample files</a>{" "}
+              page shows how to use them.
+            </p>
+            <ul className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
+              {TRAVERSE_SAMPLES.map((f) => (
+                <li key={f.href} className="text-[13.5px] leading-relaxed min-w-0">
+                  <a href={f.href} download={f.name} className="font-mono text-[12.5px] text-[#0071e3] hover:underline break-all">
+                    {f.name}
+                  </a>
+                  <span className="text-slate-500"> · {f.text}</span>
+                </li>
+              ))}
+            </ul>
           </div>
           <p className="mt-5 text-[13px] text-slate-500">
             Need a quick check in the browser? Try the free{" "}

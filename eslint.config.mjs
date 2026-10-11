@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // The Traverse & Level web app: its own source (tested with node --test) and its built bundle
+    "traverse-app/**",
+    "public/traverse/app/**",
   ]),
 ]);
 
