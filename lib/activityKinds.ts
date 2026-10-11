@@ -12,7 +12,17 @@ export const ACTION_LABEL: Record<string, string> = {
   settings_changed: "Site settings changed",
   traverse: "Traverse adjusted",
   levelling: "Level run closed",
+  // Traverse & Level app
+  tl_open: "Traverse & Level opened",
+  tl_update: "Traverse & Level job updated",
+  tl_delete: "Traverse & Level job deleted",
+  tl_share: "Job shared",
+  tl_unshare: "Sharing stopped",
+  tl_simulation: "Simulator run",
 };
+
+/** Everything the Traverse & Level app records (its saves are "traverse" and "levelling") */
+export const TRAVERSE_LEVEL_ACTIONS = ["traverse", "levelling", "tl_open", "tl_update", "tl_delete", "tl_share", "tl_unshare", "tl_simulation"];
 
 /** Survey calculations from Traverse adjust in the app */
 export const SURVEY_ACTIONS = ["traverse", "levelling"];
@@ -32,6 +42,14 @@ export function adminActionTag(action: string): string {
       return "bg-amber-500/10 text-amber-300 border-amber-500/25";
     case "levelling":
       return "bg-violet-500/10 text-violet-300 border-violet-500/25";
+    case "tl_delete":
+      return "bg-rose-500/10 text-rose-300 border-rose-500/25";
+    case "tl_open":
+    case "tl_update":
+    case "tl_share":
+    case "tl_unshare":
+    case "tl_simulation":
+      return "bg-amber-500/10 text-amber-200 border-amber-500/20";
     default:
       return "bg-blue-500/10 text-blue-400 border-blue-500/20";
   }

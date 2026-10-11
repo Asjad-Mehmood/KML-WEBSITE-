@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import PageShell from "../../components/PageShell";
 import TraverseDownload, { TraverseReleaseInfo } from "../../components/TraverseDownload";
+import TrackedLink from "../../components/TrackedLink";
 import {
   TRAVERSE_APP,
   TRAVERSE_FEATURES,
@@ -138,9 +139,9 @@ export default function TraversePage() {
                 <Globe className="w-4 h-4" aria-hidden /> Open the web app
               </a>
               <TraverseDownload className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50 cursor-pointer" />
-              <a href={TRAVERSE_FILES.manualPdf.href} target="_blank" rel="noopener" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50">
+              <TrackedLink href={TRAVERSE_FILES.manualPdf.href} assetType="traverse_manual" fileName={TRAVERSE_FILES.manualPdf.name} version={`v${TRAVERSE_VERSION}`} target="_blank" rel="noopener" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50">
                 <FileText className="w-4 h-4" aria-hidden /> User manual (PDF)
-              </a>
+              </TrackedLink>
             </div>
             <p className="mt-3 text-[12.5px] text-slate-500">
               Free with your Excel to KML account · Works offline after your first login ·{" "}
@@ -232,14 +233,17 @@ export default function TraversePage() {
               text="Account, traverse, levelling, simulator and sharing. Tap a screen to read its page in the user manual."
               Icon={LayoutGrid}
             />
-            <a
+            <TrackedLink
               href={TRAVERSE_FILES.manualPdf.href}
+              assetType="traverse_manual"
+              fileName={TRAVERSE_FILES.manualPdf.name}
+              version={`v${TRAVERSE_VERSION}`}
               target="_blank"
               rel="noopener"
               className="shrink-0 self-start md:self-auto inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-sm font-semibold"
             >
               <BookOpen className="w-4 h-4" aria-hidden /> Read the manual
-            </a>
+            </TrackedLink>
           </div>
           {TRAVERSE_SCREENS.map((g) => (
             <div key={g.group} className="mt-8">
@@ -344,12 +348,12 @@ export default function TraversePage() {
                 Every step with a screenshot. {TRAVERSE_FILES.manualPdf.detail}; also as {TRAVERSE_FILES.manual.detail.split(",")[0]}.
               </p>
               <div className="mt-4 grid grid-cols-2 gap-2">
-                <a href={TRAVERSE_FILES.manualPdf.href} target="_blank" rel="noopener" className="inline-flex justify-center items-center gap-1.5 px-3 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50">
+                <TrackedLink href={TRAVERSE_FILES.manualPdf.href} assetType="traverse_manual" fileName={TRAVERSE_FILES.manualPdf.name} version={`v${TRAVERSE_VERSION}`} target="_blank" rel="noopener" className="inline-flex justify-center items-center gap-1.5 px-3 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50">
                   <FileText className="w-4 h-4" aria-hidden /> PDF
-                </a>
-                <a href={TRAVERSE_FILES.manual.href} download={TRAVERSE_FILES.manual.name} className="inline-flex justify-center items-center gap-1.5 px-3 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50">
+                </TrackedLink>
+                <TrackedLink href={TRAVERSE_FILES.manual.href} download={TRAVERSE_FILES.manual.name} assetType="traverse_manual" fileName={TRAVERSE_FILES.manual.name} version={`v${TRAVERSE_VERSION}`} className="inline-flex justify-center items-center gap-1.5 px-3 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50">
                   <Download className="w-4 h-4" aria-hidden /> PowerPoint
-                </a>
+                </TrackedLink>
               </div>
             </div>
           </div>
@@ -366,9 +370,9 @@ export default function TraversePage() {
             <ul className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
               {TRAVERSE_SAMPLES.map((f) => (
                 <li key={f.href} className="text-[13.5px] leading-relaxed min-w-0">
-                  <a href={f.href} download={f.name} className="font-mono text-[12.5px] text-[#0071e3] hover:underline break-all">
+                  <TrackedLink href={f.href} download={f.name} assetType="traverse_sample" fileName={f.name} version={`v${TRAVERSE_VERSION}`} className="font-mono text-[12.5px] text-[#0071e3] hover:underline break-all">
                     {f.name}
-                  </a>
+                  </TrackedLink>
                   <span className="text-slate-500"> · {f.text}</span>
                 </li>
               ))}

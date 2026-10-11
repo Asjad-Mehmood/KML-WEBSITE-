@@ -38,7 +38,7 @@ import {
 } from "lucide-react";
 import SurveyorDetailModal from "@/components/admin/SurveyorDetailModal";
 import FileViewer, { type ViewerFile } from "@/components/FileViewer";
-import { actionLabel, adminActionTag } from "@/lib/activityKinds";
+import { TRAVERSE_LEVEL_ACTIONS, actionLabel, adminActionTag } from "@/lib/activityKinds";
 
 interface UserItem {
   id: string;
@@ -179,6 +179,8 @@ const ASSET_NAME: Record<string, string> = {
   web_app: "Web app",
   roadpro: "RoadPro (AutoCAD)",
   traverse: "Traverse & Level (Windows)",
+  traverse_manual: "Traverse & Level manual",
+  traverse_sample: "Traverse & Level sample file",
 };
 
 export default function AdminClient() {
@@ -587,7 +589,10 @@ export default function AdminClient() {
     downloadFilter === "all" ? downloads : downloads.filter((d) => d.assetType === downloadFilter);
 
   const filteredActivities = allActivities.filter((act) => {
-    const matchesAction = activityFilter === "all" || act.action === activityFilter;
+    const matchesAction =
+      activityFilter === "all" ||
+      act.action === activityFilter ||
+      (activityFilter === "traverse_level" && TRAVERSE_LEVEL_ACTIONS.includes(act.action));
     if (!matchesAction) return false;
     if (!activitySearch.trim()) return true;
     const q = activitySearch.toLowerCase();
@@ -1271,6 +1276,7 @@ export default function AdminClient() {
                   { id: "photos_attached", label: "Photos Attached" },
                   { id: "traverse", label: "Traverses" },
                   { id: "levelling", label: "Level Runs" },
+                  { id: "traverse_level", label: "Traverse & Level app" },
                 ].map((item) => (
                   <button
                     key={item.id}
