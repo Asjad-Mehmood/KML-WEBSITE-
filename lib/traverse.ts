@@ -22,7 +22,7 @@ export const TRAVERSE_FILES = {
     href: `${TRAVERSE_RELEASES}/latest/download/TraverseLevel-Setup.exe` as string | null,
     name: "TraverseLevel-Setup.exe",
     label: "Windows program",
-    detail: "Installer for Windows 10 and 11, no administrator rights needed; updates itself",
+    detail: "Installer for Windows 10 and 11. Adds Start menu and desktop shortcuts, needs no administrator rights and updates itself",
   },
   manualPdf: { href: "/traverse/Traverse-Level-User-Manual.pdf", name: "Traverse-Level-User-Manual.pdf", label: "User manual", detail: "PDF, 30 pages, 6.6 MB" },
   manual: { href: "/traverse/Traverse-Level-User-Manual.pptx", name: "Traverse-Level-User-Manual.pptx", label: "User manual", detail: "PowerPoint, 51 slides, 7.1 MB" },
