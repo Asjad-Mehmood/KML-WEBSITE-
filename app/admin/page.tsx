@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
-import { sessionForToken } from "@/lib/serverSession";
 import AdminClient from "./AdminClient";
 
 // Checked on every request
@@ -11,8 +10,17 @@ export const dynamic = "force-dynamic";
 async function isAdmin(): Promise<boolean> {
   const jar = await cookies();
   const token = jar.get("surveyor_auth_token")?.value || jar.get("surveyor_session")?.value;
-  const session = await sessionForToken(token);
-  return Boolean(session && db.isAdmin(session.user));
+  if (!token) return false;
+  // Not sessionForToken, which reads a database error as "signed out": here that would
+  // turn a failing lookup into this page's "not found" even for a real admin. A visitor
+  // with a session cookie sees the error page instead, and the cause goes to the logs.
+  try {
+    const session = await db.validateSession(token);
+    return Boolean(session && db.isAdmin(session.user));
+  } catch (err) {
+    console.error("Admin page: session check failed:", err);
+    throw new Error("The admin page couldn't check your sign-in. Please try again.");
+  }
 }
 
 // Nothing in the tab title or page reveals an admin area to anyone else
