@@ -2,6 +2,7 @@ import crypto from "crypto";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { jobBytes } from "@/lib/userJobs";
+import { isAdminUser } from "@/lib/adminRole";
 
 /* ==========================================================================
    TYPE INTERFACES  (kept identical so callers don't break)
@@ -755,12 +756,7 @@ export const db = {
   },
 
   isAdmin(user: { role?: string; email?: string } | null | undefined): boolean {
-    if (!user) return false;
-    return (
-      user.role === "ADMIN" ||
-      user.role === "Super Admin" ||
-      user.email?.toLowerCase() === "admin@exceltokml.com"
-    );
+    return isAdminUser(user);
   },
 
   async getAllUsers(query?: string) {
