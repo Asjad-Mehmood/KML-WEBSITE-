@@ -31,6 +31,7 @@ import {
   Briefcase,
 } from "lucide-react";
 import FileViewer, { type ViewerFile } from "@/components/FileViewer";
+import { TraverseUserJobs } from "@/components/admin/AdminTraverse";
 import { actionLabel, adminActionTag } from "@/lib/activityKinds";
 
 export interface UserItem {
@@ -134,6 +135,8 @@ interface UserDetailResponse {
   downloads: UserDownloadItem[];
   files?: UserFileItem[];
   jobs?: UserJobItem[];
+  /** Traverse & Level jobs saved by this user */
+  traverseJobs?: number;
   points?: { total: number; conversions: UserPointItem[] };
 }
 
@@ -169,7 +172,7 @@ export default function SurveyorDetailModal({
 }: SurveyorDetailModalProps) {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<UserDetailResponse | null>(null);
-  const [activeTab, setActiveTab] = useState<"overview" | "files" | "points" | "jobs" | "activities" | "downloads" | "settings">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "files" | "points" | "jobs" | "traverse" | "activities" | "downloads" | "settings">("overview");
 
   // Files filter & search
   const [fileFilter, setFileFilter] = useState<"all" | "import" | "export">("all");
@@ -447,6 +450,7 @@ export default function SurveyorDetailModal({
             { id: "files", label: "Files", icon: FolderArchive, count: files.length },
             { id: "points", label: "Points", icon: MapPinned, count: pointsTotal },
             { id: "jobs", label: "Jobs", icon: Briefcase, count: jobs.length },
+            { id: "traverse", label: "Traverse & Level", icon: Compass, count: data?.traverseJobs },
             { id: "activities", label: "Activity", icon: HardDrive, count: activities.length },
             { id: "downloads", label: "Downloads", icon: Download, count: downloads.length },
             { id: "settings", label: "Profile & role", icon: User },
@@ -1092,6 +1096,26 @@ export default function SurveyorDetailModal({
                       </div>
                     </div>
                   )}
+                </div>
+              )}
+
+              {activeTab === "traverse" && userId && (
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-base font-bold text-white">Traverse &amp; Level jobs</h3>
+                    <p className="text-xs text-slate-400">
+                      Traverses and level runs saved in the Traverse &amp; Level app. View shows the points and the adjusted results.
+                    </p>
+                  </div>
+                  <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg">
+                    <TraverseUserJobs
+                      adminFetch={adminFetch}
+                      userId={userId}
+                      who={data?.user.email || "this surveyor"}
+                      onToast={onToast}
+                      onChanged={() => fetchUserDetails(userId)}
+                    />
+                  </div>
                 </div>
               )}
 
