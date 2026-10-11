@@ -27,6 +27,7 @@ import {
 import PageShell from "../../components/PageShell";
 import TraverseDownload, { TraverseReleaseInfo } from "../../components/TraverseDownload";
 import TrackedLink from "../../components/TrackedLink";
+import HeroSlides, { type HeroSlide } from "../../components/HeroSlides";
 import {
   TRAVERSE_APP,
   TRAVERSE_FEATURES,
@@ -86,6 +87,18 @@ const structuredData = {
     },
   ],
 };
+
+// The hero: the app's screens, one after another
+const HERO_SLIDES: HeroSlide[] = [
+  { src: "/traverse/screens/v2-dashboard.webp", caption: "Your dashboard", alt: "Dashboard: saved traverses and level runs with their status, a job shared by a colleague and the week's activity" },
+  { src: "/traverse/screens/v2-traverse.webp", caption: "Coordinate traverse", alt: "Traverse screen: known points, site coordinates and an Accepted result with precision 1 : 62,105 after a Bowditch adjustment" },
+  { src: "/traverse/screens/v2-traverse-plan.webp", caption: "Plan of the adjusted traverse", alt: "Site coordinates, the adjustment methods and a plan of the adjusted and measured traverse" },
+  { src: "/traverse/screens/v2-level-result.webp", caption: "Levelling, checked and adjusted", alt: "Level run accepted: misclosure against the allowable, reduced levels, adjusted RLs and the arithmetic checks" },
+  { src: "/traverse/screens/v2-simulator.webp", caption: "Traverse simulator", alt: "Traverse simulator: a total station observing a link traverse on a dark survey map" },
+  { src: "/traverse/screens/v2-reports.webp", caption: "Signed PDF reports", alt: "Traverse adjustment report and levelling report, with closure checks and adjusted coordinates" },
+  { src: "/traverse/screens/v2-dark.webp", caption: "Dark mode", alt: "The traverse screen in dark mode" },
+  { src: "/traverse/screens/v2-phone.webp", caption: "On your phone", alt: "Three phone screens: the traverse form, the result and the dashboard" },
+];
 
 const FEATURE_ICONS = [MapPinned, Sigma, Mountain, FileText, LayoutDashboard, Share2, Telescope, Smartphone];
 
@@ -148,17 +161,7 @@ export default function TraversePage() {
               <a href="#video" className="text-[#0071e3] hover:underline">Watch the intro</a>
             </p>
           </div>
-          <figure className="rounded-2xl border border-slate-200 bg-slate-900 p-1.5 shadow-[0_16px_40px_rgba(15,23,42,0.18)]">
-            <Image
-              src="/traverse/screens/v2-traverse.webp"
-              alt="Traverse screen: known points CP-01 to CP-03, site coordinates and an Accepted result with precision 1 : 62,105 after a Bowditch adjustment"
-              width={1440}
-              height={900}
-              priority
-              sizes="(min-width: 1024px) 600px, 100vw"
-              className="w-full h-auto rounded-xl"
-            />
-          </figure>
+          <HeroSlides slides={HERO_SLIDES} />
         </header>
 
         {/* Video */}
