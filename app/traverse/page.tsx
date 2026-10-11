@@ -329,8 +329,8 @@ export default function TraversePage() {
               <Monitor className="w-6 h-6 text-slate-500" aria-hidden />
               <h3 className="mt-2 font-bold text-slate-900">{TRAVERSE_FILES.setup.label}</h3>
               <p className="text-[13.5px] text-slate-500 flex-1">
-                {comingSoon ? "Coming soon for Windows." : `${TRAVERSE_FILES.setup.detail}.`} No installation: run it and create a user. Works offline;
-                its jobs stay on that PC.
+                {comingSoon ? "Coming soon for Windows." : `${TRAVERSE_FILES.setup.detail}.`} No installation: run it and log in with your Excel to KML
+                account. Same jobs as the web app.
               </p>
               <TraverseDownload className="mt-4 inline-flex justify-center items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50 cursor-pointer" label="Download for Windows" />
             </div>

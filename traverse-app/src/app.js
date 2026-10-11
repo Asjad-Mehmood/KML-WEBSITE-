@@ -303,6 +303,6 @@ async function start() {
   if (u) setUser(u);
   if (/access_token|type=recovery/.test(location.hash)) setTimeout(() => { if (!recovery) location.hash = user ? '#/dashboard' : '#/login'; }, 1500);
   route();
-  if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+  if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js', CFG.swScope ? { scope: CFG.swScope } : undefined).catch(() => {});
 }
 start();

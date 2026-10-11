@@ -4,4 +4,7 @@
 window.APP_CONFIG = {
   backend: /(^|\.)exceltokml\.com$|\.vercel\.app$|^localhost$|^127\.0\.0\.1$/.test(location.hostname) && location.port !== '53817' ? 'site' : 'demo',
   apiBase: '',
+  // The app's address is /traverse/app (no trailing slash), one level above sw.js, so the
+  // worker is registered for that scope; the website allows it with Service-Worker-Allowed.
+  swScope: location.pathname.startsWith('/traverse/app') ? '/traverse/app' : '',
 };

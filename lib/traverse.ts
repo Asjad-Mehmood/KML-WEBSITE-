@@ -1,5 +1,6 @@
 // Professional Traverse & Level Adjustment Software by SurveyX Digital. Version 2.0 is a web
-// app at /traverse/app (accounts and jobs on this website) plus a portable Windows program.
+// app at /traverse/app (accounts and jobs on this website) plus a portable Windows program that
+// opens the same web app in its own window (built with Neutralino; see traverse-app/desktop/).
 // Content from its user manual (version 2.0, downloadable from /traverse).
 
 export const TRAVERSE_NAME = "Professional Traverse & Level Adjustment Software";
@@ -14,10 +15,10 @@ export const TRAVERSE_FILES = {
   // The Windows program. While href is null the page says "coming soon"; put
   // the file in public/traverse/ and set href to turn the download on.
   setup: {
-    href: "/traverse/Traverse-Level-Adjustment-2.0.exe" as string | null,
-    name: "Traverse-Level-Adjustment-2.0.exe",
+    href: "/traverse/Traverse-Level-Adjustment-2.0.1.exe" as string | null,
+    name: "Traverse-Level-Adjustment-2.0.1.exe",
     label: "Windows program",
-    detail: "Portable program for Windows 10 and 11 (64-bit), version 2.0, 3.8 MB",
+    detail: "Portable program for Windows 10 and 11 (64-bit), version 2.0.1, 2.7 MB",
   },
   manualPdf: { href: "/traverse/Traverse-Level-User-Manual.pdf", name: "Traverse-Level-User-Manual.pdf", label: "User manual", detail: "PDF, 30 pages, 6.6 MB" },
   manual: { href: "/traverse/Traverse-Level-User-Manual.pptx", name: "Traverse-Level-User-Manual.pptx", label: "User manual", detail: "PowerPoint, 51 slides, 7.1 MB" },
@@ -106,6 +107,6 @@ export const TRAVERSE_NOTES = [
   "Never lower the required precision just to make a traverse pass. Check the closing point, then each point against the field book.",
   "The plan sketch and the plots are guides, not certified drawings.",
   "Jobs saved in the web app go to your exceltokml.com account. Jobs saved offline upload by themselves when you are back online.",
-  "The Windows program keeps its own accounts and jobs on that PC; they are not shared with the web app.",
+  "The Windows program is the web app in its own window: log in with the same account and you see the same jobs. Open it once with internet; after that it also opens offline.",
   "Logging out of the app also logs you out of exceltokml.com. Change your password from your account page on this website.",
 ];

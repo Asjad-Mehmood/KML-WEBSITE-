@@ -1,5 +1,5 @@
 // Offline support: keeps the app files on the device so it opens without internet after the first visit.
-const CACHE = 'tl-app-mv3mdogq';
+const CACHE = 'tl-app-mv3rtdrx';
 const CORE = ['./', './index.html', './styles.css', './app.js', './config.js', './vendor/pdf.js', './manifest.webmanifest', './icons/icon.svg', './icons/icon-192.png', './icons/icon-512.png',
   './fonts/libre-caslon-text-latin-400-normal.woff2', './fonts/libre-caslon-text-latin-700-normal.woff2', './fonts/libre-caslon-text-latin-400-italic.woff2', './fonts/ibm-plex-sans-latin-400-normal.woff2', './fonts/ibm-plex-sans-latin-500-normal.woff2', './fonts/ibm-plex-sans-latin-600-normal.woff2', './fonts/ibm-plex-sans-latin-700-normal.woff2', './fonts/ibm-plex-mono-latin-400-normal.woff2', './fonts/ibm-plex-mono-latin-500-normal.woff2'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting())); });
