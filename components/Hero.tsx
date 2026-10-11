@@ -45,8 +45,8 @@ export default function Hero({ versionTag, fileSizeText, onDownloadClick }: Hero
              ══════════════════════════════════════════════════════════════════ */}
           <div className="lg:col-span-5 flex flex-col items-start text-left">
 
-            {/* Version badge, then one small chip per product we spotlight (lib/products.ts) on one line */}
-            <div className="flex flex-col items-start gap-2.5 mb-6">
+            {/* Version badge, then one chip per product we spotlight (lib/products.ts), each on its own line */}
+            <div className="flex flex-col items-start gap-2 mb-6">
             <a
               href="#download"
               className="group inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-50/90 border border-slate-200/90 shadow-xs hover:border-slate-300 hover:bg-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
@@ -64,29 +64,28 @@ export default function Hero({ versionTag, fileSizeText, onDownloadClick }: Hero
                 <ArrowRight className="w-3 h-3 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
               </span>
             </a>
-            {PRODUCTS.some((p) => p.inHero) && (
-              <div className="flex flex-wrap items-center gap-1.5">
-                <span className="hidden sm:inline text-[11px] font-bold uppercase tracking-wider text-slate-400 mr-0.5">Also from us</span>
-                {PRODUCTS.filter((p) => p.inHero).map((p) => (
-                  <Link
-                    key={p.id}
-                    href={p.href}
-                    title={`${p.name} ${p.version} · ${p.platform}`}
-                    className="group inline-flex items-center gap-1.5 pl-1 pr-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 hover:border-amber-300 hover:bg-amber-100/70 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
-                  >
-                    {badgeLabel(p) && (
-                      <span className="px-1.5 py-px rounded-full bg-amber-500 text-white text-[9.5px] font-bold uppercase tracking-wider whitespace-nowrap">
-                        {p.comingSoon ? "Soon" : badgeLabel(p)}
-                      </span>
-                    )}
-                    <span className="text-[11.5px] font-semibold text-slate-800 whitespace-nowrap">
-                      {p.name} <span className="hidden min-[400px]:inline text-amber-700 font-bold">{p.version}</span>
-                    </span>
-                    <ArrowRight className="hidden min-[400px]:block w-3 h-3 text-slate-400 group-hover:translate-x-0.5 transition-transform" aria-hidden />
-                  </Link>
-                ))}
-              </div>
-            )}
+            {PRODUCTS.filter((p) => p.inHero).map((p) => (
+              <Link
+                key={p.id}
+                href={p.href}
+                title={`${p.name} ${p.version} · ${p.platform}`}
+                className="group inline-flex items-center gap-2 pl-1.5 pr-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 hover:border-amber-300 hover:bg-amber-100/70 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+              >
+                {badgeLabel(p) && (
+                  <span className="px-1.5 py-px rounded-full bg-amber-500 text-white text-[9.5px] font-bold uppercase tracking-wider whitespace-nowrap">
+                    {p.comingSoon ? "Soon" : badgeLabel(p)}
+                  </span>
+                )}
+                <span className="text-xs font-semibold text-slate-800 whitespace-nowrap">
+                  {p.name} <span className="text-amber-700 font-bold">{p.version}</span>
+                </span>
+                <span className="hidden min-[400px]:inline text-slate-300">·</span>
+                <span className="hidden min-[400px]:flex items-center gap-1 text-xs font-medium text-slate-500 whitespace-nowrap">
+                  {p.platform}
+                  <ArrowRight className="w-3 h-3 text-slate-400 group-hover:translate-x-0.5 transition-transform" aria-hidden />
+                </span>
+              </Link>
+            ))}
             </div>
 
             {/* Headline: kept short (under 70 characters) for search engines */}
