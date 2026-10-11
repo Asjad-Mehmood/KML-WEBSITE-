@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { usePublicSettings } from "@/lib/publicSettings";
+import { isAdminUser } from "@/lib/adminRole";
 
 export interface User {
   id: string;
@@ -129,7 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }, 150);
     }
 
-    return { ok: true, isAdmin: /admin/i.test(signedIn?.role ?? "") };
+    return { ok: true, isAdmin: isAdminUser(signedIn) };
   };
 
   const verifyOtp = async (code: string, trust: boolean): Promise<AuthResult> => {
