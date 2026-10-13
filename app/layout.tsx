@@ -115,6 +115,8 @@ export default function RootLayout({
     strategy="beforeInteractive"
   />
 
+        <meta name="google-adsense-account" content="ca-pub-5279736504936799" />
+
         {/* Ties the site to the official Facebook Page (needs property=, which Metadata can't set) */}
         <meta property="fb:pages" content={FACEBOOK_PAGE_ID} />
       </head>
