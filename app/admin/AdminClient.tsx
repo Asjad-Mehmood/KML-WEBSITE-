@@ -181,6 +181,7 @@ const ASSET_NAME: Record<string, string> = {
   traverse: "Traverse & Level (Windows)",
   traverse_manual: "Traverse & Level manual",
   traverse_sample: "Traverse & Level sample file",
+  co2_dashboard: "CO2 Project Dashboard (Windows)",
 };
 
 export default function AdminClient() {
@@ -857,6 +858,21 @@ export default function AdminClient() {
 
                   <div>
                     <div className="flex justify-between text-xs font-semibold mb-1.5">
+                      <span className="text-slate-300">CO2 Project Dashboard for Windows (.zip)</span>
+                      <span className="text-teal-300">{stats?.assetCounts?.co2_dashboard ?? 0} downloads</span>
+                    </div>
+                    <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+                      <div
+                        className="h-full bg-teal-400 rounded-full"
+                        style={{
+                          width: barWidth(stats?.assetCounts?.co2_dashboard ?? 0, downloads.length),
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between text-xs font-semibold mb-1.5">
                       <span className="text-slate-300">Sample Survey Benchmarks (.csv)</span>
                       <span className="text-indigo-400">{stats?.assetCounts?.sample_csv ?? 0} downloads</span>
                     </div>
@@ -1454,7 +1470,7 @@ export default function AdminClient() {
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="flex items-center gap-2">
-                {["all", "windows_installer", "roadpro", "traverse", "sample_csv", "test_kml"].map((type) => (
+                {["all", "windows_installer", "roadpro", "traverse", "co2_dashboard", "sample_csv", "test_kml"].map((type) => (
                   <button
                     key={type}
                     onClick={() => setDownloadFilter(type)}
