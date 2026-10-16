@@ -14,6 +14,10 @@ const nextConfig: NextConfig = {
       { source: "/traverse/traverse-intro.mp4", destination: "/traverse/traverse-promo.mp4", statusCode: 301 },
       // The 2.0 Windows program kept its accounts on the PC; the installer now comes from the
       // program's releases and signs in with the website
+      // The folder manager's first name and address, before it was made for any project
+      { source: "/co2-dashboard", destination: "/project-folder-manager", statusCode: 301 },
+      { source: "/co2-dashboard/CO2_Dashboard.zip", destination: "/project-folder-manager/Project_Folder_Manager.zip", statusCode: 301 },
+      { source: "/co2-dashboard/:path*", destination: "/project-folder-manager", statusCode: 301 },
       {
         source: "/traverse/Traverse-Level-Adjustment-2.0.exe",
         destination: "https://github.com/Asjad-Mehmood/Traiverse/releases/latest/download/TraverseLevel-Setup.exe",

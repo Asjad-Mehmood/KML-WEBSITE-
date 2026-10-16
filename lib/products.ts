@@ -4,7 +4,7 @@
 // give it a page at its href.
 import { ROADPRO_VERSION } from "@/lib/roadpro";
 import { TRAVERSE_FILES, TRAVERSE_SHORT, TRAVERSE_VERSION } from "@/lib/traverse";
-import { CO2_FILES, CO2_NAME, CO2_VERSION } from "@/lib/co2dashboard";
+import { PFM_FILES, PFM_NAME, PFM_VERSION } from "@/lib/folderManager";
 
 export interface Product {
   id: string;
@@ -80,19 +80,19 @@ export const PRODUCTS: Product[] = [
     inNav: true,
   },
   {
-    id: "co2-dashboard",
-    name: CO2_NAME,
+    id: "folder-manager",
+    name: PFM_NAME,
     platform: "Windows",
-    version: CO2_VERSION,
-    tagline: "Every folder of the CO2 project, one click away",
+    version: PFM_VERSION,
+    tagline: "Every project folder, one click away",
     description:
-      "One screen for the CO2 Sequestration Project's master folder: the eleven modules by discipline, a look inside any folder, instant search, copy, move and bulk rename, and the space left on every drive.",
-    href: "/co2-dashboard",
+      "One screen for your project's master folder: the modules by discipline, a look inside any folder, instant search, copy, move and bulk rename, and the space left on every drive.",
+    href: "/project-folder-manager",
     image: {
-      src: CO2_FILES.shots.main.src,
-      width: CO2_FILES.shots.main.width,
-      height: CO2_FILES.shots.main.height,
-      alt: "CO2 Project Dashboard: the eleven project modules from Admin to Archive, each with its discipline",
+      src: PFM_FILES.shots.main.src,
+      width: PFM_FILES.shots.main.width,
+      height: PFM_FILES.shots.main.height,
+      alt: "Project Folder Manager: the eleven project modules from Admin to Archive, each with its discipline",
     },
     highlights: ["Modules by discipline", "Instant search", "Copy, move, rename", "Drive space"],
     newUntil: "2027-01-31",
