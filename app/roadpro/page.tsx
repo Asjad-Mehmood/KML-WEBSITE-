@@ -43,6 +43,7 @@ import {
   ROADPRO_REPORT,
   ROADPRO_REQUIREMENTS,
   ROADPRO_STANDARDS_NOTE,
+  ROADPRO_UPGRADE_NOTE,
   ROADPRO_STEPS,
   ROADPRO_VERSION,
 } from "@/lib/roadpro";
@@ -71,7 +72,7 @@ const structuredData = {
       description: DESCRIPTION,
       applicationCategory: "DesignApplication",
       applicationSubCategory: "AutoCAD plugin",
-      operatingSystem: "Windows (AutoCAD, Civil 3D or Map 3D 2013 or newer)",
+      operatingSystem: "Windows (AutoCAD, Civil 3D or Map 3D 2014 or newer)",
       softwareVersion: ROADPRO_VERSION,
       datePublished: ROADPRO_RELEASED,
       downloadUrl: `${SITE_URL}${ROADPRO_FILES.plugin.href}`,
@@ -153,7 +154,7 @@ export default function RoadProPage() {
               </a>
             </div>
             <p className="mt-3 text-[12.5px] text-slate-500">
-              {ROADPRO_FILES.plugin.detail} · Full AutoCAD 2013 or newer (not LT) · Free account needed
+              {ROADPRO_FILES.plugin.detail} · Full AutoCAD 2014 or newer (not LT) · Free account needed
             </p>
           </div>
           <figure className="rounded-2xl border border-slate-200 bg-slate-900 p-1.5 shadow-[0_16px_40px_rgba(15,23,42,0.18)]">
@@ -185,8 +186,9 @@ export default function RoadProPage() {
           <p className="mt-4 text-[13.5px] text-slate-600 leading-relaxed">
             <strong className="text-slate-800">Standards:</strong> {ROADPRO_STANDARDS_NOTE}
           </p>
+          <p className="mt-2 text-[13.5px] text-slate-600 leading-relaxed">{ROADPRO_UPGRADE_NOTE}</p>
           <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-5">
-            {[17, 19].map((n) => {
+            {[28, 30].map((n) => {
               const g = ROADPRO_GUIDE_PAGES.find((x) => x.page === n)!;
               return (
                 <figure key={n}>
