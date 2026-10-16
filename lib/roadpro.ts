@@ -1,13 +1,13 @@
-// RoadPro: the AutoCAD road builder plugin. Content from the RoadPro v3.2
+// RoadPro: the AutoCAD road builder plugin. Content from the RoadPro v3.3
 // user guide and shortcut sheet (both downloadable from /roadpro).
 
-export const ROADPRO_VERSION = "3.2";
-export const ROADPRO_RELEASED = "2026-10-09";
+export const ROADPRO_VERSION = "3.3";
+export const ROADPRO_RELEASED = "2026-10-12";
 
 export const ROADPRO_FILES = {
-  plugin: { href: "/roadpro/RoadPro.zip", name: "RoadPro.zip", label: "RoadPro plugin", detail: "RoadPro.lsp and install notes in a zip, 55 KB" },
-  guidePdf: { href: "/roadpro/RoadPro_User_Guide.pdf", name: "RoadPro_User_Guide.pdf", label: "User guide", detail: "PDF, 22 pages, 405 KB" },
-  guide: { href: "/roadpro/RoadPro_User_Guide.pptx", name: "RoadPro_User_Guide.pptx", label: "User guide", detail: "PowerPoint, 22 slides, 221 KB" },
+  plugin: { href: "/roadpro/RoadPro.zip", name: "RoadPro.zip", label: "RoadPro plugin", detail: "RoadPro.lsp and install notes in a zip, 60 KB" },
+  guidePdf: { href: "/roadpro/RoadPro_User_Guide.pdf", name: "RoadPro_User_Guide.pdf", label: "User guide", detail: "PDF, 38 pages, 347 KB" },
+  guide: { href: "/roadpro/RoadPro_User_Guide.pptx", name: "RoadPro_User_Guide.pptx", label: "User guide", detail: "PowerPoint, 38 slides, 204 KB" },
   shortcuts: { href: "/roadpro/RoadPro_Shortcuts.xlsx", name: "RoadPro_Shortcuts.xlsx", label: "Shortcut keys", detail: "Excel sheet, 7 KB" },
   video: { href: "/roadpro/roadpro-demo.mp4", poster: "/roadpro/demo-cover.webp", duration: "PT2M58S" },
 };
@@ -15,7 +15,7 @@ export const ROADPRO_FILES = {
 export const ROADPRO_FEATURES: { title: string; text: string }[] = [
   { title: "Road and edges", text: "Width both sides of the centre line, CL linetype, surface hatch and chainage." },
   { title: "Turning radius", text: "Every bend filleted automatically, 10 m at the centre line by default." },
-  { title: "Edges and median", text: "Red and white barricades, traffic cones or kerb stone, a paved shoulder, and a median of barricades or cones. All counted for ordering." },
+  { title: "Edges and median", text: "Red and white barricades, traffic cones or kerb stone along the road, around junction corners or on any single line, a paved shoulder, and a median of barricades or cones. All counted for ordering." },
   { title: "Widening, tapers, junctions", text: "Add an extra lane (RDW), change the width (RDT) or join a new road with kerb returns, an auxiliary lane and an island (RDJ)." },
   { title: "Signs and markings", text: "Signs sized by speed limit, delineator posts on curves, centre and edge lines, lane arrows and paint quantities." },
   { title: "Radius and sections", text: "C1 curve data and S1 straight data labelled on the plan." },
@@ -31,7 +31,7 @@ export const ROADPRO_INSTALL: { title: string; text: string }[] = [
 ];
 
 export const ROADPRO_REQUIREMENTS = [
-  "Full AutoCAD, Civil 3D or Map 3D 2013 or newer (AutoCAD LT is not supported)",
+  "Full AutoCAD, Civil 3D or Map 3D 2014 or newer (AutoCAD LT is not supported)",
   "Type all sizes in metres. For millimetre drawings choose Millimeters in the dialog",
   "Save the DWG first: the Excel report is saved in the drawing's folder",
 ];
@@ -42,10 +42,11 @@ export const ROADPRO_COMMANDS: { short: string; full: string; text: string }[] =
   { short: "RDRAD", full: "ROADRADIUS", text: "Add radius, TC / CT and curve data (C1, C2 …) to the plan" },
   { short: "RDSEC", full: "ROADSECTIONS", text: "Add straight section labels (S1, S2 …) with length, area and bearing" },
   { short: "RDX", full: "ROADXSEC", text: "Cross sections: typical, at one chainage, or every interval" },
-  { short: "RDW", full: "ROADWIDEN", text: "Lane widening: an extra lane between two chainages that comes back, with straight or curve tapers. Each side can have its own chainages and radius" },
-  { short: "RDT", full: "ROADTAPER", text: "Road taper: wider (+) or narrower (−) between two chainages; the new width continues to the road end. Each side can have its own chainages and radius" },
-  { short: "RDJ", full: "ROADJUNCTION", text: "Junction / tie-in: join a new road with kerb-return radius, opened edge, corner surface, barricades, STOP / GIVE WAY and turning-area markings. Optional auxiliary lane (long approach taper, storage, short departure taper) and a kerbed or painted splitter island" },
+  { short: "RDW", full: "ROADWIDEN", text: "Lane widening: an extra lane between two chainages that comes back, with straight or curve tapers. Each side can have its own chainages and radius. Barricades, cones and kerb stone move to the new edge" },
+  { short: "RDT", full: "ROADTAPER", text: "Road taper: wider (+) or narrower (−) between two chainages; the new width continues to the road end. Each side can have its own chainages and radius. Barricades, cones and kerb stone move to the new edge" },
+  { short: "RDJ", full: "ROADJUNCTION", text: "Junction / tie-in: join a new road with kerb-return radius, opened edge, corner surface, corner treatment (barricades, traffic cones or kerb stone, or the same as the main road), STOP / GIVE WAY and turning-area markings. Optional auxiliary lane (long approach taper, storage, short departure taper) and a kerbed or painted splitter island" },
   { short: "RDM", full: "ROADMARK", text: "Road markings: yellow L4 edge lines, white L1 lane / centre line with its pattern set by speed, L2 / L2A at bends, gaps at junctions, broken L5 beside auxiliary lanes. Draw again to refresh, or remove" },
+  { short: "RDL", full: "ROADLINE", text: "New in 3.3. A single run of barricades, traffic cones or kerb stone along any line, polyline, arc, spline, circle or ellipse: on the line, left, right or both sides, between two distances along it, with a quantity label. No road needed" },
   { short: "—", full: "ROADPRORESET", text: "Restore all settings to the defaults (no shortcut on purpose, so you can't reset by accident)" },
 ];
 
@@ -77,6 +78,8 @@ export const ROADPRO_DEFAULTS: [string, string][] = [
   ["Crossfall", "2.5%"],
   ["Widening / taper", "3.65 m / 30 m"],
   ["Auxiliary lane", "3.65 m, tapers 60 m / 30 m, storage 30 m"],
+  ["Junction corners", "Same as the main road edge"],
+  ["Single line (RDL)", "0.50 m offset, 2.00 m units or cone spacing"],
   ["Pavement layers", "50 / 200 / 150 mm"],
 ];
 
@@ -85,6 +88,8 @@ export const ROADPRO_LAYERS: [string, string][] = [
   ["ROAD-EDGE", "Left and right edges"],
   ["ROAD-SURFACE", "Surface hatch"],
   ["ROAD-BARRIER-RED / WHITE / OUTLINE", "Barricade fills and black outline"],
+  ["ROAD-CONE / ROAD-CONE-BAND", "Traffic cones and their white band"],
+  ["ROAD-KERB", "Kerb stone units"],
   ["ROAD-CHAINAGE", "Ticks and labels"],
   ["ROAD-CURVE", "Radius, TC / CT, C1"],
   ["ROAD-SECTION", "Straights S1, S2"],
@@ -94,7 +99,7 @@ export const ROADPRO_LAYERS: [string, string][] = [
   ["ROAD-REPORT", "Tables and legend"],
   ["ROAD-XSEC*", "Cross section parts"],
   ["ROAD-WIDENING", "Widening and taper labels"],
-  ["ROAD-JUNCTION", "Junction labels, corner R"],
+  ["ROAD-JUNCTION", "Junction labels, corner R, RDL labels"],
 ];
 
 export const ROADPRO_REPORT = [
@@ -104,7 +109,7 @@ export const ROADPRO_REPORT = [
   "Setting-out: E / N of the centre line and both edges at every chainage",
   "Sign schedule: ID, sign, chainage, side, facing and post E / N",
   "Widening, taper and junction setting-out: new edge offset, kerb returns TC / IP / CT with E / N",
-  "Quantities: barricades, cones or kerb length, and the paved shoulder area",
+  "Quantities: barricades red / white, traffic cones (nos) and kerb stone (m) per side, and the paved shoulder area",
   "Road markings: edge and lane line lengths and paint area in m²",
 ];
 
@@ -119,17 +124,21 @@ export const ROADPRO_FIXES: { q: string; a: string }[] = [
   { q: "The widening runs outside the road", a: "Start must be at least the taper-in length, and End + taper out must stay within the road." },
   { q: "A chainage isn't accepted", a: "Type 100 or 0+100. Versions before 3.0 take plain metres only." },
   { q: "The island lanes are too narrow", a: "RoadPro warns when a lane beside the island is under 2.75 m. Make the island narrower or the branch road wider." },
+  { q: "RDL placed nothing", a: "From / To is outside the line length, or the spacing is longer than the line. Set To = 0 for the line end." },
   { q: "Where is the Excel file?", a: "Next to the DWG, named like ROAD-01_RoadPro_Report.csv. Press F2 to see the full path." },
 ];
 
-// What changed in this version, shown near the top of /roadpro (3.2 plus
-// the 3.1 changes, since 3.1 was not published here)
+// What changed in this version, shown near the top of /roadpro
 export const ROADPRO_WHATS_NEW: { title: string; text: string }[] = [
-  { title: "Signs and markings to standard", text: "Sign plate sizes and warning distances by speed limit, L1 / L2 / L2A centre lines, yellow L4 edge lines, stop and give-way lines, and delineator posts on curves." },
-  { title: "Auxiliary lane and island", text: "RDJ can add a turning lane with a long approach taper, storage and a short taper, plus a kerbed or painted splitter island." },
-  { title: "Cones, kerb and shoulder", text: "Edge with barricades, traffic cones or kerb stone, add a paved shoulder, and use barricades or cones as a median. Shown in plan and section." },
-  { title: "Match the existing radius", text: "Turning radius can match the existing road or be typed in, and the road-works sign set uses black / yellow chevrons." },
+  { title: "RDL: a single line", text: "A new command: one run of barricades, traffic cones or kerb stone along any line, polyline, arc, spline, circle or ellipse. Centred, left, right or both sides, from / to a distance, with a quantity label." },
+  { title: "Junction corner treatment", text: "RDJ lines the kerb returns with barricades, traffic cones or kerb stone, or the same as the main road. The count is printed and added to the road." },
+  { title: "Cones and kerb follow changes", text: "Lane widening (RDW) and road tapers (RDT) now move traffic cones and kerb stone to the new edge, not only barricades, and take removed units out of the count." },
+  { title: "Kerb units and cone band", text: "Kerb stone is drawn as separate units, cones get their white reflective band, and the report gives cones (nos) and kerb (m) for each side." },
 ];
+
+// Shown under "New in": moving up from the last version
+export const ROADPRO_UPGRADE_NOTE =
+  "Upgrading from 3.2? Load the new RoadPro.lsp with APPLOAD and replace the old file in the Startup Suite. Your saved settings are kept, and roads drawn with 3.2 work with every 3.3 command.";
 
 // Where the sign and marking values come from, shown under "New in"
 export const ROADPRO_STANDARDS_NOTE =
@@ -139,15 +148,15 @@ export const ROADPRO_STANDARDS_NOTE =
 // guide" on /roadpro (rendered from the PDF at 1280 × 720 into
 // ROADPRO_GUIDE_DIR/page-NN.webp; a new folder per version, so no cached
 // image of an older guide is shown)
-export const ROADPRO_GUIDE_PAGE_COUNT = 22;
-export const ROADPRO_GUIDE_DIR = "/roadpro/guide-v32";
+export const ROADPRO_GUIDE_PAGE_COUNT = 38;
+export const ROADPRO_GUIDE_DIR = "/roadpro/guide-v33";
 export const ROADPRO_GUIDE_PAGES: { page: number; title: string; text: string }[] = [
-  { page: 1, title: "RoadPro at a glance", text: "Type RDP to start: the plan view built by one command." },
-  { page: 2, title: "One command builds the road", text: "Edges, radius, barricades, widening, junctions, signs and markings." },
-  { page: 15, title: "Edge, shoulder and centre", text: "Barricades, traffic cones or kerb stone, a paved shoulder and the median." },
-  { page: 16, title: "Junctions and tie-ins", text: "Join a branch road with kerb returns and STOP / GIVE WAY." },
-  { page: 17, title: "Auxiliary lane and island", text: "New: a turning lane with tapers and storage, and a splitter island." },
-  { page: 18, title: "Road markings", text: "Centre, edge and lane lines, junction markings and paint quantities." },
-  { page: 19, title: "Standard values", text: "New: sign sizes, warning distances, line patterns and delineator spacing." },
-  { page: 22, title: "Quick reference card", text: "Every shortcut and default value on one page to print." },
+  { page: 1, title: "RoadPro user manual", text: "Every command and every setting, step by step from start to finish." },
+  { page: 3, title: "One centre line in, a complete road out", text: "Edges, cones or kerb, signs, markings, junction, chainage and the report." },
+  { page: 4, title: "What is new in 3.3", text: "The RDL single line, junction corners, and cones and kerb that follow widening." },
+  { page: 14, title: "Barricades, cones or kerb stone", text: "How to set the edge treatment along a road, at a junction or on one line." },
+  { page: 26, title: "Junctions and tie-ins", text: "Join a branch road with kerb returns, signs and STOP / GIVE WAY." },
+  { page: 28, title: "Junction corners", text: "New: barricades, cones or kerb stone around the kerb returns." },
+  { page: 30, title: "RDL: a single line", text: "New: a lane closure, work zone or kerb along any line, without building a road." },
+  { page: 37, title: "Quick reference card", text: "Every shortcut and default value on one page to print." },
 ];

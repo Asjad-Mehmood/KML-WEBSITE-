@@ -4,6 +4,7 @@
 // give it a page at its href.
 import { ROADPRO_VERSION } from "@/lib/roadpro";
 import { TRAVERSE_FILES, TRAVERSE_SHORT, TRAVERSE_VERSION } from "@/lib/traverse";
+import { CO2_FILES, CO2_NAME, CO2_VERSION } from "@/lib/co2dashboard";
 
 export interface Product {
   id: string;
@@ -41,7 +42,7 @@ export const PRODUCTS: Product[] = [
     version: ROADPRO_VERSION,
     tagline: "A complete road in AutoCAD from one command",
     description:
-      "Draw the centre line and RoadPro adds the edges, turning radius, barricades or cones, signs, road markings, chainage, cross section and an Excel report, and joins new roads with junctions and turning lanes. Free plugin for AutoCAD, Civil 3D and Map 3D.",
+      "Draw the centre line and RoadPro adds the edges, turning radius, barricades, cones or kerb stone, signs, road markings, chainage, cross section and an Excel report, and joins new roads with junctions and turning lanes. New in 3.3: a single line of barricades, cones or kerb along any line. Free plugin for AutoCAD, Civil 3D and Map 3D.",
     href: "/roadpro",
     demoHref: "/roadpro#demo",
     image: {
@@ -77,6 +78,26 @@ export const PRODUCTS: Product[] = [
     newUntil: "2027-01-31",
     inHero: true,
     inNav: true,
+  },
+  {
+    id: "co2-dashboard",
+    name: CO2_NAME,
+    platform: "Windows",
+    version: CO2_VERSION,
+    tagline: "Every folder of the CO2 project, one click away",
+    description:
+      "One screen for the CO2 Sequestration Project's master folder: the eleven modules by discipline, a look inside any folder, instant search, copy, move and bulk rename, and the space left on every drive.",
+    href: "/co2-dashboard",
+    image: {
+      src: CO2_FILES.shots.main.src,
+      width: CO2_FILES.shots.main.width,
+      height: CO2_FILES.shots.main.height,
+      alt: "CO2 Project Dashboard: the eleven project modules from Admin to Archive, each with its discipline",
+    },
+    highlights: ["Modules by discipline", "Instant search", "Copy, move, rename", "Drive space"],
+    newUntil: "2027-01-31",
+    inHero: true,
+    inNav: false,
   },
 ];
 
