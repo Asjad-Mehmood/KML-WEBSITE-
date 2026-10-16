@@ -18,46 +18,46 @@ import {
   SquareStack,
 } from "lucide-react";
 import PageShell from "../../components/PageShell";
-import Co2DashboardDownload from "../../components/Co2DashboardDownload";
+import FolderManagerDownload from "../../components/FolderManagerDownload";
 import {
-  CO2_FEATURES,
-  CO2_FILES,
-  CO2_FIXES,
-  CO2_INSTALL,
-  CO2_MODULES,
-  CO2_NAME,
-  CO2_RELEASED,
-  CO2_REQUIREMENTS,
-  CO2_VERSION,
-} from "@/lib/co2dashboard";
+  PFM_FEATURES,
+  PFM_FILES,
+  PFM_FIXES,
+  PFM_INSTALL,
+  PFM_MODULES,
+  PFM_NAME,
+  PFM_RELEASED,
+  PFM_REQUIREMENTS,
+  PFM_VERSION,
+} from "@/lib/folderManager";
 import { SITE_URL, jsonLd, openGraphFor } from "@/lib/site";
 
-const TITLE = "CO2 Project Dashboard for Windows";
+const TITLE = "Project Folder Manager for Windows";
 const DESCRIPTION =
-  "One screen for the CO2 Sequestration Project's master folder: every module from Admin to Archive by discipline, instant search, copy, move and bulk rename, and drive space. Free for Windows.";
+  "One screen for your project's master folder: every module from Admin to Archive by discipline, instant search, copy, move and bulk rename, and drive space. Free for Windows.";
 
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
-  alternates: { canonical: "/co2-dashboard" },
+  alternates: { canonical: "/project-folder-manager" },
   openGraph: {
-    ...openGraphFor("/co2-dashboard", `${TITLE} | Excel to KML`, DESCRIPTION),
-    images: [{ url: CO2_FILES.shots.main.src, width: CO2_FILES.shots.main.width, height: CO2_FILES.shots.main.height, alt: "CO2 Project Dashboard: the project's eleven modules by discipline" }],
+    ...openGraphFor("/project-folder-manager", `${TITLE} | Excel to KML`, DESCRIPTION),
+    images: [{ url: PFM_FILES.shots.main.src, width: PFM_FILES.shots.main.width, height: PFM_FILES.shots.main.height, alt: "Project Folder Manager: the project's eleven modules by discipline" }],
   },
 };
 
 const structuredData = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
-  name: CO2_NAME,
+  name: PFM_NAME,
   description: DESCRIPTION,
   applicationCategory: "BusinessApplication",
   operatingSystem: "Windows 10, Windows 11",
-  softwareVersion: CO2_VERSION,
-  datePublished: CO2_RELEASED,
-  downloadUrl: `${SITE_URL}${CO2_FILES.package.href}`,
-  url: `${SITE_URL}/co2-dashboard`,
-  image: `${SITE_URL}${CO2_FILES.shots.main.src}`,
+  softwareVersion: PFM_VERSION,
+  datePublished: PFM_RELEASED,
+  downloadUrl: `${SITE_URL}${PFM_FILES.package.href}`,
+  url: `${SITE_URL}/project-folder-manager`,
+  image: `${SITE_URL}${PFM_FILES.shots.main.src}`,
   offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
   author: { "@type": "Person", name: "Muhammad Abdullah" },
   publisher: { "@id": `${SITE_URL}/#organization` },
@@ -67,14 +67,14 @@ const FEATURE_ICONS = [FolderTree, Eye, Search, ClipboardCopy, PencilLine, HardD
 
 const SHOTS = [
   {
-    ...CO2_FILES.shots.main,
+    ...PFM_FILES.shots.main,
     title: "The project at a glance",
-    alt: "CO2 Project Dashboard: the eleven numbered modules from 00 Admin to 99 Archive, each with its discipline, sub-folder count, VIEW and OPEN, under a title bar with a clock and calendar",
+    alt: "Project Folder Manager: the eleven numbered modules from 00 Admin to 99 Archive, each with its discipline, sub-folder count, VIEW and OPEN, under a title bar with a clock and calendar",
   },
   {
-    ...CO2_FILES.shots.panel,
+    ...PFM_FILES.shots.panel,
     title: "A folder in the panel, and the drives",
-    alt: "CO2 Project Dashboard with the drives strip showing free space, and the 10_Survey folder open in the side panel with copy, cut, paste, rename and delete",
+    alt: "Project Folder Manager with the drives strip showing free space, and the 10_Survey folder open in the side panel with copy, cut, paste, rename and delete",
   },
 ];
 
@@ -92,7 +92,7 @@ function SectionHead({ id, eyebrow, title, text, Icon }: { id: string; eyebrow: 
   );
 }
 
-export default function Co2DashboardPage() {
+export default function FolderManagerPage() {
   return (
     <PageShell>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(structuredData) }} />
@@ -101,7 +101,7 @@ export default function Co2DashboardPage() {
           <ol className="flex flex-wrap items-center gap-1.5">
             <li><Link href="/" className="hover:text-[#0071e3]">Home</Link></li>
             <li aria-hidden>/</li>
-            <li aria-current="page" className="text-slate-700 font-medium">CO2 Project Dashboard</li>
+            <li aria-current="page" className="text-slate-700 font-medium">Project Folder Manager</li>
           </ol>
         </nav>
 
@@ -110,32 +110,32 @@ export default function Co2DashboardPage() {
           <div>
             <p className="inline-flex items-center gap-2 rounded-full bg-amber-50 border border-amber-200 px-3 py-1 text-[12px] font-bold text-amber-800">
               <span className="px-1.5 py-0.5 rounded-full bg-amber-500 text-white text-[10px] uppercase tracking-wider">New</span>
-              Windows · version {CO2_VERSION}
+              Windows · version {PFM_VERSION}
             </p>
             <h1 className="mt-4 text-[32px] sm:text-[44px] font-extrabold tracking-tight text-slate-900 leading-[1.08]">
-              CO2 Project Dashboard: every project folder <span className="text-[#0071e3]">one click away</span>
+              Project Folder Manager: every project folder <span className="text-[#0071e3]">one click away</span>
             </h1>
             <p className="mt-4 text-[16px] sm:text-[17px] text-slate-600 leading-relaxed">
-              One screen for the CO2 Sequestration Project&apos;s master folder. The eleven modules, from Admin and Survey to Design &amp; Drawings and the
+              One screen for your project&apos;s master folder. The eleven modules, from Admin and Survey to Design &amp; Drawings and the
               Archive, are listed by discipline. You can see inside any folder, search the whole project instantly, and copy, move or rename files without
               digging through Explorer.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
-              <Co2DashboardDownload />
+              <FolderManagerDownload />
               <a href="#screens" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50">
                 <SquareStack className="w-4 h-4" aria-hidden /> See the screens
               </a>
             </div>
             <p className="mt-3 text-[12.5px] text-slate-500">
-              {CO2_FILES.package.detail} · Windows 10 or 11 · Free account needed · Developed by Muhammad Abdullah
+              {PFM_FILES.package.detail} · Windows 10 or 11 · Free account needed · Developed by Muhammad Abdullah
             </p>
           </div>
           <figure className="rounded-2xl border border-slate-200 bg-slate-900 p-1.5 shadow-[0_16px_40px_rgba(15,23,42,0.18)]">
             <Image
-              src={CO2_FILES.shots.main.src}
+              src={PFM_FILES.shots.main.src}
               alt={SHOTS[0].alt}
-              width={CO2_FILES.shots.main.width}
-              height={CO2_FILES.shots.main.height}
+              width={PFM_FILES.shots.main.width}
+              height={PFM_FILES.shots.main.height}
               priority
               sizes="(min-width: 1024px) 620px, 100vw"
               className="w-full h-auto rounded-xl"
@@ -147,7 +147,7 @@ export default function Co2DashboardPage() {
         <section aria-labelledby="features-h" className="mt-20">
           <SectionHead id="features-h" eyebrow="What it does" title="The whole project folder on one screen" Icon={Package} />
           <ul className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {CO2_FEATURES.map((f, i) => {
+            {PFM_FEATURES.map((f, i) => {
               const Icon = FEATURE_ICONS[i] ?? CheckCircle2;
               return (
                 <li key={f.title} className="rounded-2xl border border-slate-200 bg-[#fafbfc] p-5">
@@ -164,7 +164,7 @@ export default function Co2DashboardPage() {
 
         {/* Screenshots */}
         <section id="screens" aria-labelledby="shots-h" className="scroll-mt-28 mt-20">
-          <SectionHead id="shots-h" eyebrow="Screenshots" title="How it looks" text="Shown with an example project on drive D:. Tap a picture to see it full size." Icon={SquareStack} />
+          <SectionHead id="shots-h" eyebrow="Screenshots" title="How it looks" text="Shown with an example project in D:\Project. Tap a picture to see it full size." Icon={SquareStack} />
           <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-5">
             {SHOTS.map((s) => (
               <figure key={s.src}>
@@ -187,7 +187,7 @@ export default function Co2DashboardPage() {
             Icon={FolderTree}
           />
           <ul className="mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-            {CO2_MODULES.map(([n, d]) => (
+            {PFM_MODULES.map(([n, d]) => (
               <li key={n} className="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3">
                 <span className="font-mono font-bold text-[#0071e3]">{n}</span>
                 <span className="text-[14px] font-semibold text-slate-800">{d}</span>
@@ -201,7 +201,7 @@ export default function Co2DashboardPage() {
           <div>
             <SectionHead id="install-h" eyebrow="Install" title="Ready in a minute" text="Nothing to install: unzip and open." Icon={Download} />
             <ol className="mt-6 space-y-4">
-              {CO2_INSTALL.map((s, i) => (
+              {PFM_INSTALL.map((s, i) => (
                 <li key={s.title} className="flex gap-4">
                   <span className="shrink-0 w-8 h-8 rounded-full bg-[#0071e3] text-white text-sm font-bold flex items-center justify-center">{i + 1}</span>
                   <div>
@@ -217,7 +217,7 @@ export default function Co2DashboardPage() {
               <AlertTriangle className="w-4 h-4" aria-hidden /> Before you start
             </h3>
             <ul className="mt-3 space-y-2">
-              {CO2_REQUIREMENTS.map((r) => (
+              {PFM_REQUIREMENTS.map((r) => (
                 <li key={r} className="flex gap-2 text-[14px] text-amber-900 leading-relaxed">
                   <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" aria-hidden /> {r}
                 </li>
@@ -230,7 +230,7 @@ export default function Co2DashboardPage() {
         <section aria-labelledby="fixes-h" className="mt-20">
           <SectionHead id="fixes-h" eyebrow="Help" title="Quick fixes for common questions" Icon={AlertTriangle} />
           <div className="mt-6 divide-y divide-slate-100 rounded-2xl border border-slate-200">
-            {CO2_FIXES.map((f) => (
+            {PFM_FIXES.map((f) => (
               <details key={f.q} className="group px-5 py-4">
                 <summary className="cursor-pointer list-none flex items-center justify-between gap-4 font-semibold text-slate-900">
                   {f.q}
@@ -244,13 +244,13 @@ export default function Co2DashboardPage() {
 
         {/* Download */}
         <section id="download" aria-labelledby="download-h" className="scroll-mt-28 mt-20 rounded-3xl border border-slate-200 bg-gradient-to-b from-blue-50/70 to-white p-6 sm:p-10">
-          <SectionHead id="download-h" eyebrow="Download" title={`Get the CO2 Project Dashboard ${CO2_VERSION}`} text="Free. Sign in or create a free account, then the download starts." Icon={Download} />
+          <SectionHead id="download-h" eyebrow="Download" title={`Get Project Folder Manager ${PFM_VERSION}`} text="Free. Sign in or create a free account, then the download starts." Icon={Download} />
           <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="rounded-2xl border border-blue-200 bg-white p-5 flex flex-col">
               <Package className="w-6 h-6 text-[#0071e3]" aria-hidden />
-              <h3 className="mt-2 font-bold text-slate-900">{CO2_FILES.package.label}</h3>
-              <p className="text-[13.5px] text-slate-500 flex-1">{CO2_FILES.package.detail}. Unzip all three files into one folder.</p>
-              <Co2DashboardDownload className="mt-4 inline-flex justify-center items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-sm font-semibold cursor-pointer" label="Download (.zip)" />
+              <h3 className="mt-2 font-bold text-slate-900">{PFM_FILES.package.label}</h3>
+              <p className="text-[13.5px] text-slate-500 flex-1">{PFM_FILES.package.detail}. Unzip everything into one folder.</p>
+              <FolderManagerDownload className="mt-4 inline-flex justify-center items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-sm font-semibold cursor-pointer" label="Download (.zip)" />
             </div>
             <div className="rounded-2xl border border-slate-200 bg-white p-5 flex flex-col">
               <AlertTriangle className="w-6 h-6 text-slate-500" aria-hidden />

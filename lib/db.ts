@@ -39,7 +39,7 @@ export interface DownloadRecord {
   userId: string | null;
   userEmail: string | null;
   userName: string | null;
-  assetType: "windows_installer" | "sample_csv" | "test_kml" | "web_app" | "roadpro" | "traverse" | "co2_dashboard";
+  assetType: "windows_installer" | "sample_csv" | "test_kml" | "web_app" | "roadpro" | "traverse" | "folder_manager";
   fileName: string;
   version: string;
   ipAddress?: string;
@@ -407,7 +407,7 @@ export const db = {
     userId: string | null;
     userEmail: string | null;
     userName?: string | null;
-    assetType: "windows_installer" | "sample_csv" | "test_kml" | "web_app" | "roadpro" | "traverse" | "co2_dashboard";
+    assetType: "windows_installer" | "sample_csv" | "test_kml" | "web_app" | "roadpro" | "traverse" | "folder_manager";
     fileName: string;
     version: string;
     ipAddress?: string;
