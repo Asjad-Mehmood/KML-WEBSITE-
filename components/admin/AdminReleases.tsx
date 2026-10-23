@@ -78,7 +78,7 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<{ release: Partial<Release> & { app: string }; isNew: boolean } | null>(null);
   const [preview, setPreview] = useState<{ subject: string; html: string; text: string } | null>(null);
-  const [confirming, setConfirming] = useState<Release | null>(null);
+  const [confirming, setConfirming] = useState<{ release: Release; who: "app" | "all" } | null>(null);
   const [running, setRunning] = useState<string | null>(null); // broadcast id being sent from this page
   const [busy, setBusy] = useState<string | null>(null);
   const [failed, setFailed] = useState<{ id: string; list: { email: string; error: string | null }[] } | null>(null);
@@ -412,14 +412,25 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
                         {busy === `test-${rel.id}` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Mail className="w-3.5 h-3.5" />} Send test to me
                       </button>
                       {!open && (
-                        <button
-                          onClick={() => setConfirming(rel)}
-                          disabled={!data.mail.configured || !!running}
-                          className={`${btn} bg-blue-600 hover:bg-blue-500 text-white`}
-                        >
-                          <Send className="w-3.5 h-3.5" />
-                          {sentBefore ? "Send again" : "Send"} to {app.name} users ({users})
-                        </button>
+                        <>
+                          <button
+                            onClick={() => setConfirming({ release: rel, who: "app" })}
+                            disabled={!data.mail.configured || !!running}
+                            title={`People who downloaded or used ${app.name} with their account`}
+                            className={`${btn} bg-blue-600 hover:bg-blue-500 text-white`}
+                          >
+                            <Send className="w-3.5 h-3.5" />
+                            {sentBefore ? "Send again" : "Send"} to {app.name} users ({users})
+                          </button>
+                          <button
+                            onClick={() => setConfirming({ release: rel, who: "all" })}
+                            disabled={!data.mail.configured || !!running}
+                            title="Everyone with an account, also people who haven't used this app"
+                            className={`${btn} bg-slate-800 hover:bg-slate-700 text-slate-200`}
+                          >
+                            <Users className="w-3.5 h-3.5" /> Send to all users ({data.audience.everyone})
+                          </button>
+                        </>
                       )}
                       <button onClick={() => setEditing({ isNew: false, release: rel })} className={`${btn} bg-slate-800 hover:bg-slate-700 text-slate-200`}>
                         <Pencil className="w-3.5 h-3.5" /> Edit
@@ -456,13 +467,14 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
 
       {confirming && (
         <ConfirmBroadcast
-          release={confirming}
-          appName={data.groups.find((g) => g.app.id === confirming.app)?.app.name || confirming.app}
-          appUsers={data.groups.find((g) => g.app.id === confirming.app)?.users ?? 0}
+          release={confirming.release}
+          initialWho={confirming.who}
+          appName={data.groups.find((g) => g.app.id === confirming.release.app)?.app.name || confirming.release.app}
+          appUsers={data.groups.find((g) => g.app.id === confirming.release.app)?.users ?? 0}
           everyone={data.audience.everyone}
           onClose={() => setConfirming(null)}
           onStart={async (onlyNew, audience) => {
-            const rel = confirming;
+            const rel = confirming.release;
             setConfirming(null);
             const r = await adminFetch(`/api/admin/releases/${rel.id}/broadcast`, json({ confirm: true, onlyNew, audience }));
             if (!r.ok) return toast.current(await errorOf(r), "error");
@@ -470,7 +482,7 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
             await load();
             run(broadcastId);
           }}
-          onPreview={() => showPreview(confirming)}
+          onPreview={() => showPreview(confirming.release)}
         />
       )}
 
@@ -657,6 +669,7 @@ function PreviewModal({ preview, onClose }: { preview: { subject: string; html: 
 
 function ConfirmBroadcast({
   release,
+  initialWho,
   appName,
   appUsers,
   everyone,
@@ -665,6 +678,7 @@ function ConfirmBroadcast({
   onPreview,
 }: {
   release: Release;
+  initialWho: "app" | "all";
   appName: string;
   appUsers: number;
   everyone: number;
@@ -673,7 +687,7 @@ function ConfirmBroadcast({
   onPreview: () => void;
 }) {
   const sentBefore = release.broadcasts.some((b) => b.sent > 0);
-  const [who, setWho] = useState<"app" | "all">("app");
+  const [who, setWho] = useState<"app" | "all">(initialWho);
   const [onlyNew, setOnlyNew] = useState(false);
   const [checked, setChecked] = useState(false);
   const count = who === "app" ? (onlyNew ? release.notYet : appUsers) : onlyNew ? release.notYetAll : everyone;
@@ -694,7 +708,7 @@ function ConfirmBroadcast({
         <label className="flex items-start gap-2 text-slate-200 cursor-pointer">
           <input type="radio" checked={who === "all"} onChange={() => setWho("all")} className="mt-1" />
           <span>
-            Everyone with an account ({everyone})
+            All users: everyone with an account ({everyone})
             <span className="block text-xs text-slate-500">Also people who haven&apos;t tried {appName}, e.g. to announce a new app</span>
           </span>
         </label>
