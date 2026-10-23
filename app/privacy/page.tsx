@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import LegalShell from "../../components/LegalShell";
-import { LEGAL_UPDATED, SUPPORT_EMAIL, openGraphFor } from "@/lib/site";
+import { PRIVACY_UPDATED, SUPPORT_EMAIL, openGraphFor } from "@/lib/site";
 
 const TITLE = "Privacy Policy";
 const DESCRIPTION = "How Excel to KML handles your information, the choices you have, and how to delete your account.";
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <LegalShell title={TITLE} updated={LEGAL_UPDATED}>
+    <LegalShell title={TITLE} updated={PRIVACY_UPDATED}>
       <p>
         This policy explains how Excel to KML (&ldquo;we&rdquo;, &ldquo;us&rdquo;) handles information when you use this
         website, the web app and the Windows app.
@@ -63,6 +63,10 @@ export default function PrivacyPage() {
       <ul>
         <li>To run your account and show your history and files in your dashboard.</li>
         <li>To send emails you ask for, such as a password reset link, a one-time welcome after your first download, or a reply to your message.</li>
+        <li>
+          To tell you when there&apos;s a new version of our software (Excel to KML, RoadPro, Traverse &amp; Level, Project Folder Manager).
+          Every one of these emails has a link to stop them; account emails such as password resets still arrive.
+        </li>
         <li>To answer messages you send us through the contact form or by email.</li>
         <li>To keep the service secure and prevent misuse.</li>
         <li>To understand how the tools are used, so we can improve them.</li>
