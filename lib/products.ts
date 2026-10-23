@@ -42,7 +42,7 @@ export const PRODUCTS: Product[] = [
     version: ROADPRO_VERSION,
     tagline: "A complete road in AutoCAD from one command",
     description:
-      "Draw the centre line and RoadPro adds the edges, turning radius, barricades, cones or kerb stone, signs, road markings, chainage, cross section and an Excel report, and joins new roads with junctions and turning lanes. New in 3.3: a single line of barricades, cones or kerb along any line. Free plugin for AutoCAD, Civil 3D and Map 3D.",
+      "Draw the centre line and RoadPro adds the edges, turning radius, barricades, cones or kerb stone, signs, road markings, chainage, cross section and an Excel report, and joins new roads with junctions and turning lanes. New in 3.4: lanes, median, sidewalks, drains and utilities, radius editing and LandXML for Civil 3D. Free plugin for AutoCAD, Civil 3D and Map 3D.",
     href: "/roadpro",
     demoHref: "/roadpro#demo",
     image: {
@@ -51,7 +51,7 @@ export const PRODUCTS: Product[] = [
       height: 636,
       alt: "RoadPro in AutoCAD: lane widening, a T-junction and a skewed junction with kerb returns, road markings, barricades and chainage",
     },
-    highlights: ["Junctions and turning lanes", "Signs and markings to standard", "Barricades, cones, kerb", "Widening and tapers", "Cross sections", "Excel report"],
+    highlights: ["Lanes, median, sidewalks", "Junctions and turning lanes", "Signs and markings to standard", "Barricades, cones, kerb", "Widening and tapers", "Excel report and LandXML"],
     newUntil: "2027-01-31",
     inHero: true,
     inNav: true,
