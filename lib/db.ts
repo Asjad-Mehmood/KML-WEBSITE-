@@ -102,6 +102,10 @@ export interface AppSettings {
   webDisableReports: boolean;
 }
 
+/** Where a kept file came from: the Excel to KML Windows app, its web app, or Traverse & Level */
+export type FilePlatform = "windows_app" | "web_app" | "traverse_app";
+export const asPlatform = (p: unknown): FilePlatform => (p === "web_app" || p === "traverse_app" ? p : "windows_app");
+
 export interface UserFileRecord {
   id: string;
   userId: string | null;
@@ -117,7 +121,7 @@ export interface UserFileRecord {
   pointsCount?: number;
   crs?: string;
   action: string;
-  platform: "windows_app" | "web_app";
+  platform: FilePlatform;
   ipAddress?: string;
   userAgent?: string;
   timestamp: string;
@@ -990,14 +994,14 @@ export const db = {
       const ts = a.timestamp.toISOString();
       if (!lastActive || ts > lastActive) lastActive = ts;
       if (a.action === "conversion") totalConversions++;
-      if (a.action === "export") {
+      if (a.action === "export" || a.action === "tl_export") {
         totalExports++;
         if (a.exportFormat) {
           const fmt = a.exportFormat.toUpperCase();
           formatBreakdown[fmt] = (formatBreakdown[fmt] || 0) + 1;
         }
       }
-      if (a.action === "file_upload") totalUploads++;
+      if (a.action === "file_upload" || a.action === "tl_import") totalUploads++;
       if (a.pointsCount) totalPointsProcessed += a.pointsCount;
       if (a.crs?.trim()) {
         const c = a.crs.trim();
@@ -1039,7 +1043,7 @@ export const db = {
     pointsCount?: number;
     crs?: string;
     action?: string;
-    platform?: "windows_app" | "web_app";
+    platform?: FilePlatform;
     ipAddress?: string;
     userAgent?: string;
     /** Keep only the name and size: the file was too big to store. */
@@ -1125,7 +1129,7 @@ export const db = {
       pointsCount: f.pointsCount ?? undefined,
       crs: f.crs ?? undefined,
       action: f.action ?? "file_import",
-      platform: (f.platform as "windows_app" | "web_app") ?? "windows_app",
+      platform: asPlatform(f.platform),
       ipAddress: f.ipAddress ?? undefined,
       userAgent: f.userAgent ?? undefined,
       timestamp: f.timestamp.toISOString(),
@@ -1183,7 +1187,7 @@ export const db = {
       pointsCount: f.pointsCount ?? undefined,
       crs: f.crs ?? undefined,
       action: f.action ?? "file_import",
-      platform: (f.platform as "windows_app" | "web_app") ?? "windows_app",
+      platform: asPlatform(f.platform),
       timestamp: f.timestamp.toISOString(),
     }));
   },
@@ -1195,7 +1199,7 @@ export const db = {
     return {
       ...(opts.userId ? { userId: opts.userId === "none" ? null : opts.userId } : {}),
       ...(opts.direction === "import" || opts.direction === "export" ? { direction: opts.direction } : {}),
-      ...(opts.platform === "web_app" || opts.platform === "windows_app" ? { platform: opts.platform } : {}),
+      ...(opts.platform === "web_app" || opts.platform === "windows_app" || opts.platform === "traverse_app" ? { platform: opts.platform } : {}),
       ...(q
         ? {
             OR: [
@@ -1296,7 +1300,7 @@ export const db = {
         size: f.fileSizeFormatted,
         pointsCount: f.pointsCount ?? null,
         crs: f.crs ?? null,
-        platform: f.platform === "web_app" ? "web_app" : "windows_app",
+        platform: asPlatform(f.platform),
         hasContent: has.has(f.id),
         timestamp: f.timestamp.toISOString(),
       })),
@@ -1325,7 +1329,7 @@ export const db = {
       pointsCount: f.pointsCount ?? undefined,
       crs: f.crs ?? undefined,
       action: f.action ?? "file_import",
-      platform: (f.platform as "windows_app" | "web_app") ?? "windows_app",
+      platform: asPlatform(f.platform),
       timestamp: f.timestamp.toISOString(),
     }));
   },
@@ -1347,7 +1351,7 @@ export const db = {
         fileSizeFormatted: f.fileSizeFormatted,
         mimeType: f.mimeType,
         action: f.action ?? "file_import",
-        platform: (f.platform as "windows_app" | "web_app") ?? "windows_app",
+        platform: asPlatform(f.platform),
         timestamp: f.timestamp.toISOString(),
       },
       buffer,

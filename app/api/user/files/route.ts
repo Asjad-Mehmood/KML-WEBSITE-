@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { db, type FilePlatform } from "@/lib/db";
+import { traverseControls } from "@/lib/traverseControls";
 import { getAdminSession } from "@/lib/adminAuth";
 import {
   MAX_FILE_BYTES,
@@ -105,7 +106,7 @@ export async function POST(req: NextRequest) {
     let pointsCount: number | undefined = undefined;
     let crs: string | undefined = undefined;
     let action = "";
-    let platform: "windows_app" | "web_app" =
+    let platform: FilePlatform =
       platformHeader === "windows" || userAgent?.includes("ExcelToKML") || userAgent?.includes("Windows")
         ? "windows_app"
         : "web_app";
@@ -136,7 +137,7 @@ export async function POST(req: NextRequest) {
       const pts = formData.get("pointsCount");
       if (pts) pointsCount = parseInt(pts as string, 10);
       const plat = formData.get("platform");
-      if (plat === "windows_app" || plat === "web_app") platform = plat;
+      if (plat === "windows_app" || plat === "web_app" || plat === "traverse_app") platform = plat;
 
       const arrayBuf = await file.arrayBuffer();
       fileBuffer = Buffer.from(arrayBuf);
@@ -149,7 +150,7 @@ export async function POST(req: NextRequest) {
       pointsCount = typeof body.pointsCount === "number" ? body.pointsCount : undefined;
       crs = body.crs || undefined;
       action = body.action || "";
-      if (body.platform === "windows_app" || body.platform === "web_app") {
+      if (body.platform === "windows_app" || body.platform === "web_app" || body.platform === "traverse_app") {
         platform = body.platform;
       }
       if (body.logActivity === false) logActivity = false;
@@ -170,6 +171,13 @@ export async function POST(req: NextRequest) {
 
     if (!fileName) {
       return NextResponse.json({ error: "fileName is required" }, { status: 400, headers: CORS_HEADERS });
+    }
+    // Traverse & Level keeps copies only while the admin allows it (Admin → Settings → Traverse & Level)
+    if (platform === "traverse_app") {
+      const allow = await traverseControls(user.id);
+      if (!allow.enabled || !allow.keepFiles) {
+        return NextResponse.json({ success: false, stored: false, error: "Keeping copies of files is switched off." }, { status: 403, headers: CORS_HEADERS });
+      }
     }
     fileName = fileName.slice(0, MAX_FILE_NAME);
 

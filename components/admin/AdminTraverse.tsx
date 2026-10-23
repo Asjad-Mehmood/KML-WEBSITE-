@@ -1,7 +1,8 @@
 "use client";
 
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
-import { ChevronDown, ChevronRight, Eye, FileJson, FileSpreadsheet, Loader2, RefreshCw, Search, Trash2, Users } from "lucide-react";
+import { Ban, ChevronDown, ChevronRight, Eye, FileJson, FileSpreadsheet, Loader2, RefreshCw, Search, Trash2, Users } from "lucide-react";
+import TraverseUsage from "./TraverseUsage";
 // The Traverse & Level app's own calculation engine, so the admin sees the same results as the surveyor
 import { computeLevel, computeTraverse, fmt, ratioText } from "@/traverse-app/src/core.js";
 
@@ -144,6 +145,8 @@ export default function AdminTraverse({ adminFetch, onToast }: { adminFetch: Fet
   const [filter, setFilter] = useState("");
   const [open, setOpen] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const [blocked, setBlocked] = useState<string[]>([]);
+  const [usageKey, setUsageKey] = useState(0);
   const toast = useRef(onToast);
   useEffect(() => {
     toast.current = onToast;
@@ -155,6 +158,7 @@ export default function AdminTraverse({ adminFetch, onToast }: { adminFetch: Fet
       .then((d) => {
         setGroups(d.groups || []);
         setTotals(d.totals || null);
+        setBlocked(d.blocked || []);
       })
       .catch((e) => toast.current(e.message, "error"))
       .finally(() => setLoading(false));
@@ -194,12 +198,30 @@ export default function AdminTraverse({ adminFetch, onToast }: { adminFetch: Fet
     }
   };
 
+  const setBlock = async (g: Group, block: boolean) => {
+    if (block && !window.confirm(`Block ${label(g)} from Traverse & Level? They keep their jobs but can't open the app's tools, save or share until you unblock them.`)) return;
+    setBusy(g.userId);
+    try {
+      const r = await adminFetch("/api/admin/traverse", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: g.userId, blocked: block }) });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.error || "Couldn't change access");
+      setBlocked(d.blocked || []);
+      setUsageKey((k) => k + 1);
+      toast.current(block ? `${label(g)} is blocked from Traverse & Level` : `${label(g)} can use Traverse & Level again`);
+    } catch (e) {
+      toast.current((e as Error).message, "error");
+    } finally {
+      setBusy(null);
+    }
+  };
+
   const f = filter.trim().toLowerCase();
   const shown = f ? groups.filter((g) => [g.email, g.name, g.organization].join(" ").toLowerCase().includes(f)) : groups;
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <TraverseUsage key={usageKey} adminFetch={adminFetch} onToast={onToast} onUnblocked={loadGroups} />
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pt-2 border-t border-slate-800">
         <div>
           <h3 className="text-base font-bold text-white">Traverse &amp; Level jobs</h3>
           <p className="text-xs text-slate-400">
@@ -265,6 +287,7 @@ export default function AdminTraverse({ adminFetch, onToast }: { adminFetch: Fet
                     </span>
                   </span>
                   <span className="ml-auto shrink-0 flex items-center gap-1.5">
+                    {blocked.includes(g.userId) && <span className="px-2 py-0.5 rounded-full border text-[11px] font-bold bg-rose-500/15 text-rose-300 border-rose-500/30">Blocked</span>}
                     {g.accepted > 0 && <span className="px-2 py-0.5 rounded-full border text-[11px] font-bold bg-emerald-500/15 text-emerald-300 border-emerald-500/30">{g.accepted} ✓</span>}
                     {g.rejected > 0 && <span className="px-2 py-0.5 rounded-full border text-[11px] font-bold bg-rose-500/15 text-rose-300 border-rose-500/30">{g.rejected} ✗</span>}
                     <span className="px-2.5 py-1 rounded-full bg-blue-500/15 text-blue-300 text-xs font-bold">
@@ -273,6 +296,17 @@ export default function AdminTraverse({ adminFetch, onToast }: { adminFetch: Fet
                   </span>
                 </button>
                 <div className="flex gap-2 sm:ml-2">
+                  <button
+                    onClick={() => setBlock(g, !blocked.includes(g.userId))}
+                    disabled={busy === g.userId}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold cursor-pointer disabled:opacity-50 ${
+                      blocked.includes(g.userId)
+                        ? "bg-emerald-600/15 hover:bg-emerald-600/25 border-emerald-500/30 text-emerald-300"
+                        : "bg-rose-600/10 hover:bg-rose-600/20 border-rose-500/30 text-rose-300"
+                    }`}
+                  >
+                    <Ban className="w-3.5 h-3.5" /> {blocked.includes(g.userId) ? "Unblock" : "Block"}
+                  </button>
                   <button
                     onClick={() => exportPerson(g)}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600/15 hover:bg-emerald-600/25 border border-emerald-500/30 text-xs font-semibold text-emerald-300 cursor-pointer"

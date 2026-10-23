@@ -20,6 +20,18 @@ export interface ExtraSettings {
   announcementEndsAt: string;
   /** Traverse adjust (control points, traverses, level runs) in the app. Off: hidden everywhere in it */
   traverseEnabled: boolean;
+  /** The Traverse & Level app (/traverse/app and the Windows program). Off: signed-in users see tlMessage */
+  tlEnabled: boolean;
+  /** Shown in the Traverse & Level app while it is off or the user is blocked; empty = standard */
+  tlMessage: string;
+  /** Sharing jobs with other accounts by email */
+  tlSharing: boolean;
+  /** Keep a copy of every file imported into or exported from Traverse & Level in the account */
+  tlKeepFiles: boolean;
+  /** Jobs one account may keep in Traverse & Level */
+  tlMaxJobs: number;
+  /** Accounts that may not use Traverse & Level: user ids, comma separated (Admin → Traverse & Level) */
+  tlBlocked: string;
 }
 
 export const EXTRA_DEFAULTS: ExtraSettings = {
@@ -30,6 +42,12 @@ export const EXTRA_DEFAULTS: ExtraSettings = {
   announcementLink: "",
   announcementEndsAt: "",
   traverseEnabled: true,
+  tlEnabled: true,
+  tlMessage: "",
+  tlSharing: true,
+  tlKeepFiles: true,
+  tlMaxJobs: 500,
+  tlBlocked: "",
 };
 
 let ready: Promise<void> | null = null;

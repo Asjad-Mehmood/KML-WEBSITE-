@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { sessionForToken } from "@/lib/serverSession";
 import { listJobs } from "@/lib/userJobs";
+import { cardsOwn, cardsShared } from "@/lib/traverseJobs";
 import DashboardClient, { type DashboardData } from "./DashboardClient";
 
 // Checked on every request: each visitor only ever sees their own account
@@ -20,12 +21,14 @@ export default async function DashboardPage() {
   if (!session) redirect("/login?next=%2Fdashboard");
 
   const { user } = session;
-  const [activities, files, downloads, points, jobs] = await Promise.all([
+  const [activities, files, downloads, points, jobs, tlOwn, tlShared] = await Promise.all([
     db.getOwnActivities(user.id),
     db.getOwnFileList(user.id),
     db.getUserDownloads(user.id),
     db.getUserConversions(user.id, { limit: 5000 }),
     listJobs(user.id).catch(() => []),
+    cardsOwn(user.id).catch(() => []),
+    cardsShared(user.id, user.email).catch(() => []),
   ]);
 
   const isAdmin = db.isAdmin(user);
@@ -45,7 +48,7 @@ export default async function DashboardPage() {
       conversions++;
       if (a.pointsCount) pointsConverted += a.pointsCount;
     }
-    if (a.action === "export") {
+    if (a.action === "export" || a.action === "tl_export") {
       exports++;
       if (a.exportFormat) formats[a.exportFormat.toUpperCase()] = (formats[a.exportFormat.toUpperCase()] || 0) + 1;
     }
@@ -77,7 +80,8 @@ export default async function DashboardPage() {
       action: a.action,
       title: a.title,
       // what changed, for "Account updated" (not which admin changed it)
-      details: a.action === "settings_update" && a.details ? a.details.replace(/\nChanged by: .*$/, "") : null,
+      // what changed, the result of a traverse, an offline note… (never which admin changed it)
+      details: a.details ? a.details.replace(/\nChanged by: .*$/, "") : null,
       fileName: a.fileName,
       pointsCount: a.pointsCount,
       crs: a.crs,
@@ -92,11 +96,12 @@ export default async function DashboardPage() {
       size: f.fileSizeFormatted,
       pointsCount: f.pointsCount,
       crs: f.crs,
-      platform: f.platform === "windows_app" ? "windows_app" : "web_app",
+      platform: f.platform === "windows_app" || f.platform === "traverse_app" ? f.platform : "web_app",
       hasContent: f.hasContent,
       timestamp: f.timestamp.toISOString(),
     })),
     jobs,
+    traverse: { own: tlOwn, shared: tlShared },
     points: {
       total: points.total,
       rows: points.conversions.map((c) => ({

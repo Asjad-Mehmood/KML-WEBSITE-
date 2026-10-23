@@ -113,6 +113,33 @@ export class SiteRemote {
       }
     } finally { this.flushing = false; }
   }
+  /** What the admin allows (open or closed and why, sharing, keeping file copies); remembered for offline starts. */
+  async config() {
+    try { const c = await this.call('GET', '/api/traverse/config'); LS.set('tl.config', c); return c; }
+    catch (e) { return LS.get('tl.config', null) || { enabled: true, sharing: true, keepFiles: true }; }
+  }
+  /**
+   * Keep a copy of a file opened in or exported from the app in the account (Dashboard → Files,
+   * and the admin's Files), when the admin allows it. Online only; never throws.
+   */
+  async keepFile(name, data, meta = {}) {
+    if (!isOnline()) return false;
+    try {
+      const blob = data instanceof Blob ? data : new Blob([data], { type: meta.type || 'text/plain;charset=utf-8' });
+      if (!blob.size || blob.size > 4 * 1024 * 1024) return false;
+      const fd = new FormData();
+      fd.append('file', new File([blob], name, { type: blob.type || 'application/octet-stream' }));
+      fd.append('direction', meta.direction === 'export' ? 'export' : 'import');
+      fd.append('platform', 'traverse_app');
+      fd.append('action', meta.action || '');
+      fd.append('logActivity', 'false');        // the app records its own activity line
+      fd.append('pointsSeparately', 'true');    // traverse points are not Excel to KML conversions
+      if (meta.pointsCount != null) fd.append('pointsCount', String(meta.pointsCount));
+      if (meta.crs) fd.append('crs', meta.crs);
+      const r = await fetch(this.api + '/api/user/files', { method: 'POST', credentials: 'include', body: fd });
+      return r.ok;
+    } catch (e) { return false; }
+  }
   async listOwn() { return (await this.call('GET', '/api/traverse/jobs?scope=own')).jobs || []; }
   async listShared() { return (await this.call('GET', '/api/traverse/jobs?scope=shared')).jobs || []; }
   async upsert(user, job) {
@@ -134,6 +161,8 @@ async function hash(password, salt) {
 export class DemoRemote {
   constructor() { this.kind = 'demo'; this.key = 'sx.demo.db'; this.listeners = []; }
   log() { /* demo mode: nothing leaves this browser */ }
+  async config() { return { enabled: true, sharing: true, keepFiles: false }; }
+  async keepFile() { return false; }
   db() { return LS.get(this.key, { users: [], jobs: [], shares: [] }); }
   put(db) { LS.set(this.key, db); }
   async session() { const id = LS.get('sx.demo.session'); const u = id && this.db().users.find(x => x.id === id); return u ? this.pub(u) : null; }

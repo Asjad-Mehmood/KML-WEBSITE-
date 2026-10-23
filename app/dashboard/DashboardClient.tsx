@@ -7,6 +7,7 @@ import {
   Activity as ActivityIcon,
   ArrowRight,
   Briefcase,
+  Compass,
   Download,
   Eye,
   FileDown,
@@ -34,6 +35,8 @@ import { useAuth } from "../../context/AuthContext";
 import { GITHUB_REPO_URL, LATEST_VERSION } from "@/lib/site";
 import FileViewer, { type ViewerFile } from "@/components/FileViewer";
 import { actionLabel } from "@/lib/activityKinds";
+import TraverseJobsPanel from "@/components/dashboard/TraverseJobsPanel";
+import type { TraverseJobCard } from "@/lib/traverseJobs";
 
 export interface DashboardData {
   user: {
@@ -75,7 +78,7 @@ export interface DashboardData {
     size: string;
     pointsCount: number | null;
     crs: string | null;
-    platform: "web_app" | "windows_app";
+    platform: "web_app" | "windows_app" | "traverse_app";
     hasContent: boolean;
     timestamp: string;
   }[];
@@ -93,6 +96,8 @@ export interface DashboardData {
     updated: number;
     keptAt: string;
   }[];
+  /** Traverse & Level jobs kept in the account, and those colleagues shared with it */
+  traverse: { own: TraverseJobCard[]; shared: TraverseJobCard[] };
   /** Converted points of the files saved while signed in, newest first. */
   points: {
     total: number;
@@ -157,7 +162,7 @@ function downloadText(text: string, name: string) {
   setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
 
-type Tab = "overview" | "jobs" | "files" | "points" | "activity" | "downloads" | "account";
+type Tab = "overview" | "jobs" | "traverse" | "files" | "points" | "activity" | "downloads" | "account";
 
 const ASSET_LABEL: Record<string, string> = {
   windows_installer: "Windows installer",
@@ -252,7 +257,13 @@ function Empty({ icon: Icon, title, text }: { icon: React.ElementType; title: st
   );
 }
 
-function PlatformTag({ platform }: { platform: "web_app" | "windows_app" }) {
+function PlatformTag({ platform }: { platform: "web_app" | "windows_app" | "traverse_app" }) {
+  if (platform === "traverse_app")
+    return (
+      <span className="inline-flex items-center gap-1 text-[11px] text-amber-700">
+        <Compass className="w-3 h-3" aria-hidden /> Traverse &amp; Level
+      </span>
+    );
   return platform === "windows_app" ? (
     <span className="inline-flex items-center gap-1 text-[11px] text-slate-500">
       <Monitor className="w-3 h-3" aria-hidden /> Windows app
@@ -484,6 +495,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
   const TABS: { id: Tab; label: string; icon: React.ElementType; count?: number }[] = [
     { id: "overview", label: "Overview", icon: Sparkles },
     { id: "jobs", label: "Jobs", icon: Briefcase, count: jobs.length },
+    { id: "traverse", label: "Traverse & Level", icon: Compass, count: data.traverse.own.length },
     { id: "files", label: "Files", icon: Files, count: files.length },
     { id: "points", label: "Points", icon: MapPinned, count: pointsTotal },
     { id: "activity", label: "Activity", icon: ActivityIcon, count: activities.length },
@@ -751,6 +763,9 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
                 )}
               </section>
             )}
+
+            {/* Traverse & Level */}
+            {tab === "traverse" && <TraverseJobsPanel own={data.traverse.own} shared={data.traverse.shared} />}
 
             {/* Files */}
             {tab === "files" && (

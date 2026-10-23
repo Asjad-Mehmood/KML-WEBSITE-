@@ -15,6 +15,7 @@ import {
   UserPlus,
   Wrench,
   Waypoints,
+  Compass,
 } from "lucide-react";
 import SignInSecurity from "./SignInSecurity";
 import SystemHealth from "./SystemHealth";
@@ -36,6 +37,12 @@ export interface AllSettings {
   allowSignups: boolean;
   googleSignInEnabled: boolean;
   traverseEnabled: boolean;
+  tlEnabled: boolean;
+  tlMessage: string;
+  tlSharing: boolean;
+  tlKeepFiles: boolean;
+  tlMaxJobs: number;
+  tlBlocked: string;
 }
 
 type Draft = AllSettings;
@@ -49,11 +56,14 @@ const SECTIONS = [
   ["access", "Access"],
   ["notices", "Notices"],
   ["features", "App features"],
+  ["traverse", "Traverse & Level"],
   ["release", "Release"],
   ["security", "Security"],
   ["system", "System"],
   ["history", "History"],
 ] as const;
+
+const DEFAULT_TL_CLOSED = "Traverse & Level is closed for maintenance. Your jobs are safe; please try again later.";
 
 const DEFAULT_MAINTENANCE = "The web app is down for maintenance for a short while. The Windows app works as usual.";
 
@@ -178,8 +188,9 @@ export default function SettingsPanel({
       <div className="space-y-6">
         {/* Status at a glance (what is live now, not the unsaved draft) */}
         <Section id="status" icon={CheckCircle2} title="Live now" text="What visitors see right now, from the saved settings.">
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             <Pill label="Web app" value={saved.maintenanceMode ? "Maintenance" : "Running"} warn={saved.maintenanceMode} />
+            <Pill label="Traverse & Level" value={saved.tlEnabled ? "Open" : "Closed"} warn={!saved.tlEnabled} />
             <Pill label="Traverse adjust" value={saved.traverseEnabled ? "Shown" : "Hidden"} warn={!saved.traverseEnabled} />
             <Pill label="New sign-ups" value={saved.allowSignups ? "Open" : "Paused"} warn={!saved.allowSignups} />
             <Pill label="Downloads" value={saved.requireAuthForDownload ? "Sign-in needed" : "Open to all"} />
@@ -224,6 +235,49 @@ export default function SettingsPanel({
             onChange={(v) => set("traverseEnabled", v)}
             tone="emerald"
           />
+        </Section>
+
+        {/* Traverse & Level app */}
+        <Section
+          id="traverse"
+          icon={Compass}
+          title="Traverse & Level app"
+          text="The Traverse & Level web app and Windows program. Changes reach open apps the next time they start or save. Block single accounts in Admin → Traverse & Level."
+        >
+          <Toggle
+            label="Traverse & Level open"
+            text="Off: signed-in users see the message below instead of their jobs and tools, and nothing can be saved or shared. Jobs already kept stay in the accounts."
+            checked={draft.tlEnabled}
+            onChange={(v) => set("tlEnabled", v)}
+            tone="emerald"
+          />
+          <Field label="Message while closed" hint="Leave empty for the standard text.">
+            <input value={draft.tlMessage} maxLength={300} onChange={(e) => set("tlMessage", e.target.value)} placeholder={DEFAULT_TL_CLOSED} className={inputCls} />
+          </Field>
+          <Toggle
+            label="Sharing jobs"
+            text="On: users can share a job with a colleague's email. Off: the Share button is hidden; jobs already shared stay shared."
+            checked={draft.tlSharing}
+            onChange={(v) => set("tlSharing", v)}
+            tone="emerald"
+          />
+          <Toggle
+            label="Keep copies of files"
+            text="On: every CSV opened in the app and every PDF report, CSV and KML it exports is kept in the user's account (Dashboard → Files) and in Admin → Files. Off: only the activity line is recorded."
+            checked={draft.tlKeepFiles}
+            onChange={(v) => set("tlKeepFiles", v)}
+            tone="emerald"
+          />
+          <Field label="Jobs per account" hint="From 1 to 5000. Accounts over the limit keep their jobs but can't add new ones.">
+            <input
+              type="number"
+              min={1}
+              max={5000}
+              value={draft.tlMaxJobs}
+              onChange={(e) => set("tlMaxJobs", Math.max(1, Math.min(5000, Math.round(Number(e.target.value) || 1))))}
+              className={`${inputCls} max-w-[160px]`}
+            />
+          </Field>
         </Section>
 
         {/* Notices */}

@@ -211,3 +211,55 @@ export async function adminRemove(jobId: string) {
   );
   return r[0] ?? null;
 }
+
+// ---------------------------------------------------------------- account dashboard
+
+export type TraverseJobCard = {
+  id: string; kind: "traverse" | "level"; name: string; summary: Record<string, unknown>;
+  size: number; createdAt: string; savedAt: string; sharedWith: number; ownerEmail?: string; ownerName?: string;
+};
+
+/** The account's Traverse & Level jobs for /dashboard: everything but the job data itself. */
+export async function cardsOwn(userId: string): Promise<TraverseJobCard[]> {
+  await ensureTraverseTables();
+  const rows = await prisma.$queryRawUnsafe<{ id: string; kind: string; name: string; summary: string; size: number; createdAt: Date; updatedAt: Date; shares: bigint }[]>(
+    `SELECT j."id", j."kind", j."name", j."summary", j."size", j."createdAt", j."updatedAt",
+       (SELECT COUNT(*) FROM "traverse_job_shares" s WHERE s."jobId" = j."id") AS "shares"
+     FROM "traverse_jobs" j WHERE j."ownerId" = $1 ORDER BY j."updatedAt" DESC LIMIT 1000`,
+    userId
+  );
+  return rows.map((r) => card(r, Number(r.shares)));
+}
+
+/** Jobs colleagues shared with this account. */
+export async function cardsShared(userId: string, email: string): Promise<TraverseJobCard[]> {
+  await ensureTraverseTables();
+  const rows = await prisma.$queryRawUnsafe<{ id: string; kind: string; name: string; summary: string; size: number; createdAt: Date; updatedAt: Date; ownerEmail: string | null; ownerName: string | null }[]>(
+    `SELECT j."id", j."kind", j."name", j."summary", j."size", j."createdAt", j."updatedAt", u."email" AS "ownerEmail", u."name" AS "ownerName"
+     FROM "traverse_jobs" j JOIN "traverse_job_shares" s ON s."jobId" = j."id" LEFT JOIN "users" u ON u."id" = j."ownerId"
+     WHERE s."email" = $1 AND j."ownerId" <> $2 ORDER BY j."updatedAt" DESC LIMIT 500`,
+    email.toLowerCase(), userId
+  );
+  return rows.map((r) => ({ ...card(r, 0), ownerEmail: r.ownerEmail || "", ownerName: r.ownerName || "" }));
+}
+
+function card(r: { id: string; kind: string; name: string; summary: string; size: number; createdAt: Date; updatedAt: Date }, sharedWith: number): TraverseJobCard {
+  let summary: Record<string, unknown> = {};
+  try { summary = JSON.parse(r.summary) || {}; } catch { /* keep empty */ }
+  return {
+    id: r.id, kind: r.kind === "level" ? "level" : "traverse", name: r.name, summary, size: Number(r.size),
+    createdAt: new Date(r.createdAt).toISOString(), savedAt: new Date(r.updatedAt).toISOString(), sharedWith,
+  };
+}
+
+/** One job with its data, for its owner, someone it is shared with, or an admin (download). */
+export async function jobForDownload(jobId: string) {
+  await ensureTraverseTables();
+  const r = await prisma.$queryRawUnsafe<(Row & { createdAt: Date; updatedAt: Date })[]>(
+    `${SELECT.replace('j."clientUpdated",', 'j."clientUpdated", j."createdAt", j."updatedAt",')} WHERE j."id" = $1`,
+    jobId
+  );
+  if (!r[0]) return null;
+  const shared = await sharesOf(jobId);
+  return { job: out(r[0]), ownerId: r[0].ownerId, sharedWith: shared };
+}

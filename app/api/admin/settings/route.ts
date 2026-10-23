@@ -27,6 +27,12 @@ const LABELS: Record<keyof AllSettings, string> = {
   allowSignups: "New sign-ups",
   googleSignInEnabled: "Google sign-in",
   traverseEnabled: "Traverse adjust in the app",
+  tlEnabled: "Traverse & Level app",
+  tlMessage: "Traverse & Level closed message",
+  tlSharing: "Traverse & Level sharing",
+  tlKeepFiles: "Traverse & Level file copies",
+  tlMaxJobs: "Traverse & Level jobs per account",
+  tlBlocked: "Traverse & Level blocked accounts",
 };
 
 async function allSettings(): Promise<AllSettings> {
@@ -105,11 +111,11 @@ function cleanSettings(body: Record<string, unknown>): Partial<AllSettings> | { 
   const out: Record<string, string | number | boolean> = {};
   const bools = [
     "requireAuthForDownload", "maintenanceMode", "announcementActive", "allowSignups", "googleSignInEnabled",
-    "traverseEnabled",
+    "traverseEnabled", "tlEnabled", "tlSharing", "tlKeepFiles",
   ];
   for (const k of bools) if (typeof body[k] === "boolean") out[k] = body[k] as boolean;
   const texts: [string, number][] = [
-    ["appVersion", 30], ["installerFileName", 120], ["installerFileSize", 20], ["announcementBanner", 300], ["maintenanceMessage", 300],
+    ["appVersion", 30], ["installerFileName", 120], ["installerFileSize", 20], ["announcementBanner", 300], ["maintenanceMessage", 300], ["tlMessage", 300],
   ];
   for (const [k, max] of texts) if (typeof body[k] === "string") out[k] = (body[k] as string).trim().slice(0, max);
 
@@ -117,6 +123,11 @@ function cleanSettings(body: Record<string, unknown>): Partial<AllSettings> | { 
     return { error: "Installer file must be a file name ending in .exe (letters, numbers, dots, dashes)." };
   }
   if (out.appVersion === "") return { error: "Version can't be empty." };
+  if (body.tlMaxJobs !== undefined) {
+    const n = Number(body.tlMaxJobs);
+    if (!Number.isInteger(n) || n < 1 || n > 5000) return { error: "Jobs per account must be a whole number from 1 to 5000." };
+    out.tlMaxJobs = n;
+  }
   if (body.announcementTone !== undefined) {
     if (!["info", "success", "warning"].includes(String(body.announcementTone))) return { error: "Unknown announcement colour." };
     out.announcementTone = String(body.announcementTone);
