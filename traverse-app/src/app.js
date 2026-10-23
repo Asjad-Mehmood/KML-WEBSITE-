@@ -162,6 +162,37 @@ async function logout() {
   deviceUser.clear(); setUser(null); location.hash = APP_MODE ? '#/login' : '#/';
 }
 
+// ---------------------------------------------------------------- sign in with a code (browser)
+let codeTimer = 0, codeRun = 0;
+function codeView(on) { $('#login-form').hidden = on; $('#code-card').hidden = !on; if (!on) { clearTimeout(codeTimer); codeRun++; } }
+async function startCode() {
+  if (!remote.startCode) return msg('#login-msg', 'Not available in demo mode.');
+  if (!navigator.onLine) return msg('#login-msg', 'You are offline. Signing in needs an internet connection.');
+  codeView(true); msg('#code-msg', 'Getting a code…', true); $('#code-value').textContent = '····-····';
+  const run = ++codeRun;
+  let c;
+  try { c = await remote.startCode(WHERE === 'Web browser' ? 'Traverse & Level' : `Traverse & Level (${WHERE})`); }
+  catch (err) { msg('#code-msg', err.message); return; }
+  if (run !== codeRun) return;
+  const origin = location.origin.includes('localhost') ? location.origin : 'https://www.exceltokml.com';
+  const link = `${origin}/link?code=${c.code.replace('-', '')}`;
+  $('#code-value').textContent = c.code; $('#code-url').textContent = `${origin.replace(/^https?:\/\/(www\.)?/, '')}/link`; $('#code-copy').dataset.link = link;
+  msg('#code-msg', 'Waiting for you to confirm the code in the browser…', true);
+  const until = Date.now() + (c.expiresIn || 600) * 1000;
+  const tick = async () => {
+    if (run !== codeRun) return;
+    if (Date.now() > until) { msg('#code-msg', 'The code expired. Press Back, then try again for a new one.'); return; }
+    try {
+      const r = await remote.pollCode(c.poll);
+      if (run !== codeRun) return;
+      if (r.user) { codeView(false); setUser(r.user, { celebrate: true }); afterLogin(); return; }
+      if (r.state === 'expired') { msg('#code-msg', 'The code expired. Press Back, then try again for a new one.'); return; }
+    } catch (err) { /* a network blip: keep trying */ }
+    codeTimer = setTimeout(tick, 3000);
+  };
+  codeTimer = setTimeout(tick, 3000);
+}
+
 // ---------------------------------------------------------------- dashboard
 const ICON = {
   traverse: '<svg viewBox="0 0 24 24"><path d="M3 19 L8 7 L15 9 L21 17"/><circle cx="8" cy="7" r="1.6"/><circle cx="15" cy="9" r="1.6"/></svg>',
@@ -274,6 +305,12 @@ function bind() {
   $('#logout-btn').addEventListener('click', logout);
   $('#closed-retry').addEventListener('click', async () => { await applyAllow(); if (allow.enabled) { location.hash = '#/dashboard'; route(); toast('Traverse & Level is open again.'); } else toast('Still closed.'); });
   $('#login-form').addEventListener('submit', onLogin);
+  $('#code-start').addEventListener('click', startCode);
+  $('#code-cancel').addEventListener('click', () => { codeView(false); msg('#login-msg', ''); });
+  $('#code-copy').addEventListener('click', async e => {
+    const link = e.currentTarget.dataset.link; if (!link) return;
+    try { await navigator.clipboard.writeText(link); toast('Link copied. Paste it in your browser.'); } catch (err) { toast(link); }
+  });
   $('#register-form').addEventListener('submit', onRegister);
   $('#reset-form').addEventListener('submit', onReset);
   $('#newpass-form').addEventListener('submit', onNewPass);

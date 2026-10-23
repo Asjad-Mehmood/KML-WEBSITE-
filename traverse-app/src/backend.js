@@ -83,10 +83,13 @@ export class SiteRemote {
   }
   async signIn({ email, password }) {
     const j = await this.call('POST', '/api/auth/login', { email: normEmail(email), password });
-    if (j.otpRequired) throw new AuthError('This account signs in with a code sent by email. Log in on exceltokml.com first, then open the app again.', 'otp');
+    if (j.otpRequired) throw new AuthError('This admin account needs the code sent by email. Press “Sign in with your browser” below.', 'otp');
     return SiteRemote.userFrom(j.user);
   }
   async signOut() { await this.call('POST', '/api/auth/logout'); }
+  /** Sign in with a code confirmed in the browser at exceltokml.com/link (Google and admin accounts). */
+  async startCode(app) { return this.call('POST', '/api/auth/device/start', { app }); }
+  async pollCode(poll) { const j = await this.call('POST', '/api/auth/device/poll', { poll }); return j.user ? { user: SiteRemote.userFrom(j.user) } : { state: j.state }; }
   async resetPassword(email) { await this.call('POST', '/api/auth/forgot-password', { email: normEmail(email) }); }
   async setPassword() { throw new AuthError('Change your password from your account page on exceltokml.com.'); }
   /**

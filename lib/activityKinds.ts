@@ -10,6 +10,7 @@ export const ACTION_LABEL: Record<string, string> = {
   project_save: "Job saved",
   settings_update: "Account updated",
   settings_changed: "Site settings changed",
+  app_signin: "App signed in with a code",
   traverse: "Traverse adjusted",
   levelling: "Level run closed",
   // Traverse & Level app

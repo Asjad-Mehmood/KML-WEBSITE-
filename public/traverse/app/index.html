@@ -155,7 +155,20 @@
     <p class="form-msg" id="login-msg" role="alert"></p>
     <button class="btn gold big full" type="submit" id="login-submit">Log in</button>
     <div class="auth-links"><a href="#/reset">Forgot password?</a><span>New here? <a href="#/register">Create an account</a></span></div>
+    <div class="auth-or"><span>or</span></div>
+    <button class="btn ghost big full" type="button" id="code-start">Sign in with your browser</button>
+    <p class="hint center">For accounts made with Google, and admin accounts.</p>
   </form>
+  <div class="auth-card" id="code-card" hidden>
+    <svg class="auth-rose"><use href="#rose"/></svg>
+    <h1>Sign in with your browser</h1>
+    <p class="sub">On your phone or in your usual browser, where you are signed in to Excel to KML (Google or email), open</p>
+    <p class="code-url"><b id="code-url">exceltokml.com/link</b> <button class="btn ghost" type="button" id="code-copy">Copy link</button></p>
+    <p class="sub">and enter this code:</p>
+    <p class="code-big" id="code-value" aria-live="polite">····-····</p>
+    <p class="form-msg" id="code-msg" role="status"></p>
+    <button class="btn ghost full" type="button" id="code-cancel">Back to log in</button>
+  </div>
 </section>
 <section class="view auth" data-view="register" hidden>
   <form class="auth-card" id="register-form" novalidate>
