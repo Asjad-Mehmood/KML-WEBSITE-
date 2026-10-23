@@ -1,0 +1,13 @@
+# Sample field book - Professional Traverse and Level Adjustment Software
+# Choose Angles & distances, Closed traverse, then type the known points:  Station CP-01  E 228450.312  N 441203.845  |  Backsight CP-02  E 228912.640  N 441655.118  |  Closing CP-01 (loop)
+# Field book settings: Angle turned from the backsight, typed as DDD.MMSS, clockwise, Levels ticked. Station level 4.215.
+# Closing leg (row C): angle 130.2740, distance 288.697, ht diff -0.523. Closing angle at CP-01 onto CP-02: 23.1021
+# Import this file (or paste the rows below) into the field book. Lines starting with # are ignored.
+Side,Angle,Distance,Ht diff,Point,Remark
+Point,81.3127,316.630,0.646,TS-01,Nail in kerb
+Side shot,312.4500,42.315,-0.212,MH-01,Manhole cover
+Point,124.3129,308.240,0.584,TS-02,
+Point,125.5354,308.364,0.566,TS-03,
+Side shot,201.1530,27.904,0.118,LP-01,Lamp post
+Point,104.5917,293.903,-0.802,TS-04,
+Point,129.2554,294.528,-0.478,TS-05,

@@ -343,6 +343,7 @@ table.res { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width
 .res tr:last-child td { border-bottom: 0; }
 .res td.strong { color: var(--gold); font-weight: 500; }
 .res td.txt { font-family: var(--f-sans); text-align: left; color: var(--muted); white-space: normal; }
+.res td.txt.nw { white-space: nowrap; }
 .res td.warn { color: var(--amber); font-weight: 600; }
 .res td.empty { text-align: center; font-family: var(--f-sans); color: var(--muted); padding: 18px; }
 .res tr.k td { background: var(--accent-soft); }
@@ -382,8 +383,10 @@ table.res { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width
 .grid select { border-color: transparent; background: transparent; padding: 6px 4px; font-size: 13px; }
 .grid select:hover { border-color: var(--line); }
 .grid tr.fb-ss td { background: color-mix(in srgb, var(--gold-soft) 45%, transparent); }
-#fb-grid { min-width: 720px; }
+#fb-grid { min-width: 820px; }
 #fb-grid input { min-width: 64px; }
+#fb-grid input.fb-angle, #fb-grid input.fb-dist { min-width: 104px; }
+#fb-grid input.fb-dh { min-width: 80px; }
 #fb-grid select { min-width: 96px; }
 #fb-grid .tag { white-space: nowrap; }
 .fb-tol { display: flex; gap: 10px 18px; flex-wrap: wrap; align-items: center; margin-top: 12px; font-weight: 600; font-size: 14px; }

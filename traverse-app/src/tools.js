@@ -89,7 +89,7 @@ function fbSetups() {
 function renderFBGrid() {
   const t = S.trav, fb = t.fb, tb = $('#fb-grid tbody'); if (!tb) return;
   const checked = t.type === 'closed' || !!t.useClosing, su = fbSetups();
-  const cell = (i, k, p, side) => `<td><input data-grid="fb" data-row="${i}" data-col="${k}" id="fb-${i}-${k}" class="${k === 'dist' || k === 'dh' ? 'num' : ''}" ${k === 'dist' || k === 'dh' ? 'inputmode="decimal"' : ''} value="${esc(p[k])}" placeholder="${k === 'name' ? (side ? 'SS' : 'P') + (i + 1) : ''}" autocomplete="off" aria-label="Row ${i + 1} ${k}"></td>`;
+  const cell = (i, k, p, side) => `<td><input data-grid="fb" data-row="${i}" data-col="${k}" id="fb-${i}-${k}" class="fb-${k}${k === 'dist' || k === 'dh' ? ' num' : ''}" ${k === 'dist' || k === 'dh' ? 'inputmode="decimal"' : ''} value="${esc(p[k])}" placeholder="${k === 'name' ? (side ? 'SS' : 'P') + (i + 1) : ''}" autocomplete="off" aria-label="Row ${i + 1} ${k}"></td>`;
   let h = '';
   fb.rows.forEach((p, i) => {
     const side = p.side === 'side';
@@ -100,9 +100,9 @@ function renderFBGrid() {
       `<td class="x"><button class="del" data-del="fb" data-row="${i}" title="Delete row ${i + 1}" aria-label="Delete row ${i + 1}">×</button></td></tr>`;
   });
   if (checked) h += `<tr class="fixed closing" data-r="C"><td class="n">C</td><td><span class="tag">Closing leg</span></td><td><span class="at st" data-at>${esc(su.close.at)}</span></td><td><span class="at" data-bs>${esc(su.close.back)}</span></td>
-    <td><input data-t="fb.close.angle" id="fb-C-angle" value="${esc(fb.close.angle)}" autocomplete="off" aria-label="Closing leg angle"></td>
-    <td><input data-t="fb.close.dist" id="fb-C-dist" class="num" inputmode="decimal" value="${esc(fb.close.dist)}" autocomplete="off" aria-label="Closing leg distance"></td>
-    ${fb.useH ? `<td><input data-t="fb.close.dh" id="fb-C-dh" class="num" inputmode="decimal" value="${esc(fb.close.dh)}" autocomplete="off" aria-label="Closing leg height difference"></td>` : ''}
+    <td><input data-t="fb.close.angle" id="fb-C-angle" class="fb-angle" value="${esc(fb.close.angle)}" autocomplete="off" aria-label="Closing leg angle"></td>
+    <td><input data-t="fb.close.dist" id="fb-C-dist" class="fb-dist num" inputmode="decimal" value="${esc(fb.close.dist)}" autocomplete="off" aria-label="Closing leg distance"></td>
+    ${fb.useH ? `<td><input data-t="fb.close.dh" id="fb-C-dh" class="fb-dh num" inputmode="decimal" value="${esc(fb.close.dh)}" autocomplete="off" aria-label="Closing leg height difference"></td>` : ''}
     <td><span class="nm" data-cl>${esc(t.closing.name || 'Closing point')}</span></td><td><span class="tag">closing</span></td><td class="x"></td></tr>`;
   tb.innerHTML = h;
 }
@@ -162,7 +162,12 @@ function sketchSVG(r) {
   g += `<path class="leg" d="${path(pts, 'E', 'N')}"/>`;
   const tri = (x, y) => `<path class="kn" d="M${x} ${y - 7} L${x - 6} ${+y + 5} L${+x + 6} ${+y + 5} Z"/>`;
   g += tri(X(r.backsight.E), Y(r.backsight.N)) + `<text x="${+X(r.backsight.E) + 9}" y="${+Y(r.backsight.N) - 8}">${esc(r.backsight.name)} (BS)</text>`;
-  (r.sides || []).forEach(q => { const f = pts.find(p => p.name === q.from) || pts[0]; g += `<path class="ss" d="M${X(f.E)} ${Y(f.N)} L${X(q.E)} ${Y(q.N)}"/><circle class="sp" cx="${X(q.E)}" cy="${Y(q.N)}" r="3.2"/><text class="st" x="${+X(q.E) + 7}" y="${+Y(q.N) - 6}">${esc(q.name)}</text>`; });
+  // a side-shot label sits beyond its point, away from the station, so it does not cover the station's own label
+  (r.sides || []).forEach(q => {
+    const f = pts.find(p => p.name === q.from) || pts[0], dx = X(q.E) - X(f.E), dy = Y(q.N) - Y(f.N), d = Math.hypot(dx, dy) || 1, ux = dx / d, uy = dy / d;
+    const anchor = ux > 0.35 ? 'start' : ux < -0.35 ? 'end' : 'middle';
+    g += `<path class="ss" d="M${X(f.E)} ${Y(f.N)} L${X(q.E)} ${Y(q.N)}"/><circle class="sp" cx="${X(q.E)}" cy="${Y(q.N)}" r="3.2"/><text class="st" text-anchor="${anchor}" x="${(+X(q.E) + ux * 8).toFixed(1)}" y="${(+Y(q.N) + uy * 10 + 4).toFixed(1)}">${esc(q.name)}</text>`;
+  });
   pts.forEach(p => { const x = X(p.E), y = Y(p.N); g += p.kind === 'point' ? `<circle class="pt" cx="${x}" cy="${y}" r="5"/>` : tri(x, y); g += `<text x="${+x + 9}" y="${+y - 8}">${esc(p.name)}</text>`; });
   g += `<path class="na" d="M${W - 24} 46 L${W - 24} 18 M${W - 24} 18 L${W - 29} 28 M${W - 24} 18 L${W - 19} 28"/><text class="nt" x="${W - 28}" y="62">N</text>`;
   return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Traverse sketch">${g}</svg>`;
@@ -221,7 +226,7 @@ function computeT() {
   if (isFB && r.fb.angles.length && !r.fb.bearings) h += `<div class="out"><h3>Angles <small>clockwise from the backsight · ${closed ? 'balanced' : 'as observed'}</small></h3><div class="tw"><table class="res"><thead><tr><th>At</th><th style="text-align:left">Backsight</th><th style="text-align:left">Foresight</th><th>Observed</th><th>Correction</th><th>Adjusted</th></tr></thead><tbody>` +
     r.fb.angles.map(a => `<tr><td>${esc(a.at)}</td><td class="txt">${esc(a.bs)}</td><td class="txt">${esc(a.fs)}</td><td>${SURV.fmtDMS(a.obs, 1)}</td><td>${SURV.fmtSec(a.corr, 2)}</td><td>${SURV.fmtDMS(a.adj, 1)}</td></tr>`).join('') + `</tbody></table></div></div>`;
   if (isFB && r.sides.length) h += `<div class="out"><h3>Side shots <small>from the adjusted stations</small></h3><div class="tw"><table class="res"><thead><tr><th>Point</th><th style="text-align:left">From</th><th>Bearing</th><th>Distance m</th><th>Easting</th><th>Northing</th>${hasH ? '<th>Level</th>' : ''}${qng ? '<th>Latitude</th><th>Longitude</th>' : ''}</tr></thead><tbody>` +
-    r.sides.map(x => `<tr><td>${esc(x.name)}</td><td class="txt">${esc(x.from)}</td><td>${dms(x.bearing)}</td><td>${fmt(x.dist)}</td><td class="strong">${fmt(x.E)}</td><td class="strong">${fmt(x.N)}</td>${hasH ? `<td>${fmt(x.H)}</td>` : ''}${qng ? `<td class="ll">${fmt(x.lat, 8)}</td><td class="ll">${fmt(x.lon, 8)}</td>` : ''}</tr>`).join('') + `</tbody></table></div></div>`;
+    r.sides.map(x => `<tr><td>${esc(x.name)}</td><td class="txt nw">${esc(x.from)}</td><td>${dms(x.bearing)}</td><td>${fmt(x.dist)}</td><td class="strong">${fmt(x.E)}</td><td class="strong">${fmt(x.N)}</td>${hasH ? `<td>${fmt(x.H)}</td>` : ''}${qng ? `<td class="ll">${fmt(x.lat, 8)}</td><td class="ll">${fmt(x.lon, 8)}</td>` : ''}</tr>`).join('') + `</tbody></table></div></div>`;
   if (isFB && r.fb.lsq) {
     const q = r.fb.lsq;
     h += `<div class="out"><h3>Least squares <small>${q.m} observations · ${q.u} unknowns · redundancy ${q.r} · σ₀ ${q.s0.toFixed(3)}${q.chi ? ` · chi-square ${q.chi.value.toFixed(2)} (${q.chi.lo.toFixed(2)} to ${q.chi.hi.toFixed(2)})` : ''}</small></h3><div class="tw"><table class="res"><thead><tr><th>Observation</th><th style="text-align:left">At</th><th style="text-align:left">To</th><th>Residual</th><th>Standardised</th></tr></thead><tbody>` +

@@ -63,7 +63,7 @@ export const PRODUCTS: Product[] = [
     version: TRAVERSE_VERSION,
     tagline: "Traverse and level adjustment, checked and reported",
     description:
-      "Enter the coordinates measured on site, close on a known point, adjust with Bowditch, Transit or Equal and get a signed PDF report. Level books by Rise & Fall or HI. Jobs saved to your account and shared with your team.",
+      "Enter site coordinates or the angles and distances from your field book, close on a known point, adjust by Bowditch, Transit, Equal or least squares on the Qatar National Grid and get a signed PDF report. Level books by Rise & Fall or HI. Jobs saved to your account and shared with your team.",
     href: "/traverse",
     demoHref: "/traverse#video",
     image: {

@@ -125,7 +125,9 @@ function sketch(doc, y, r) {
     const f = r.points.find(p => p.name === q.from) || r.points[0];
     doc.setDrawColor(...C.amber); doc.setLineWidth(0.2); doc.setLineDashPattern([0.8, 0.8], 0); doc.line(X(f.E), Y(f.N), X(q.E), Y(q.N)); doc.setLineDashPattern([], 0);
     doc.setFillColor(...C.amber); doc.circle(X(q.E), Y(q.N), 0.8, 'F');
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5); doc.setTextColor(...C.muted); doc.text(pdfText(q.name), X(q.E) + 1.6, Y(q.N) - 1.2);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5); doc.setTextColor(...C.muted); // beyond the point, away from the station, so the station label stays clear
+    const dx = X(q.E) - X(f.E), dy = Y(q.N) - Y(f.N), d = Math.hypot(dx, dy) || 1, ux = dx / d, uy = dy / d;
+    doc.text(pdfText(q.name), X(q.E) + ux * 1.8, Y(q.N) + uy * 2.2 + 0.9, { align: ux > 0.35 ? 'left' : ux < -0.35 ? 'right' : 'center' });
   });
   doc.setFontSize(7.5); doc.setFont('helvetica', 'bold');
   mark({ name: r.backsight.name + ' (BS)', E: r.backsight.E, N: r.backsight.N }, true);

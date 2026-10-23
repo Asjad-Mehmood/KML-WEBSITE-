@@ -43,7 +43,7 @@ import { SITE_URL, jsonLd, openGraphFor } from "@/lib/site";
 
 const TITLE = "Traverse & Level Adjustment Software for Surveyors";
 const DESCRIPTION =
-  "Coordinate traverse and levelling for surveyors, in the browser or on Windows: Bowditch, Transit or Equal adjustment, Rise & Fall or HI, PDF reports, a dashboard of saved jobs, sharing, a traverse simulator, offline use and dark mode.";
+  "Traverse and levelling for surveyors, in the browser or on Windows: site coordinates or an angles-and-distances field book with side shots and levels, Bowditch, Transit, Equal or least squares adjustment, Qatar National Grid with latitude and longitude, Rise & Fall or HI, PDF reports, Google Earth export, a dashboard of saved jobs, sharing, a traverse simulator, offline use and dark mode.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -91,11 +91,13 @@ const structuredData = {
 const HERO_SLIDES: HeroSlide[] = [
   { src: "/traverse/screens/v2-dashboard.webp", caption: "Your dashboard", alt: "Dashboard: saved traverses and level runs with their status, a job shared by a colleague and the week's activity" },
   { src: "/traverse/screens/v2-traverse.webp", caption: "Coordinate traverse", alt: "Traverse screen: known points, site coordinates and an Accepted result with precision 1 : 62,105 after a Bowditch adjustment" },
+  { src: "/traverse/screens/v2-fieldbook.webp", caption: "Angles & distances field book", alt: "Field book with angles, distances, side shots and levels, accepted with the angular and level checks" },
+  { src: "/traverse/screens/v2-lsq.webp", caption: "Least squares adjustment", alt: "Least squares residuals for every angle and distance, and the error ellipses of the stations" },
   { src: "/traverse/screens/v2-traverse-plan.webp", caption: "Plan of the adjusted traverse", alt: "Site coordinates, the adjustment methods and a plan of the adjusted and measured traverse" },
   { src: "/traverse/screens/v2-level-result.webp", caption: "Levelling, checked and adjusted", alt: "Level run accepted: misclosure against the allowable, reduced levels, adjusted RLs and the arithmetic checks" },
   { src: "/traverse/screens/v2-simulator.webp", caption: "Traverse simulator", alt: "Traverse simulator: a total station observing a link traverse on a dark survey map" },
   { src: "/traverse/screens/v2-reports.webp", caption: "Signed PDF reports", alt: "Traverse adjustment report and levelling report, with closure checks and adjusted coordinates" },
-  { src: "/traverse/screens/v2-dark.webp", caption: "Dark mode", alt: "The traverse screen in dark mode" },
+  { src: "/traverse/screens/v2-dark.webp", caption: "Dark mode", alt: "The field book traverse screen in dark mode" },
   { src: "/traverse/screens/v2-phone.webp", caption: "On your phone", alt: "Three phone screens: the traverse form, the result and the dashboard" },
 ];
 
