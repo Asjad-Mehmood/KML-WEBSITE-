@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import AdminMessages from "../../components/admin/AdminMessages";
+import AdminReleases from "../../components/admin/AdminReleases";
 import SettingsPanel from "../../components/admin/SettingsPanel";
 import AdminPoints from "../../components/admin/AdminPoints";
 import AdminTraverse from "../../components/admin/AdminTraverse";
@@ -35,6 +36,7 @@ import {
   Filter,
   Files,
   Inbox,
+  Megaphone,
 } from "lucide-react";
 import SurveyorDetailModal from "@/components/admin/SurveyorDetailModal";
 import FileViewer, { type ViewerFile } from "@/components/FileViewer";
@@ -186,7 +188,7 @@ const ASSET_NAME: Record<string, string> = {
 
 export default function AdminClient() {
   const [activeTab, setActiveTab] = useState<
-    "overview" | "users" | "activities" | "downloads" | "files" | "conversions" | "traverse" | "messages" | "settings"
+    "overview" | "users" | "activities" | "downloads" | "files" | "conversions" | "traverse" | "releases" | "messages" | "settings"
   >("overview");
   const [newMessages, setNewMessages] = useState(0);
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean | null>(null);
@@ -682,6 +684,7 @@ export default function AdminClient() {
             { id: "files", label: "Files", icon: Files, count: stats?.totalFilesStored },
             { id: "conversions", label: "Points", icon: Globe, count: conversionsTotal },
             { id: "traverse", label: "Traverse & Level", icon: Compass, count: stats?.traverse?.jobs },
+            { id: "releases", label: "Releases", icon: Megaphone },
             { id: "messages", label: "Messages", icon: Inbox, count: newMessages || undefined },
             { id: "settings", label: "Settings", icon: Settings },
           ].map((tab) => {
@@ -1610,6 +1613,8 @@ export default function AdminClient() {
         {/* ================================================================== */}
         {/* TAB 6: SETTINGS & RELEASE MANAGEMENT */}
         {/* ================================================================== */}
+        {activeTab === "releases" && <AdminReleases adminFetch={adminFetch} onToast={showToast} />}
+
         {activeTab === "messages" && (
           <AdminMessages adminFetch={adminFetch} onToast={showToast} onCounts={setNewMessages} />
         )}
