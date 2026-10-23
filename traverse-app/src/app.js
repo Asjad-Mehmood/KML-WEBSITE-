@@ -52,19 +52,20 @@ function route() {
   if (/access_token|error_description|type=recovery/.test(h)) return;          // Supabase link being processed
   let r = (h.replace(/^#\/?/, '').split('?')[0] || '').toLowerCase();
   if (recovery && r !== 'newpass') { location.hash = '#/newpass'; return; }
-  if (!r || (r === 'landing' && APP_MODE)) r = user ? 'dashboard' : APP_MODE ? 'login' : 'landing';
+  // no front page: signed out, everything goes to log in (or register / reset); signed in, to the dashboard
+  if (!r || r === 'landing') r = user ? 'dashboard' : 'login';
   if (PRIVATE.includes(r) && !user) { storage.set('sx.after', r); location.hash = '#/login'; return; }
   if (['login', 'register'].includes(r) && user) { location.hash = '#/dashboard'; return; }
   const view = user && !allow.enabled && PRIVATE.includes(r) ? 'closed' : r === 'traverse' || r === 'level' ? 'tools' : r;
   if (view === 'closed') $('#closed-msg').textContent = allow.message || 'Please try again later.';
-  if (!$(`[data-view="${view}"]`)) { location.hash = user ? '#/dashboard' : '#/'; return; }
+  if (!$(`[data-view="${view}"]`)) { location.hash = user ? '#/dashboard' : '#/login'; return; }
   $$('.view').forEach(v => (v.hidden = v.dataset.view !== view));
   $$('[data-nav]').forEach(a => a.toggleAttribute('aria-current', a.dataset.nav === r) || a.removeAttribute('aria-current'));
   $$('[data-nav]').forEach(a => { if (a.dataset.nav === r) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
   if (view === 'tools') { $$('.panel').forEach(p => (p.hidden = p.dataset.panel !== r)); recompute(r); refreshJobStates(); }
   if (view !== 'simulator') stopSim(); else initSimulator(sendToTraverse, logActivity);
   if (view === 'dashboard') renderDashboard();
-  document.title = { landing: 'Traverse & Level Adjustment', login: 'Log in · Traverse & Level', register: 'Register · Traverse & Level', dashboard: 'Dashboard · Traverse & Level', tools: (r === 'level' ? 'Levelling' : 'Traverse') + ' · Traverse & Level', simulator: 'Simulator · Traverse & Level' }[view] || 'Traverse & Level';
+  document.title = { login: 'Log in · Traverse & Level', register: 'Register · Traverse & Level', dashboard: 'Dashboard · Traverse & Level', tools: (r === 'level' ? 'Levelling' : 'Traverse') + ' · Traverse & Level', simulator: 'Simulator · Traverse & Level' }[view] || 'Traverse & Level';
   window.scrollTo(0, 0);
   ['#calendar', '#user-menu'].forEach(s => ($(s).hidden = true));
 }
@@ -159,7 +160,7 @@ async function logout() {
   try { if (store) await store.sync(); } catch (e) { /* keep local copy */ }
   if (store && store.pending()) { toast('Some changes are not uploaded yet. Connect to the internet and log in again to upload them.'); }
   try { await remote.signOut(); } catch (e) { /* offline: local sign-out still applies */ }
-  deviceUser.clear(); setUser(null); location.hash = APP_MODE ? '#/login' : '#/';
+  deviceUser.clear(); setUser(null); location.hash = '#/login';
 }
 
 // ---------------------------------------------------------------- sign in with a code (browser)
@@ -274,22 +275,6 @@ function netState() {
   el.classList.toggle('off', !on);
 }
 
-// ---------------------------------------------------------------- landing decoration
-function contours() {
-  const g = $('#hero-contours'); if (!g) return;
-  let h = '';
-  for (let k = 0; k < 14; k++) {
-    const cx = 900 + Math.sin(k) * 40, cy = 560 + Math.cos(k * 1.3) * 30, rx = 120 + k * 46, ry = 70 + k * 30;
-    let d = '';
-    for (let a = 0; a <= 360; a += 10) {
-      const t = a * Math.PI / 180, w = 1 + 0.08 * Math.sin(3 * t + k) + 0.05 * Math.cos(5 * t - k);
-      d += `${a ? 'L' : 'M'}${(cx + rx * w * Math.cos(t)).toFixed(1)} ${(cy + ry * w * Math.sin(t)).toFixed(1)} `;
-    }
-    h += `<path d="${d}Z"/>`;
-  }
-  g.innerHTML = h;
-}
-
 // ---------------------------------------------------------------- start
 function bind() {
   window.addEventListener('hashchange', route);
@@ -347,8 +332,8 @@ function bind() {
 }
 
 async function start() {
-  bind(); themeLabel(); tickClock(); setInterval(tickClock, 1000); contours();
-  $('#foot-year').textContent = '© ' + new Date().getFullYear();
+  bind(); themeLabel(); tickClock(); setInterval(tickClock, 1000);
+
   $('#demo-banner').hidden = remote.kind !== 'demo';
   if (remote.kind !== 'demo') {
     remote.onAuth((ev, u) => {
