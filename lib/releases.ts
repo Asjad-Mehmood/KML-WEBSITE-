@@ -246,11 +246,11 @@ export async function deleteRelease(id: string) {
   await prisma.productRelease.delete({ where: { id } });
 }
 
-function forEmail(r: { app: string; version: string; title: string; notes: string; link: string; linkLabel: string }): ReleaseForEmail {
+function forEmail(r: { app: string; version: string; releasedAt: Date; title: string; notes: string; link: string; linkLabel: string }): ReleaseForEmail {
   const app = appById(r.app);
   const name = app?.name || r.app;
   const newer = app && app.current && normVersion(app.current) !== normVersion(r.version) && compareVersions(app.current, r.version) > 0 ? app.current : null;
-  return { appName: name, version: r.version, title: r.title, notes: r.notes, link: r.link, linkLabel: r.linkLabel, newerVersion: newer };
+  return { appId: r.app, appName: name, version: r.version, releasedAt: r.releasedAt, title: r.title, notes: r.notes, link: r.link, linkLabel: r.linkLabel, newerVersion: newer };
 }
 
 /** 3.10 > 3.9 > 3.4.1 > 3.4; letters compare as text */
