@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
 import { logTraverseActivity } from "@/lib/traverseActivity";
+import { traverseControls } from "@/lib/traverseControls";
 import { MAX_TRAVERSE_SHARES, jobInfo, share, sharesOf, unshare } from "@/lib/traverseJobs";
 
 type Ctx = { params: Promise<{ id: string }> };
@@ -32,6 +33,9 @@ export async function GET(req: NextRequest, ctx: Ctx) {
 export async function POST(req: NextRequest, ctx: Ctx) {
   try {
     const o = await asOwner(req, ctx); if (o.err) return o.err;
+    const allow = await traverseControls(o.user.id);
+    if (!allow.enabled) return NextResponse.json({ error: allow.message, closed: true }, { status: 423 });
+    if (!allow.sharing) return NextResponse.json({ error: "Sharing jobs is switched off at the moment." }, { status: 403 });
     const body = await req.json().catch(() => ({}));
     const email = typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
     if (!EMAIL.test(email)) return NextResponse.json({ error: "Enter a valid email address." }, { status: 400 });

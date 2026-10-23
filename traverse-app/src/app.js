@@ -8,6 +8,8 @@ const CFG = window.APP_CONFIG || {};
 // On exceltokml.com the app uses the website's own accounts; anywhere else it runs in demo mode.
 const remote = CFG.backend === 'site' ? new SiteRemote(CFG.apiBase || '') : new DemoRemote();
 let user = null, store = null, recovery = false;
+// what the admin allows (Admin → Settings → Traverse & Level); read at sign-in
+let allow = { enabled: true, sharing: true, keepFiles: true, message: '' };
 
 // ---------------------------------------------------------------- theme
 function currentTheme() { const t = document.documentElement.getAttribute('data-theme'); if (t) return t; return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; }
@@ -53,7 +55,8 @@ function route() {
   if (!r || (r === 'landing' && APP_MODE)) r = user ? 'dashboard' : APP_MODE ? 'login' : 'landing';
   if (PRIVATE.includes(r) && !user) { storage.set('sx.after', r); location.hash = '#/login'; return; }
   if (['login', 'register'].includes(r) && user) { location.hash = '#/dashboard'; return; }
-  const view = r === 'traverse' || r === 'level' ? 'tools' : r;
+  const view = user && !allow.enabled && PRIVATE.includes(r) ? 'closed' : r === 'traverse' || r === 'level' ? 'tools' : r;
+  if (view === 'closed') $('#closed-msg').textContent = allow.message || 'Please try again later.';
   if (!$(`[data-view="${view}"]`)) { location.hash = user ? '#/dashboard' : '#/'; return; }
   $$('.view').forEach(v => (v.hidden = v.dataset.view !== view));
   $$('[data-nav]').forEach(a => a.toggleAttribute('aria-current', a.dataset.nav === r) || a.removeAttribute('aria-current'));
@@ -82,16 +85,25 @@ function setUser(u, { celebrate = false } = {}) {
     $('#avatar-initials').textContent = initials(u);
     $('#menu-name').textContent = u.name || 'Surveyor';
     $('#menu-email').textContent = u.email;
-    initTools(u, { store: () => store, log: logActivity, onSaved: () => { if (!$('[data-view="dashboard"]').hidden) renderDashboard(); } });
+    initTools(u, { store: () => store, log: logActivity, keep: (n, d, m) => { if (allow.keepFiles && remote.keepFile) remote.keepFile(n, d, m); }, onSaved: () => { if (!$('[data-view="dashboard"]').hidden) renderDashboard(); } });
     // once per sitting: the app was opened, and where (Windows program, installed app or browser)
     if (sessionStorage.getItem('tl.opened') !== u.id) {
       try { sessionStorage.setItem('tl.opened', u.id); } catch (e) { /* private mode */ }
       logActivity({ action: 'tl_open', title: `Opened Traverse & Level (${WHERE})`, details: navigator.onLine ? '' : 'Opened offline' });
     } else if (remote.flushLog) remote.flushLog();
+    applyAllow();
     store.sync().then(() => { refreshJobStates(); if (!$('[data-view="dashboard"]').hidden) renderDashboard(); }).catch(() => {});
     if (celebrate) goldFlash();
   } else { store = null; }
   netState();
+}
+/** Read what the admin allows, then show or hide what depends on it. */
+async function applyAllow() {
+  if (!remote.config) return;
+  const was = allow.enabled;
+  allow = { ...allow, ...(await remote.config()) };
+  document.body.classList.toggle('no-share', !allow.sharing);
+  if (was !== allow.enabled || !allow.enabled) route();
 }
 function goldFlash() {
   const f = $('#gold-flash'); f.hidden = false;
@@ -148,6 +160,37 @@ async function logout() {
   if (store && store.pending()) { toast('Some changes are not uploaded yet. Connect to the internet and log in again to upload them.'); }
   try { await remote.signOut(); } catch (e) { /* offline: local sign-out still applies */ }
   deviceUser.clear(); setUser(null); location.hash = APP_MODE ? '#/login' : '#/';
+}
+
+// ---------------------------------------------------------------- sign in with a code (browser)
+let codeTimer = 0, codeRun = 0;
+function codeView(on) { $('#login-form').hidden = on; $('#code-card').hidden = !on; if (!on) { clearTimeout(codeTimer); codeRun++; } }
+async function startCode() {
+  if (!remote.startCode) return msg('#login-msg', 'Not available in demo mode.');
+  if (!navigator.onLine) return msg('#login-msg', 'You are offline. Signing in needs an internet connection.');
+  codeView(true); msg('#code-msg', 'Getting a code…', true); $('#code-value').textContent = '····-····';
+  const run = ++codeRun;
+  let c;
+  try { c = await remote.startCode(WHERE === 'Web browser' ? 'Traverse & Level' : `Traverse & Level (${WHERE})`); }
+  catch (err) { msg('#code-msg', err.message); return; }
+  if (run !== codeRun) return;
+  const origin = location.origin.includes('localhost') ? location.origin : 'https://www.exceltokml.com';
+  const link = `${origin}/link?code=${c.code.replace('-', '')}`;
+  $('#code-value').textContent = c.code; $('#code-url').textContent = `${origin.replace(/^https?:\/\/(www\.)?/, '')}/link`; $('#code-copy').dataset.link = link;
+  msg('#code-msg', 'Waiting for you to confirm the code in the browser…', true);
+  const until = Date.now() + (c.expiresIn || 600) * 1000;
+  const tick = async () => {
+    if (run !== codeRun) return;
+    if (Date.now() > until) { msg('#code-msg', 'The code expired. Press Back, then try again for a new one.'); return; }
+    try {
+      const r = await remote.pollCode(c.poll);
+      if (run !== codeRun) return;
+      if (r.user) { codeView(false); setUser(r.user, { celebrate: true }); afterLogin(); return; }
+      if (r.state === 'expired') { msg('#code-msg', 'The code expired. Press Back, then try again for a new one.'); return; }
+    } catch (err) { /* a network blip: keep trying */ }
+    codeTimer = setTimeout(tick, 3000);
+  };
+  codeTimer = setTimeout(tick, 3000);
 }
 
 // ---------------------------------------------------------------- dashboard
@@ -260,7 +303,14 @@ function bind() {
   document.addEventListener('click', () => { toggleCalendar(false); $('#user-menu').hidden = true; });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') { toggleCalendar(false); $('#user-menu').hidden = true; $('#share-modal').hidden = true; } });
   $('#logout-btn').addEventListener('click', logout);
+  $('#closed-retry').addEventListener('click', async () => { await applyAllow(); if (allow.enabled) { location.hash = '#/dashboard'; route(); toast('Traverse & Level is open again.'); } else toast('Still closed.'); });
   $('#login-form').addEventListener('submit', onLogin);
+  $('#code-start').addEventListener('click', startCode);
+  $('#code-cancel').addEventListener('click', () => { codeView(false); msg('#login-msg', ''); });
+  $('#code-copy').addEventListener('click', async e => {
+    const link = e.currentTarget.dataset.link; if (!link) return;
+    try { await navigator.clipboard.writeText(link); toast('Link copied. Paste it in your browser.'); } catch (err) { toast(link); }
+  });
   $('#register-form').addEventListener('submit', onRegister);
   $('#reset-form').addEventListener('submit', onReset);
   $('#newpass-form').addEventListener('submit', onNewPass);

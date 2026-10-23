@@ -25,7 +25,7 @@ export interface AdminFileItem {
   size: string;
   pointsCount: number | null;
   crs: string | null;
-  platform: "web_app" | "windows_app";
+  platform: "web_app" | "windows_app" | "traverse_app";
   hasContent: boolean;
   timestamp: string;
   downloadUrl: string;
@@ -62,6 +62,8 @@ export default function AdminFiles({
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [dir, setDir] = useState<Dir>("all");
+  // which app the files came from ("" = every app)
+  const [app, setApp] = useState<"" | "windows_app" | "web_app" | "traverse_app">("");
   const [open, setOpen] = useState<string | null>(null); // userId or "none"
   const [files, setFiles] = useState<Record<string, { rows: AdminFileItem[]; total: number }>>({});
   const [busy, setBusy] = useState<string | null>(null);
@@ -72,10 +74,10 @@ export default function AdminFiles({
   });
 
   const loadGroups = useCallback(
-    async (q: string, d: Dir) => {
+    async (q: string, d: Dir, a: string) => {
       setLoading(true);
       try {
-        const r = await adminFetch(`/api/admin/files?${new URLSearchParams({ group: "user", q, direction: d })}`);
+        const r = await adminFetch(`/api/admin/files?${new URLSearchParams({ group: "user", q, direction: d, platform: a })}`);
         if (!r.ok) throw new Error();
         const data = await r.json();
         setGroups(data.groups || []);
@@ -93,9 +95,9 @@ export default function AdminFiles({
 
   // search after typing stops, and whenever Opened / Saved changes
   useEffect(() => {
-    const t = setTimeout(() => loadGroups(search, dir), search ? 300 : 0);
+    const t = setTimeout(() => loadGroups(search, dir, app), search ? 300 : 0);
     return () => clearTimeout(t);
-  }, [search, dir, loadGroups]);
+  }, [search, dir, app, loadGroups]);
 
   const keyOf = (g: Group) => g.userId ?? "none";
   const label = (g: Group) => g.email || g.name || "No account";
@@ -105,7 +107,7 @@ export default function AdminFiles({
     try {
       const have = more ? files[k]?.rows ?? [] : [];
       const page = Math.floor(have.length / PAGE);
-      const qs = new URLSearchParams({ userId: k, q: search, direction: dir, page: String(page), size: String(PAGE) });
+      const qs = new URLSearchParams({ userId: k, q: search, direction: dir, platform: app, page: String(page), size: String(PAGE) });
       const r = await adminFetch(`/api/admin/files?${qs}`);
       if (!r.ok) throw new Error();
       const d = await r.json();
@@ -154,7 +156,7 @@ export default function AdminFiles({
     }
   };
 
-  const filtered = search.trim() !== "" || dir !== "all";
+  const filtered = search.trim() !== "" || dir !== "all" || app !== "";
 
   return (
     <div className="space-y-5">
@@ -190,8 +192,19 @@ export default function AdminFiles({
               </button>
             ))}
           </div>
+          <select
+            value={app}
+            onChange={(e) => setApp(e.target.value as typeof app)}
+            aria-label="App"
+            className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Every app</option>
+            <option value="windows_app">Excel to KML · Windows</option>
+            <option value="web_app">Excel to KML · Web</option>
+            <option value="traverse_app">Traverse &amp; Level</option>
+          </select>
           <button
-            onClick={() => loadGroups(search, dir)}
+            onClick={() => loadGroups(search, dir, app)}
             aria-label="Refresh files"
             className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white cursor-pointer"
           >
@@ -291,7 +304,7 @@ export default function AdminFiles({
                                       {f.direction === "export" ? <FileDown className="w-3 h-3" /> : <FileUp className="w-3 h-3" />}
                                       {f.direction === "export" ? "Saved" : "Opened"}
                                     </span>
-                                    <span className="ml-2 text-[11px] text-slate-500">{f.platform === "web_app" ? "Web" : "Windows"}</span>
+                                    <span className="ml-2 text-[11px] text-slate-500">{f.platform === "web_app" ? "Web" : f.platform === "traverse_app" ? "Traverse & Level" : "Windows"}</span>
                                   </td>
                                   <td className="px-4 py-2 text-right text-slate-300 hidden sm:table-cell whitespace-nowrap">{f.size}</td>
                                   <td className="px-4 py-2 text-right text-slate-300 hidden lg:table-cell">

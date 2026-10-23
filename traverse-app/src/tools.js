@@ -354,7 +354,8 @@ async function importCSV(which) {
     if (!rows.length) { toast('No rows found in that file.'); return; }
     S.trav.fb.rows = rows; touched('t'); renderFBGrid(); computeT();
     toast(`Imported ${rows.length} rows from ${f.name}.`);
-    log({ action: 'file_upload', title: `Imported ${f.name} into a field book`, fileName: f.name, pointsCount: rows.length, details: jobLabel('t') });
+    log({ action: 'tl_import', title: `Imported ${f.name} into a field book`, fileName: f.name, pointsCount: rows.length, details: jobLabel('t') });
+    keep(f.name, f.text, { direction: 'import', action: 'Field book import', pointsCount: rows.length, type: 'text/csv' });
     return;
   }
   const cols = which === 't' ? T_COLS : L_COLS, numeric = which === 't' ? ['E', 'N'] : ['bs', 'is', 'fs'];
@@ -362,10 +363,14 @@ async function importCSV(which) {
   if (!rows.length) { toast('No rows found in that file.'); return; }
   if (which === 't') { S.trav.points = rows; touched('t'); renderTGrid(); computeT(); } else { S.level.rows = rows; touched('l'); renderLGrid(); computeL(); }
   toast(`Imported ${rows.length} rows from ${f.name}.`);
-  log({ action: 'file_upload', title: `Imported ${f.name} into ${which === 't' ? 'a traverse' : 'a level book'}`, fileName: f.name, pointsCount: rows.length, details: jobLabel(which) });
+  log({ action: 'tl_import', title: `Imported ${f.name} into ${which === 't' ? 'a traverse' : 'a level book'}`, fileName: f.name, pointsCount: rows.length, details: jobLabel(which) });
+  keep(f.name, f.text, { direction: 'import', action: which === 't' ? 'Traverse import' : 'Level book import', pointsCount: rows.length, type: 'text/csv' });
 }
 // ---------- activity: what the user did, for the website's activity log ----------
 const log = e => { try { ctx && ctx.log && ctx.log(e); } catch (err) { /* never in the way */ } };
+/** A copy of the file in the account (Dashboard → Files), when the admin allows it */
+const keep = (name, data, meta) => { try { ctx && ctx.keep && ctx.keep(name, data, meta); } catch (err) { /* never in the way */ } };
+const gridName = r => (r && r.grid?.sys === 'qng' ? 'Qatar National Grid (QND95)' : 'Local grid');
 const jobLabel = which => { const o = which === 't' ? S.trav : S.level; return o.jobName || S.info.project || (which === 't' ? 'unsaved traverse' : 'unsaved level run'); };
 const kb = n => (n < 1048576 ? (n / 1024).toFixed(1) + ' KB' : (n / 1048576).toFixed(2) + ' MB');
 const resultLine = (which, r) => which === 't'
@@ -379,7 +384,8 @@ async function exportPDF(which) {
     const doc = which === 't' ? traverseReport(window.jspdf.jsPDF, r, S.info) : levelReport(window.jspdf.jsPDF, r, S.info);
     const name = fileBase(which === 't' ? 'traverse-report' : 'level-report', which === 't' ? S.trav : S.level) + '.pdf', blob = doc.output('blob');
     await saveFile(name, blob);
-    log({ action: 'export', title: `${which === 't' ? 'Traverse' : 'Levelling'} PDF report: ${jobLabel(which)}`, fileName: name, fileSize: kb(blob.size), exportFormat: 'PDF', pointsCount: which === 't' ? r.points.length : r.rows.length, details: resultLine(which, r) });
+    log({ action: 'tl_export', title: `${which === 't' ? 'Traverse' : 'Levelling'} PDF report: ${jobLabel(which)}`, fileName: name, fileSize: kb(blob.size), exportFormat: 'PDF', pointsCount: which === 't' ? r.points.length : r.rows.length, details: resultLine(which, r) });
+    keep(name, blob, { direction: 'export', action: which === 't' ? 'Traverse PDF report' : 'Levelling PDF report', pointsCount: which === 't' ? r.points.length : r.rows.length, crs: which === 't' ? gridName(r) : '' });
   } catch (e) { console.error(e); toast('Could not make the PDF: ' + e.message); }
 }
 async function exportCSV(which) {
@@ -387,8 +393,10 @@ async function exportCSV(which) {
   const rows = which === 't' ? travCsvRows(r)
     : [['Station', 'BS', 'IS', 'FS', 'Rise', 'Fall', 'RL', 'Corr (mm)', 'Adjusted RL', 'Remark'], ...r.rows.map(x => [x.station, fmt(x.bs), fmt(x.is), fmt(x.fs), fmt(x.rise), fmt(x.fall), fmt(x.rl), fmt(x.corr * 1000, 1), fmt(x.adjRL), x.remark])];
   const name = fileBase(which === 't' ? 'traverse-coordinates' : 'level-book', which === 't' ? S.trav : S.level) + '.csv';
-  await saveFile(name, toCSV(rows));
-  log({ action: 'export', title: `${which === 't' ? 'Coordinates' : 'Levels'} CSV: ${jobLabel(which)}`, fileName: name, exportFormat: 'CSV', pointsCount: rows.length - 1, details: resultLine(which, r) });
+  const csv = toCSV(rows);
+  await saveFile(name, csv);
+  log({ action: 'tl_export', title: `${which === 't' ? 'Coordinates' : 'Levels'} CSV: ${jobLabel(which)}`, fileName: name, exportFormat: 'CSV', pointsCount: rows.length - 1, details: resultLine(which, r) });
+  keep(name, csv, { direction: 'export', action: which === 't' ? 'Coordinates CSV' : 'Level book CSV', pointsCount: rows.length - 1, crs: which === 't' ? gridName(r) : '', type: 'text/csv' });
 }
 function travCsvRows(r) {
   const isFB = r.input === 'fieldbook', qng = r.grid?.sys === 'qng', hasH = isFB && r.points.some(p => Number.isFinite(p.H));
@@ -419,7 +427,8 @@ async function exportKML() {
     '</Document></kml>\n';
   const file = fileBase('traverse', S.trav) + '.kml';
   await saveFile(file, new Blob([kml], { type: 'application/vnd.google-earth.kml+xml' }));
-  log({ action: 'export', title: `Google Earth KML: ${jobLabel('t')}`, fileName: file, exportFormat: 'KML', pointsCount: r.points.length + (r.sides || []).length, details: resultLine('t', r) });
+  log({ action: 'tl_export', title: `Google Earth KML: ${jobLabel('t')}`, fileName: file, exportFormat: 'KML', pointsCount: r.points.length + (r.sides || []).length, details: resultLine('t', r) });
+  keep(file, kml, { direction: 'export', action: 'Google Earth KML', pointsCount: r.points.length + (r.sides || []).length, crs: gridName(r), type: 'application/vnd.google-earth.kml+xml' });
 }
 function addRow(which, silent, side) {
   if (which === 'fb') { S.trav.fb.rows.push(blankFbRow(side ? 'side' : 'point')); if (!silent) { renderFBGrid(); computeT(); } persist(); return; }

@@ -99,7 +99,7 @@ export interface UserFileItem {
   pointsCount?: number;
   crs?: string;
   action: string;
-  platform: "windows_app" | "web_app";
+  platform: "windows_app" | "web_app" | "traverse_app";
   ipAddress?: string;
   userAgent?: string;
   timestamp: string;
@@ -668,7 +668,7 @@ export default function SurveyorDetailModal({
                                 <div className="text-[11px] text-slate-400 flex items-center gap-2">
                                   <span>{f.fileSizeFormatted}</span>
                                   {f.pointsCount !== undefined && <span className="text-cyan-400">• {f.pointsCount} pts</span>}
-                                  <span className="text-slate-500">• {f.platform === "windows_app" ? "🪟 Windows App" : "🌐 Web App"}</span>
+                                  <span className="text-slate-500">• {f.platform === "windows_app" ? "🪟 Windows App" : f.platform === "traverse_app" ? "🧭 Traverse & Level" : "🌐 Web App"}</span>
                                 </div>
                               </div>
                             </div>
@@ -803,7 +803,7 @@ export default function SurveyorDetailModal({
                                   )}
                                 </td>
                                 <td className="px-4 py-3 whitespace-nowrap text-slate-400">
-                                  {f.platform === "windows_app" ? "🪟 Windows App" : "🌐 Web App"}
+                                  {f.platform === "windows_app" ? "🪟 Windows App" : f.platform === "traverse_app" ? "🧭 Traverse & Level" : "🌐 Web App"}
                                 </td>
                                 <td className="px-4 py-3 text-right">
                                   <div className="inline-flex items-center gap-2">

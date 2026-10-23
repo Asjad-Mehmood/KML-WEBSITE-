@@ -10,6 +10,7 @@ export const ACTION_LABEL: Record<string, string> = {
   project_save: "Job saved",
   settings_update: "Account updated",
   settings_changed: "Site settings changed",
+  app_signin: "App signed in with a code",
   traverse: "Traverse adjusted",
   levelling: "Level run closed",
   // Traverse & Level app
@@ -19,10 +20,12 @@ export const ACTION_LABEL: Record<string, string> = {
   tl_share: "Job shared",
   tl_unshare: "Sharing stopped",
   tl_simulation: "Simulator run",
+  tl_import: "Traverse & Level file opened",
+  tl_export: "Traverse & Level export",
 };
 
 /** Everything the Traverse & Level app records (its saves are "traverse" and "levelling") */
-export const TRAVERSE_LEVEL_ACTIONS = ["traverse", "levelling", "tl_open", "tl_update", "tl_delete", "tl_share", "tl_unshare", "tl_simulation"];
+export const TRAVERSE_LEVEL_ACTIONS = ["traverse", "levelling", "tl_open", "tl_update", "tl_delete", "tl_share", "tl_unshare", "tl_simulation", "tl_import", "tl_export"];
 
 /** Survey calculations from Traverse adjust in the app */
 export const SURVEY_ACTIONS = ["traverse", "levelling"];
@@ -35,8 +38,10 @@ export function actionLabel(action: string): string {
 export function adminActionTag(action: string): string {
   switch (action) {
     case "export":
+    case "tl_export":
       return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
     case "file_upload":
+    case "tl_import":
       return "bg-indigo-500/10 text-indigo-300 border-indigo-500/20";
     case "traverse":
       return "bg-amber-500/10 text-amber-300 border-amber-500/25";
