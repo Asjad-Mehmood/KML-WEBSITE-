@@ -141,8 +141,8 @@ export default function RoadProPage() {
             </h1>
             <p className="mt-4 text-[16px] sm:text-[17px] text-slate-600 leading-relaxed">
               Type <kbd className="px-1.5 py-0.5 rounded-md border border-slate-300 bg-slate-50 font-mono text-[14px] text-slate-800">RDP</kbd>, draw the
-              centre line, and RoadPro draws the edges, turning radius, barricades, signs, chainage, cross section and a report with an Excel file.
-              Free, for AutoCAD, Civil 3D and Map 3D.
+              centre line, and RoadPro draws the edges, turning radius, barricades, signs, chainage, cross section and a report with an Excel file,
+              and now the whole corridor: lanes, median, sidewalks, drains and utilities. Free, for AutoCAD, Civil 3D and Map 3D.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <RoadProDownload />
@@ -188,7 +188,7 @@ export default function RoadProPage() {
           </p>
           <p className="mt-2 text-[13.5px] text-slate-600 leading-relaxed">{ROADPRO_UPGRADE_NOTE}</p>
           <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-5">
-            {[28, 30].map((n) => {
+            {[38, 44].map((n) => {
               const g = ROADPRO_GUIDE_PAGES.find((x) => x.page === n)!;
               return (
                 <figure key={n}>
@@ -365,7 +365,7 @@ export default function RoadProPage() {
 
         {/* Commands */}
         <section id="commands" aria-labelledby="commands-h" className="scroll-mt-28 mt-20">
-          <SectionHead id="commands-h" eyebrow="Commands" title="All commands and shortcuts" text="Every command except RDP starts by asking you to select the road's centre line (layer ROAD-CL). Chainage boxes accept 100 or 0+100." Icon={Keyboard} />
+          <SectionHead id="commands-h" eyebrow="Commands" title="All commands and shortcuts" text="Apart from RDP, RDL and RDLXI, every command starts by asking you to select the road's centre line (layer ROAD-CL). Chainage boxes accept 100 or 0+100." Icon={Keyboard} />
           <div className="mt-6 overflow-x-auto rounded-2xl border border-slate-200">
             <table className="w-full text-[14px]">
               <thead className="bg-slate-50 text-left text-[12px] uppercase tracking-wider text-slate-500">

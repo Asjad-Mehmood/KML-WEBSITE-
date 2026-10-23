@@ -1,26 +1,26 @@
-// RoadPro: the AutoCAD road builder plugin. Content from the RoadPro v3.3
+// RoadPro: the AutoCAD road builder plugin. Content from the RoadPro v3.4
 // user guide and shortcut sheet (both downloadable from /roadpro).
 
-export const ROADPRO_VERSION = "3.3";
-export const ROADPRO_RELEASED = "2026-10-12";
+export const ROADPRO_VERSION = "3.4";
+export const ROADPRO_RELEASED = "2026-10-23";
 
 export const ROADPRO_FILES = {
-  plugin: { href: "/roadpro/RoadPro.zip", name: "RoadPro.zip", label: "RoadPro plugin", detail: "RoadPro.lsp and install notes in a zip, 60 KB" },
-  guidePdf: { href: "/roadpro/RoadPro_User_Guide.pdf", name: "RoadPro_User_Guide.pdf", label: "User guide", detail: "PDF, 38 pages, 347 KB" },
-  guide: { href: "/roadpro/RoadPro_User_Guide.pptx", name: "RoadPro_User_Guide.pptx", label: "User guide", detail: "PowerPoint, 38 slides, 204 KB" },
-  shortcuts: { href: "/roadpro/RoadPro_Shortcuts.xlsx", name: "RoadPro_Shortcuts.xlsx", label: "Shortcut keys", detail: "Excel sheet, 7 KB" },
+  plugin: { href: "/roadpro/RoadPro.zip", name: "RoadPro.zip", label: "RoadPro plugin", detail: "RoadPro.lsp, the RP_PAVER hatch pattern and install notes in a zip, 83 KB" },
+  guidePdf: { href: "/roadpro/RoadPro_User_Guide.pdf", name: "RoadPro_User_Guide.pdf", label: "User guide", detail: "PDF, 47 pages, 712 KB" },
+  guide: { href: "/roadpro/RoadPro_User_Guide.pptx", name: "RoadPro_User_Guide.pptx", label: "User guide", detail: "PowerPoint, 47 slides, 596 KB" },
+  shortcuts: { href: "/roadpro/RoadPro_Shortcuts.xlsx", name: "RoadPro_Shortcuts.xlsx", label: "Shortcut keys", detail: "Excel sheet, 8 KB" },
   video: { href: "/roadpro/roadpro-demo.mp4", poster: "/roadpro/demo-cover.webp", duration: "PT2M58S" },
 };
 
 export const ROADPRO_FEATURES: { title: string; text: string }[] = [
-  { title: "Road and edges", text: "Width both sides of the centre line, CL linetype, surface hatch and chainage." },
-  { title: "Turning radius", text: "Every bend filleted automatically, 10 m at the centre line by default." },
+  { title: "Lanes and corridor", text: "Single or dual carriageway, lanes set by hand or automatically, a flush or raised median, sidewalks and walkways with a paver hatch, drains and utility strips." },
+  { title: "Turning radius", text: "Every bend filleted automatically, 10 m at the centre line by default, and any radius changed later with RDER." },
   { title: "Edges and median", text: "Red and white barricades, traffic cones or kerb stone along the road, around junction corners or on any single line, a paved shoulder, and a median of barricades or cones. All counted for ordering." },
   { title: "Widening, tapers, junctions", text: "Add an extra lane (RDW), change the width (RDT) or join a new road with kerb returns, an auxiliary lane and an island (RDJ)." },
   { title: "Signs and markings", text: "Signs sized by speed limit, delineator posts on curves, centre and edge lines, lane arrows and paint quantities." },
   { title: "Radius and sections", text: "C1 curve data and S1 straight data labelled on the plan." },
   { title: "Cross sections", text: "Layers, crossfall, shoulder, barricade, cone or kerb, and sign heights, with dimensions." },
-  { title: "Report and Excel", text: "Tables in the drawing plus a CSV file for Excel, saved next to the DWG." },
+  { title: "Report, Excel and LandXML", text: "Tables in the drawing plus a CSV file for Excel, saved next to the DWG, and the centre line as LandXML for Civil 3D." },
 ];
 
 export const ROADPRO_INSTALL: { title: string; text: string }[] = [
@@ -46,7 +46,13 @@ export const ROADPRO_COMMANDS: { short: string; full: string; text: string }[] =
   { short: "RDT", full: "ROADTAPER", text: "Road taper: wider (+) or narrower (−) between two chainages; the new width continues to the road end. Each side can have its own chainages and radius. Barricades, cones and kerb stone move to the new edge" },
   { short: "RDJ", full: "ROADJUNCTION", text: "Junction / tie-in: join a new road with kerb-return radius, opened edge, corner surface, corner treatment (barricades, traffic cones or kerb stone, or the same as the main road), STOP / GIVE WAY and turning-area markings. Optional auxiliary lane (long approach taper, storage, short departure taper) and a kerbed or painted splitter island" },
   { short: "RDM", full: "ROADMARK", text: "Road markings: yellow L4 edge lines, white L1 lane / centre line with its pattern set by speed, L2 / L2A at bends, gaps at junctions, broken L5 beside auxiliary lanes. Draw again to refresh, or remove" },
-  { short: "RDL", full: "ROADLINE", text: "New in 3.3. A single run of barricades, traffic cones or kerb stone along any line, polyline, arc, spline, circle or ellipse: on the line, left, right or both sides, between two distances along it, with a quantity label. No road needed" },
+  { short: "RDL", full: "ROADLINE", text: "A single run of barricades, traffic cones or kerb stone along any line, polyline, arc, spline, circle or ellipse: on the line, left, right or both sides, between two distances along it, with a quantity label. No road needed" },
+  { short: "RDC", full: "ROADCORRIDOR", text: "New in 3.4. Lanes, median, sidewalks, walkways, drains and utility corridors of a road: single or dual carriageway, lanes by hand (left and right can differ) or automatic, with lane lines and arrows" },
+  { short: "RDU", full: "ROADUPDATE", text: "New in 3.4. Redraw a road's corridor and markings after edits" },
+  { short: "RDER", full: "ROADEDITRADIUS", text: "New in 3.4. Change a curve radius after the road is built: the curve is re-fitted between the same straights and the road rebuilt with its own settings" },
+  { short: "RDB", full: "ROADREBUILD", text: "New in 3.4. Rebuild the road after editing its centre line by hand (grips, Properties or PEDIT)" },
+  { short: "RDLX", full: "ROADLANDXML", text: "New in 3.4. Export the centre line as a LandXML 1.2 alignment for Civil 3D (Insert → LandXML)" },
+  { short: "RDLXI", full: "ROADLANDXMLIN", text: "New in 3.4. Import LandXML alignments as polylines, ready for RDP" },
   { short: "—", full: "ROADPRORESET", text: "Restore all settings to the defaults (no shortcut on purpose, so you can't reset by accident)" },
 ];
 
@@ -80,6 +86,8 @@ export const ROADPRO_DEFAULTS: [string, string][] = [
   ["Auxiliary lane", "3.65 m, tapers 60 m / 30 m, storage 30 m"],
   ["Junction corners", "Same as the main road edge"],
   ["Single line (RDL)", "0.50 m offset, 2.00 m units or cone spacing"],
+  ["Lane / median width", "3.65 m / 3.00 m"],
+  ["Sidewalk / walkway", "2.00 m / 2.50 m"],
   ["Pavement layers", "50 / 200 / 150 mm"],
 ];
 
@@ -100,6 +108,10 @@ export const ROADPRO_LAYERS: [string, string][] = [
   ["ROAD-XSEC*", "Cross section parts"],
   ["ROAD-WIDENING", "Widening and taper labels"],
   ["ROAD-JUNCTION", "Junction labels, corner R, RDL labels"],
+  ["ROAD-MEDIAN (-KERB)", "Median fill or hatch and kerbs"],
+  ["ROAD-SIDEWALK / ROAD-WALKWAY", "Sidewalks and walkways, paver hatch"],
+  ["ROAD-DRAIN / ROAD-UTILITY", "Drainage and utility corridor provisions"],
+  ["ROAD-LANDXML", "Imported LandXML alignments"],
 ];
 
 export const ROADPRO_REPORT = [
@@ -108,7 +120,7 @@ export const ROADPRO_REPORT = [
   "Road sections: every straight and curve with length, edges and area",
   "Setting-out: E / N of the centre line and both edges at every chainage",
   "Sign schedule: ID, sign, chainage, side, facing and post E / N",
-  "Widening, taper and junction setting-out: new edge offset, kerb returns TC / IP / CT with E / N",
+  "Widening, taper, junction and corridor: new edge offsets, kerb returns TC / IP / CT with E / N, and lanes, median, sidewalks, walkways, drains and utilities (length and area)",
   "Quantities: barricades red / white, traffic cones (nos) and kerb stone (m) per side, and the paved shoulder area",
   "Road markings: edge and lane line lengths and paint area in m²",
 ];
@@ -125,38 +137,41 @@ export const ROADPRO_FIXES: { q: string; a: string }[] = [
   { q: "A chainage isn't accepted", a: "Type 100 or 0+100. Versions before 3.0 take plain metres only." },
   { q: "The island lanes are too narrow", a: "RoadPro warns when a lane beside the island is under 2.75 m. Make the island narrower or the branch road wider." },
   { q: "RDL placed nothing", a: "From / To is outside the line length, or the spacing is longer than the line. Set To = 0 for the line end." },
+  { q: "Walkways show herringbone, not the paver", a: "RP_PAVER.pat couldn't be written or found. Copy it from the zip to an AutoCAD Support folder." },
+  { q: "RDER refuses a curve", a: "A curve that touches another curve, or sits at the line end, needs a straight each side. Edit the centre line by hand, then run RDB." },
+  { q: "A Civil 3D alignment isn't converted", a: "Use the LandXML route: Insert → LandXML in Civil 3D with RDLX / RDLXI, or explode a copy of the alignment to a polyline." },
   { q: "Where is the Excel file?", a: "Next to the DWG, named like ROAD-01_RoadPro_Report.csv. Press F2 to see the full path." },
 ];
 
 // What changed in this version, shown near the top of /roadpro
 export const ROADPRO_WHATS_NEW: { title: string; text: string }[] = [
-  { title: "RDL: a single line", text: "A new command: one run of barricades, traffic cones or kerb stone along any line, polyline, arc, spline, circle or ellipse. Centred, left, right or both sides, from / to a distance, with a quantity label." },
-  { title: "Junction corner treatment", text: "RDJ lines the kerb returns with barricades, traffic cones or kerb stone, or the same as the main road. The count is printed and added to the road." },
-  { title: "Cones and kerb follow changes", text: "Lane widening (RDW) and road tapers (RDT) now move traffic cones and kerb stone to the new edge, not only barricades, and take removed units out of the count." },
-  { title: "Kerb units and cone band", text: "Kerb stone is drawn as separate units, cones get their white reflective band, and the report gives cones (nos) and kerb (m) for each side." },
+  { title: "The full corridor", text: "Single or dual carriageway, lanes by hand or automatic (indicative only), a flush or raised median, sidewalks and walkways, drains and utility corridors. In plan, cross section and report (RDC / RDU)." },
+  { title: "Interlocking paver hatch", text: "Sidewalks and walkways get an I-shape paver hatch (RP_PAVER) that turns with the road; herringbone or any other pattern as options." },
+  { title: "Edit the radius later", text: "RDER changes any curve radius after the road is built and rebuilds it with its own settings. RDB rebuilds after you edit the centre line by hand." },
+  { title: "Civil 3D and LandXML", text: "Export the centre line as LandXML 1.2 (RDLX), import LandXML alignments (RDLXI), or select a Civil 3D alignment in RDP. Alignments are checked first." },
 ];
 
-// Shown under "New in": moving up from the last version
+// Shown under "New in": moving up from the last version, and how 3.4 was tested
 export const ROADPRO_UPGRADE_NOTE =
-  "Upgrading from 3.2? Load the new RoadPro.lsp with APPLOAD and replace the old file in the Startup Suite. Your saved settings are kept, and roads drawn with 3.2 work with every 3.3 command.";
+  "Upgrading? Load the new RoadPro.lsp with APPLOAD and replace the old file in the Startup Suite. Your settings are kept, and roads drawn with 3.2 or 3.3 work with every 3.4 command. Version 3.4 passed 105 automated checks in an AutoLISP emulator but hasn't yet been run in AutoCAD or Civil 3D, so try it on a copy of a drawing first. Lane counts, drains and utility corridors are geometric provisions for the design engineer to confirm.";
 
 // Where the sign and marking values come from, shown under "New in"
 export const ROADPRO_STANDARDS_NOTE =
-  "Sign sizes, warning distances and road markings follow the Oman Highway Design Standards 2017, Section 19 (GCC Manual based). For projects in Qatar, check them against the Qatar Traffic Control Manual (QTCM). Every value can be changed in the dialogs.";
+  "Sign sizes, warning distances and road markings follow the Oman Highway Design Standards 2017, Section 19 (GCC Manual based). For projects in Qatar, check them against the Qatar Traffic Control Manual (QTCM) and QHDM. Every value can be changed in the dialogs.";
 
 // The user guide: page count and the pages shown in "Look inside the user
 // guide" on /roadpro (rendered from the PDF at 1280 × 720 into
 // ROADPRO_GUIDE_DIR/page-NN.webp; a new folder per version, so no cached
 // image of an older guide is shown)
-export const ROADPRO_GUIDE_PAGE_COUNT = 38;
-export const ROADPRO_GUIDE_DIR = "/roadpro/guide-v33";
+export const ROADPRO_GUIDE_PAGE_COUNT = 47;
+export const ROADPRO_GUIDE_DIR = "/roadpro/guide-v34";
 export const ROADPRO_GUIDE_PAGES: { page: number; title: string; text: string }[] = [
   { page: 1, title: "RoadPro user manual", text: "Every command and every setting, step by step from start to finish." },
-  { page: 3, title: "One centre line in, a complete road out", text: "Edges, cones or kerb, signs, markings, junction, chainage and the report." },
-  { page: 4, title: "What is new in 3.3", text: "The RDL single line, junction corners, and cones and kerb that follow widening." },
-  { page: 14, title: "Barricades, cones or kerb stone", text: "How to set the edge treatment along a road, at a junction or on one line." },
-  { page: 26, title: "Junctions and tie-ins", text: "Join a branch road with kerb returns, signs and STOP / GIVE WAY." },
-  { page: 28, title: "Junction corners", text: "New: barricades, cones or kerb stone around the kerb returns." },
-  { page: 30, title: "RDL: a single line", text: "New: a lane closure, work zone or kerb along any line, without building a road." },
+  { page: 38, title: "The full corridor in one build", text: "New: dual carriageway, raised median, sidewalks, walkways, drains and utilities." },
+  { page: 39, title: "Carriageway and lanes", text: "New: lanes by hand or automatic from the design volume." },
+  { page: 41, title: "Beyond the road edge", text: "New: sidewalks, walkways, drains and utility corridors, each side on its own." },
+  { page: 43, title: "Interlocking paver hatch", text: "New: an I-shape paver on sidewalks and walkways that follows the road." },
+  { page: 44, title: "Change a radius later", text: "New: RDER re-fits a curve and rebuilds the road; RDB after hand edits." },
+  { page: 45, title: "Civil 3D and LandXML", text: "New: export and import alignments, or select one in RDP." },
   { page: 37, title: "Quick reference card", text: "Every shortcut and default value on one page to print." },
 ];
