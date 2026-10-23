@@ -26,7 +26,7 @@ import {
 import PageShell from "../../components/PageShell";
 import TraverseDownload, { TraverseReleaseInfo } from "../../components/TraverseDownload";
 import TrackedLink from "../../components/TrackedLink";
-import HeroSlides, { type HeroSlide } from "../../components/HeroSlides";
+import StepFlipGallery, { type FlipStep } from "../../components/StepFlipGallery";
 import {
   TRAVERSE_APP,
   TRAVERSE_FEATURES,
@@ -87,18 +87,16 @@ const structuredData = {
   ],
 };
 
-// The hero: the app's screens, one after another
-const HERO_SLIDES: HeroSlide[] = [
-  { src: "/traverse/screens/v2-dashboard.webp", caption: "Your dashboard", alt: "Dashboard: saved traverses and level runs with their status, a job shared by a colleague and the week's activity" },
-  { src: "/traverse/screens/v2-traverse.webp", caption: "Coordinate traverse", alt: "Traverse screen: known points, site coordinates and an Accepted result with precision 1 : 62,105 after a Bowditch adjustment" },
-  { src: "/traverse/screens/v2-fieldbook.webp", caption: "Angles & distances field book", alt: "Field book with angles, distances, side shots and levels, accepted with the angular and level checks" },
-  { src: "/traverse/screens/v2-lsq.webp", caption: "Least squares adjustment", alt: "Least squares residuals for every angle and distance, and the error ellipses of the stations" },
-  { src: "/traverse/screens/v2-traverse-plan.webp", caption: "Plan of the adjusted traverse", alt: "Site coordinates, the adjustment methods and a plan of the adjusted and measured traverse" },
-  { src: "/traverse/screens/v2-level-result.webp", caption: "Levelling, checked and adjusted", alt: "Level run accepted: misclosure against the allowable, reduced levels, adjusted RLs and the arithmetic checks" },
-  { src: "/traverse/screens/v2-simulator.webp", caption: "Traverse simulator", alt: "Traverse simulator: a total station observing a link traverse on a dark survey map" },
-  { src: "/traverse/screens/v2-reports.webp", caption: "Signed PDF reports", alt: "Traverse adjustment report and levelling report, with closure checks and adjusted coordinates" },
-  { src: "/traverse/screens/v2-dark.webp", caption: "Dark mode", alt: "The field book traverse screen in dark mode" },
-  { src: "/traverse/screens/v2-phone.webp", caption: "On your phone", alt: "Three phone screens: the traverse form, the result and the dashboard" },
+// The hero: how the app is used, step by step (each screen flips over to the next)
+const HERO_STEPS: FlipStep[] = [
+  { src: "/traverse/screens/v2-register.webp", title: "Create your free account", text: "Register, or log in with your Excel to KML account.", alt: "Register screen of Traverse & Level" },
+  { src: "/traverse/screens/v2-dashboard.webp", title: "Open your dashboard", text: "Saved traverses and level runs, their status and the week's activity.", alt: "Dashboard: saved traverses and level runs with their status, a job shared by a colleague and the week's activity" },
+  { src: "/traverse/screens/v2-traverse.webp", title: "Enter the traverse", text: "Known points and the coordinates you measured on site.", alt: "Traverse screen: known points, site coordinates and an Accepted result with precision 1 : 62,105 after a Bowditch adjustment" },
+  { src: "/traverse/screens/v2-fieldbook.webp", title: "Or type the field book", text: "Angles and distances, with side shots and levels.", alt: "Field book with angles, distances, side shots and levels, accepted with the angular and level checks" },
+  { src: "/traverse/screens/v2-lsq.webp", title: "Adjust and check", text: "Bowditch, Transit, Equal or least squares, with residuals and error ellipses.", alt: "Least squares residuals for every angle and distance, and the error ellipses of the stations" },
+  { src: "/traverse/screens/v2-traverse-plan.webp", title: "See it on the plan", text: "The adjusted and the measured traverse, drawn to scale.", alt: "Site coordinates, the adjustment methods and a plan of the adjusted and measured traverse" },
+  { src: "/traverse/screens/v2-level-result.webp", title: "Level the run", text: "Rise & Fall or HI, misclosure against your allowable, adjusted RLs.", alt: "Level run accepted: misclosure against the allowable, reduced levels, adjusted RLs and the arithmetic checks" },
+  { src: "/traverse/screens/v2-reports.webp", title: "Report and share", text: "Signed PDF reports, CSV and Google Earth, and share jobs with your team.", alt: "Traverse adjustment report and levelling report, with closure checks and adjusted coordinates" },
 ];
 
 const FEATURE_ICONS = [MapPinned, Sigma, Mountain, FileText, LayoutDashboard, Share2, Telescope, Globe];
@@ -162,50 +160,25 @@ export default function TraversePage() {
               <a href="#video" className="text-[#0071e3] hover:underline">Watch the intro</a>
             </p>
           </div>
-          <HeroSlides slides={HERO_SLIDES} />
+          <StepFlipGallery steps={HERO_STEPS} interval={4000} />
         </header>
 
         {/* Video */}
         <section id="video" aria-labelledby="video-h" className="scroll-mt-28 mt-20">
           <SectionHead id="video-h" eyebrow="Video" title="Watch the intro" Icon={PlayCircle} />
-          <div className="mt-6 grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-5 items-start">
-            <div className="rounded-2xl overflow-hidden border border-slate-800 bg-black shadow-[0_16px_40px_rgba(15,23,42,0.18)]">
-              <video
-                controls
-                preload="none"
-                playsInline
-                poster={TRAVERSE_FILES.video.poster}
-                className="w-full h-auto aspect-video bg-black"
-                aria-label="Professional Traverse and Level Adjustment Software intro video"
-              >
-                <source src={TRAVERSE_FILES.video.href} type="video/mp4" />
-                <source src={TRAVERSE_FILES.video.webm} type="video/webm" />
-                Your browser can&apos;t play this video. <a href={TRAVERSE_FILES.video.href}>Download it</a> instead.
-              </video>
-            </div>
-            <ul className="grid grid-cols-2 gap-4">
-              {TRAVERSE_FILES.clips.map((c) => (
-                <li key={c.href} className={c.wide ? "col-span-2" : ""}>
-                  <div className="rounded-2xl overflow-hidden border border-slate-800 bg-[#0b1426]">
-                    <video
-                      autoPlay
-                      muted
-                      loop
-                      playsInline
-                      preload="metadata"
-                      poster={c.poster}
-                      width={c.w}
-                      height={c.h}
-                      className={`w-full h-auto ${c.aspect} object-cover`}
-                      aria-label={c.title}
-                    >
-                      <source src={c.href} type="video/mp4" />
-                    </video>
-                  </div>
-                  <p className="mt-1.5 text-[12.5px] text-slate-500">{c.title}</p>
-                </li>
-              ))}
-            </ul>
+          <div className="mt-6 max-w-4xl mx-auto rounded-2xl overflow-hidden border border-slate-800 bg-black shadow-[0_24px_60px_rgba(15,23,42,0.22)]">
+            <video
+              controls
+              preload="none"
+              playsInline
+              poster={TRAVERSE_FILES.video.poster}
+              className="w-full h-auto aspect-video bg-black"
+              aria-label="Professional Traverse and Level Adjustment Software intro video"
+            >
+              <source src={TRAVERSE_FILES.video.href} type="video/mp4" />
+              <source src={TRAVERSE_FILES.video.webm} type="video/webm" />
+              Your browser can&apos;t play this video. <a href={TRAVERSE_FILES.video.href}>Download it</a> instead.
+            </video>
           </div>
         </section>
 

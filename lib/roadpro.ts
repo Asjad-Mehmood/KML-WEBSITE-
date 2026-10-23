@@ -10,6 +10,8 @@ export const ROADPRO_FILES = {
   guide: { href: "/roadpro/RoadPro_User_Guide.pptx", name: "RoadPro_User_Guide.pptx", label: "User guide", detail: "PowerPoint, 47 slides, 596 KB" },
   shortcuts: { href: "/roadpro/RoadPro_Shortcuts.xlsx", name: "RoadPro_Shortcuts.xlsx", label: "Shortcut keys", detail: "Excel sheet, 8 KB" },
   video: { href: "/roadpro/roadpro-demo.mp4", poster: "/roadpro/demo-cover.webp", duration: "PT2M58S" },
+  // a one-minute tour of the user manual, with sound
+  manualVideo: { href: "/roadpro/roadpro-manual-tour.mp4", poster: "/roadpro/manual-tour-cover.webp", duration: "PT1M" },
 };
 
 export const ROADPRO_FEATURES: { title: string; text: string }[] = [
