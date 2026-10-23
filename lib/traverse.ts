@@ -38,10 +38,6 @@ export const TRAVERSE_FILES = {
     loop: "/traverse/traverse-promo-loop.mp4",
     loopWebm: "/traverse/traverse-promo-loop.webm",
   },
-  clips: [
-    { href: "/traverse/traverse-title.mp4", poster: "/traverse/title-cover.webp", w: 672, h: 448, aspect: "aspect-[3/2]", wide: true, title: "Title animation" },
-    { href: "/traverse/traverse-logo.mp4", poster: "/traverse/logo-poster.webp", w: 448, h: 672, aspect: "aspect-square", wide: false, title: "Logo animation" },
-  ],
 };
 
 // The practice files that come with the manual (public/traverse/samples/)

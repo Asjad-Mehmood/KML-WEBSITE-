@@ -90,6 +90,15 @@ const structuredData = {
       uploadDate: ROADPRO_RELEASED,
       duration: ROADPRO_FILES.video.duration,
     },
+    {
+      "@type": "VideoObject",
+      name: `RoadPro ${ROADPRO_VERSION}: a tour of the user manual`,
+      description: "One centre line to a complete road: the RDP dialog, edge treatments, signs, road markings, cross sections, widening and junctions.",
+      thumbnailUrl: `${SITE_URL}${ROADPRO_FILES.manualVideo.poster}`,
+      contentUrl: `${SITE_URL}${ROADPRO_FILES.manualVideo.href}`,
+      uploadDate: "2026-10-23",
+      duration: ROADPRO_FILES.manualVideo.duration,
+    },
   ],
 };
 
@@ -228,6 +237,33 @@ export default function RoadProPage() {
             </video>
           </div>
           <p className="mt-2 text-[12.5px] text-slate-500">No sound. Tip: switch to full screen to read the drawing.</p>
+
+          {/* One-minute tour of the user manual */}
+          <div className="mt-10 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] gap-6 items-center">
+            <div>
+              <h3 className="text-lg sm:text-xl font-extrabold tracking-tight text-slate-900">A one-minute tour of the user manual</h3>
+              <p className="mt-2 text-[14.5px] text-slate-600 leading-relaxed">
+                From one centre line to a complete road: the RDP dialog, edge treatments, signs, road markings, cross sections, widening and
+                junctions, page by page from the RoadPro {ROADPRO_VERSION} guide.
+              </p>
+              <a href={ROADPRO_FILES.guidePdf.href} target="_blank" rel="noopener" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#0071e3] hover:underline">
+                <BookOpen className="w-4 h-4" aria-hidden /> Open the full guide (PDF)
+              </a>
+            </div>
+            <div className="rounded-2xl overflow-hidden border border-slate-200 bg-slate-900 shadow-[0_16px_40px_rgba(15,23,42,0.18)]">
+              <video
+                controls
+                preload="none"
+                playsInline
+                poster={ROADPRO_FILES.manualVideo.poster}
+                className="w-full h-auto aspect-[7/4] bg-black"
+                aria-label={`RoadPro ${ROADPRO_VERSION} user manual tour`}
+              >
+                <source src={ROADPRO_FILES.manualVideo.href} type="video/mp4" />
+                Your browser can&apos;t play this video. <a href={ROADPRO_FILES.manualVideo.href}>Download it</a> instead.
+              </video>
+            </div>
+          </div>
         </section>
 
         {/* A look inside the user guide */}

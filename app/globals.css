@@ -98,3 +98,18 @@ body {
   background-image: radial-gradient(circle, #d2d2d7 1px, transparent 1px);
   background-size: 28px 28px;
 }
+
+/* StepFlipGallery: one screen turns away, the next turns in (Traverse & Level hero) */
+@keyframes step-flip-out { from { transform: rotateY(0deg); opacity: 1; } to { transform: rotateY(-90deg); opacity: 0.6; } }
+@keyframes step-flip-in { 0%, 50% { transform: rotateY(90deg); opacity: 0.6; } to { transform: rotateY(0deg); opacity: 1; } }
+@keyframes step-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes step-caption-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes step-progress { from { width: 0%; } to { width: 100%; } }
+.step-flip-out { animation: step-flip-out 0.36s ease-in both; transform-origin: center; }
+.step-flip-in { animation: step-flip-in 0.72s ease-out both; transform-origin: center; }
+.step-fade-in { animation: step-fade-in 0.4s ease-out both; }
+.step-caption { animation: step-caption-in 0.45s 0.3s ease-out both; }
+.step-progress { width: 0%; animation-name: step-progress; animation-timing-function: linear; animation-fill-mode: forwards; }
+@media (prefers-reduced-motion: reduce) {
+  .step-flip-out, .step-flip-in, .step-caption { animation: none; }
+}
