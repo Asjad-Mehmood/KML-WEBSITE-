@@ -3,6 +3,7 @@ import json, math, subprocess, sys
 js = json.loads(subprocess.check_output(['node', '-e', '''
 import("./src/core.js").then(async C => { const X = await import("./src/example.js");
  const o = {}; for (const m of ["bowditch","transit","equal"]) o[m] = C.computeTraverse({...X.EXAMPLE_TRAVERSE, method:m}).points.map(p=>[p.E,p.N]);
+ for (const m of ["bowditch","transit","equal"]) o["open_" + m] = C.computeTraverse({...X.EXAMPLE_TRAVERSE, method:m, type:"open", useClosing:true}).points.map(p=>[p.E,p.N]);
  o.level = C.computeLevel(X.EXAMPLE_LEVEL).rows.map(r=>[r.rl,r.adjRL]); console.log(JSON.stringify(o)); })''']))
 st=(228450.312,441203.845); pts=[(228610.458,441118.300),(228795.123,441090.770),(228968.548,441162.410),(229120.243,441281.652)]
 known=(229265.871,441392.006); meas=(229265.883,441391.997)
@@ -19,6 +20,8 @@ ref={'bowditch':adj([math.hypot(a,b) for a,b in legs],[math.hypot(a,b) for a,b i
 worst=0
 for m in ref:
     for (e1,n1),(e2,n2) in zip(ref[m], js[m]): worst=max(worst,abs(e1-e2),abs(n1-n2))
+    # an open traverse closed on the same known point is adjusted the same way
+    for (e1,n1),(e2,n2) in zip(ref[m], js['open_'+m]): worst=max(worst,abs(e1-e2),abs(n1-n2))
 # level by Rise & Fall, independent
 rows=[(1.512,None,None),(1.388,None,0.866),(None,2.034,None),(1.604,None,0.801),(None,None,2.839)]
 rl=[4.215]; prev=1.512; setup=[0]; s=1

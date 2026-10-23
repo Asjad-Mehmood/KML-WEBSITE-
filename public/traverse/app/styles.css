@@ -359,11 +359,39 @@ table.res { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width
 .sketch text { fill: var(--ink); font: 600 12px var(--f-sans); paint-order: stroke; stroke: var(--surface); stroke-width: 3px; }
 .sketch .nt { fill: var(--muted); font-weight: 700; }
 .sketch .na { stroke: var(--muted); stroke-width: 1.5; fill: none; }
+.sketch .ss { stroke: var(--gold-2); stroke-width: 1; stroke-dasharray: 3 3; fill: none; }
+.sketch .sp { fill: var(--gold-2); }
+.sketch text.st { font-weight: 500; font-size: 11px; fill: var(--muted); }
 .legend { display: flex; gap: 16px; flex-wrap: wrap; padding: 0 16px 12px; font-size: 12.5px; color: var(--muted); }
 .legend i { display: inline-block; width: 18px; height: 0; border-top: 2.5px solid var(--gold); vertical-align: middle; margin-right: 6px; }
 .legend i.r { border-top: 2px dashed var(--accent); }
 .exports { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 .closed-only.hide { display: none !important; }
+.open-only.hide { display: none !important; }
+/* field book, least squares and the coordinate system */
+.fb-only.hide, .co-only.hide, .fb-ang.hide, .fb-h.hide, .fb-ref.hide, .g-qng.hide, .g-typed.hide, .g-auto.hide, .lsq-only.hide { display: none !important; }
+.seg-input button[aria-checked="true"] { background: var(--gold-soft); color: var(--gold); box-shadow: inset 0 0 0 1px var(--gold-2); }
+.fb-set { display: flex; gap: 10px 14px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 12px; }
+.fb-set label, .fb-extra label { display: flex; flex-direction: column; gap: 4px; font-size: 12.5px; font-weight: 600; color: var(--muted); min-width: 150px; flex: 1; }
+.fb-set label.check, .fb-extra label.check { flex-direction: row; align-items: center; gap: 8px; min-width: 0; flex: 0 0 auto; color: var(--ink); font-size: 14px; padding-bottom: 8px; }
+.fb-set label.check input { width: auto; accent-color: var(--gold); }
+.fb-extra { display: flex; gap: 10px 14px; flex-wrap: wrap; margin-top: 12px; }
+.fb-extra label small { font-weight: 400; color: var(--muted); }
+.grid td .at { padding: 6px 8px; display: block; font-size: 13px; color: var(--muted); white-space: nowrap; }
+.grid td .at.st { color: var(--ink); font-weight: 600; }
+.grid select { border-color: transparent; background: transparent; padding: 6px 4px; font-size: 13px; }
+.grid select:hover { border-color: var(--line); }
+.grid tr.fb-ss td { background: color-mix(in srgb, var(--gold-soft) 45%, transparent); }
+#fb-grid { min-width: 720px; }
+#fb-grid input { min-width: 64px; }
+#fb-grid select { min-width: 96px; }
+#fb-grid .tag { white-space: nowrap; }
+.fb-tol { display: flex; gap: 10px 18px; flex-wrap: wrap; align-items: center; margin-top: 12px; font-weight: 600; font-size: 14px; }
+.fb-tol .lsq-only { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; color: var(--muted); font-weight: 600; }
+input.num.tiny { width: 64px; padding: 6px 8px; }
+.methods { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.gridnote { margin: 0; }
+.res td.ll { color: var(--muted); }
 
 /* ---------------- simulator ---------------- */
 .sim-head h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(28px, 3.4vw, 42px); margin: 2px 0 0; }

@@ -26,8 +26,8 @@ export const TRAVERSE_FILES = {
     label: "Windows program",
     detail: "Installer for Windows 10 and 11. Adds Start menu and desktop shortcuts, needs no administrator rights and updates itself",
   },
-  manualPdf: { href: "/traverse/Traverse-Level-User-Manual.pdf", name: "Traverse-Level-User-Manual.pdf", label: "User manual", detail: "PDF, 30 pages, 6.6 MB" },
-  manual: { href: "/traverse/Traverse-Level-User-Manual.pptx", name: "Traverse-Level-User-Manual.pptx", label: "User manual", detail: "PowerPoint, 51 slides, 7.1 MB" },
+  manualPdf: { href: "/traverse/Traverse-Level-User-Manual.pdf", name: "Traverse-Level-User-Manual.pdf", label: "User manual", detail: "PDF, 32 pages, 4.1 MB" },
+  manual: { href: "/traverse/Traverse-Level-User-Manual.pptx", name: "Traverse-Level-User-Manual.pptx", label: "User manual", detail: "PowerPoint, 32 slides, 2.9 MB" },
   // the intro (with sound), and a silent, lighter copy that loops on the home page card
   // (WebM copies for browsers without H.264)
   video: {
@@ -54,14 +54,14 @@ export const TRAVERSE_SAMPLES: { href: string; name: string; text: string }[] = 
 ];
 
 export const TRAVERSE_FEATURES: { title: string; text: string }[] = [
-  { title: "Coordinate traverse", text: "Station, backsight, the points measured on site and the closing point. Closed or open, typed or pasted from Excel." },
-  { title: "Bowditch, Transit or Equal", text: "Spread the misclosure your way and check the precision against your 1 : N, with the correction on every point." },
+  { title: "Coordinates or field book", text: "The points as measured on site, or the field book itself: angles or bearings and distances, with side shots and levels. Closed, open, or open on a closing point." },
+  { title: "Bowditch, Transit, Equal or least squares", text: "Spread the misclosure your way, with angular, linear and level checks against your tolerances, or adjust a field book by least squares with error ellipses." },
   { title: "Levelling", text: "Rise & Fall or Height of Instrument, arithmetic checks, misclosure against your allowable and adjusted RLs." },
-  { title: "Signed PDF reports", text: "Report details, closure check, input and output coordinates, bearings, sketch and signature boxes." },
-  { title: "Your dashboard", text: "Every traverse and level run saved to your exceltokml.com account, with status, search, copy and activity." },
+  { title: "Signed PDF reports", text: "Report details, closure check, field book, input and output coordinates, bearings, sketch and signature boxes. Also CSV and Google Earth." },
+  { title: "Your dashboard", text: "Every traverse and level run saved to your exceltokml.com account, with status, search, copy and activity. Works offline after your first login." },
   { title: "Share with your team", text: "Send a job to a checker, engineer or client by email. They open a copy from their own dashboard." },
   { title: "Traverse simulator", text: "Watch a total station observe a traverse with realistic errors, then adjust it. Made for training." },
-  { title: "Offline, dark mode, phone", text: "Works without internet after your first login, has a dark mode, and fits a phone on site." },
+  { title: "Qatar National Grid", text: "The grid's scale factor is worked out where the traverse is, and every point gets its WGS84 latitude and longitude, as in Excel to KML." },
 ];
 
 // The screens of version 2.0, in the order of the manual. page = the page of the
@@ -70,40 +70,40 @@ export const TRAVERSE_SCREENS: { group: string; items: { no: string; title: stri
   {
     group: "Start",
     items: [
-      { no: "01", title: "Front page", text: "What the software does, with Register and Log in. The clock and the light / dark switch sit at the top.", img: "v2-front", page: 3 },
+      { no: "01", title: "Front page", text: "What the software does, with Register and Log in. The clock and the light / dark switch sit at the top.", img: "v2-front", page: 4 },
       { no: "02", title: "Your account", text: "Register once with your name, email and password. It is the same account as exceltokml.com.", img: "v2-register", page: 5 },
-      { no: "03", title: "Dashboard", text: "Every saved traverse and level run, with its status and key result, plus jobs shared with you.", img: "v2-dashboard", page: 9 },
+      { no: "03", title: "Dashboard", text: "Every saved traverse and level run, with its status and key result, plus jobs shared with you.", img: "v2-dashboard", page: 29 },
     ],
   },
   {
     group: "Traverse",
     items: [
-      { no: "04", title: "Known points and result", text: "Job name, known station, backsight and closing point. Accepted or Rejected updates as you type.", img: "v2-traverse", page: 11 },
+      { no: "04", title: "Known points and result", text: "Job name, known station, backsight and closing point. Accepted or Rejected updates as you type.", img: "v2-traverse", page: 7 },
       { no: "05", title: "Site coordinates and plan", text: "The points as measured, the adjustment method and the plan of the adjusted and measured lines.", img: "v2-traverse-plan", page: 13 },
-      { no: "06", title: "Bearings and report", text: "Whole-circle bearings and distances from the output coordinates, the PDF report and a coordinates CSV.", img: "v2-traverse-bearings", page: 16 },
+      { no: "06", title: "Bearings and report", text: "Whole-circle bearings and distances from the output coordinates, the PDF report and a coordinates CSV.", img: "v2-traverse-bearings", page: 21 },
     ],
   },
   {
     group: "Levelling and reports",
     items: [
-      { no: "07", title: "Level book", text: "Start and closing benchmarks, then BS, IS and FS on one row per point. Import a CSV or paste from Excel.", img: "v2-level", page: 19 },
-      { no: "08", title: "Levelling result", text: "Misclosure against the allowable, reduced levels, corrections, adjusted RLs and the arithmetic checks.", img: "v2-level-result", page: 20 },
-      { no: "09", title: "PDF reports", text: "Traverse and levelling reports with your report details and boxes for Surveyed, Checked and Approved by.", img: "v2-reports", page: 18 },
+      { no: "07", title: "Level book", text: "Start and closing benchmarks, then BS, IS and FS on one row per point. Import a CSV or paste from Excel.", img: "v2-level", page: 24 },
+      { no: "08", title: "Levelling result", text: "Misclosure against the allowable, reduced levels, corrections, adjusted RLs and the arithmetic checks.", img: "v2-level-result", page: 25 },
+      { no: "09", title: "PDF reports", text: "Traverse and levelling reports with your report details and boxes for Surveyed, Checked and Approved by.", img: "v2-reports", page: 21 },
     ],
   },
   {
     group: "Simulator and sharing",
     items: [
-      { no: "10", title: "Traverse simulator", text: "Choose a link or loop, the instrument accuracy and a scenario, then watch the total station observe it.", img: "v2-simulator", page: 22 },
-      { no: "11", title: "Simulator result", text: "Misclosure and precision, the field book with every random error, and Adjust in Traverse tool.", img: "v2-simulator-result", page: 23 },
-      { no: "12", title: "Share a job", text: "Type a colleague's email. They find the job under Shared with me; Remove stops sharing.", img: "v2-share", page: 24 },
+      { no: "10", title: "Traverse simulator", text: "Choose a link or loop, the instrument accuracy and a scenario, then watch the total station observe it.", img: "v2-simulator", page: 27 },
+      { no: "11", title: "Simulator result", text: "Misclosure and precision, the field book with every random error, and Adjust in Traverse tool.", img: "v2-simulator-result", page: 28 },
+      { no: "12", title: "Share a job", text: "Type a colleague's email. They find the job under Shared with me; Remove stops sharing.", img: "v2-share", page: 30 },
     ],
   },
   {
     group: "Anywhere",
     items: [
-      { no: "13", title: "Dark mode", text: "One click on the moon for night work. Your choice is remembered on that device.", img: "v2-dark", page: 26 },
-      { no: "14", title: "On your phone", text: "Every screen fits a phone, and the app keeps working offline after your first login.", img: "v2-phone", page: 27 },
+      { no: "13", title: "Dark mode", text: "One click on the moon for night work. Your choice is remembered on that device.", img: "v2-dark", page: 31 },
+      { no: "14", title: "On your phone", text: "Every screen fits a phone, and the app keeps working offline after your first login.", img: "v2-phone", page: 6 },
     ],
   },
 ];
@@ -112,8 +112,8 @@ export const TRAVERSE_STEPS: { title: string; text: string }[] = [
   { title: "Open the app", text: "Open the web app in Chrome, Edge, Safari or Firefox, or run the Windows program." },
   { title: "Register or log in", text: "Use your exceltokml.com account, or create one free. After your first login the app also opens offline." },
   { title: "Type the known points", text: "Station, backsight and closing point for a traverse; start and closing benchmark for a level run." },
-  { title: "Enter the site data", text: "Type the points or the level book, paste the rows from Excel, or import a CSV." },
-  { title: "Check and adjust", text: "Choose Bowditch, Transit or Equal, or Rise & Fall or HI, and read Accepted or Rejected at once." },
+  { title: "Enter the site data", text: "Type the measured coordinates or the field book (angles and distances), or the level book; paste the rows from Excel, or import a CSV." },
+  { title: "Check and adjust", text: "Choose Bowditch, Transit, Equal or least squares, or Rise & Fall or HI, and read Accepted or Rejected at once." },
   { title: "Save, report and share", text: "Save the job to your dashboard, download the PDF report and share it with the people who need it." },
 ];
 

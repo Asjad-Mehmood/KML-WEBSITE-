@@ -258,6 +258,10 @@
         <button data-ttype="closed" id="tt-closed" role="radio">Closed traverse</button>
         <button data-ttype="open" id="tt-open" role="radio">Open traverse</button>
       </div>
+      <div class="seg seg-input" role="radiogroup" aria-label="What you enter">
+        <button data-tinput="coords" id="ti-coords" role="radio">Site coordinates</button>
+        <button data-tinput="fieldbook" id="ti-fieldbook" role="radio">Angles &amp; distances</button>
+      </div>
       <div class="card">
         <h2><b>1</b> Known points</h2>
         <div class="known">
@@ -268,13 +272,33 @@
           <input id="t-bs-name" data-t="backsight.name" placeholder="CP-02" aria-label="Backsight name"><input placeholder="Easting" id="t-bs-E" data-t="backsight.E" class="num" inputmode="decimal" aria-label="Backsight Easting"><input placeholder="Northing" id="t-bs-N" data-t="backsight.N" class="num" inputmode="decimal" aria-label="Backsight Northing">
           <div class="kl closed-only">Closing</div>
           <input id="t-cl-name" data-t="closing.name" class="closed-only" placeholder="CP-03" aria-label="Closing point name"><input placeholder="Easting" id="t-cl-E" data-t="closing.E" class="num closed-only" inputmode="decimal" aria-label="Closing point known Easting"><input placeholder="Northing" id="t-cl-N" data-t="closing.N" class="num closed-only" inputmode="decimal" aria-label="Closing point known Northing">
-        </div>
+        
+          <div class="kl fb-ref">Closing ref.</div>
+          <input id="t-ref-name" data-t="fb.ref.name" class="fb-ref" placeholder="CP-04" aria-label="Closing reference name"><input placeholder="Easting" id="t-ref-E" data-t="fb.ref.E" class="num fb-ref" inputmode="decimal" aria-label="Closing reference Easting"><input placeholder="Northing" id="t-ref-N" data-t="fb.ref.N" class="num fb-ref" inputmode="decimal" aria-label="Closing reference Northing">
+</div>
         <div class="row-actions closed-only"><button class="link" id="t-same">Closing point = station (loop)</button></div>
+        <div class="row-actions open-only"><button class="btn ghost" id="t-toggle-close" aria-pressed="false">+ Add closing point</button><span class="hint">Optional: add a known closing point to check and adjust this open traverse.</span></div>
       </div>
-      <div class="card">
+      <div class="card co-only">
         <h2><b>2</b> Site coordinates <small>as measured, in order</small></h2>
         <div class="grid-wrap"><table class="grid" id="t-grid"><thead><tr><th class="n">#</th><th>Point</th><th>Easting</th><th>Northing</th><th>Remark</th><th class="x"></th></tr></thead><tbody></tbody></table></div>
         <div class="row-actions"><button class="btn" id="t-add">+ Add point</button><button class="btn ghost" id="t-import">Import CSV</button><span class="hint">Tip: copy rows in Excel (Point, Easting, Northing, Remark) and paste into any cell.</span></div>
+      </div>
+      <div class="card fb-only" id="fb-card">
+        <h2><b>2</b> Field book <small>angles and distances, in the order observed</small></h2>
+        <div class="fb-set">
+          <label>Angle column<select data-t="fb.angleMode" id="fb-mode"><option value="angle">Angle turned from the backsight</option><option value="bearing">Bearing (whole circle)</option></select></label>
+          <label>Typed as<select data-t="fb.fmt" id="fb-fmt"><option value="dms">DDD.MMSS</option><option value="deg">Decimal degrees</option><option value="gon">Gons</option></select></label>
+          <label class="fb-ang">Turned<select data-t="fb.dir" id="fb-dir"><option value="cw">Clockwise</option><option value="ccw">Anticlockwise</option></select></label>
+          <label class="check"><input type="checkbox" data-tb="fb.useH" id="fb-useH"> Levels</label>
+        </div>
+        <div class="grid-wrap"><table class="grid" id="fb-grid"><thead><tr><th class="n">#</th><th>Side</th><th>At</th><th>BS</th><th id="fb-ang-h">Angle</th><th>Distance</th><th class="fb-h">Ht diff</th><th>Point</th><th>Remark</th><th class="x"></th></tr></thead><tbody></tbody></table></div>
+        <div class="fb-extra">
+          <label class="closed-only fb-ang">Closing angle <small id="fb-close-at"></small><input id="fb-closeAngle" data-t="fb.closeAngle" placeholder="optional" autocomplete="off" aria-label="Closing angle"></label>
+          <label class="fb-h">Station level<input id="fb-startH" data-t="fb.startH" class="num" inputmode="decimal" aria-label="Station level"></label>
+          <label class="fb-h closed-only">Closing point level<input id="fb-closeH" data-t="fb.closeH" class="num" inputmode="decimal" aria-label="Closing point level" placeholder="loop: station"></label>
+        </div>
+        <div class="row-actions"><button class="btn" id="fb-add">+ Add point</button><button class="btn ghost" id="fb-addside">+ Side shot</button><button class="btn ghost" id="fb-import">Import CSV</button><span class="hint">Each row: at the station, from the backsight, the angle and distance to the new point. A side shot is taken from the same set-up as the row above it.</span></div>
       </div>
       <div class="card closed-only">
         <h2><b>3</b> Adjustment</h2>
@@ -282,8 +306,24 @@
           <label class="m"><input type="radio" name="t-method" value="bowditch" id="tm-bowditch"><span><b>Bowditch</b><small>Correction in proportion to distance. The usual choice.</small></span></label>
           <label class="m"><input type="radio" name="t-method" value="transit" id="tm-transit"><span><b>Transit</b><small>Easting and Northing corrected by their own changes.</small></span></label>
           <label class="m"><input type="radio" name="t-method" value="equal" id="tm-equal"><span><b>Equal</b><small>Same share of the error at every point.</small></span></label>
+          <label class="m fb-only"><input type="radio" name="t-method" value="lsq" id="tm-lsq"><span><b>Least squares</b><small>Angles and distances weighted and adjusted together.</small></span></label>
         </div>
         <label class="inline">Required precision <span class="ratio">1 :</span><input id="t-precision" data-t="precision" class="num short" inputmode="numeric"></label>
+        <div class="fb-tol fb-only">
+          <label class="inline fb-ang">Angular <input id="fb-angK" data-t="fb.angK" class="num short" inputmode="decimal"><span class="ratio">″ × √n</span></label>
+          <label class="inline fb-h">Levels <input id="fb-hC" data-t="fb.hC" class="num short" inputmode="decimal"><span class="ratio">mm × √km</span></label>
+          <span class="lsq-only">σ angle <input id="fb-sa" data-t="fb.sigma.ang" class="num tiny" inputmode="decimal">″ · σ distance <input id="fb-sd" data-t="fb.sigma.dA" class="num tiny" inputmode="decimal"> mm + <input id="fb-sp" data-t="fb.sigma.dB" class="num tiny" inputmode="decimal"> ppm</span>
+        </div>
+      </div>
+      <div class="card" id="grid-card">
+        <h2><b>4</b> Coordinate system</h2>
+        <div class="fb-set">
+          <label>Grid<select data-t="grid.sys" id="g-sys"><option value="qng">Qatar National Grid (QND95)</option><option value="local">Local grid</option></select></label>
+          <label class="fb-only g-qng">Scale factor<select data-t="grid.sf" id="g-sf"><option value="auto">From the grid</option><option value="typed">Typed</option></select></label>
+          <label class="fb-only g-typed">Combined scale factor<input data-t="grid.scale" id="g-scale" class="num" inputmode="decimal"></label>
+          <label class="fb-only g-auto">Mean height, m<input data-t="grid.meanH" id="g-meanH" class="num" inputmode="decimal" placeholder="levels, else 0"></label>
+        </div>
+        <p class="hint" id="grid-note"></p>
       </div>
     </section>
     <section class="col output" aria-live="polite"><div id="t-result" class="result"></div></section>

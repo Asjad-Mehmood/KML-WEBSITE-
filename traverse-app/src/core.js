@@ -49,8 +49,11 @@ export const METHODS = {
  *   station:   { name, E, N },              // known (where the instrument starts)
  *   backsight: { name, E, N },              // known (reference / RO)
  *   points:    [ { name, E, N, remark } ],  // as measured on site, in order
- *   closing:   { name, E, N, measE, measN } // known coords + coords measured on site (closed only)
+ *   closing:   { name, E, N, measE, measN } // known coords + coords measured on site
+ *   useClosing: true                        // open traverse only: also close it on a known point
  * }
+ * A closed traverse always ends on its known closing point. An open traverse does not, unless
+ * useClosing is set: then it is checked and adjusted on that point exactly like a closed one.
  * Returns { ok, errors[], warnings[], ... } — never throws on bad input.
  */
 export function computeTraverse(input) {
@@ -78,17 +81,17 @@ export function computeTraverse(input) {
   });
 
   let closing = null;
-  if (type === 'closed') {
+  if (type === 'closed' || (type === 'open' && input.useClosing === true)) {
     const c = input.closing || {};
     closing = { name: String(c.name ?? '').trim() || 'Closing point', E: num(c.E), N: num(c.N), measE: num(c.measE), measN: num(c.measN) };
     if (!Number.isFinite(closing.E) || !Number.isFinite(closing.N)) errors.push({ where: 'Closing point', msg: 'Closing point: enter its known Easting and Northing.' });
     if (!Number.isFinite(closing.measE) || !Number.isFinite(closing.measN)) errors.push({ where: 'Closing point', msg: 'Closing point: enter the Easting and Northing measured on site.' });
   }
   const precision = num(input.precision);
-  if (type === 'closed' && !(precision > 0)) errors.push({ where: 'Precision', msg: 'Required precision must be a positive number (for example 10000 for 1:10,000).' });
+  if (closing !== null && !(precision > 0)) errors.push({ where: 'Precision', msg: 'Required precision must be a positive number (for example 10000 for 1:10,000).' });
   if (type === 'open' && pts.length === 0) errors.push({ where: 'Points', msg: 'Add at least one traverse point.' });
 
-  const base = { type, method, station, backsight, closing, precision, errors, warnings, ok: false };
+  const base = { type, checked: closing !== null, method, station, backsight, closing, precision, errors, warnings, ok: false };
   if (errors.length) return base;
 
   // chain of measured positions: station (known) → points (measured) → closing (measured)

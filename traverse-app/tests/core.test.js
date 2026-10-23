@@ -121,3 +121,33 @@ test('levelling: rejected when misclosure exceeds the allowable', () => {
   const r = computeLevel({ ...EXAMPLE_LEVEL, allow: '1.5' });
   assert.equal(r.pass, false);
 });
+
+test('open traverse with a closing point is checked and adjusted like a closed one', () => {
+  for (const method of ['bowditch', 'transit', 'equal']) {
+    const closed = computeTraverse({ ...EXAMPLE_TRAVERSE, method });
+    const open = computeTraverse({ ...EXAMPLE_TRAVERSE, method, type: 'open', useClosing: true });
+    assert.ok(open.ok, JSON.stringify(open.errors));
+    assert.equal(open.type, 'open'); assert.equal(open.checked, true); assert.equal(closed.checked, true);
+    near(open.misE, closed.misE, 0); near(open.misN, closed.misN, 0); near(open.ratio, closed.ratio, 0);
+    assert.equal(open.pass, closed.pass);
+    open.points.forEach((p, i) => { near(p.E, closed.points[i].E, 0, method); near(p.N, closed.points[i].N, 0, method); });
+    const last = open.points[open.points.length - 1];
+    near(last.E, num(EXAMPLE_TRAVERSE.closing.E), 1e-9); near(last.N, num(EXAMPLE_TRAVERSE.closing.N), 1e-9);
+  }
+});
+
+test('open traverse: the closing point only counts when it is switched on', () => {
+  const off = computeTraverse({ ...EXAMPLE_TRAVERSE, type: 'open', useClosing: false });
+  assert.ok(off.ok); assert.equal(off.checked, false); assert.equal(off.pass, null); assert.equal(off.closing, null);
+  assert.equal(off.points.length, EXAMPLE_TRAVERSE.points.length + 1);
+  off.points.forEach(p => assert.equal(p.cE, 0));
+  // switched on, both the known and the measured closing coordinates are needed
+  const half = computeTraverse({ ...EXAMPLE_TRAVERSE, type: 'open', useClosing: true, closing: { name: 'CP-03', E: '229265.871', N: '441392.006', measE: '', measN: '' } });
+  assert.equal(half.ok, false);
+  assert.ok(half.errors.some(e => /measured on site/.test(e.msg)));
+  // and a required precision
+  const noPrec = computeTraverse({ ...EXAMPLE_TRAVERSE, type: 'open', useClosing: true, precision: '' });
+  assert.equal(noPrec.ok, false);
+  // a closed traverse ignores the switch
+  assert.equal(computeTraverse({ ...EXAMPLE_TRAVERSE, useClosing: false }).checked, true);
+});

@@ -54,6 +54,11 @@ const ALIASES = {
   E: ['e', 'easting', 'east', 'x'], N: ['n', 'northing', 'north', 'y'],
   remark: ['remark', 'remarks', 'description', 'desc', 'code', 'note'],
   station: ['station', 'stn', 'point', 'pt', 'name'], bs: ['bs', 'backsight', 'back sight'], is: ['is', 'intermediate', 'inter sight', 'intermediate sight'], fs: ['fs', 'foresight', 'fore sight'],
+  // field book
+  angle: ['angle', 'hz', 'ha', 'horizontal angle', 'hz angle', 'bearing', 'brg', 'wcb', 'azimuth'],
+  dist: ['distance', 'dist', 'hd', 'horizontal distance', 'hz distance', 'length'],
+  dh: ['dh', 'ht diff', 'height diff', 'height difference', 'vd', 'dz'],
+  side: ['side', 'kind', 'type'],
 };
 export function tableToRows(cells, cols, numeric) {
   if (!cells.length) return [];

@@ -20,7 +20,6 @@ import {
   PlayCircle,
   Share2,
   Sigma,
-  Smartphone,
   Telescope,
   Workflow,
 } from "lucide-react";
@@ -100,7 +99,7 @@ const HERO_SLIDES: HeroSlide[] = [
   { src: "/traverse/screens/v2-phone.webp", caption: "On your phone", alt: "Three phone screens: the traverse form, the result and the dashboard" },
 ];
 
-const FEATURE_ICONS = [MapPinned, Sigma, Mountain, FileText, LayoutDashboard, Share2, Telescope, Smartphone];
+const FEATURE_ICONS = [MapPinned, Sigma, Mountain, FileText, LayoutDashboard, Share2, Telescope, Globe];
 
 function SectionHead({ id, eyebrow, title, text, Icon }: { id: string; eyebrow: string; title: string; text?: string; Icon: React.ElementType }) {
   return (

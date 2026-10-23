@@ -103,7 +103,7 @@ function sketch(doc, y, r) {
   const h = 82, w = W - 30;
   y = room(doc, y, h + 8);
   doc.setDrawColor(...C.line); doc.setLineWidth(0.3); doc.roundedRect(15, y, w, h, 2, 2);
-  const all = r.points.map(p => [p.E, p.N]).concat([[r.backsight.E, r.backsight.N]]);
+  const all = r.points.map(p => [p.E, p.N]).concat([[r.backsight.E, r.backsight.N]], (r.sides || []).map(q => [q.E, q.N]));
   const minE = Math.min(...all.map(p => p[0])), maxE = Math.max(...all.map(p => p[0]));
   const minN = Math.min(...all.map(p => p[1])), maxN = Math.max(...all.map(p => p[1]));
   const pad = 14, s = Math.min((w - 2 * pad) / Math.max(maxE - minE, 1e-6), (h - 2 * pad) / Math.max(maxN - minN, 1e-6));
@@ -121,6 +121,13 @@ function sketch(doc, y, r) {
     else { doc.setFillColor(255, 255, 255); doc.setDrawColor(...C.accent); doc.setLineWidth(0.5); doc.circle(x, yy, 1.2, 'FD'); }
     doc.setTextColor(...C.ink); doc.text(pdfText(p.name), x + 2.2, yy - 1.6);
   };
+  (r.sides || []).forEach(q => {
+    const f = r.points.find(p => p.name === q.from) || r.points[0];
+    doc.setDrawColor(...C.amber); doc.setLineWidth(0.2); doc.setLineDashPattern([0.8, 0.8], 0); doc.line(X(f.E), Y(f.N), X(q.E), Y(q.N)); doc.setLineDashPattern([], 0);
+    doc.setFillColor(...C.amber); doc.circle(X(q.E), Y(q.N), 0.8, 'F');
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5); doc.setTextColor(...C.muted); doc.text(pdfText(q.name), X(q.E) + 1.6, Y(q.N) - 1.2);
+  });
+  doc.setFontSize(7.5); doc.setFont('helvetica', 'bold');
   mark({ name: r.backsight.name + ' (BS)', E: r.backsight.E, N: r.backsight.N }, true);
   r.points.forEach(p => mark(p, p.kind !== 'point'));
   // north arrow
@@ -132,47 +139,107 @@ function sketch(doc, y, r) {
   return y + h + 7;
 }
 
+const sec1 = v => (v >= 0 ? '+' : '-') + Math.abs(v).toFixed(1) + '"';
+/** degrees as 123d45'06.7" for the PDF's character set */
+const dmsP = (deg, dp = 1) => {
+  const t = Math.round(((deg % 360) + 360) % 360 * 3600 * 10 ** dp) / 10 ** dp, d = Math.floor(t / 3600), m = Math.floor((t - d * 3600) / 60), s = t - d * 3600 - m * 60;
+  return `${String(d).padStart(3, '0')}°${String(m).padStart(2, '0')}'${s.toFixed(dp).padStart(3 + dp, '0')}"`;
+};
+function gridRows(r) {
+  const sys = r.grid?.sys === 'qng' ? 'Qatar National Grid (QND95), WGS84 latitude and longitude' : 'Local grid (plane coordinates)';
+  if (r.input !== 'fieldbook') return [['Coordinate system', sys]];
+  const sc = r.fb.scale;
+  const how = !sc.auto ? `${fmt(sc.scale, 8)} (typed)` : sc.outside || sc.none ? '1 (the traverse is not in Qatar)'
+    : `${fmt(sc.scale, 8)} = point ${fmt(sc.k, 8)} x height ${fmt(sc.ef, 8)} (${fmt(sc.h, 1)} m)`;
+  return [['Coordinate system', sys], ['Scale factor', how]];
+}
+
 export function traverseReport(jsPDF, r, info) {
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
   let y = frame(doc, 'TRAVERSE ADJUSTMENT REPORT', info);
-  const closed = r.type === 'closed';
-  y = section(doc, y, '1. Traverse details');
+  const closed = r.checked, isFB = r.input === 'fieldbook', qng = r.grid?.sys === 'qng';
+  const hasH = isFB && r.points.some(p => Number.isFinite(p.H));
+  let no = 0; const head = t => section(doc, y, `${++no}. ${t}`);
+  y = head('Traverse details');
   y = kv(doc, y, [
-    ['Traverse type', closed ? 'Closed (checked on a known point)' : 'Open (no closing check)'],
-    ['Adjustment method', closed ? METHODS[r.method] : 'None (open traverse)'],
+    ['Traverse type', closed ? (r.type === 'open' ? 'Open (checked on a known closing point)' : 'Closed (checked on a known point)') : 'Open (no closing check)'],
+    ['Observations', isFB ? (r.fb.bearings ? `Field book: bearings and distances (${r.fb.fmt === 'dms' ? 'DDD.MMSS' : r.fb.fmt === 'gon' ? 'gons' : 'decimal degrees'})` : `Field book: angles turned ${r.fb.dir === 'ccw' ? 'anticlockwise' : 'clockwise'} from the backsight, and distances`) : 'Site coordinates as measured'],
+    ['Adjustment method', closed ? (METHODS[r.method] || (r.method === 'lsq' ? 'Least squares' : r.method)) : 'None (open traverse)'],
+    ...gridRows(r),
     ['Station point', `${r.station.name}   E ${fmt(r.station.E)}   N ${fmt(r.station.N)}`],
     ['Backsight point', `${r.backsight.name}   E ${fmt(r.backsight.E)}   N ${fmt(r.backsight.N)}`],
     ['Reference bearing', `${r.station.name} -> ${r.backsight.name}   ${dms(r.refBearing)}   (${fmt(r.refDist)} m)`],
     ...(closed ? [['Closing point', `${r.closing.name}   E ${fmt(r.closing.E)}   N ${fmt(r.closing.N)}`]] : []),
+    ...(isFB && r.fb.hasCloseAngle ? [['Closing angle', `${r.fb.closeAngleRaw} at ${r.closing.name}, onto ${r.fb.isLoop ? r.backsight.name : r.fb.ref?.name || 'the closing reference'}`]] : []),
     ['Traverse legs', `${r.nLegs}   (total length ${fmt(r.totalL)} m)`],
   ], 1);
-  y = section(doc, y + 2, '2. Closure check');
+  y = section(doc, y + 2, `${++no}. Closure check`);
   if (closed) {
-    y = verdict(doc, y + 2, r.pass, r.pass ? 'ACCEPTED - within the required precision' : 'REJECTED - outside the required precision', [
+    const lines = [
       `Misclosure  dE = ${fmt(r.misE * 1000, 1)} mm    dN = ${fmt(r.misN * 1000, 1)} mm    Linear = ${fmt(r.linear * 1000, 1)} mm`,
       `Precision achieved ${ratioText(r.ratio)}    Required 1 : ${Math.round(r.precision).toLocaleString('en-US')}    Total length ${fmt(r.totalL)} m`,
-      `Misclosure = measured closing coordinates - known closing coordinates. Corrections are the opposite sign.`,
-    ]);
+    ];
+    if (isFB && r.fb.hasCloseAngle) lines.push(`Angular misclosure ${sec1(r.fb.angMis)} on ${r.fb.nAng} angles    Allowed +/-${r.fb.angAllow.toFixed(1)}" (${r.fb.angK}" x sqrt n)    Correction ${sec1(r.fb.angCorr)} per angle`);
+    if (isFB && r.fb.fH != null) lines.push(`Level misclosure ${fmt(r.fb.fH * 1000, 1)} mm    Allowed +/-${fmt(r.fb.hAllow * 1000, 1)} mm`);
+    if (isFB && r.fb.lsq && r.fb.lsq.chi) lines.push(`Least squares: s0 ${r.fb.lsq.s0.toFixed(3)}, chi-square ${r.fb.lsq.chi.value.toFixed(2)} (95%: ${r.fb.lsq.chi.lo.toFixed(2)} to ${r.fb.lsq.chi.hi.toFixed(2)})`);
+    lines.push(isFB ? 'Misclosure = where the observations arrive - known closing coordinates. Corrections are the opposite sign.' : 'Misclosure = measured closing coordinates - known closing coordinates. Corrections are the opposite sign.');
+    const title = r.pass ? (isFB ? 'ACCEPTED - within every tolerance' : 'ACCEPTED - within the required precision') : (isFB ? 'REJECTED - ' + (r.why[0] || 'outside tolerance') : 'REJECTED - outside the required precision');
+    y = verdict(doc, y + 2, r.pass, title, lines);
   } else {
     y = verdict(doc, y + 2, null, 'OPEN TRAVERSE - NOT CHECKED', [
       'An open traverse does not close on a known point, so errors cannot be detected or adjusted.',
-      'Coordinates below are exactly as measured on site.',
+      isFB ? 'Coordinates below are worked out from the field book as observed.' : 'Coordinates below are exactly as measured on site.',
     ]);
   }
-  y = section(doc, y, '3. Input coordinates (as measured on site)');
+  if (isFB) {
+    y = head('Field book (as observed)');
+    const ang = r.fb.bearings ? 'Bearing' : 'Angle';
+    y = table(doc, y + 1, ['#', 'Kind', ang, 'Distance (m)', ...(hasH ? ['Ht diff (m)'] : []), 'Point', 'Remark'],
+      r.fb.obs.map((o, i) => [o.closing ? 'C' : String(i + 1), o.closing ? 'Closing leg' : o.side ? 'Side shot' : 'Point', o.raw.angle, o.raw.dist, ...(hasH ? [o.raw.dh] : []), o.name, o.remark]),
+      { columnStyles: { 2: { halign: 'right' }, 3: { halign: 'right' } } });
+  }
+  y = head(isFB ? 'Computed coordinates (angles balanced, before the linear adjustment)' : 'Input coordinates (as measured on site)');
   y = table(doc, y + 1, ['Point', 'Easting (m)', 'Northing (m)', 'Remark'],
-    r.points.map(p => [p.name, fmt(p.measE), fmt(p.measN), p.kind === 'station' ? 'Station (known)' : p.kind === 'closing' ? 'Closing point as measured' : p.remark]),
+    r.points.map(p => [p.name, fmt(p.measE), fmt(p.measN), p.kind === 'station' ? 'Station (known)' : p.kind === 'closing' ? (isFB ? 'Closing point as observed' : 'Closing point as measured') : p.remark]),
     { columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' } } });
-  y = section(doc, y, closed ? '4. Output coordinates (adjusted)' : '4. Output coordinates');
-  y = table(doc, y + 1, ['Point', 'Corr. dE (mm)', 'Corr. dN (mm)', 'Adjusted Easting (m)', 'Adjusted Northing (m)'],
-    r.points.map(p => [p.name, fmt(p.cE * 1000, 1), fmt(p.cN * 1000, 1), fmt(p.E), fmt(p.N)]),
-    { columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right', fontStyle: 'bold' }, 4: { halign: 'right', fontStyle: 'bold' } } });
-  y = section(doc, y, '5. Bearings and distances (from output coordinates)');
-  y = table(doc, y + 1, ['From', 'To', 'Bearing (WCB)', 'Distance (m)'],
-    r.legs.map(l => [l.from, l.to, dms(l.bearing), fmt(l.dist)]), { columnStyles: { 2: { halign: 'right' }, 3: { halign: 'right' } } });
-  y = section(doc, y, '6. Sketch');
+  y = head(closed ? 'Output coordinates (adjusted)' : 'Output coordinates');
+  y = table(doc, y + 1, ['Point', 'Corr. dE (mm)', 'Corr. dN (mm)', 'Adjusted Easting (m)', 'Adjusted Northing (m)', ...(hasH ? ['Level (m)'] : [])],
+    r.points.map(p => [p.name, fmt(p.cE * 1000, 1), fmt(p.cN * 1000, 1), fmt(p.E), fmt(p.N), ...(hasH ? [fmt(p.H)] : [])]),
+    { columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right', fontStyle: 'bold' }, 4: { halign: 'right', fontStyle: 'bold' }, 5: { halign: 'right' } } });
+  y = head('Bearings and distances (from output coordinates)');
+  y = table(doc, y + 1, ['From', 'To', 'Bearing (WCB)', 'Distance (m)', ...(isFB ? ['Observed (m)'] : [])],
+    r.legs.map(l => [l.from, l.to, dms(l.bearing), fmt(l.dist), ...(isFB ? [fmt(l.obsDist)] : [])]), { columnStyles: { 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' } } });
+  if (isFB && r.fb.angles.length && !r.fb.bearings) {
+    y = head('Angles (clockwise from the backsight)');
+    y = table(doc, y + 1, ['At', 'Backsight', 'Foresight', 'Observed', 'Correction', 'Adjusted'],
+      r.fb.angles.map(a => [a.at, a.bs, a.fs, dmsP(a.obs), sec1(a.corr).replace('.0"', '.0"'), dmsP(a.adj)]), { columnStyles: { 3: { halign: 'right' }, 4: { halign: 'right' }, 5: { halign: 'right' } } });
+  }
+  if (isFB && r.sides.length) {
+    y = head('Side shots (from the adjusted stations)');
+    y = table(doc, y + 1, ['Point', 'From', 'Bearing', 'Distance (m)', 'Easting (m)', 'Northing (m)', ...(hasH ? ['Level (m)'] : []), 'Remark'],
+      r.sides.map(q => [q.name, q.from, dms(q.bearing), fmt(q.dist), fmt(q.E), fmt(q.N), ...(hasH ? [fmt(q.H)] : []), q.remark]),
+      { columnStyles: { 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right', fontStyle: 'bold' }, 5: { halign: 'right', fontStyle: 'bold' } } });
+  }
+  if (isFB && r.fb.lsq) {
+    const q = r.fb.lsq;
+    y = head(`Least squares (${q.m} observations, ${q.u} unknowns, redundancy ${q.r})`);
+    y = table(doc, y + 1, ['Observation', 'At', 'To', 'Residual', 'Standardised'],
+      q.obs.map(o => [o.label, o.at, o.to, o.unit === 'm' ? fmt(o.v * 1000, 1) + ' mm' : sec1(o.v), o.std == null ? '-' : o.std.toFixed(2) + (o.flag ? ' check' : '')]),
+      { columnStyles: { 3: { halign: 'right' }, 4: { halign: 'right' } } });
+    y = table(doc, y, ['Station', 'sE (mm)', 'sN (mm)', '95% error ellipse'],
+      r.points.map((p, i) => (q.stat[i] ? [p.name, fmt(q.stat[i].sE * 1000, 1), fmt(q.stat[i].sN * 1000, 1), `${fmt(q.stat[i].ellA * 1000, 1)} x ${fmt(q.stat[i].ellB * 1000, 1)} mm @ ${q.stat[i].ellAz.toFixed(0)} deg`] : null)).filter(Boolean),
+      { columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' } } });
+  }
+  if (qng) {
+    y = head('Latitude and longitude (WGS84, from the Qatar National Grid)');
+    const all = r.points.filter((p, i) => !(i && p.kind === 'closing' && p.name === r.points[0].name)).concat(r.sides || []);
+    y = table(doc, y + 1, ['Point', 'Easting (m)', 'Northing (m)', 'Latitude', 'Longitude'],
+      all.map(p => [p.name, fmt(p.E), fmt(p.N), fmt(p.lat, 8), fmt(p.lon, 8)]), { columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' } } });
+  }
+  y = head('Sketch');
   y = sketch(doc, y + 2, r);
-  if (r.warnings.length) { y = section(doc, y, 'Notes'); doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...C.ink); r.warnings.forEach(w => { y = room(doc, y, 6); doc.text(pdfText('- ' + w), 15, y + 4); y += 5; }); y += 4; }
+  const notes = (r.gridWarn ? [r.gridWarn] : []).concat(r.warnings);
+  if (notes.length) { y = section(doc, y, 'Notes'); doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...C.ink); notes.forEach(w => { y = room(doc, y, 6); doc.text(pdfText('- ' + w), 15, y + 4); y += 5; }); y += 4; }
   signatures(doc, y, info);
   footers(doc, `Traverse adjustment - ${info.project || 'SurveyX Digital'}`);
   return doc;

@@ -79,6 +79,14 @@ export function simulate(params) {
     backsight: { name: B.name, E: B.E.toFixed(3), N: B.N.toFixed(3) },
     points: meas.slice(1, -1).map(q => ({ name: q.name, E: q.E.toFixed(3), N: q.N.toFixed(3), remark: 'Simulated' })),
     closing: { name: C.name, E: C.E.toFixed(3), N: C.N.toFixed(3), measE: mc.E.toFixed(3), measN: mc.N.toFixed(3) },
+    // the simulated distances are grid distances already, so no grid scale factor is applied to them
+    grid: { sys: 'qng', sf: 'typed', scale: '1', meanH: '' },
+    // and the observations themselves, for Angles & distances
+    fb: {
+      angleMode: 'angle', fmt: 'deg', dir: 'cw',
+      rows: obs.slice(0, -1).map(o => ({ side: 'point', angle: o.angle.toFixed(6), dist: o.dist.toFixed(4), dh: '', name: o.fore, remark: 'Simulated' })),
+      close: { angle: obs[obs.length - 1].angle.toFixed(6), dist: obs[obs.length - 1].dist.toFixed(4), dh: '' },
+    },
   };
   return { params: { ...p, stations: n }, A, B, C, chain, meas, obs, misE, misN, linear, length, ratio: linear > 0 ? length / linear : Infinity, travInput };
 }
