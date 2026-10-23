@@ -77,6 +77,7 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
   const [running, setRunning] = useState<string | null>(null); // broadcast id being sent from this page
   const [busy, setBusy] = useState<string | null>(null);
   const [failed, setFailed] = useState<{ id: string; list: { email: string; error: string | null }[] } | null>(null);
+  const [tab, setTab] = useState<string | null>(null); // the app whose versions are shown
   const toast = useRef(onToast);
   useEffect(() => {
     toast.current = onToast;
@@ -200,6 +201,7 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
     );
   }
   if (!data) return null;
+  const shown = data.groups.find((g) => g.app.id === tab) || data.groups[0];
 
   return (
     <div className="space-y-6">
@@ -236,11 +238,12 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
         </div>
         <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
           <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400">
-            <Users className="w-4 h-4" /> Will receive a broadcast
+            <Users className="w-4 h-4" /> Gets every broadcast
           </p>
           <p className="mt-1.5 text-sm text-white">
             <b className="text-lg">{data.audience.everyone}</b> {data.audience.everyone === 1 ? "person" : "people"} with an account
           </p>
+          <p className="mt-0.5 text-xs text-slate-500">No sign-up needed: everyone who registered is included.</p>
         </div>
         <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
           <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400">
@@ -249,6 +252,7 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
           <p className="mt-1.5 text-sm text-white">
             <b className="text-lg">{data.audience.optedOut}</b> stopped release emails
           </p>
+          <p className="mt-0.5 text-xs text-slate-500">They pressed &ldquo;Stop release emails&rdquo; in an email, so they&apos;re left out.</p>
         </div>
       </div>
       <p className="text-xs text-slate-500 -mt-3">
@@ -256,9 +260,31 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
         with the people not reached yet.
       </p>
 
-      {/* One group per app */}
-      {data.groups.map(({ app, releases }) => (
-        <section key={app.id} className="rounded-2xl border border-slate-800 bg-slate-900/40">
+      {/* One tab per app; the selected app's versions below */}
+      <div role="tablist" aria-label="Apps" className="flex gap-2 overflow-x-auto pb-1">
+        {data.groups.map(({ app, releases }) => {
+          const active = app.id === shown.app.id;
+          const sending = releases.some((r) => r.broadcasts.some((b) => b.status !== "done"));
+          return (
+            <button
+              key={app.id}
+              role="tab"
+              aria-selected={active}
+              onClick={() => setTab(app.id)}
+              className={`shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-semibold cursor-pointer transition-colors ${
+                active ? "bg-blue-600 border-blue-500 text-white" : "bg-slate-900 border-slate-800 text-slate-300 hover:text-white hover:border-slate-700"
+              }`}
+            >
+              {app.name}
+              <span className={`px-1.5 py-0.5 rounded-md text-[11px] ${active ? "bg-white/20" : "bg-slate-800 text-slate-400"}`}>{releases.length}</span>
+              {sending && <span className="w-2 h-2 rounded-full bg-amber-400" title="A broadcast isn't finished" />}
+            </button>
+          );
+        })}
+      </div>
+
+      {[shown].map(({ app, releases }) => (
+        <section key={app.id} role="tabpanel" className="rounded-2xl border border-slate-800 bg-slate-900/40">
           <header className="flex flex-wrap items-center gap-3 px-5 py-4 border-b border-slate-800">
             <div className="mr-auto">
               <h4 className="text-sm font-bold text-white">{app.name}</h4>
@@ -382,11 +408,10 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
                         <button
                           onClick={() => setConfirming(rel)}
                           disabled={!data.mail.configured || !!running}
-                          className={`${btn} ${sentBefore && rel.notYet === 0 ? "bg-slate-800 hover:bg-slate-700 text-slate-200" : "bg-blue-600 hover:bg-blue-500 text-white"}`}
-                          title={sentBefore && rel.notYet === 0 ? "Everyone with an account already has it" : undefined}
+                          className={`${btn} bg-blue-600 hover:bg-blue-500 text-white`}
                         >
                           <Send className="w-3.5 h-3.5" />
-                          {!sentBefore ? `Send to everyone (${data.audience.everyone})` : rel.notYet > 0 ? `Send to ${rel.notYet} who haven't had it` : "Send again"}
+                          {sentBefore ? "Send again" : "Send"} to everyone ({data.audience.everyone})
                         </button>
                       )}
                       <button onClick={() => setEditing({ isNew: false, release: rel })} className={`${btn} bg-slate-800 hover:bg-slate-700 text-slate-200`}>
@@ -638,7 +663,7 @@ function ConfirmBroadcast({
   onPreview: () => void;
 }) {
   const sentBefore = release.broadcasts.some((b) => b.sent > 0);
-  const [onlyNew, setOnlyNew] = useState(sentBefore && release.notYet > 0);
+  const [onlyNew, setOnlyNew] = useState(false);
   const [checked, setChecked] = useState(false);
   const count = onlyNew ? release.notYet : everyone;
   return (
@@ -650,10 +675,10 @@ function ConfirmBroadcast({
         <fieldset className="mt-4 space-y-2 text-sm">
           <legend className="text-xs font-semibold text-slate-400 mb-1">Who gets it</legend>
           <label className="flex items-center gap-2 text-slate-200 cursor-pointer">
-            <input type="radio" checked={onlyNew} onChange={() => setOnlyNew(true)} /> Only people who haven&apos;t had it ({release.notYet})
+            <input type="radio" checked={!onlyNew} onChange={() => setOnlyNew(false)} /> Everyone again ({everyone})
           </label>
           <label className="flex items-center gap-2 text-slate-200 cursor-pointer">
-            <input type="radio" checked={!onlyNew} onChange={() => setOnlyNew(false)} /> Everyone again ({everyone})
+            <input type="radio" checked={onlyNew} onChange={() => setOnlyNew(true)} /> Only people who haven&apos;t had it yet ({release.notYet})
           </label>
         </fieldset>
       )}
