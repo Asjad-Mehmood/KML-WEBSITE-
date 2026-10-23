@@ -37,6 +37,8 @@ interface Broadcast {
   failed: number;
   lastError: string | null;
   createdBy: string;
+  /** app: people who use the app; all: everyone with an account */
+  audience: "app" | "all";
   createdAt: string;
   finishedAt: string | null;
 }
@@ -50,10 +52,13 @@ interface Release {
   link: string;
   linkLabel: string;
   broadcasts: Broadcast[];
+  /** Still to get it: the app's users, and everyone with an account */
   notYet: number;
+  notYetAll: number;
 }
 interface Data {
-  groups: { app: App; releases: Release[] }[];
+  /** users: people who downloaded or used the app with their account */
+  groups: { app: App; users: number; releases: Release[] }[];
   audience: { everyone: number; optedOut: number };
   mail: { configured: boolean; from: string };
 }
@@ -67,7 +72,7 @@ const errorOf = async (r: Response) => ((await r.json().catch(() => ({}))) as { 
 const btn = "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed";
 const input = "w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500";
 
-// Admin → Releases: each app's versions, and emailing one to everyone with an account.
+// Admin → Releases: each app's versions, and emailing one to the people who use that app.
 export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fetch; onToast: (message: string, type?: "success" | "error") => void }) {
   const [data, setData] = useState<Data | null>(null);
   const [loading, setLoading] = useState(true);
@@ -209,7 +214,7 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
         <div>
           <h3 className="text-base font-bold text-white">Releases</h3>
           <p className="text-xs text-slate-400">
-            Every version of each app. Send one to everyone with an account, new or past; each email has a link to stop release emails.
+            Every version of each app. A release goes to the people who downloaded or used that app, new version or past; each email has a link to stop release emails.
           </p>
         </div>
         <button
@@ -238,12 +243,12 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
         </div>
         <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
           <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400">
-            <Users className="w-4 h-4" /> Gets every broadcast
+            <Users className="w-4 h-4" /> Accounts
           </p>
           <p className="mt-1.5 text-sm text-white">
             <b className="text-lg">{data.audience.everyone}</b> {data.audience.everyone === 1 ? "person" : "people"} with an account
           </p>
-          <p className="mt-0.5 text-xs text-slate-500">No sign-up needed: everyone who registered is included.</p>
+          <p className="mt-0.5 text-xs text-slate-500">Each app&apos;s releases go only to the people who use it. The tab shows how many.</p>
         </div>
         <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
           <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400">
@@ -283,13 +288,14 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
         })}
       </div>
 
-      {[shown].map(({ app, releases }) => (
+      {[shown].map(({ app, users, releases }) => (
         <section key={app.id} role="tabpanel" className="rounded-2xl border border-slate-800 bg-slate-900/40">
           <header className="flex flex-wrap items-center gap-3 px-5 py-4 border-b border-slate-800">
             <div className="mr-auto">
               <h4 className="text-sm font-bold text-white">{app.name}</h4>
               <p className="text-xs text-slate-400">
-                On the site now: <span className="text-slate-200 font-semibold">{app.current}</span> · download page{" "}
+                <span className="text-slate-200 font-semibold">{users}</span> {users === 1 ? "person has" : "people have"} downloaded or used it · on the site now:{" "}
+                <span className="text-slate-200 font-semibold">{app.current}</span> · download page{" "}
                 <a href={app.href} target="_blank" rel="noopener" className="text-blue-400 hover:underline">{app.href}</a>
               </p>
             </div>
@@ -359,6 +365,7 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
                                 <span className="text-slate-200 font-semibold">
                                   {b.status === "done" ? `Sent to ${b.sent} of ${b.total}` : `${b.status === "paused" ? "Paused" : "Sending"}: ${done} of ${b.total}`}
                                 </span>
+                                <span className="px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">{b.audience === "app" ? `${app.name} users` : "Everyone"}</span>
                                 {b.failed > 0 && (
                                   <button onClick={() => showFailed(b)} className="text-rose-300 hover:underline cursor-pointer">
                                     {b.failed} failed
@@ -411,7 +418,7 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
                           className={`${btn} bg-blue-600 hover:bg-blue-500 text-white`}
                         >
                           <Send className="w-3.5 h-3.5" />
-                          {sentBefore ? "Send again" : "Send"} to everyone ({data.audience.everyone})
+                          {sentBefore ? "Send again" : "Send"} to {app.name} users ({users})
                         </button>
                       )}
                       <button onClick={() => setEditing({ isNew: false, release: rel })} className={`${btn} bg-slate-800 hover:bg-slate-700 text-slate-200`}>
@@ -451,12 +458,13 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
         <ConfirmBroadcast
           release={confirming}
           appName={data.groups.find((g) => g.app.id === confirming.app)?.app.name || confirming.app}
+          appUsers={data.groups.find((g) => g.app.id === confirming.app)?.users ?? 0}
           everyone={data.audience.everyone}
           onClose={() => setConfirming(null)}
-          onStart={async (onlyNew) => {
+          onStart={async (onlyNew, audience) => {
             const rel = confirming;
             setConfirming(null);
-            const r = await adminFetch(`/api/admin/releases/${rel.id}/broadcast`, json({ confirm: true, onlyNew }));
+            const r = await adminFetch(`/api/admin/releases/${rel.id}/broadcast`, json({ confirm: true, onlyNew, audience }));
             if (!r.ok) return toast.current(await errorOf(r), "error");
             const { broadcastId } = await r.json();
             await load();
@@ -650,6 +658,7 @@ function PreviewModal({ preview, onClose }: { preview: { subject: string; html: 
 function ConfirmBroadcast({
   release,
   appName,
+  appUsers,
   everyone,
   onClose,
   onStart,
@@ -657,30 +666,43 @@ function ConfirmBroadcast({
 }: {
   release: Release;
   appName: string;
+  appUsers: number;
   everyone: number;
   onClose: () => void;
-  onStart: (onlyNew: boolean) => void;
+  onStart: (onlyNew: boolean, audience: "app" | "all") => void;
   onPreview: () => void;
 }) {
   const sentBefore = release.broadcasts.some((b) => b.sent > 0);
+  const [who, setWho] = useState<"app" | "all">("app");
   const [onlyNew, setOnlyNew] = useState(false);
   const [checked, setChecked] = useState(false);
-  const count = onlyNew ? release.notYet : everyone;
+  const count = who === "app" ? (onlyNew ? release.notYet : appUsers) : onlyNew ? release.notYetAll : everyone;
   return (
     <Modal title={`Send ${appName} ${release.version}`} onClose={onClose}>
       <p className="text-sm text-slate-300">
         Subject: <span className="font-semibold text-white">{release.title}</span>
       </p>
+      <fieldset className="mt-4 space-y-2 text-sm">
+        <legend className="text-xs font-semibold text-slate-400 mb-1">Who gets it</legend>
+        <label className="flex items-start gap-2 text-slate-200 cursor-pointer">
+          <input type="radio" checked={who === "app"} onChange={() => setWho("app")} className="mt-1" />
+          <span>
+            {appName} users ({appUsers})
+            <span className="block text-xs text-slate-500">People who downloaded or used {appName} with their account</span>
+          </span>
+        </label>
+        <label className="flex items-start gap-2 text-slate-200 cursor-pointer">
+          <input type="radio" checked={who === "all"} onChange={() => setWho("all")} className="mt-1" />
+          <span>
+            Everyone with an account ({everyone})
+            <span className="block text-xs text-slate-500">Also people who haven&apos;t tried {appName}, e.g. to announce a new app</span>
+          </span>
+        </label>
+      </fieldset>
       {sentBefore && (
-        <fieldset className="mt-4 space-y-2 text-sm">
-          <legend className="text-xs font-semibold text-slate-400 mb-1">Who gets it</legend>
-          <label className="flex items-center gap-2 text-slate-200 cursor-pointer">
-            <input type="radio" checked={!onlyNew} onChange={() => setOnlyNew(false)} /> Everyone again ({everyone})
-          </label>
-          <label className="flex items-center gap-2 text-slate-200 cursor-pointer">
-            <input type="radio" checked={onlyNew} onChange={() => setOnlyNew(true)} /> Only people who haven&apos;t had it yet ({release.notYet})
-          </label>
-        </fieldset>
+        <label className="mt-3 flex items-center gap-2 text-sm text-slate-200 cursor-pointer">
+          <input type="checkbox" checked={onlyNew} onChange={(e) => setOnlyNew(e.target.checked)} /> Skip people who already got this release
+        </label>
       )}
       {!release.notes.trim() && (
         <p className="mt-4 rounded-xl bg-amber-500/10 border border-amber-500/30 p-3 text-sm text-amber-200">
@@ -688,7 +710,7 @@ function ConfirmBroadcast({
         </p>
       )}
       <div className="mt-4 rounded-xl bg-slate-950 border border-slate-800 p-3 text-sm text-slate-300">
-        <b className="text-white">{count}</b> {count === 1 ? "person" : "people"} with an account will get this email, one by one. People who stopped release emails are left out.
+        <b className="text-white">{count}</b> {count === 1 ? "person" : "people"} will get this email, one by one. People who stopped release emails are left out.
       </div>
       <label className="mt-4 flex items-start gap-2 text-sm text-slate-200 cursor-pointer">
         <input type="checkbox" checked={checked} onChange={(e) => setChecked(e.target.checked)} className="mt-0.5" />
@@ -701,7 +723,7 @@ function ConfirmBroadcast({
       <p className="mt-3 text-xs text-slate-500">Keep this page open while it sends. If you close it, press Continue later: nobody gets it twice.</p>
       <div className="mt-5 flex justify-end gap-2">
         <button onClick={onClose} className={`${btn} px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200`}>Cancel</button>
-        <button onClick={() => onStart(onlyNew)} disabled={!checked || count === 0} className={`${btn} px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white`}>
+        <button onClick={() => onStart(onlyNew, who)} disabled={!checked || count === 0} className={`${btn} px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white`}>
           <Send className="w-3.5 h-3.5" /> Send to {count}
         </button>
       </div>

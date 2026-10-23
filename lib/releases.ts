@@ -76,6 +76,7 @@ export function ensureReleaseTables(): Promise<void> {
         "finishedAt" TIMESTAMP(3),
         CONSTRAINT "release_broadcasts_pkey" PRIMARY KEY ("id")
       )`);
+      await run(`ALTER TABLE "release_broadcasts" ADD COLUMN IF NOT EXISTS "audience" TEXT NOT NULL DEFAULT 'all'`);
       await run(`CREATE INDEX IF NOT EXISTS "release_broadcasts_releaseId_idx" ON "release_broadcasts"("releaseId")`);
       await run(`DO $$ BEGIN
         ALTER TABLE "release_broadcasts" ADD CONSTRAINT "release_broadcasts_releaseId_fkey" FOREIGN KEY ("releaseId")
@@ -268,6 +269,9 @@ export function compareVersions(a: string, b: string): number {
 }
 
 // ---------- who gets the email ----------
+/** "app": people who downloaded or used that app. "all": everyone with an account. */
+export type Audience = "app" | "all";
+
 const eligibleSql = `
   SELECT DISTINCT ON (lower(trim(u."email"))) lower(trim(u."email")) AS email, coalesce(u."name", '') AS name
   FROM "users" u
@@ -275,22 +279,73 @@ const eligibleSql = `
     AND lower(trim(u."email")) <> ALL($1::text[])
     AND NOT EXISTS (SELECT 1 FROM "email_optouts" o WHERE o."email" = lower(trim(u."email")))`;
 
-// people who already have this release from an earlier broadcast
+// The tables that show who uses which app. activities and user_files may be missing on a
+// database that has never had them; the checks that need them are left out until they exist.
+let tablesSeen: Promise<Set<string>> | null = null;
+function usageTables(): Promise<Set<string>> {
+  if (!tablesSeen) {
+    tablesSeen = prisma
+      .$queryRawUnsafe<{ t: string }[]>(
+        `SELECT t FROM unnest(ARRAY['downloads', 'activities', 'user_files']) AS t WHERE to_regclass('public.' || quote_ident(t)) IS NOT NULL`
+      )
+      .then((rows) => new Set(rows.map((r) => r.t)));
+    tablesSeen.then((t) => {
+      if (t.size < 3) tablesSeen = null; // look again next time
+    });
+  }
+  return tablesSeen;
+}
+
+// A download counts by account, or by email for one recorded without the account id
+const downloaded = (types: string[]) =>
+  `EXISTS (SELECT 1 FROM "downloads" d WHERE (d."userId" = u."id" OR lower(trim(d."userEmail")) = lower(trim(u."email"))) AND d."assetType" IN (${types.map((t) => `'${t}'`).join(", ")}))`;
+
+/**
+ * SQL that is true for a user of the app (u is the users row). Excel to KML: downloaded the
+ * Windows app or used the converter (web, Android or Windows all log conversions). Traverse &
+ * Level: downloaded the Windows program or used the web app (its activity starts with tl_).
+ * RoadPro and Project Folder Manager: downloaded them.
+ */
+async function appUserSql(appId: string): Promise<string> {
+  const t = await usageTables();
+  if (!t.has("downloads")) return "FALSE";
+  const or = (parts: (string | false)[]) => `(${parts.filter(Boolean).join(" OR ")})`;
+  switch (appId) {
+    case "excel-to-kml":
+      return or([
+        downloaded(["windows_installer", "web_app"]),
+        t.has("activities") &&
+          `EXISTS (SELECT 1 FROM "activities" a WHERE a."userId" = u."id" AND a."action" IN ('file_upload', 'conversion', 'export', 'batch_process', 'photos_attached', 'project_save'))`,
+      ]);
+    case "traverse":
+      return or([
+        downloaded(["traverse"]),
+        t.has("activities") && `EXISTS (SELECT 1 FROM "activities" a WHERE a."userId" = u."id" AND a."action" LIKE 'tl\\_%')`,
+        t.has("user_files") && `EXISTS (SELECT 1 FROM "user_files" f WHERE f."userId" = u."id" AND f."platform" = 'traverse_app')`,
+      ]);
+    case "roadpro":
+      return downloaded(["roadpro"]);
+    case "folder-manager":
+      return downloaded(["folder_manager"]);
+    default:
+      return "FALSE";
+  }
+}
+
+/** The people a broadcast goes to ($1: never-email list) */
+async function recipientsSql(appId: string, who: Audience): Promise<string> {
+  return who === "app" ? `${eligibleSql}\n    AND ${await appUserSql(appId)}` : eligibleSql;
+}
+
+// people who already have this release from an earlier broadcast ($2: release id)
 const alreadySentSql = `
     AND NOT EXISTS (
       SELECT 1 FROM "release_recipients" r JOIN "release_broadcasts" b ON b."id" = r."broadcastId"
       WHERE b."releaseId" = $2 AND r."status" = 'sent' AND r."email" = lower(trim(u."email")))`;
 
-export async function audience(releaseId?: string) {
-  await ensureReleaseTables();
-  const [all] = await prisma.$queryRawUnsafe<{ n: number }[]>(`SELECT count(*)::int AS n FROM (${eligibleSql}) e`, NEVER_EMAIL);
-  const [optedOut] = await prisma.$queryRawUnsafe<{ n: number }[]>(`SELECT count(*)::int AS n FROM "email_optouts"`);
-  let notYet: number | null = null;
-  if (releaseId) {
-    const [r] = await prisma.$queryRawUnsafe<{ n: number }[]>(`SELECT count(*)::int AS n FROM (${eligibleSql}${alreadySentSql}) e`, NEVER_EMAIL, releaseId);
-    notYet = r.n;
-  }
-  return { everyone: all.n, notYet, optedOut: optedOut.n };
+async function count(sql: string, ...args: unknown[]): Promise<number> {
+  const [r] = await prisma.$queryRawUnsafe<{ n: number }[]>(`SELECT count(*)::int AS n FROM (${sql}) e`, ...args);
+  return r.n;
 }
 
 // ---------- the list for the admin page ----------
@@ -299,25 +354,32 @@ export async function listReleases() {
   const releases = await prisma.productRelease.findMany({
     include: { broadcasts: { orderBy: { createdAt: "desc" } } },
   });
-  const notYet = await prisma.$queryRawUnsafe<{ releaseId: string; n: number }[]>(
-    `SELECT pr."id" AS "releaseId", (SELECT count(*)::int FROM (${eligibleSql}
-      AND NOT EXISTS (SELECT 1 FROM "release_recipients" r JOIN "release_broadcasts" b ON b."id" = r."broadcastId"
-        WHERE b."releaseId" = pr."id" AND r."status" = 'sent' AND r."email" = lower(trim(u."email")))) e) AS n
-     FROM "product_releases" pr`,
-    NEVER_EMAIL
+  const everyone = await count(eligibleSql, NEVER_EMAIL);
+  const [optedOut] = await prisma.$queryRawUnsafe<{ n: number }[]>(`SELECT count(*)::int AS n FROM "email_optouts"`);
+  const groups = await Promise.all(
+    RELEASE_APPS.map(async (app) => {
+      const appSql = await recipientsSql(app.id, "app");
+      const own = releases
+        .filter((r) => r.app === app.id)
+        .sort((x, y) => compareVersions(y.version, x.version) || y.releasedAt.getTime() - x.releasedAt.getTime());
+      return {
+        app,
+        // people who downloaded or used this app
+        users: await count(appSql, NEVER_EMAIL),
+        releases: await Promise.all(
+          own.map(async (r) => ({
+            ...r,
+            // still to get this release: among the app's users, and among everyone
+            notYet: await count(`${appSql}${alreadySentSql}`, NEVER_EMAIL, r.id),
+            notYetAll: await count(`${eligibleSql}${alreadySentSql}`, NEVER_EMAIL, r.id),
+          }))
+        ),
+      };
+    })
   );
-  const notYetBy = Object.fromEntries(notYet.map((r) => [r.releaseId, r.n]));
-  const aud = await audience();
-  const groups = RELEASE_APPS.map((app) => ({
-    app,
-    releases: releases
-      .filter((r) => r.app === app.id)
-      .sort((x, y) => compareVersions(y.version, x.version) || y.releasedAt.getTime() - x.releasedAt.getTime())
-      .map((r) => ({ ...r, notYet: notYetBy[r.id] ?? 0 })),
-  }));
   return {
     groups,
-    audience: aud,
+    audience: { everyone, optedOut: optedOut.n },
     mail: { configured: isMailConfigured(), from: mailFrom() },
   };
 }
@@ -342,7 +404,7 @@ export async function sendTest(id: string, to: { name: string; email: string }) 
 
 // ---------- broadcasts ----------
 /** Start announcing a release; onlyNew skips people who already got it. Reuses an unfinished one. */
-export async function startBroadcast(releaseId: string, onlyNew: boolean, createdBy: string) {
+export async function startBroadcast(releaseId: string, onlyNew: boolean, who: Audience, createdBy: string) {
   await ensureReleaseTables();
   const release = await prisma.productRelease.findUnique({ where: { id: releaseId } });
   if (!release) throw new Error("That release no longer exists.");
@@ -352,10 +414,11 @@ export async function startBroadcast(releaseId: string, onlyNew: boolean, create
     return open.id;
   }
   const subject = release.title;
-  const b = await prisma.releaseBroadcast.create({ data: { releaseId, subject, createdBy } });
+  const people = await recipientsSql(release.app, who);
+  const b = await prisma.releaseBroadcast.create({ data: { releaseId, subject, createdBy, audience: who } });
   const inserted = await prisma.$executeRawUnsafe(
     `INSERT INTO "release_recipients" ("id", "broadcastId", "email", "name", "status")
-     SELECT gen_random_uuid()::text, $3, e.email, e.name, 'pending' FROM (${eligibleSql}${onlyNew ? alreadySentSql : ` AND $2::text IS NOT NULL`}) e
+     SELECT gen_random_uuid()::text, $3, e.email, e.name, 'pending' FROM (${people}${onlyNew ? alreadySentSql : ` AND $2::text IS NOT NULL`}) e
      ON CONFLICT ("broadcastId", "email") DO NOTHING`,
     NEVER_EMAIL,
     releaseId,
@@ -363,6 +426,10 @@ export async function startBroadcast(releaseId: string, onlyNew: boolean, create
   );
   if (!inserted) {
     await prisma.releaseBroadcast.delete({ where: { id: b.id } });
+    const name = appById(release.app)?.name || release.app;
+    if (who === "app") {
+      throw new Error(onlyNew ? `Everyone who uses ${name} already has this release.` : `Nobody has downloaded or used ${name} with their account yet.`);
+    }
     throw new Error(onlyNew ? "Everyone with an account already has this release." : "There's nobody to send to yet.");
   }
   await prisma.releaseBroadcast.update({ where: { id: b.id }, data: { total: inserted } });

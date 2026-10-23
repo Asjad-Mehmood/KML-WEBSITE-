@@ -87,7 +87,7 @@ const UPDATE_GUIDES: Record<string, UpdateGuide> = {
     newUser: "New to RoadPro? The download page has the plugin, a step-by-step install guide and the user manual.",
     more: { label: "Install guide", href: "/roadpro#install" },
   },
-  "project-folder-manager": {
+  "folder-manager": {
     platform: "Windows 10 and 11",
     automatic: false,
     steps: [

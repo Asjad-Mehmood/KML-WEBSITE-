@@ -5,7 +5,8 @@ import { startBroadcast } from "@/lib/releases";
 
 type Ctx = { params: Promise<{ id: string }> };
 
-// Start emailing a release to everyone with an account (onlyNew: skip people who already got it).
+// Start emailing a release to the people who use its app (audience "all": everyone with an
+// account; onlyNew: skip people who already got it).
 // The admin page then asks /api/admin/broadcasts/[id] for one batch after another.
 export async function POST(req: NextRequest, { params }: Ctx) {
   const session = await getAdminSession(req);
@@ -15,7 +16,7 @@ export async function POST(req: NextRequest, { params }: Ctx) {
   const body = await req.json().catch(() => ({}));
   if (body?.confirm !== true) return NextResponse.json({ error: "Confirm the broadcast first." }, { status: 400 });
   try {
-    const broadcastId = await startBroadcast(id, body.onlyNew === true, session.user.email);
+    const broadcastId = await startBroadcast(id, body.onlyNew === true, body.audience === "all" ? "all" : "app", session.user.email);
     return NextResponse.json({ broadcastId });
   } catch (err) {
     return NextResponse.json({ error: (err as Error).message || "Couldn't start the broadcast." }, { status: 400 });

@@ -231,6 +231,8 @@ model ReleaseBroadcast {
   failed     Int                @default(0)
   lastError  String?
   createdBy  String
+  /// app (people who downloaded or used the app) | all (everyone with an account)
+  audience   String             @default("all")
   createdAt  DateTime           @default(now())
   finishedAt DateTime?
   recipients ReleaseRecipient[]
