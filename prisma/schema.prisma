@@ -195,3 +195,71 @@ model ContactMessage {
   @@index([createdAt])
   @@map("contact_messages")
 }
+
+// Admin → Releases: every version of our software, grouped by app, which can be
+// emailed to everyone with an account. Created on first use by lib/releases.ts.
+model ProductRelease {
+  id         String             @id @default(cuid())
+  /// "excel-to-kml", or a product id from lib/products.ts ("roadpro", "traverse" …)
+  app        String
+  version    String
+  releasedAt DateTime
+  /// Headline, also the email subject
+  title      String
+  /// What's new, one item per line ("Title: text" makes the title bold)
+  notes      String             @db.Text
+  /// Download page, a site path (/roadpro) or an https URL
+  link       String
+  linkLabel  String             @default("")
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+  broadcasts ReleaseBroadcast[]
+
+  @@unique([app, version])
+  @@map("product_releases")
+}
+
+model ReleaseBroadcast {
+  id         String             @id @default(cuid())
+  releaseId  String
+  release    ProductRelease     @relation(fields: [releaseId], references: [id], onDelete: Cascade)
+  subject    String
+  /// sending | paused | done
+  status     String             @default("sending")
+  total      Int                @default(0)
+  sent       Int                @default(0)
+  failed     Int                @default(0)
+  lastError  String?
+  createdBy  String
+  createdAt  DateTime           @default(now())
+  finishedAt DateTime?
+  recipients ReleaseRecipient[]
+
+  @@index([releaseId])
+  @@map("release_broadcasts")
+}
+
+model ReleaseRecipient {
+  id          String           @id @default(cuid())
+  broadcastId String
+  broadcast   ReleaseBroadcast @relation(fields: [broadcastId], references: [id], onDelete: Cascade)
+  email       String
+  name        String
+  /// pending | sending | sent | failed
+  status      String           @default("pending")
+  error       String?
+  claimedAt   DateTime?
+  sentAt      DateTime?
+
+  @@unique([broadcastId, email])
+  @@index([broadcastId, status])
+  @@map("release_recipients")
+}
+
+/// People who unsubscribed from release emails (the link in every broadcast)
+model EmailOptOut {
+  email     String   @id
+  createdAt DateTime @default(now())
+
+  @@map("email_optouts")
+}
