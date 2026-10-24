@@ -36,7 +36,12 @@ export interface ExtraSettings {
   signupPrompt: boolean;
   /** Ask for a review after someone downloads one of our programs */
   reviewPrompt: boolean;
+  /** The home page hero: "new" (a tab and screenshot per program) or "classic" (the converter in the hero) */
+  homeHero: HomeHero;
 }
+
+export type HomeHero = "new" | "classic";
+export const HOME_HEROES: HomeHero[] = ["new", "classic"];
 
 export const EXTRA_DEFAULTS: ExtraSettings = {
   allowSignups: true,
@@ -54,6 +59,7 @@ export const EXTRA_DEFAULTS: ExtraSettings = {
   tlBlocked: "",
   signupPrompt: true,
   reviewPrompt: true,
+  homeHero: "new",
 };
 
 let ready: Promise<void> | null = null;

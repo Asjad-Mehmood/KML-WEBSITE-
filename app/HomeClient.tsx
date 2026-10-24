@@ -24,13 +24,12 @@ import GridsAndGuides from "../components/GridsAndGuides";
 import CtaBanner from "../components/CtaBanner";
 import Footer from "../components/Footer";
 import { useAuth } from "../context/AuthContext";
+import type { HomeHero } from "@/lib/siteSettings";
 
-// Which hero the home page shows: "new" has a tab and screenshot for every program, with the
-// converter in its own section below; "classic" is the earlier one (the converter inside the
-// hero, then the "More software" cards). Change this one word to switch.
-const HERO_STYLE = "new" as "new" | "classic";
-
-export default function HomeClient() {
+// heroStyle (Admin → Settings → Home page): "new" has a tab and screenshot for every program,
+// with the converter in its own section below; "classic" is the earlier one (the converter
+// inside the hero, then the "More software" cards)
+export default function HomeClient({ heroStyle = "new" }: { heroStyle?: HomeHero }) {
   const { requireAuth, trackDownload } = useAuth();
   const router = useRouter();
 
@@ -71,7 +70,7 @@ export default function HomeClient() {
 
       {/* Main Content Landmark for Search Engine Crawlers & Accessibility */}
       <main id="main-content">
-        {HERO_STYLE === "classic" ? (
+        {heroStyle === "classic" ? (
           <>
             {/* Hero with the converter, then the spotlight on our other software */}
             <HeroClassic versionTag={versionTag} fileSizeText={fileSizeText} onDownloadClick={handleDownloadApp} />

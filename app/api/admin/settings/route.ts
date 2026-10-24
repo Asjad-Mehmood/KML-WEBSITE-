@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getAdminSession } from "@/lib/adminAuth";
 import { db, type AppSettings } from "@/lib/db";
 import { prisma } from "@/lib/prisma";
 import { clientIp } from "@/lib/loginThrottle";
-import { EXTRA_DEFAULTS, getExtraSettings, safeNoticeLink, saveExtraSettings, type ExtraSettings } from "@/lib/siteSettings";
+import { EXTRA_DEFAULTS, HOME_HEROES, getExtraSettings, safeNoticeLink, saveExtraSettings, type ExtraSettings } from "@/lib/siteSettings";
 
 type AllSettings = AppSettings & ExtraSettings;
 
@@ -35,6 +36,7 @@ const LABELS: Record<keyof AllSettings, string> = {
   tlBlocked: "Traverse & Level blocked accounts",
   signupPrompt: "Sign-up invitation",
   reviewPrompt: "Review after download",
+  homeHero: "Home page hero",
 };
 
 async function allSettings(): Promise<AllSettings> {
@@ -76,6 +78,8 @@ export async function PUT(req: NextRequest) {
     }
     if (Object.keys(core).length) await db.updateSettings(core as Partial<AppSettings>);
     if (Object.keys(extra).length) await saveExtraSettings(extra as Partial<ExtraSettings>);
+    // the home page is cached; build it again with the hero just chosen
+    if ("homeHero" in extra) revalidatePath("/");
 
     const changed = [...Object.keys(core), ...Object.keys(extra)] as (keyof AllSettings)[];
     if (changed.length) {
@@ -129,6 +133,10 @@ function cleanSettings(body: Record<string, unknown>): Partial<AllSettings> | { 
     const n = Number(body.tlMaxJobs);
     if (!Number.isInteger(n) || n < 1 || n > 5000) return { error: "Jobs per account must be a whole number from 1 to 5000." };
     out.tlMaxJobs = n;
+  }
+  if (body.homeHero !== undefined) {
+    if (!HOME_HEROES.includes(body.homeHero as (typeof HOME_HEROES)[number])) return { error: "Unknown home page hero." };
+    out.homeHero = String(body.homeHero);
   }
   if (body.announcementTone !== undefined) {
     if (!["info", "success", "warning"].includes(String(body.announcementTone))) return { error: "Unknown announcement colour." };

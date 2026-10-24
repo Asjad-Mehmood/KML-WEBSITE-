@@ -33,7 +33,7 @@ interface HeroProps {
 
 // The home page hero as it was until October 2026: Excel to KML on the left, the live
 // coordinate converter on the right, and a chip for each of our other programs. Kept to switch
-// back to: set HERO_STYLE to "classic" in app/HomeClient.tsx.
+// back to: Admin → Settings → Home page.
 export default function HeroClassic({ versionTag, fileSizeText, onDownloadClick }: HeroProps) {
   return (
     <section className="relative pt-24 pb-14 md:pt-28 md:pb-16 lg:pt-32 lg:pb-20 overflow-hidden bg-white border-b border-slate-100">
