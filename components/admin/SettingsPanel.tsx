@@ -402,8 +402,8 @@ export default function SettingsPanel({
         </Section>
 
         {/* Home page */}
-        <Section id="home" icon={LayoutTemplate} title="Home page" text="Which hero the home page opens with. Saving switches it for every visitor straight away.">
-          <div role="radiogroup" aria-label="Home page hero" className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <Section id="home" icon={LayoutTemplate} title="Home page" text="Which home page visitors see. Saving switches it for everyone straight away.">
+          <div role="radiogroup" aria-label="Home page" className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {HEROES.map(([v, name, text]) => {
               const on = draft.homeHero === v;
               return (
@@ -583,8 +583,8 @@ function Field({ label, hint, group, children }: { label: string; hint?: string;
 }
 
 const HEROES = [
-  ["new", "Every program", "A centred headline, then a tab for each program with its screenshot. The coordinate converter has its own section below."],
-  ["classic", "Excel to KML first", "The earlier hero: Excel to KML on the left with the live coordinate converter beside it, and the other programs in cards below."],
+  ["new", "Every program", "All four programs: a tab for each in the hero, then a section for each, every download in one place and questions about them all."],
+  ["classic", "Excel to KML first", "The earlier home page, about Excel to KML: the converter in the hero, the showcase, features, tutorial and the Windows download."],
 ] as const;
 
 /** A small drawing of each hero, to tell them apart */

@@ -36,7 +36,7 @@ export interface ExtraSettings {
   signupPrompt: boolean;
   /** Ask for a review after someone downloads one of our programs */
   reviewPrompt: boolean;
-  /** The home page hero: "new" (a tab and screenshot per program) or "classic" (the converter in the hero) */
+  /** The home page: "new" (every program: hero tabs, a section for each, all downloads) or "classic" (the earlier one, about Excel to KML) */
   homeHero: HomeHero;
 }
 

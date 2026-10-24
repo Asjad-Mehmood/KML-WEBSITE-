@@ -36,7 +36,7 @@ const LABELS: Record<keyof AllSettings, string> = {
   tlBlocked: "Traverse & Level blocked accounts",
   signupPrompt: "Sign-up invitation",
   reviewPrompt: "Review after download",
-  homeHero: "Home page hero",
+  homeHero: "Home page",
 };
 
 async function allSettings(): Promise<AllSettings> {
@@ -135,7 +135,7 @@ function cleanSettings(body: Record<string, unknown>): Partial<AllSettings> | { 
     out.tlMaxJobs = n;
   }
   if (body.homeHero !== undefined) {
-    if (!HOME_HEROES.includes(body.homeHero as (typeof HOME_HEROES)[number])) return { error: "Unknown home page hero." };
+    if (!HOME_HEROES.includes(body.homeHero as (typeof HOME_HEROES)[number])) return { error: "Unknown home page." };
     out.homeHero = String(body.homeHero);
   }
   if (body.announcementTone !== undefined) {

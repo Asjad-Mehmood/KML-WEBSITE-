@@ -15,12 +15,13 @@ export const metadata: Metadata = {
 
 export default async function Home() {
   const { homeHero } = await getExtraSettings();
+  const hero = HOME_HEROES.includes(homeHero) ? homeHero : "new";
   return (
     <>
       <HomeStructuredData />
-      {/* the home page shows the shorter FAQ (components/Faq.tsx, short) */}
-      <FaqStructuredData short />
-      <HomeClient heroStyle={HOME_HEROES.includes(homeHero) ? homeHero : "new"} />
+      {/* the same questions the home page shows: about every program, or the classic page's shorter FAQ */}
+      {hero === "classic" ? <FaqStructuredData short /> : <FaqStructuredData home />}
+      <HomeClient heroStyle={hero} />
     </>
   );
 }

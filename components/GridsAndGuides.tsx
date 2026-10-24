@@ -9,21 +9,34 @@ import { GUIDES } from "@/lib/guides";
 const POPULAR = ["qatar-national-grid", "dubai-dltm", "utm-zone-40n", "utm-zone-39n", "utm-zone-42n", "utm-zone-43n", "british-national-grid", "australia-mga-zone-56"];
 const FEATURED = ["survey-points-to-google-earth", "find-your-utm-zone", "total-station-csv-to-kmz-with-photos", "kml-vs-kmz"];
 
-// Home page: jump to a grid's converter page, or read a guide
-export default function GridsAndGuides() {
+// Home page: jump to a grid's converter page, or read a guide. leftHeading: the heading on the
+// left with a small label above it, like the home page's other sections (the classic page centres it)
+export default function GridsAndGuides({ leftHeading = false }: { leftHeading?: boolean }) {
   const grids = POPULAR.map((slug) => GRID_PAGES.find((g) => g.slug === slug)).filter((g) => g !== undefined);
   const guides = FEATURED.map((slug) => GUIDES.find((g) => g.slug === slug)).filter((g) => g !== undefined);
   return (
     <section id="grids" aria-labelledby="grids-heading" className="py-20 lg:py-24 bg-white border-b border-slate-100">
-      <div className="max-w-[1140px] mx-auto px-5 sm:px-8">
-        <div className="text-center max-w-[620px] mx-auto mb-10 lg:mb-12">
-          <h2 id="grids-heading" className="text-2xl sm:text-3xl lg:text-[36px] font-extrabold tracking-tight text-slate-900 leading-[1.15] mb-4">
-            Find Your Grid, Learn the Workflow
-          </h2>
-          <p className="text-sm sm:text-[15px] text-slate-500 leading-relaxed">
-            Every one of the 5,800+ coordinate systems has its own converter page, and short guides cover the jobs surveyors do most.
-          </p>
-        </div>
+      <div className={`${leftHeading ? "max-w-[1180px]" : "max-w-[1140px]"} mx-auto px-5 sm:px-8`}>
+        {leftHeading ? (
+          <div className="max-w-[640px] mb-10">
+            <p className="text-[12px] font-bold uppercase tracking-wider text-[#0071e3]">Grids and guides</p>
+            <h2 id="grids-heading" className="mt-2 text-2xl sm:text-3xl lg:text-[36px] font-extrabold tracking-tight text-slate-900 leading-[1.15]">
+              Find your grid, learn the workflow
+            </h2>
+            <p className="mt-3 text-[15px] sm:text-base text-slate-600 leading-relaxed">
+              Every one of the 5,800+ coordinate systems has its own converter page, and short guides cover the jobs surveyors do most.
+            </p>
+          </div>
+        ) : (
+          <div className="text-center max-w-[620px] mx-auto mb-10 lg:mb-12">
+            <h2 id="grids-heading" className="text-2xl sm:text-3xl lg:text-[36px] font-extrabold tracking-tight text-slate-900 leading-[1.15] mb-4">
+              Find Your Grid, Learn the Workflow
+            </h2>
+            <p className="text-sm sm:text-[15px] text-slate-500 leading-relaxed">
+              Every one of the 5,800+ coordinate systems has its own converter page, and short guides cover the jobs surveyors do most.
+            </p>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {/* Grids */}
