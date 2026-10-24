@@ -56,7 +56,7 @@ export function reviewRequestEmail(r: ReviewAsk, to: { name: string; email: stri
   const html = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light"><title>${esc(subject)}</title></head>
 <body style="margin:0;padding:0;background:${C.page};font-family:${FONT};color:${C.ink};-webkit-text-size-adjust:100%">
-<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:${C.page}">Rate ${esc(r.appName)} in ten seconds&#8199;&#65279;&#847;&#8199;&#65279;&#847;&#8199;&#65279;&#847;</div>
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:${C.page}">Rate ${esc(r.appName)} in ten seconds</div>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="${C.page}"><tr><td align="center" style="padding:28px 12px 36px">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px">
 
@@ -96,7 +96,6 @@ ${p(`Thank you,<br><b style="color:${C.ink}">The ${esc(SITE_NAME)} team</b>`, "m
 </td></tr>
 
 <tr><td align="center" style="padding:22px 20px 0;font-size:12px;line-height:1.6;color:${C.faint}">
-<a href="${SITE_URL}" style="color:${C.muted};text-decoration:none;font-weight:600">${esc(host)}</a><br>
 You're getting this because you downloaded or used ${esc(r.appName)} with your account on ${esc(host)}. We only email about our programs.<br>
 <a href="${esc(unsub)}" style="color:${C.muted};text-decoration:underline">Stop these emails</a>
 </td></tr>

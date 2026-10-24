@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { mailFrom, mailTransport, isMailConfigured } from "@/lib/mailer";
+import { mailFrom, mailGapMs, mailReplyTo, mailTransport, isMailConfigured, sendsFromFreeMailbox } from "@/lib/mailer";
 import { releaseEmail, type ReleaseForEmail } from "@/lib/releaseEmail";
 import { reviewRequestEmail } from "@/lib/reviewEmail";
 import { PRODUCTS } from "@/lib/products";
@@ -393,7 +393,7 @@ export async function listReleases() {
   return {
     groups,
     audience: { everyone, optedOut: optedOut.n },
-    mail: { configured: isMailConfigured(), from: mailFrom() },
+    mail: { configured: isMailConfigured(), from: mailFrom(), freeMailbox: sendsFromFreeMailbox() },
   };
 }
 
@@ -412,7 +412,7 @@ export async function sendTest(id: string, to: { name: string; email: string }) 
   if (!r) throw new Error("That release no longer exists.");
   const m = releaseEmail(forEmail(r), to);
   const t = mailTransport();
-  await t.sendMail({ from: mailFrom(), to: to.email, subject: `[Test] ${m.subject}`, text: m.text, html: m.html, list: m.list, headers: m.headers });
+  await t.sendMail({ from: mailFrom(), replyTo: mailReplyTo(), to: to.email, subject: `[Test] ${m.subject}`, text: m.text, html: m.html, list: m.list, headers: m.headers });
 }
 
 // ---------- broadcasts ----------
@@ -502,10 +502,16 @@ export async function sendNextBatch(id: string, budgetMs = 40_000, batch = 25) {
   const release = forEmail(b.release);
   const review = b.kind === "review" ? reviewAskFor(b.release.app) : null;
   const transport = claimed.length ? mailTransport(true) : null;
+  const gap = mailGapMs();
   let stopWith: string | null = null;
   try {
     for (let i = 0; i < claimed.length; i++) {
       const r = claimed[i];
+      // a pause between emails (a little uneven), unless it would run past this request's time
+      if (i > 0 && gap && !stopWith) {
+        const wait = Math.round(gap * (0.75 + Math.random() * 0.5));
+        if (Date.now() - started + wait <= budgetMs) await new Promise((res) => setTimeout(res, wait));
+      }
       if (stopWith || Date.now() - started > budgetMs) {
         await prisma.releaseRecipient.updateMany({ where: { id: { in: claimed.slice(i).map((x) => x.id) } }, data: { status: "pending", claimedAt: null } });
         break;
@@ -518,7 +524,7 @@ export async function sendNextBatch(id: string, budgetMs = 40_000, batch = 25) {
       }
       const m = review ? reviewRequestEmail(review, { name: r.name, email: r.email }) : releaseEmail(release, { name: r.name, email: r.email });
       try {
-        await transport!.sendMail({ from: mailFrom(), to: r.email, subject: m.subject, text: m.text, html: m.html, list: m.list, headers: m.headers });
+        await transport!.sendMail({ from: mailFrom(), replyTo: mailReplyTo(), to: r.email, subject: m.subject, text: m.text, html: m.html, list: m.list, headers: m.headers });
         await prisma.releaseRecipient.update({ where: { id: r.id }, data: { status: "sent", sentAt: new Date(), error: null } });
       } catch (err) {
         const msg = (err as Error)?.message?.slice(0, 300) || "Sending failed";
@@ -630,7 +636,7 @@ export async function sendReviewTest(appId: string, to: { name: string; email: s
   if (!appById(appId)) throw new Error("Unknown program.");
   const m = reviewRequestEmail(reviewAskFor(appId), to);
   const t = mailTransport();
-  await t.sendMail({ from: mailFrom(), to: to.email, subject: `[Test] ${m.subject}`, text: m.text, html: m.html, list: m.list, headers: m.headers });
+  await t.sendMail({ from: mailFrom(), replyTo: mailReplyTo(), to: to.email, subject: `[Test] ${m.subject}`, text: m.text, html: m.html, list: m.list, headers: m.headers });
 }
 
 /**
