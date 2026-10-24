@@ -14,7 +14,6 @@ import Features from "../components/Features";
 // Hidden from the home page (the tutorial steps below cover it; still on /how-it-works)
 // import Workflow from "../components/Workflow";
 import TutorialTeaser from "../components/TutorialTeaser";
-import ConverterSection from "../components/ConverterSection";
 import ProductSpotlight from "../components/ProductSpotlight";
 import DownloadHub from "../components/DownloadHub";
 // Hidden from the home page (the same ground as /formats and the grids section)
@@ -23,14 +22,19 @@ import Faq from "../components/Faq";
 import GridsAndGuides from "../components/GridsAndGuides";
 import CtaBanner from "../components/CtaBanner";
 import Footer from "../components/Footer";
+import ToolkitFlow from "../components/home/ToolkitFlow";
+import { ExcelToKmlSection, FolderManagerSection, RoadProSection, TraverseSection } from "../components/home/ProductSections";
+import HomeReviews from "../components/home/HomeReviews";
+import DownloadCentre from "../components/home/DownloadCentre";
+import HomeFaq from "../components/home/HomeFaq";
+import AccountCta from "../components/home/AccountCta";
 import { useAuth } from "../context/AuthContext";
+import type { HomeHero } from "@/lib/siteSettings";
 
-// Which hero the home page shows: "new" has a tab and screenshot for every program, with the
-// converter in its own section below; "classic" is the earlier one (the converter inside the
-// hero, then the "More software" cards). Change this one word to switch.
-const HERO_STYLE = "new" as "new" | "classic";
-
-export default function HomeClient() {
+// heroStyle (Admin → Settings → Home page): "new" is the home page for every program (a tab
+// for each in the hero, then a section for each, every download and questions about them all);
+// "classic" is the earlier home page, all about Excel to KML
+export default function HomeClient({ heroStyle = "new" }: { heroStyle?: HomeHero }) {
   const { requireAuth, trackDownload } = useAuth();
   const router = useRouter();
 
@@ -71,71 +75,55 @@ export default function HomeClient() {
 
       {/* Main Content Landmark for Search Engine Crawlers & Accessibility */}
       <main id="main-content">
-        {HERO_STYLE === "classic" ? (
+        {heroStyle === "classic" ? (
           <>
-            {/* Hero with the converter, then the spotlight on our other software */}
+            {/* The earlier home page, all about Excel to KML */}
             <HeroClassic versionTag={versionTag} fileSizeText={fileSizeText} onDownloadClick={handleDownloadApp} />
+            {/* Spotlight on our other software (lib/products.ts) */}
             <ProductSpotlight />
+            <Showcase versionTag={versionTag} onToast={showToast} />
+            <Features />
+            <TutorialTeaser />
+            {/* the installer card only; the guide and requirements are on /download */}
+            <DownloadHub
+              versionTag={versionTag}
+              downloadUrl={downloadUrl}
+              releaseNotesUrl={releaseNotesUrl}
+              fileName={fileName}
+              fileSizeText={fileSizeText}
+              bytesText={bytesText}
+              releaseDateText={releaseDateText}
+              sha256Hash={sha256Hash}
+              onToast={showToast}
+              compact
+            />
+            <GridsAndGuides />
+            {/* one question per topic and a link to /faq (FaqStructuredData short in app/page.tsx) */}
+            <Faq short />
+            <CtaBanner versionTag={versionTag} fileSizeText={fileSizeText} onDownloadClick={handleDownloadApp} />
           </>
         ) : (
           <>
-            {/* Hero with a tab for every program, then the live coordinate converter */}
+            {/* A tab and screenshot for every program */}
             <Hero versionTag={versionTag} fileSizeText={fileSizeText} onDownloadClick={handleDownloadApp} />
-            <ConverterSection />
+            {/* How the four programs follow one job */}
+            <ToolkitFlow />
+            {/* A section for each program, Excel to KML first with the live converter */}
+            <ExcelToKmlSection versionTag={versionTag} fileSizeText={fileSizeText} onDownloadClick={handleDownloadApp} />
+            <RoadProSection />
+            <TraverseSection />
+            <FolderManagerSection />
+            {/* Published reviews of any program; hidden until there are some */}
+            <HomeReviews />
+            {/* Every program's download */}
+            <DownloadCentre versionTag={versionTag} fileSizeText={fileSizeText} onDownloadClick={handleDownloadApp} />
+            {/* Grid converter pages and guides */}
+            <GridsAndGuides leftHeading />
+            {/* Questions about every program (FaqStructuredData home in app/page.tsx) */}
+            <HomeFaq />
+            <AccountCta />
           </>
         )}
-
-        {/* Showcase Window */}
-        <Showcase versionTag={versionTag} onToast={showToast} />
-
-        {/* Metrics Ribbon: hidden to keep the page short (the hero carries the same figures).
-            Uncomment this and its import to bring it back.
-        <MetricsRibbon />
-        */}
-
-        {/* Key Features */}
-        <Features />
-
-        {/* 3-Step Workflow: hidden to keep the page short (the tutorial steps below say the same
-            with screenshots; it is still on /how-it-works). Uncomment this and its import to bring it back.
-        <Workflow />
-        */}
-        <TutorialTeaser />
-
-        {/* Download Hub */}
-        <DownloadHub
-          versionTag={versionTag}
-          downloadUrl={downloadUrl}
-          releaseNotesUrl={releaseNotesUrl}
-          fileName={fileName}
-          fileSizeText={fileSizeText}
-          bytesText={bytesText}
-          releaseDateText={releaseDateText}
-          sha256Hash={sha256Hash}
-          onToast={showToast}
-          // the installer card only; the guide and requirements are on /download.
-          // Remove this line to show the whole section again.
-          compact
-        />
-
-        {/* Technical Specifications: hidden to keep the page short (see /formats and the grids
-            section). Uncomment this and its import to bring it back.
-        <SpecsTable />
-        */}
-
-        {/* Grid converter pages and guides */}
-        <GridsAndGuides />
-
-        {/* FAQ: one question per topic and a link to /faq. Remove `short` to show them all
-            (and in app/page.tsx, `short` on FaqStructuredData). */}
-        <Faq short />
-
-        {/* Bottom CTA Banner */}
-        <CtaBanner
-          versionTag={versionTag}
-          fileSizeText={fileSizeText}
-          onDownloadClick={handleDownloadApp}
-        />
       </main>
 
       {/* Footer */}

@@ -82,6 +82,40 @@ export async function reviewsDue(userId: string) {
 
 export type PublicReview = { id: string; name: string; organization: string; rating: number; comment: string; version: string; date: string };
 
+/** The home page: each program's published average and count, and the latest reviews of any of them */
+export async function publishedReviewsAll(limit = 6) {
+  await ensure();
+  const [rows, stats] = await Promise.all([
+    prisma.$queryRawUnsafe<{ id: string; product: string; name: string | null; organization: string | null; rating: number; comment: string; version: string; updatedAt: Date }[]>(
+      `SELECT r."id", r."product", u."name", u."organization", r."rating", r."comment", r."version", r."updatedAt"
+       FROM "reviews" r JOIN "users" u ON u."id" = r."userId"
+       WHERE r."status" = 'published' AND r."comment" <> ''
+       ORDER BY r."rating" DESC, r."updatedAt" DESC LIMIT $1`,
+      limit
+    ),
+    prisma.$queryRawUnsafe<{ product: string; n: bigint; avg: number | null }[]>(
+      `SELECT "product", COUNT(*) AS n, AVG("rating")::float AS avg FROM "reviews" WHERE "status" = 'published' GROUP BY "product"`
+    ),
+  ]);
+  const products = stats
+    .filter((s) => isReviewProduct(s.product))
+    .map((s) => ({ product: s.product as ReviewProduct, count: Number(s.n), average: s.avg ? Math.round(s.avg * 10) / 10 : 0 }));
+  const reviews = rows
+    .filter((r) => isReviewProduct(r.product))
+    .map((r) => ({ ...toPublic(r), product: r.product as ReviewProduct }));
+  return { count: products.reduce((t, p) => t + p.count, 0), products, reviews };
+}
+
+// first name and the initial of the last name only
+const shortName = (n: string | null) => {
+  const p = (n || "A surveyor").trim().split(/\s+/);
+  return p.length > 1 ? `${p[0]} ${p[p.length - 1][0]}.` : p[0];
+};
+const toPublic = (r: { id: string; name: string | null; organization: string | null; rating: number; comment: string; version: string; updatedAt: Date }): PublicReview => ({
+  id: r.id, name: shortName(r.name), organization: r.organization && r.organization !== "Independent Surveyor" ? r.organization : "",
+  rating: r.rating, comment: r.comment, version: r.version, date: new Date(r.updatedAt).toISOString(),
+});
+
 /** Published reviews of a program and their average, for its page */
 export async function publishedReviews(product: ReviewProduct, limit = 6) {
   await ensure();
@@ -97,15 +131,7 @@ export async function publishedReviews(product: ReviewProduct, limit = 6) {
       `SELECT COUNT(*) AS n, AVG("rating")::float AS avg FROM "reviews" WHERE "product" = $1 AND "status" = 'published'`, product
     ),
   ]);
-  // first name and the initial of the last name only
-  const shortName = (n: string | null) => {
-    const p = (n || "A surveyor").trim().split(/\s+/);
-    return p.length > 1 ? `${p[0]} ${p[p.length - 1][0]}.` : p[0];
-  };
-  const reviews: PublicReview[] = rows.map((r) => ({
-    id: r.id, name: shortName(r.name), organization: r.organization && r.organization !== "Independent Surveyor" ? r.organization : "",
-    rating: r.rating, comment: r.comment, version: r.version, date: new Date(r.updatedAt).toISOString(),
-  }));
+  const reviews: PublicReview[] = rows.map(toPublic);
   return { count: Number(stats[0]?.n ?? 0), average: stats[0]?.avg ? Math.round(stats[0].avg * 10) / 10 : 0, reviews };
 }
 

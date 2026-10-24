@@ -16,6 +16,8 @@ import {
   Wrench,
   Waypoints,
   Compass,
+  LayoutTemplate,
+  ExternalLink,
 } from "lucide-react";
 import SignInSecurity from "./SignInSecurity";
 import SystemHealth from "./SystemHealth";
@@ -45,6 +47,7 @@ export interface AllSettings {
   tlBlocked: string;
   signupPrompt: boolean;
   reviewPrompt: boolean;
+  homeHero: "new" | "classic";
 }
 
 type Draft = AllSettings;
@@ -57,6 +60,7 @@ const SECTIONS = [
   ["status", "Status"],
   ["access", "Access"],
   ["notices", "Notices"],
+  ["home", "Home page"],
   ["features", "App features"],
   ["traverse", "Traverse & Level"],
   ["release", "Release"],
@@ -397,6 +401,36 @@ export default function SettingsPanel({
           </div>
         </Section>
 
+        {/* Home page */}
+        <Section id="home" icon={LayoutTemplate} title="Home page" text="Which home page visitors see. Saving switches it for everyone straight away.">
+          <div role="radiogroup" aria-label="Home page" className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {HEROES.map(([v, name, text]) => {
+              const on = draft.homeHero === v;
+              return (
+                <button
+                  key={v}
+                  type="button"
+                  role="radio"
+                  aria-checked={on}
+                  onClick={() => set("homeHero", v)}
+                  className={`text-left rounded-2xl border p-3 cursor-pointer transition-colors ${on ? "border-blue-500 bg-slate-800" : "border-slate-700 hover:border-slate-500"}`}
+                >
+                  <HeroSketch kind={v} />
+                  <p className="mt-3 flex items-center gap-2 text-sm font-bold text-white">
+                    <span className={`w-3.5 h-3.5 rounded-full border-2 ${on ? "border-blue-500 bg-blue-500 shadow-[inset_0_0_0_2px_#1e293b]" : "border-slate-500"}`} />
+                    {name}
+                    {saved.homeHero === v && <span className="ml-auto text-[10.5px] font-bold uppercase tracking-wider text-emerald-400">Live</span>}
+                  </p>
+                  <p className="mt-1 text-xs text-slate-400 leading-relaxed">{text}</p>
+                </button>
+              );
+            })}
+          </div>
+          <a href="/" target="_blank" rel="noopener" className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-400 hover:text-blue-300">
+            Open the home page <ExternalLink className="w-3.5 h-3.5" />
+          </a>
+        </Section>
+
         {/* Release */}
         <Section id="release" icon={Download} title="Release details" text="Shown on the download section until the latest GitHub release loads; GitHub's details win when it answers.">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -545,6 +579,49 @@ function Field({ label, hint, group, children }: { label: string; hint?: string;
       {children}
       {hint && <span className="block mt-1 text-[11px] text-slate-500">{hint}</span>}
     </Tag>
+  );
+}
+
+const HEROES = [
+  ["new", "Every program", "All four programs: a tab for each in the hero, then a section for each, every download in one place and questions about them all."],
+  ["classic", "Excel to KML first", "The earlier home page, about Excel to KML: the converter in the hero, the showcase, features, tutorial and the Windows download."],
+] as const;
+
+/** A small drawing of each hero, to tell them apart */
+function HeroSketch({ kind }: { kind: "new" | "classic" }) {
+  const bar = "rounded-full bg-slate-600";
+  return (
+    <div aria-hidden className="h-28 rounded-xl bg-slate-950 border border-slate-800 p-3 overflow-hidden">
+      {kind === "new" ? (
+        <div className="flex flex-col items-center gap-1.5">
+          <div className={`${bar} h-2 w-2/3 bg-slate-400`} />
+          <div className={`${bar} h-1.5 w-1/2`} />
+          <div className="flex gap-1 mt-0.5">
+            <div className="h-2 w-8 rounded bg-blue-500" />
+            <div className="h-2 w-8 rounded bg-slate-700" />
+          </div>
+          <div className="flex gap-1 mt-1">
+            {[0, 1, 2, 3].map((i) => <div key={i} className={`h-1.5 w-6 rounded ${i === 0 ? "bg-slate-300" : "bg-slate-700"}`} />)}
+          </div>
+          <div className="mt-1 w-4/5 h-8 rounded-md border border-slate-700 bg-slate-800" />
+        </div>
+      ) : (
+        <div className="grid grid-cols-5 gap-2 h-full items-center">
+          <div className="col-span-2 flex flex-col gap-1.5">
+            <div className={`${bar} h-2 w-full bg-slate-400`} />
+            <div className={`${bar} h-2 w-3/4 bg-slate-400`} />
+            <div className={`${bar} h-1.5 w-full`} />
+            <div className="flex gap-1 mt-1">
+              <div className="h-2 w-8 rounded bg-blue-500" />
+              <div className="h-2 w-6 rounded bg-slate-700" />
+            </div>
+          </div>
+          <div className="col-span-3 h-full rounded-md border border-cyan-900 bg-[#0b1a24] flex items-center justify-center">
+            <div className="w-10 h-10 rounded-full border border-cyan-700/70" />
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 

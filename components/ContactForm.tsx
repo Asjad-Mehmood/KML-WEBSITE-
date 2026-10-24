@@ -13,19 +13,28 @@ const TOPICS: [string, string][] = [
   ["business", "Business / licensing"],
 ];
 
+// Which program the message is about; ?program= picks one (a program's page can link here with it)
+const PROGRAMS: [string, string][] = [
+  ["excel-to-kml", "Excel to KML"],
+  ["roadpro", "RoadPro"],
+  ["traverse", "Traverse & Level"],
+  ["folder-manager", "Project Folder Manager"],
+  ["website", "The website or my account"],
+];
+
 const PLACEHOLDER: Record<string, string> = {
   question: "What would you like to know?",
   problem: "What did you do, what did you expect, and what happened instead? Paste any message the program showed.",
   grid: "Which grid or format do you need? Its name, EPSG code or country helps.",
-  idea: "What would make the app more useful for your work?",
+  idea: "What would make the program more useful for your work?",
   business: "Tell us about your team and what you need.",
 };
 
 const input =
   "w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-[15px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500";
 
-// Contact form (/contact): signed-in details filled in, a topic that can come
-// from ?topic=
+// Contact form (/contact): signed-in details filled in, a topic and a program that can come
+// from ?topic= and ?program=
 export default function ContactForm() {
   const { user } = useAuth();
   // ?topic=problem etc. picks the starting topic; the account fills name and
@@ -38,6 +47,16 @@ export default function ContactForm() {
     },
     () => "question"
   );
+  const queryProgram = useSyncExternalStore(
+    () => () => {},
+    () => {
+      const p = new URLSearchParams(window.location.search).get("program");
+      return p && PROGRAMS.some(([k]) => k === p) ? p : "excel-to-kml";
+    },
+    () => "excel-to-kml"
+  );
+  const [programIn, setProgram] = useState<string | null>(null);
+  const program = programIn ?? queryProgram;
   const [topicIn, setTopic] = useState<string | null>(null);
   const [nameIn, setName] = useState<string | null>(null);
   const [emailIn, setEmail] = useState<string | null>(null);
@@ -58,7 +77,7 @@ export default function ContactForm() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, topic, message, website }),
+        body: JSON.stringify({ name, email, topic, message, website, details: { program: PROGRAMS.find(([k]) => k === program)?.[1] } }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Your message couldn't be sent. Please try again.");
@@ -94,6 +113,15 @@ export default function ContactForm() {
 
   return (
     <form onSubmit={submit} className="relative rounded-2xl border border-slate-200 bg-white p-6 sm:p-7 shadow-[0_12px_32px_-18px_rgba(15,23,42,0.25)] space-y-4">
+      <label className="block">
+        <span className="text-[13px] font-semibold text-slate-700">Which program?</span>
+        <select value={program} onChange={(e) => setProgram(e.target.value)} className={`${input} mt-1.5 cursor-pointer`}>
+          {PROGRAMS.map(([k, label]) => (
+            <option key={k} value={k}>{label}</option>
+          ))}
+        </select>
+      </label>
+
       <fieldset>
         <legend className="text-[13px] font-semibold text-slate-700 mb-2">What is it about?</legend>
         <div className="flex flex-wrap gap-2">

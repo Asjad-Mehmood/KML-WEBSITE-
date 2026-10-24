@@ -98,7 +98,7 @@ export function openGraphFor(path: string, title: string, description: string) {
 /** Public contact for support, privacy and legal questions (Privacy Policy, Terms) */
 export const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "exceltokml0@gmail.com";
 
-/** Date shown as "Last updated" on the Privacy Policy and Terms */
-export const LEGAL_UPDATED = "26 September 2026";
-/** The privacy policy changed later than the terms (release emails) */
+/** Date shown as "Last updated" on the Terms (they now cover every program on the site) */
+export const LEGAL_UPDATED = "24 October 2026";
+/** Date shown as "Last updated" on the Privacy Policy (Traverse & Level jobs, reviews) */
 export const PRIVACY_UPDATED = "24 October 2026";

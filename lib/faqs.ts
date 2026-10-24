@@ -67,6 +67,39 @@ export const FAQS: FaqItem[] = [
   },
 ];
 
+/** The home page's FAQ: questions about every program, not just Excel to KML. The /faq page
+ *  and each program's page keep the full lists. */
+export const HOME_FAQS: { q: string; a: string; href?: string }[] = [
+  {
+    q: "Are the programs free?",
+    a: "Yes. Excel to KML, RoadPro, Traverse & Level and Project Folder Manager are free to download and use. You only need a free account, which also keeps your downloads, converted files and Traverse & Level jobs together in your dashboard.",
+  },
+  {
+    q: "Which coordinate systems does Excel to KML support?",
+    a: "More than 5,800 EPSG grids: national grids such as the Qatar National Grid, Dubai Local TM and the British National Grid, every UTM zone and the US State Plane zones. Search by country, name or EPSG number. If your site has its own local grid, site calibration fits it to three or more known control points first.",
+    href: "/convert",
+  },
+  {
+    q: "Which versions of AutoCAD does RoadPro work with?",
+    a: "Full AutoCAD, Civil 3D or Map 3D 2014 or newer. AutoCAD LT is not supported. Load RoadPro.lsp once with APPLOAD (add it to the Startup Suite to load it every time) and type RDP to start.",
+    href: "/roadpro",
+  },
+  {
+    q: "How does Traverse & Level adjust a traverse?",
+    a: "Enter site coordinates, or the angles and distances from your field book, and close on a known point. It checks the misclosure against the precision you ask for and adjusts by Bowditch, Transit, Equal or least squares. Level books are reduced by Rise & Fall or Height of Instrument with the arithmetic checks, and both give a signed PDF report.",
+    href: "/traverse",
+  },
+  {
+    q: "Does Project Folder Manager need installing?",
+    a: "No. Unzip it and open Project_Folder_Manager.exe, keeping the .exe and the .hta together. It runs on Windows' own HTML application host, so there is nothing else to install. Point it at your project's master folder and press INDEX once for instant search.",
+    href: "/project-folder-manager",
+  },
+  {
+    q: "Why does Windows say it protected my PC?",
+    a: "Our programs aren't signed with a paid code-signing certificate yet, so Windows SmartScreen asks before a new program runs for the first time. Choose More info, then Run anyway.",
+  },
+];
+
 /** The shorter FAQ on the home page: the first question of each topic. The /faq page keeps every one. */
 export function faqHighlights(): FaqItem[] {
   const seen = new Set<string>();

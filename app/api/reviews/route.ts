@@ -1,11 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
-import { REVIEW_PRODUCTS, isReviewProduct, publishedReviews, saveReview } from "@/lib/reviews";
+import { REVIEW_PRODUCTS, isReviewProduct, publishedReviews, publishedReviewsAll, saveReview } from "@/lib/reviews";
 
 // GET ?product=: the published reviews of a program and their average (public).
+// ?product=all: every program's average and the latest reviews of any of them (the home page).
 export async function GET(req: NextRequest) {
   const product = req.nextUrl.searchParams.get("product");
+  if (product === "all") {
+    try {
+      return NextResponse.json({ success: true, ...(await publishedReviewsAll(6)) }, { headers: { "Cache-Control": "public, s-maxage=300" } });
+    } catch {
+      return NextResponse.json({ success: true, count: 0, products: [], reviews: [] });
+    }
+  }
   if (!isReviewProduct(product)) return NextResponse.json({ error: "Unknown program." }, { status: 400 });
   try {
     return NextResponse.json({ success: true, ...(await publishedReviews(product, 12)) }, { headers: { "Cache-Control": "public, s-maxage=300" } });

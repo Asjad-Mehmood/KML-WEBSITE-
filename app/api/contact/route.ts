@@ -7,7 +7,7 @@ import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
 import { SUPPORT_EMAIL } from "@/lib/site";
 
 const EMAIL_RE = /^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,}$/;
-const DETAIL_KEYS = ["Version", "Platform", "Grid"] as const;
+const DETAIL_KEYS = ["Program", "Version", "Platform", "Grid"] as const;
 
 // Contact form: saved first (so nothing is lost), then the support inbox is
 // alerted. Nothing is emailed to the sender.

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BookOpen, HelpCircle, Mail, PlayCircle } from "lucide-react";
+import { BookOpen, HelpCircle, LifeBuoy, Mail, PlayCircle } from "lucide-react";
 import ContactForm from "../../components/ContactForm";
 import PageShell from "../../components/PageShell";
 import PageIntro from "../../components/PageIntro";
@@ -8,7 +8,7 @@ import { BreadcrumbStructuredData } from "../../components/StructuredData";
 import { SUPPORT_EMAIL, openGraphFor } from "@/lib/site";
 
 const TITLE = "Contact & Support";
-const DESCRIPTION = "Send us a message about Excel to KML — questions, problems, grid requests or ideas. We reply by email, usually within one to two working days.";
+const DESCRIPTION = "Send us a message about Excel to KML, RoadPro, Traverse & Level or Project Folder Manager: questions, problems, requests or ideas. We reply by email, usually within one to two working days.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -34,11 +34,21 @@ export default function ContactPage() {
             <Link href="/faq" className={card}>
               <HelpCircle className="w-5 h-5 text-[#0071e3]" aria-hidden />
               <h2 className="mt-2 text-[15.5px] font-bold text-slate-900 group-hover:text-[#0071e3]">Common questions</h2>
-              <p className="mt-1 text-[13.5px] text-slate-600 leading-relaxed">Grids, site calibration, total station files, levels and privacy.</p>
+              <p className="mt-1 text-[13.5px] text-slate-600 leading-relaxed">Excel to KML: grids, site calibration, total station files, levels and privacy.</p>
             </Link>
+            <div className={card}>
+              <LifeBuoy className="w-5 h-5 text-[#0071e3]" aria-hidden />
+              <h2 className="mt-2 text-[15.5px] font-bold text-slate-900">Help with our other programs</h2>
+              <p className="mt-1 text-[13.5px] text-slate-600 leading-relaxed">Each page has its install steps and quick fixes:</p>
+              <ul className="mt-2 space-y-1 text-[13.5px] font-semibold">
+                <li><Link href="/roadpro#install" className="text-[#0071e3] hover:underline">RoadPro</Link></li>
+                <li><Link href="/traverse#download" className="text-[#0071e3] hover:underline">Traverse &amp; Level</Link></li>
+                <li><Link href="/project-folder-manager#install" className="text-[#0071e3] hover:underline">Project Folder Manager</Link></li>
+              </ul>
+            </div>
             <Link href="/tutorial" className={card}>
               <PlayCircle className="w-5 h-5 text-[#0071e3]" aria-hidden />
-              <h2 className="mt-2 text-[15.5px] font-bold text-slate-900 group-hover:text-[#0071e3]">App tutorial</h2>
+              <h2 className="mt-2 text-[15.5px] font-bold text-slate-900 group-hover:text-[#0071e3]">Excel to KML tutorial</h2>
               <p className="mt-1 text-[13.5px] text-slate-600 leading-relaxed">Four steps from your sheet to Google Earth, with screenshots.</p>
             </Link>
             <Link href="/guides" className={card}>

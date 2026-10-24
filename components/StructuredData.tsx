@@ -1,5 +1,5 @@
 import React from "react";
-import { FAQS, faqHighlights } from "@/lib/faqs";
+import { FAQS, HOME_FAQS, faqHighlights } from "@/lib/faqs";
 import { FACEBOOK_URL, GITHUB_REPO_URL, INSTALLER_URL, SITE_DESCRIPTION, SITE_NAME, SITE_URL, jsonLd } from "@/lib/site";
 
 // Schema.org JSON-LD. Everything here must match what the page visibly shows:
@@ -73,14 +73,15 @@ export function HomeStructuredData() {
 }
 
 /** FAQPage for pages that show the FAQ section (home and /faq). `short`: only the questions
- *  the home page's shorter FAQ shows, so the data matches what is on the page. */
-export function FaqStructuredData({ short = false }: { short?: boolean } = {}) {
+ *  the classic home page's shorter FAQ shows; `home`: the home page's questions about every
+ *  program. Either way the data matches what is on the page. */
+export function FaqStructuredData({ short = false, home = false }: { short?: boolean; home?: boolean } = {}) {
   return (
     <JsonLd
       data={{
         "@context": "https://schema.org",
         "@type": "FAQPage",
-        mainEntity: (short ? faqHighlights() : FAQS).map((f) => ({
+        mainEntity: (home ? HOME_FAQS : short ? faqHighlights() : FAQS).map((f) => ({
           "@type": "Question",
           name: f.q,
           acceptedAnswer: { "@type": "Answer", text: f.a },
