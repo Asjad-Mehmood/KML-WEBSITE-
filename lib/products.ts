@@ -1,6 +1,6 @@
 // Our other software, besides the Excel to KML app itself. Everything that
-// promotes them reads this list: the hero badges, the home page spotlight,
-// the menu, the footer and the sitemap. To add a tool, add an entry here and
+// promotes them reads this list: the home page hero tiles, the menu, the
+// footer and the sitemap. To add a tool, add an entry here and
 // give it a page at its href.
 import { ROADPRO_VERSION } from "@/lib/roadpro";
 import { TRAVERSE_FILES, TRAVERSE_SHORT, TRAVERSE_VERSION } from "@/lib/traverse";
@@ -28,8 +28,13 @@ export interface Product {
   comingSoon?: boolean;
   /** Shows a "New" label until this date (YYYY-MM-DD) */
   newUntil?: string;
-  /** Show a badge in the home page hero */
+  /** Show a tile in the home page hero */
   inHero?: boolean;
+  /** How much room its hero tile gets: "lg" with the picture on top, "md" with a small
+      picture at the side, "sm" a one-line strip. Excel to KML always has the big tile. */
+  heroSize?: "lg" | "md" | "sm";
+  /** Picture for the "md" and "sm" tiles when the main image doesn't suit a small frame */
+  thumb?: { src: string; width: number; height: number; alt: string };
   /** Show a link in the main menu */
   inNav?: boolean;
 }
@@ -54,6 +59,7 @@ export const PRODUCTS: Product[] = [
     highlights: ["Lanes, median, sidewalks", "Junctions and turning lanes", "Signs and markings to standard", "Barricades, cones, kerb", "Widening and tapers", "Excel report and LandXML"],
     newUntil: "2027-01-31",
     inHero: true,
+    heroSize: "lg",
     inNav: true,
   },
   {
@@ -77,6 +83,13 @@ export const PRODUCTS: Product[] = [
     comingSoon: !TRAVERSE_FILES.setup.href,
     newUntil: "2027-01-31",
     inHero: true,
+    heroSize: "md",
+    thumb: {
+      src: "/traverse/screens/v2-dashboard.webp",
+      width: 1440,
+      height: 900,
+      alt: "Traverse & Level dashboard: saved traverses and level runs with their misclosure",
+    },
     inNav: true,
   },
   {
@@ -97,6 +110,7 @@ export const PRODUCTS: Product[] = [
     highlights: ["Modules by discipline", "Instant search", "Copy, move, rename", "Drive space"],
     newUntil: "2027-01-31",
     inHero: true,
+    heroSize: "sm",
     inNav: false,
   },
 ];

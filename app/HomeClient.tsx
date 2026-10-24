@@ -13,7 +13,9 @@ import Features from "../components/Features";
 // Hidden from the home page (the tutorial steps below cover it; still on /how-it-works)
 // import Workflow from "../components/Workflow";
 import TutorialTeaser from "../components/TutorialTeaser";
-import ProductSpotlight from "../components/ProductSpotlight";
+import ConverterSection from "../components/ConverterSection";
+// Hidden from the home page (the hero now has a tile for every program)
+// import ProductSpotlight from "../components/ProductSpotlight";
 import DownloadHub from "../components/DownloadHub";
 // Hidden from the home page (the same ground as /formats and the grids section)
 // import SpecsTable from "../components/SpecsTable";
@@ -71,8 +73,13 @@ export default function HomeClient() {
           onDownloadClick={handleDownloadApp}
         />
 
-        {/* Spotlight on our other software (lib/products.ts) */}
+        {/* The live coordinate converter */}
+        <ConverterSection />
+
+        {/* Spotlight on our other software: hidden, the hero tiles cover it.
+            Uncomment this and its import to bring it back.
         <ProductSpotlight />
+        */}
 
         {/* Showcase Window */}
         <Showcase versionTag={versionTag} onToast={showToast} />
