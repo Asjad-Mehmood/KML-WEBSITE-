@@ -29,7 +29,7 @@ export default function PrivacyPage() {
           can find them again. Signed out, your coordinates and files stay on your computer.
         </li>
         <li>We keep only what we need to run your account and improve the service.</li>
-        <li>We don&apos;t sell your information or use it for advertising.</li>
+        <li>We don&apos;t sell your information. Public pages of the site show ads from Google AdSense, which uses cookies (see <a href="#advertising">Advertising</a>).</li>
         <li>You can delete your saved files, or your whole account, from your dashboard at any time.</li>
       </ul>
 
@@ -89,10 +89,38 @@ export default function PrivacyPage() {
         account.
       </p>
 
+      <h2 id="advertising">Advertising</h2>
+      <p>
+        We use Google AdSense to show ads on this site, which keeps our software free. Third-party vendors, including Google, use
+        cookies to serve ads based on your earlier visits to this website and other websites. Google&apos;s use of advertising
+        cookies lets it and its partners serve ads to you based on your visits to this site and other sites on the internet.
+      </p>
+      <ul>
+        <li>
+          You can turn off personalised advertising in Google&apos;s{" "}
+          <a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer">Ads Settings</a>, or opt out of
+          third-party vendors&apos; use of cookies for personalised advertising at{" "}
+          <a href="https://www.aboutads.info/choices/" target="_blank" rel="noopener noreferrer">www.aboutads.info</a>.
+        </li>
+        <li>
+          How Google uses information from sites that use its services:{" "}
+          <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener noreferrer">
+            policies.google.com/technologies/partner-sites
+          </a>
+          .
+        </li>
+        <li>
+          Visitors in the European Economic Area, the UK and Switzerland are asked for their consent before personalised ads are
+          shown, through Google&apos;s consent message.
+        </li>
+        <li>The information you keep in your account (files, points, jobs) is never used for advertising.</li>
+      </ul>
+
       <h2>Cookies</h2>
       <p>
-        We use one cookie to keep you signed in. We don&apos;t use advertising or tracking cookies. The web app may also remember
-        your settings in your browser so they&apos;re there next time.
+        We use one cookie to keep you signed in. Google AdSense sets its own cookies to show and measure ads, as described under{" "}
+        <a href="#advertising">Advertising</a>. The web app may also remember your settings in your browser so they&apos;re there
+        next time.
       </p>
 
       <h2>How long we keep it</h2>
