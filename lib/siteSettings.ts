@@ -32,6 +32,10 @@ export interface ExtraSettings {
   tlMaxJobs: number;
   /** Accounts that may not use Traverse & Level: user ids, comma separated (Admin → Traverse & Level) */
   tlBlocked: string;
+  /** Invite signed-out visitors to create an account once they have looked around (pages, time, scrolling, using a tool) */
+  signupPrompt: boolean;
+  /** Ask for a review after someone downloads one of our programs */
+  reviewPrompt: boolean;
 }
 
 export const EXTRA_DEFAULTS: ExtraSettings = {
@@ -48,6 +52,8 @@ export const EXTRA_DEFAULTS: ExtraSettings = {
   tlKeepFiles: true,
   tlMaxJobs: 500,
   tlBlocked: "",
+  signupPrompt: true,
+  reviewPrompt: true,
 };
 
 let ready: Promise<void> | null = null;

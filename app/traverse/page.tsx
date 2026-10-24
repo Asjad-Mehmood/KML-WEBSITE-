@@ -24,6 +24,7 @@ import {
   Workflow,
 } from "lucide-react";
 import PageShell from "../../components/PageShell";
+import ProductReviews from "../../components/ProductReviews";
 import TraverseDownload, { TraverseReleaseInfo } from "../../components/TraverseDownload";
 import TrackedLink from "../../components/TrackedLink";
 import StepFlipGallery, { type FlipStep } from "../../components/StepFlipGallery";
@@ -287,6 +288,8 @@ export default function TraversePage() {
             ))}
           </ul>
         </section>
+
+        <ProductReviews product="traverse" name="Traverse & Level" />
 
         {/* Get it */}
         <section id="download" aria-labelledby="download-h" className="scroll-mt-28 mt-20 mb-6">

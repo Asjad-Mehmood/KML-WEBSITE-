@@ -43,6 +43,8 @@ export interface AllSettings {
   tlKeepFiles: boolean;
   tlMaxJobs: number;
   tlBlocked: string;
+  signupPrompt: boolean;
+  reviewPrompt: boolean;
 }
 
 type Draft = AllSettings;
@@ -216,6 +218,20 @@ export default function SettingsPanel({
             }
             checked={draft.googleSignInEnabled}
             onChange={(v) => set("googleSignInEnabled", v)}
+            tone="emerald"
+          />
+          <Toggle
+            label="Invite visitors to sign up"
+            text="Signed-out visitors who look around (3 pages, a minute on the site, reading most of a page or using a tool) see a small card inviting them to create a free account. Shown at most once a visit; Not now hides it for a week."
+            checked={draft.signupPrompt}
+            onChange={(v) => set("signupPrompt", v)}
+            tone="emerald"
+          />
+          <Toggle
+            label="Ask for a review after a download"
+            text="After someone downloads one of our programs they are asked for a star rating and a comment, and again a few days later if they haven't answered. Reviews wait in Admin → Reviews until you publish them."
+            checked={draft.reviewPrompt}
+            onChange={(v) => set("reviewPrompt", v)}
             tone="emerald"
           />
           <Toggle

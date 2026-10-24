@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import AdminMessages from "../../components/admin/AdminMessages";
+import AdminReviews from "../../components/admin/AdminReviews";
 import AdminReleases from "../../components/admin/AdminReleases";
 import SettingsPanel from "../../components/admin/SettingsPanel";
 import AdminPoints from "../../components/admin/AdminPoints";
@@ -36,6 +37,7 @@ import {
   Filter,
   Files,
   Inbox,
+  Star,
   Megaphone,
 } from "lucide-react";
 import SurveyorDetailModal from "@/components/admin/SurveyorDetailModal";
@@ -188,9 +190,10 @@ const ASSET_NAME: Record<string, string> = {
 
 export default function AdminClient() {
   const [activeTab, setActiveTab] = useState<
-    "overview" | "users" | "activities" | "downloads" | "files" | "conversions" | "traverse" | "releases" | "messages" | "settings"
+    "overview" | "users" | "activities" | "downloads" | "files" | "conversions" | "traverse" | "releases" | "reviews" | "messages" | "settings"
   >("overview");
   const [newMessages, setNewMessages] = useState(0);
+  const [pendingReviews, setPendingReviews] = useState(0);
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean | null>(null);
   const [adminUser, setAdminUser] = useState<UserItem | null>(null);
   const [loading, setLoading] = useState(true);
@@ -685,6 +688,7 @@ export default function AdminClient() {
             { id: "conversions", label: "Points", icon: Globe, count: conversionsTotal },
             { id: "traverse", label: "Traverse & Level", icon: Compass, count: stats?.traverse?.jobs },
             { id: "releases", label: "Releases", icon: Megaphone },
+            { id: "reviews", label: "Reviews", icon: Star, count: pendingReviews || undefined },
             { id: "messages", label: "Messages", icon: Inbox, count: newMessages || undefined },
             { id: "settings", label: "Settings", icon: Settings },
           ].map((tab) => {
@@ -1614,6 +1618,8 @@ export default function AdminClient() {
         {/* TAB 6: SETTINGS & RELEASE MANAGEMENT */}
         {/* ================================================================== */}
         {activeTab === "releases" && <AdminReleases adminFetch={adminFetch} onToast={showToast} />}
+
+        {activeTab === "reviews" && <AdminReviews adminFetch={adminFetch} onToast={showToast} onCounts={setPendingReviews} />}
 
         {activeTab === "messages" && (
           <AdminMessages adminFetch={adminFetch} onToast={showToast} onCounts={setNewMessages} />

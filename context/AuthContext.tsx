@@ -238,6 +238,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (user) {
           setUser({ ...user, downloadCount: (user.downloadCount || 0) + 1 });
         }
+        // the review prompt asks about it (components/ReviewPrompt.tsx)
+        window.dispatchEvent(new CustomEvent("kml:downloaded", { detail: { assetType } }));
         return true;
       }
       return false;

@@ -25,6 +25,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import PageShell from "../../components/PageShell";
+import ProductReviews from "../../components/ProductReviews";
 import RoadProDownload from "../../components/RoadProDownload";
 import {
   ROADPRO_COMMANDS,
@@ -497,6 +498,8 @@ export default function RoadProPage() {
             ))}
           </div>
         </section>
+
+        <ProductReviews product="roadpro" name="RoadPro" />
 
         {/* Downloads */}
         <section id="download" aria-labelledby="download-h" className="scroll-mt-28 mt-20 rounded-3xl border border-slate-200 bg-gradient-to-b from-blue-50/70 to-white p-6 sm:p-10">
