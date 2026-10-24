@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import { trackAppUse } from "@/lib/appUsage";
 import { db } from "@/lib/db";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With, X-App-Platform, X-App-Name, X-App-Version",
 };
 
 export async function OPTIONS() {
@@ -20,6 +21,8 @@ async function getAuthUser(req: NextRequest) {
     req.headers.get("authorization")?.replace("Bearer ", "");
   if (!token) return null;
   const sessionData = await db.validateSession(token);
+  // which app is calling, and its version (Admin → user profile)
+  trackAppUse(req, sessionData?.user?.id);
   return sessionData?.user || null;
 }
 

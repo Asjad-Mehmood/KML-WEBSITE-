@@ -33,6 +33,8 @@ import {
 import FileViewer, { type ViewerFile } from "@/components/FileViewer";
 import { TraverseUserJobs } from "@/components/admin/AdminTraverse";
 import { actionLabel, adminActionTag } from "@/lib/activityKinds";
+import AppVersions from "@/components/AppVersions";
+import type { ProgramVersions } from "@/lib/appUsage";
 
 export interface UserItem {
   id: string;
@@ -137,6 +139,8 @@ interface UserDetailResponse {
   jobs?: UserJobItem[];
   /** Traverse & Level jobs saved by this user */
   traverseJobs?: number;
+  /** Which version of each program they have, and where they last opened it */
+  programs?: ProgramVersions[];
   points?: { total: number; conversions: UserPointItem[] };
 }
 
@@ -367,6 +371,7 @@ export default function SurveyorDetailModal({
   const activities = data?.activities || [];
   const downloads = data?.downloads || [];
   const files = data?.files || [];
+  const programs = data?.programs || [];
   const jobs = data?.jobs || [];
   const points = data?.points?.conversions || [];
   const pointsTotal = data?.points?.total ?? points.length;
@@ -543,6 +548,16 @@ export default function SurveyorDetailModal({
                       <div className="text-[11px] text-slate-500 mt-1">Primary coordinate system</div>
                     </div>
                   </div>
+
+                  {/* Which version of each program they have */}
+                  {programs.length > 0 && (
+                    <div className="p-5 rounded-2xl bg-slate-800/40 border border-slate-800 space-y-4">
+                      <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                        <Download className="w-4 h-4 text-blue-400" /> Programs and versions
+                      </h4>
+                      <AppVersions programs={programs} dark />
+                    </div>
+                  )}
 
                   {/* Format Breakdown & Profile Details Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1194,6 +1209,14 @@ export default function SurveyorDetailModal({
               {/* ========================================================= */}
               {activeTab === "settings" && (
                 <form onSubmit={handleSaveUserPermissions} className="space-y-6 max-w-2xl mx-auto">
+                  {programs.length > 0 && (
+                    <div className="p-6 rounded-2xl bg-slate-800/40 border border-slate-800 space-y-4">
+                      <h3 className="text-base font-bold text-white flex items-center gap-2">
+                        <Download className="w-4 h-4 text-blue-400" /> Programs and versions
+                      </h3>
+                      <AppVersions programs={programs} dark />
+                    </div>
+                  )}
                   {/* Profile & Role Configuration */}
                   <div className="p-6 rounded-2xl bg-slate-800/40 border border-slate-800 space-y-4">
                     <h3 className="text-base font-bold text-white flex items-center gap-2">

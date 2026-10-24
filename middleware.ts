@@ -19,7 +19,7 @@ export function middleware(req: NextRequest) {
     res.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
     res.headers.set(
       "Access-Control-Allow-Headers",
-      "Content-Type, Authorization, X-Requested-With, Accept, X-Admin-Token, X-App-Platform"
+      "Content-Type, Authorization, X-Requested-With, Accept, X-Admin-Token, X-App-Platform, X-App-Name, X-App-Version"
     );
     res.headers.set("Access-Control-Max-Age", "86400");
     return res;
@@ -33,7 +33,7 @@ export function middleware(req: NextRequest) {
   res.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
   res.headers.set(
     "Access-Control-Allow-Headers",
-    "Content-Type, Authorization, X-Requested-With, Accept, X-Admin-Token, X-App-Platform"
+    "Content-Type, Authorization, X-Requested-With, Accept, X-Admin-Token, X-App-Platform, X-App-Name, X-App-Version"
   );
   return res;
 }

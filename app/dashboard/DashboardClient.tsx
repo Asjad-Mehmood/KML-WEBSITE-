@@ -37,6 +37,8 @@ import FileViewer, { type ViewerFile } from "@/components/FileViewer";
 import { actionLabel } from "@/lib/activityKinds";
 import TraverseJobsPanel from "@/components/dashboard/TraverseJobsPanel";
 import type { TraverseJobCard } from "@/lib/traverseJobs";
+import AppVersions from "@/components/AppVersions";
+import type { ProgramVersions } from "@/lib/appUsage";
 
 export interface DashboardData {
   user: {
@@ -98,6 +100,8 @@ export interface DashboardData {
   }[];
   /** Traverse & Level jobs kept in the account, and those colleagues shared with it */
   traverse: { own: TraverseJobCard[]; shared: TraverseJobCard[] };
+  /** Which version of each program this account has, and whether it is the newest */
+  programs: ProgramVersions[];
   /** Converted points of the files saved while signed in, newest first. */
   points: {
     total: number;
@@ -1025,6 +1029,13 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
             {/* Account */}
             {tab === "account" && (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
+                <section aria-labelledby="acc-apps-h" className="lg:col-span-3 bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6">
+                  <h2 id="acc-apps-h" className="text-[15px] font-bold">Your programs</h2>
+                  <p className="mt-1 mb-4 text-[13px] text-slate-500">
+                    The version you have of each program, where you last opened it, and whether a newer one is out.
+                  </p>
+                  <AppVersions programs={data.programs} />
+                </section>
                 <section className="lg:col-span-2 bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6">
                   <h2 className="text-[15px] font-bold mb-4">Profile</h2>
                   <form onSubmit={saveProfile} className="space-y-4 max-w-lg">

@@ -67,7 +67,9 @@ export default function PrivacyPage() {
         </li>
         <li>
           <strong>Technical information</strong> that browsers send to every website, such as your IP address, the approximate
-          area it comes from, and your browser and device type.
+          area it comes from, and your browser and device type. When you&apos;re signed in to one of our apps, we also note which app
+          it is, the kind of device (Windows, Android or the web) and the app&apos;s version, so you can see whether you have the
+          newest one.
         </li>
       </ul>
 
