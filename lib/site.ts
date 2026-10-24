@@ -101,4 +101,4 @@ export const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "exceltokm
 /** Date shown as "Last updated" on the Privacy Policy and Terms */
 export const LEGAL_UPDATED = "26 September 2026";
 /** The privacy policy changed later than the terms (release emails) */
-export const PRIVACY_UPDATED = "23 October 2026";
+export const PRIVACY_UPDATED = "24 October 2026";
