@@ -4,6 +4,7 @@ import { GOOGLE_COOKIE, isGoogleConfigured, profileFromCode } from "@/lib/google
 import { safeNextPath } from "@/lib/authRedirect";
 import { getClientIp, getIpGeoLocation } from "@/lib/geo";
 import { getExtraSettings } from "@/lib/siteSettings";
+import { markVerified } from "@/lib/emailVerify";
 
 // Back from Google: check the state, get the verified email, then sign in to
 // the matching account or create one, and continue to ?next
@@ -48,6 +49,8 @@ export async function GET(req: NextRequest) {
 
     else if (user.role === "Surveyor" && (user.organization || "Independent Surveyor") === "Independent Surveyor") needsProfile = true;
 
+    // Google has confirmed the address
+    await markVerified(user.id, "google").catch((e) => console.error("Couldn't note the confirmed email:", e));
     await db.touchUserLogin(user.id);
     const session = await db.createSession(user.id);
     const dest = needsProfile ? `/welcome?next=${encodeURIComponent(next)}` : next;

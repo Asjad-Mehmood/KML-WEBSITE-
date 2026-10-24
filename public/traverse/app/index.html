@@ -107,6 +107,15 @@
     <p class="form-msg" id="code-msg" role="status"></p>
     <button class="btn ghost full" type="button" id="code-cancel">Back to log in</button>
   </div>
+  <form class="auth-card" id="verify-card" hidden novalidate>
+    <svg class="auth-rose"><use href="#rose"/></svg>
+    <h1>Confirm your email</h1>
+    <p class="sub" id="verify-sub">We sent a 6-digit code to your email.</p>
+    <label>6-digit code<input id="verify-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000"></label>
+    <p class="form-msg" id="verify-msg" role="alert"></p>
+    <button class="btn gold big full" type="submit">Confirm and continue</button>
+    <div class="auth-links"><a href="#" id="verify-resend">Send a new code</a><a href="#" id="verify-cancel">Back to log in</a></div>
+  </form>
 </section>
 <section class="view auth" data-view="register" hidden>
   <form class="auth-card" id="register-form" novalidate>

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { verifyResetToken } from "@/lib/passwordReset";
 import { revokeTrustedBrowsers } from "@/lib/adminOtp";
+import { markVerified } from "@/lib/emailVerify";
 
 export async function POST(req: NextRequest) {
   const { token, password } = await req.json().catch(() => ({}));
@@ -26,6 +27,8 @@ export async function POST(req: NextRequest) {
     await db.updateUser(user.id, { password });
     await db.deleteUserSessions(user.id); // sign out everywhere; old sessions may belong to someone else
     await revokeTrustedBrowsers(user.id); // and no browser stays trusted for the admin email code
+    // the reset link reached their inbox, so the address is theirs
+    await markVerified(user.id, "reset").catch((e) => console.error("Couldn't note the confirmed email:", e));
     return NextResponse.json({ success: true, message: "Password updated. You can now sign in." });
   } catch (err) {
     console.error("Password reset failed:", err);

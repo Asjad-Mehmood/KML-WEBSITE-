@@ -26,6 +26,8 @@ const LABELS: Record<keyof AllSettings, string> = {
   webWatermarkKml: "Web KML watermark",
   webDisableReports: "Web PDF reports locked",
   allowSignups: "New sign-ups",
+  verifyEmails: "Confirm new accounts' email",
+  verifyOldAccounts: "Older accounts confirm their email",
   googleSignInEnabled: "Google sign-in",
   traverseEnabled: "Traverse adjust in the app",
   tlEnabled: "Traverse & Level app",
@@ -117,6 +119,7 @@ function cleanSettings(body: Record<string, unknown>): Partial<AllSettings> | { 
   const out: Record<string, string | number | boolean> = {};
   const bools = [
     "requireAuthForDownload", "maintenanceMode", "announcementActive", "allowSignups", "googleSignInEnabled",
+    "verifyEmails", "verifyOldAccounts",
     "traverseEnabled", "tlEnabled", "tlSharing", "tlKeepFiles", "signupPrompt", "reviewPrompt",
   ];
   for (const k of bools) if (typeof body[k] === "boolean") out[k] = body[k] as boolean;

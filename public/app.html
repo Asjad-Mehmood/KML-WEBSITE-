@@ -8968,6 +8968,18 @@
           </button>
         </form>
 
+        <!-- Confirm your email: the 6-digit code sent after creating an account (or signing in to one not confirmed yet) -->
+        <form id="verifyForm" style="display:none;" autocomplete="off">
+          <p style="margin:0 0 6px;font-weight:700;font-size:16px;color:#F8FAFC;">Confirm your email</p>
+          <p id="verifyText" style="margin:0 0 14px;font-size:13px;line-height:1.5;color:#94A3B8;"></p>
+          <div class="auth-form-group">
+            <label for="verifyCode">6-digit code</label>
+            <input type="text" id="verifyCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" style="text-align:center;letter-spacing:.4em;font-size:20px;font-weight:700;">
+          </div>
+          <button type="submit" class="auth-submit-btn" id="verifySubmitBtn"><span>Confirm and continue</span></button>
+          <button type="button" class="auth-forgot" id="verifyResendBtn" style="margin-top:10px;">Send a new code</button>
+        </form>
+
         <!-- Server Configuration -->
 
       </div>
@@ -18103,6 +18115,79 @@ PC-01,229045.640,392414.010"></textarea>
           registerForm.style.display = "none";
           loginForm.style.display = "block";
         }
+        if (verifyForm) verifyForm.style.display = "none";
+      }
+
+      /* Confirm your email: after signing up (or signing in to an account not confirmed yet)
+         the server emails a 6-digit code; it is typed here and the account is signed in. */
+      var verifyForm = document.getElementById("verifyForm");
+      var verifyChallenge = null;
+      function signedIn(data, message) {
+        authToken = data.token;
+        currentUser = data.user;
+        try {
+          localStorage.setItem(STORAGE_KEY_TOKEN, authToken);
+          localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(currentUser));
+        } catch (err) { }
+        updateAuthUI();
+        showAlert(message, "success");
+        setTimeout(closeAuthModal, 800);
+      }
+      function showVerify(data) {
+        verifyChallenge = data.challenge;
+        loginForm.style.display = "none";
+        registerForm.style.display = "none";
+        verifyForm.style.display = "block";
+        document.getElementById("verifyText").textContent = "We sent a 6-digit code to " + (data.sentTo || "your email") + ". It works for 24 hours. Not in your inbox? Look in Spam.";
+        clearAlert();
+        var input = document.getElementById("verifyCode");
+        input.value = "";
+        setTimeout(function () { input.focus(); }, 50);
+      }
+      if (verifyForm) {
+        verifyForm.addEventListener("submit", async function (e) {
+          e.preventDefault();
+          clearAlert();
+          var code = (document.getElementById("verifyCode").value || "").replace(/\D/g, "");
+          if (code.length !== 6) { showAlert("Enter the 6-digit code from the email."); return; }
+          var btn = document.getElementById("verifySubmitBtn");
+          btn.disabled = true;
+          try {
+            var res = await fetch(getApiBase() + "/api/auth/verify-email", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "Accept": "application/json" },
+              body: JSON.stringify({ challenge: verifyChallenge, code: code })
+            });
+            var data = await res.json().catch(function () { return {}; });
+            if (!res.ok || !data.success) { showAlert(data.error || "That code didn't work. Please try again."); return; }
+            verifyForm.style.display = "none";
+            signedIn(data, "Email confirmed. Welcome!");
+          } catch (err) {
+            showAlert("Could not connect to the server. Check your connection and try again.");
+          } finally {
+            btn.disabled = false;
+          }
+        });
+        document.getElementById("verifyResendBtn").addEventListener("click", async function () {
+          clearAlert();
+          try {
+            var res = await fetch(getApiBase() + "/api/auth/resend-verify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "Accept": "application/json" },
+              body: JSON.stringify({ challenge: verifyChallenge })
+            });
+            var data = await res.json().catch(function () { return {}; });
+            if (!res.ok) {
+              showAlert(data.error || "Couldn't send a new code.");
+              if (data.restart) switchTab("login");
+              return;
+            }
+            verifyChallenge = data.challenge;
+            showAlert("A new code is on its way to " + data.sentTo + ".", "success");
+          } catch (err) {
+            showAlert("Could not connect to the server. Check your connection and try again.");
+          }
+        });
       }
 
       if (tabBtnLogin) tabBtnLogin.addEventListener("click", function () { switchTab("login"); });
@@ -18936,6 +19021,12 @@ PC-01,229045.640,392414.010"></textarea>
 
             var data = await res.json().catch(function () { return {}; });
 
+            if (data.verifyRequired && data.challenge) {
+              showVerify(data);
+              submitBtn.disabled = false;
+              submitBtn.innerHTML = '<span>Sign In</span>';
+              return;
+            }
             if (!res.ok || !data.success) {
               showAlert(data.error || "Login failed. Please check your credentials.");
               submitBtn.disabled = false;
@@ -19013,6 +19104,12 @@ PC-01,229045.640,392414.010"></textarea>
 
             var data = await res.json().catch(function () { return {}; });
 
+            if (data.verifyRequired && data.challenge) {
+              showVerify(data);
+              submitBtn.disabled = false;
+              submitBtn.innerHTML = '<span>Create Account</span>';
+              return;
+            }
             if (!res.ok || !data.success) {
               showAlert(data.error || "Registration failed. Please try again.");
               submitBtn.disabled = false;

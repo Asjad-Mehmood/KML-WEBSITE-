@@ -7,6 +7,7 @@ import { listJobs } from "@/lib/userJobs";
 import { cardsOwn, cardsShared } from "@/lib/traverseJobs";
 import DashboardClient, { type DashboardData } from "./DashboardClient";
 import { programVersionsFor } from "@/lib/appUsage";
+import { emailStatus, verificationActive } from "@/lib/emailVerify";
 
 // Checked on every request: each visitor only ever sees their own account
 export const dynamic = "force-dynamic";
@@ -35,6 +36,9 @@ export default async function DashboardPage() {
   const isAdmin = db.isAdmin(user);
   // which version of each program they have, for the Account tab
   const programs = await programVersionsFor(user.id, downloads).catch(() => []);
+  // an account whose email isn't confirmed is asked to confirm it (not admins: they have their own code)
+  const emailConfirmed =
+    isAdmin || !(await verificationActive().catch(() => false)) || Boolean((await emailStatus(user.id).catch(() => null))?.verifiedAt);
 
   // Totals over everything recorded for this account
   const formats: Record<string, number> = {};
@@ -106,6 +110,7 @@ export default async function DashboardPage() {
     jobs,
     traverse: { own: tlOwn, shared: tlShared },
     programs,
+    emailConfirmed,
     points: {
       total: points.total,
       rows: points.conversions.map((c) => ({

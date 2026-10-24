@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/adminAuth";
 import { db } from "@/lib/db";
 import { getClientIp, getIpGeoLocation } from "@/lib/geo";
+import { emailStatuses, markVerified, type EmailStatus } from "@/lib/emailVerify";
 
 export async function GET(req: NextRequest) {
   const admin = await getAdminSession(req);
@@ -12,8 +13,14 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const query = searchParams.get("query") || "";
   const users = await db.getAllUsers(query);
+  // confirmed, waiting (signed up, never confirmed) or older (made before confirmation started)
+  const statuses = await emailStatuses(users.map((u) => u.id)).catch(() => new Map<string, EmailStatus>());
+  const withEmail = users.map((u) => {
+    const s = statuses.get(u.id);
+    return { ...u, emailState: s?.verifiedAt ? "confirmed" : s?.required ? "waiting" : "older" };
+  });
 
-  return NextResponse.json({ success: true, users });
+  return NextResponse.json({ success: true, users: withEmail });
 }
 
 export async function POST(req: NextRequest) {
@@ -47,6 +54,9 @@ export async function POST(req: NextRequest) {
       hasFullAccess: typeof hasFullAccess === "boolean" ? hasFullAccess : (role === "ADMIN"),
       customMaxPoints: customMaxPoints ? Number(customMaxPoints) : undefined,
     });
+
+    // an account an admin makes doesn't wait for a confirmation code
+    await markVerified(newUser.id, "admin").catch(() => {});
 
     return NextResponse.json({
       success: true,

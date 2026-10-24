@@ -5,6 +5,7 @@ import { listJobs } from "@/lib/userJobs";
 import { countOwn } from "@/lib/traverseJobs";
 import { describeAccountChanges } from "@/lib/accountChanges";
 import { programVersionsFor } from "@/lib/appUsage";
+import { emailStatus } from "@/lib/emailVerify";
 
 export async function GET(
   req: NextRequest,
@@ -66,6 +67,7 @@ export async function GET(
       jobs,
       traverseJobs,
       programs,
+      emailStatus: await emailStatus(user.id).catch(() => null),
     });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Failed to retrieve user details";

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { ensureVerifyTables } from "@/lib/emailVerify";
 import { mailFrom, mailGapMs, mailReplyTo, mailTransport, isMailConfigured, sendsFromFreeMailbox } from "@/lib/mailer";
 import { releaseEmail, type ReleaseForEmail } from "@/lib/releaseEmail";
 import { reviewRequestEmail } from "@/lib/reviewEmail";
@@ -49,6 +50,8 @@ export function ensureReleaseTables(): Promise<void> {
   if (!ready) {
     ready = (async () => {
       const run = (sql: string) => prisma.$executeRawUnsafe(sql);
+      // accounts that never confirmed their email are left out of every send
+      await ensureVerifyTables();
       await run(`CREATE TABLE IF NOT EXISTS "product_releases" (
         "id" TEXT NOT NULL,
         "app" TEXT NOT NULL,
@@ -280,7 +283,8 @@ const eligibleSql = `
   FROM "users" u
   WHERE u."email" ~* '^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$'
     AND lower(trim(u."email")) <> ALL($1::text[])
-    AND NOT EXISTS (SELECT 1 FROM "email_optouts" o WHERE o."email" = lower(trim(u."email")))`;
+    AND NOT EXISTS (SELECT 1 FROM "email_optouts" o WHERE o."email" = lower(trim(u."email")))
+    AND NOT EXISTS (SELECT 1 FROM "user_email_status" v WHERE v."userId" = u."id" AND v."required" AND v."verifiedAt" IS NULL)`;
 
 // The tables that show who uses which app. activities and user_files may be missing on a
 // database that has never had them; the checks that need them are left out until they exist.

@@ -38,6 +38,7 @@ import { actionLabel } from "@/lib/activityKinds";
 import TraverseJobsPanel from "@/components/dashboard/TraverseJobsPanel";
 import type { TraverseJobCard } from "@/lib/traverseJobs";
 import AppVersions from "@/components/AppVersions";
+import ConfirmEmailBanner from "@/components/ConfirmEmailBanner";
 import type { ProgramVersions } from "@/lib/appUsage";
 
 export interface DashboardData {
@@ -102,6 +103,8 @@ export interface DashboardData {
   traverse: { own: TraverseJobCard[]; shared: TraverseJobCard[] };
   /** Which version of each program this account has, and whether it is the newest */
   programs: ProgramVersions[];
+  /** false: the dashboard asks them to confirm their email */
+  emailConfirmed: boolean;
   /** Converted points of the files saved while signed in, newest first. */
   points: {
     total: number;
@@ -561,6 +564,8 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
               )}
             </div>
           </section>
+
+          {!data.emailConfirmed && <ConfirmEmailBanner email={user.email} />}
 
           {/* Totals */}
           <section aria-label="Your totals" className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4 mt-4 sm:mt-5">

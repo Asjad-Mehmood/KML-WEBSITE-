@@ -62,7 +62,7 @@ export default function AuthModal() {
 
         <div className="px-6 py-6">
           {otp ? (
-            <OtpForm onSuccess={() => router.push("/admin")} />
+            <OtpForm onSuccess={(r) => { if (r.isAdmin) router.push("/admin"); }} />
           ) : (
           <>
           {/* Intent */}

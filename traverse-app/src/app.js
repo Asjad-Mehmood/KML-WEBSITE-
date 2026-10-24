@@ -124,7 +124,10 @@ async function onLogin(e) {
   if (remote.kind !== 'demo' && !navigator.onLine) return msg('#login-msg', 'You are offline. Log in once while connected; after that the app opens offline on this device.');
   busy('login-form', true);
   try { const u = await remote.signIn({ email, password }); $('#login-pass').value = ''; setUser(u, { celebrate: true }); afterLogin(); }
-  catch (err) { msg('#login-msg', err instanceof AuthError ? err.message : 'Could not log in: ' + err.message); }
+  catch (err) {
+    if (err instanceof AuthError && err.code === 'verify') { $('#login-pass').value = ''; return verifyView(err.verify); }
+    msg('#login-msg', err instanceof AuthError ? err.message : 'Could not log in: ' + err.message);
+  }
   finally { busy('login-form', false); }
 }
 async function onRegister(e) {
@@ -140,6 +143,7 @@ async function onRegister(e) {
     const r = await remote.signUp({ email, password: p1, name, company });
     $('#reg-pass').value = $('#reg-pass2').value = '';
     if (r.needsConfirm) { msg('#register-msg', `Account created. We sent a confirmation link to ${normEmail(email)}. Open it, then log in.`, true); return; }
+    if (r.verify) { location.hash = '#/login'; verifyView(r.verify); return; }
     setUser(r.user, { celebrate: true }); toast(`Welcome, ${name.split(' ')[0]}! Your account is ready.`); afterLogin();
   } catch (err) { msg('#register-msg', err instanceof AuthError ? err.message : 'Could not register: ' + err.message); }
   finally { busy('register-form', false); }
@@ -161,6 +165,33 @@ async function logout() {
   if (store && store.pending()) { toast('Some changes are not uploaded yet. Connect to the internet and log in again to upload them.'); }
   try { await remote.signOut(); } catch (e) { /* offline: local sign-out still applies */ }
   deviceUser.clear(); setUser(null); location.hash = '#/login';
+}
+
+// ---------------------------------------------------------------- confirm your email (new accounts)
+// After signing up, or signing in to an account whose email isn't confirmed yet, the website
+// emails a 6-digit code. Typing it here confirms the address and signs in.
+let verifying = null;
+function verifyView(v) {
+  verifying = v || null;
+  $('#login-form').hidden = !!v; $('#code-card').hidden = true; $('#verify-card').hidden = !v;
+  if (!v) return;
+  $('#verify-sub').textContent = `We sent a 6-digit code to ${v.sentTo}. It works for 24 hours. Not in your inbox? Look in Spam.`;
+  $('#verify-code').value = ''; msg('#verify-msg', '');
+  setTimeout(() => $('#verify-code').focus(), 50);
+}
+async function onVerify(e) {
+  e.preventDefault(); msg('#verify-msg', '');
+  const code = $('#verify-code').value.replace(/\D/g, '');
+  if (code.length !== 6) return msg('#verify-msg', 'Enter the 6-digit code from the email.');
+  busy('verify-card', true);
+  try { const u = await remote.confirmEmail(verifying.challenge, code); verifyView(null); setUser(u, { celebrate: true }); toast('Email confirmed. Welcome!'); afterLogin(); }
+  catch (err) { msg('#verify-msg', err instanceof AuthError ? err.message : 'Could not confirm: ' + err.message); }
+  finally { busy('verify-card', false); }
+}
+async function onVerifyResend(e) {
+  e.preventDefault(); msg('#verify-msg', '');
+  try { verifying = await remote.resendConfirm(verifying.challenge); msg('#verify-msg', `A new code is on its way to ${verifying.sentTo}.`, true); }
+  catch (err) { msg('#verify-msg', err.message); if (err.data && err.data.restart) setTimeout(() => verifyView(null), 2500); }
 }
 
 // ---------------------------------------------------------------- sign in with a code (browser)
@@ -297,6 +328,9 @@ function bind() {
     try { await navigator.clipboard.writeText(link); toast('Link copied. Paste it in your browser.'); } catch (err) { toast(link); }
   });
   $('#register-form').addEventListener('submit', onRegister);
+  $('#verify-card').addEventListener('submit', onVerify);
+  $('#verify-resend').addEventListener('click', onVerifyResend);
+  $('#verify-cancel').addEventListener('click', e => { e.preventDefault(); verifyView(null); msg('#login-msg', ''); });
   $('#reset-form').addEventListener('submit', onReset);
   $('#newpass-form').addEventListener('submit', onNewPass);
   $('#share-form').addEventListener('submit', onShare);
