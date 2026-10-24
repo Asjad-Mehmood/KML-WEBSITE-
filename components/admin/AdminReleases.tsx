@@ -69,7 +69,7 @@ interface Data {
     review: { reviewed: number; toAsk: number; notAskedYet: number; broadcasts: Broadcast[] };
   }[];
   audience: { everyone: number; optedOut: number };
-  mail: { configured: boolean; from: string };
+  mail: { configured: boolean; from: string; freeMailbox?: boolean };
 }
 type Fetch = (url: string, options?: RequestInit) => Promise<Response>;
 
@@ -330,7 +330,14 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
             <Mail className="w-4 h-4" /> Sends from
           </p>
           {data.mail.configured ? (
-            <p className="mt-1.5 text-sm text-white break-all">{data.mail.from}</p>
+            <>
+              <p className="mt-1.5 text-sm text-white break-all">{data.mail.from}</p>
+              {data.mail.freeMailbox && (
+                <p className="mt-1.5 text-xs text-amber-300 leading-relaxed">
+                  Emails to many people from a personal Gmail address often land in Spam. Sending from your own domain (for example hello@exceltokml.com) through an email service fixes this. Emails now go out a few seconds apart, so keep this page open while they send.
+                </p>
+              )}
+            </>
           ) : (
             <p className="mt-1.5 text-sm text-amber-200">Email isn&apos;t set up. Add SMTP_HOST, SMTP_USER and SMTP_PASS in Vercel, then redeploy.</p>
           )}

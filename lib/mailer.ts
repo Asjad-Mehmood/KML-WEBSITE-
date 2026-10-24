@@ -5,13 +5,33 @@ import nodemailer from "nodemailer";
 //   SMTP_PORT   587 (STARTTLS, default) or 465 (TLS)
 //   SMTP_USER   the mailbox login
 //   SMTP_PASS   its password (for Gmail: an App Password)
-//   MAIL_FROM   optional, e.g. "Excel to KML <no-reply@exceltokml.com>" (defaults to SMTP_USER)
+//   MAIL_FROM   optional, e.g. "Excel to KML <hello@exceltokml.com>" (defaults to SMTP_USER)
+//   MAIL_REPLY_TO optional, where replies go when MAIL_FROM isn't a mailbox you read
+//   MAIL_GAP_MS optional, the pause between emails to many people (default 4000)
+//
+// Bulk email from a personal @gmail.com address tends to land in Spam. For emails to many
+// users, send from your own domain through an email service (Brevo, Resend, Amazon SES...)
+// with SPF, DKIM and DMARC set up in the domain's DNS; only these variables change.
 
 export function isMailConfigured(): boolean {
   return Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
 }
 
 export const mailFrom = () => process.env.MAIL_FROM || process.env.SMTP_USER || "";
+export const mailReplyTo = () => process.env.MAIL_REPLY_TO || undefined;
+
+/** True while emails go out from a free mailbox (gmail.com, outlook.com...), which spam filters trust least */
+export function sendsFromFreeMailbox(): boolean {
+  const from = mailFrom().toLowerCase();
+  const domain = (from.match(/@([a-z0-9.-]+)/) || [])[1] || "";
+  return ["gmail.com", "googlemail.com", "outlook.com", "hotmail.com", "live.com", "yahoo.com"].includes(domain);
+}
+
+/** The pause between emails to many people: a steady trickle looks less like spam than a burst */
+export const mailGapMs = () => {
+  const n = Number(process.env.MAIL_GAP_MS);
+  return Number.isFinite(n) && n >= 0 ? Math.min(n, 20_000) : 4000;
+};
 
 export interface MailMessage {
   to: string;
@@ -43,5 +63,5 @@ export function mailTransport(pool = false) {
 
 export async function sendMail(opts: MailMessage) {
   const transport = mailTransport();
-  await transport.sendMail({ from: mailFrom(), ...opts });
+  await transport.sendMail({ from: mailFrom(), replyTo: mailReplyTo(), ...opts });
 }
