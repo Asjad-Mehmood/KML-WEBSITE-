@@ -4,7 +4,7 @@ import crypto from "crypto";
 import { SITE_NAME, SITE_URL, SUPPORT_EMAIL } from "@/lib/site";
 import { TRAVERSE_APP } from "@/lib/traverse";
 
-const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
+export const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 
 // ---------- unsubscribe links ----------
 // token = base64url(email) + "." + HMAC. It never expires: an old email's link still works.
@@ -141,8 +141,8 @@ export const absoluteLink = (link: string) => (/^https:\/\//.test(link) ? link :
 const longDate = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 
 // colours and fonts, inline because email apps drop <style>
-const C = { blue: "#0071e3", ink: "#0f172a", body: "#334155", muted: "#64748b", faint: "#94a3b8", line: "#e2e8f0", page: "#f1f5f9", tint: "#f0f7ff" };
-const FONT = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
+export const C = { blue: "#0071e3", ink: "#0f172a", body: "#334155", muted: "#64748b", faint: "#94a3b8", line: "#e2e8f0", page: "#f1f5f9", tint: "#f0f7ff" };
+export const FONT = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
 
 export function releaseEmail(r: ReleaseForEmail, to: { name: string; email: string }) {
   const first = (to.name || "").trim().split(/\s+/)[0] || "there";

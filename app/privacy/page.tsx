@@ -78,8 +78,9 @@ export default function PrivacyPage() {
         <li>To run your account and show your history and files in your dashboard.</li>
         <li>To send emails you ask for, such as a password reset link, a one-time welcome after your first download, or a reply to your message.</li>
         <li>
-          To tell you when there&apos;s a new version of our software (Excel to KML, RoadPro, Traverse &amp; Level, Project Folder Manager).
-          Every one of these emails has a link to stop them; account emails such as password resets still arrive.
+          To tell you when there&apos;s a new version of our software (Excel to KML, RoadPro, Traverse &amp; Level, Project Folder Manager),
+          and now and then to ask you to review a program you downloaded or used. Every one of these emails has a link to stop them;
+          account emails such as password resets still arrive.
         </li>
         <li>To answer messages you send us through the contact form or by email.</li>
         <li>To keep the service secure and prevent misuse.</li>

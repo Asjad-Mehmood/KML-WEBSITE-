@@ -16,7 +16,7 @@ const COUNT_KEY = "kml.signup.dismissed";
 const PAGES_KEY = "kml.visit.pages";
 const SHOWN_KEY = "kml.signup.shown";
 
-const QUIET = ["/login", "/register", "/forgot-password", "/reset-password", "/dashboard", "/admin", "/app", "/link", "/app-signin", "/welcome", "/unsubscribe"];
+const QUIET = ["/login", "/register", "/forgot-password", "/reset-password", "/dashboard", "/admin", "/app", "/link", "/app-signin", "/welcome", "/unsubscribe", "/review"];
 
 const store = {
   get(k: string, s: Storage | undefined) { try { return s?.getItem(k) ?? null; } catch { return null; } },

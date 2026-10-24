@@ -63,6 +63,17 @@ export async function saveReview(userId: string, product: ReviewProduct, rating:
  * Programs this account downloaded and hasn't reviewed yet, newest download first, with when and
  * which version: the review prompt asks about them.
  */
+/** This account's own review of a program, to show on the review page */
+export async function ownReview(userId: string, product: ReviewProduct) {
+  await ensure();
+  const [r] = await prisma.$queryRawUnsafe<{ rating: number; comment: string; status: ReviewStatus }[]>(
+    `SELECT "rating", "comment", "status" FROM "reviews" WHERE "userId" = $1 AND "product" = $2`,
+    userId,
+    product
+  );
+  return r ?? null;
+}
+
 export async function reviewsDue(userId: string) {
   await ensure();
   const done = await prisma.$queryRawUnsafe<{ product: string }[]>(`SELECT "product" FROM "reviews" WHERE "userId" = $1`, userId);
