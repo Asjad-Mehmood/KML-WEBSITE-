@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import Link from "next/link";
 import AdminMessages from "../../components/admin/AdminMessages";
 import AdminReviews from "../../components/admin/AdminReviews";
 import AdminReleases from "../../components/admin/AdminReleases";
@@ -9,12 +8,12 @@ import SettingsPanel from "../../components/admin/SettingsPanel";
 import AdminPoints from "../../components/admin/AdminPoints";
 import AdminTraverse from "../../components/admin/AdminTraverse";
 import AdminFiles from "../../components/admin/AdminFiles";
+import AdminShell, { type AdminGroup } from "../../components/admin/AdminShell";
 import {
   Users,
   Download,
   Activity,
   Settings,
-  Shield,
   Plus,
   Trash2,
   Edit3,
@@ -22,8 +21,6 @@ import {
   RefreshCw,
   CheckCircle2,
   AlertTriangle,
-  ArrowLeft,
-  LogOut,
   FileSpreadsheet,
   Globe,
   Layers,
@@ -190,11 +187,24 @@ const ASSET_NAME: Record<string, string> = {
   folder_manager: "Project Folder Manager (Windows)",
 };
 
+const ADMIN_TABS = ["overview", "users", "activities", "downloads", "files", "conversions", "traverse", "releases", "reviews", "messages", "settings"] as const;
+type AdminTab = (typeof ADMIN_TABS)[number];
+function tabFromAddress(): AdminTab {
+  const id = typeof window === "undefined" ? "" : window.location.hash.slice(1);
+  return (ADMIN_TABS as readonly string[]).includes(id) ? (id as AdminTab) : "overview";
+}
+/** When the data was loaded, for "Updated 2 min ago" */
+const stamp = () => Date.now();
+
 export default function AdminClient() {
-  const [activeTab, setActiveTab] = useState<
-    "overview" | "users" | "activities" | "downloads" | "files" | "conversions" | "traverse" | "releases" | "reviews" | "messages" | "settings"
-  >("overview");
+  // Opens on the page named in the address (/admin#releases); the first render is the
+  // loading screen, so reading the address here can't upset hydration
+  const [activeTab, setActiveTab] = useState<AdminTab>(tabFromAddress);
   const [newMessages, setNewMessages] = useState(0);
+  // Refresh in the page header: loads everything again (refreshKey remounts the open page)
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
+  const [updatedAt, setUpdatedAt] = useState<number | null>(null);
   const [pendingReviews, setPendingReviews] = useState(0);
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean | null>(null);
   const [adminUser, setAdminUser] = useState<UserItem | null>(null);
@@ -399,7 +409,25 @@ export default function AdminClient() {
     } catch (err) {
       console.error("Dashboard data load error", err);
     }
+    setUpdatedAt(stamp());
   };
+
+  const refreshAll = async () => {
+    setRefreshing(true);
+    try {
+      await loadDashboardData();
+      setRefreshKey((k) => k + 1);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  // The open page is kept in the address (/admin#releases), so a reload or a shared link opens it
+  useEffect(() => {
+    const want = activeTab === "overview" ? "" : `#${activeTab}`;
+    if (window.location.hash !== want) window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}${want}`);
+    window.scrollTo({ top: 0 });
+  }, [activeTab]);
 
   const loadUsers = async (query = "") => {
     setUsersLoading(true);
@@ -574,7 +602,7 @@ export default function AdminClient() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
+      <div className="min-h-screen bg-[var(--adm-bg)] flex items-center justify-center text-white">
         <div className="flex flex-col items-center gap-3">
           <RefreshCw className="w-8 h-8 text-blue-500 animate-spin" />
           <p className="text-sm font-semibold text-slate-400">Verifying Administrator Privileges...</p>
@@ -616,8 +644,53 @@ export default function AdminClient() {
   const actPageNow = Math.min(actPage, Math.max(0, Math.ceil(filteredActivities.length / ACT_PAGE) - 1));
   const pagedActivities = filteredActivities.slice(actPageNow * ACT_PAGE, (actPageNow + 1) * ACT_PAGE);
 
+  // The menu, grouped by topic (components/admin/AdminShell.tsx)
+  const groups: AdminGroup[] = [
+    {
+      label: "Overview",
+      sections: [{ id: "overview", label: "Dashboard", icon: BarChart3, text: "Accounts, downloads and what people did lately, at a glance" }],
+    },
+    {
+      label: "People",
+      sections: [
+        { id: "users", label: "Surveyors", icon: Users, text: "Every account: who they are, where from, what they downloaded and whether their email is confirmed", count: users.length },
+        { id: "activities", label: "Activity", icon: Activity, text: "What each account did in the apps: conversions, saves, opens and reports", count: Math.max(activitiesTotal, allActivities.length) },
+        { id: "downloads", label: "Downloads", icon: Download, text: "Every program download, by whom and from where", count: downloads.length },
+      ],
+    },
+    {
+      label: "Data",
+      sections: [
+        { id: "files", label: "Files", icon: Files, text: "Files people imported into and exported from the apps", count: stats?.totalFilesStored },
+        { id: "conversions", label: "Points", icon: Globe, text: "The converted points in saved files", count: conversionsTotal },
+        { id: "traverse", label: "Traverse & Level", icon: Compass, text: "Jobs, usage and the switches for Traverse & Level", count: stats?.traverse?.jobs },
+      ],
+    },
+    {
+      label: "Engage",
+      sections: [
+        { id: "releases", label: "Releases", icon: Megaphone, text: "New versions of each program, the emails about them and review requests" },
+        { id: "reviews", label: "Reviews", icon: Star, text: "Star ratings and comments waiting to be published", count: pendingReviews || undefined, attention: pendingReviews > 0 },
+        { id: "messages", label: "Messages", icon: Inbox, text: "What people sent through the contact form", count: newMessages || undefined, attention: newMessages > 0 },
+      ],
+    },
+    {
+      label: "System",
+      sections: [{ id: "settings", label: "Settings", icon: Settings, text: "Sign-ups, email confirmation, the home page, announcements and maintenance" }],
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-blue-500/30">
+    <AdminShell
+      groups={groups}
+      active={activeTab}
+      onSelect={(id) => setActiveTab(id as typeof activeTab)}
+      admin={adminUser}
+      onLogout={handleAdminLogout}
+      onRefresh={refreshAll}
+      refreshing={refreshing}
+      updatedAt={updatedAt}
+    >
       {/* Toast alert */}
       {toast && (
         <div
@@ -632,109 +705,17 @@ export default function AdminClient() {
         </div>
       )}
 
-      {/* Top Navbar */}
-      <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-xl border-b border-slate-800 px-4 sm:px-8 py-3 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="w-9 h-9 shrink-0 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-600/30">
-            <Shield className="w-4.5 h-4.5 text-white" />
-          </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 whitespace-nowrap">
-              <span className="font-extrabold text-[15px] tracking-tight text-white">Excel to KML</span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-500/20 text-blue-400 border border-blue-500/30">
-                Admin
-              </span>
-            </div>
-            <p className="hidden sm:block text-xs text-slate-400">Surveyors, their files and points, downloads and settings</p>
-          </div>
-        </div>
 
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-800/80 border border-slate-700/60 text-xs">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-slate-300 font-semibold">{adminUser?.name || "Admin"}</span>
-            <span className="text-slate-500">({adminUser?.email})</span>
-          </div>
-
-          <Link
-            href="/"
-            className="px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 transition-colors flex items-center gap-2"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" /> <span className="hidden sm:inline">View site</span>
-          </Link>
-
-          <button
-            onClick={handleAdminLogout}
-            className="p-2 rounded-xl text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 transition-colors cursor-pointer"
-            title="Sign Out"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
-        </div>
-      </header>
-
-      {/* Main Content Area */}
-      <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 py-8 flex flex-col gap-8">
-        {/* Navigation Tabs */}
-        <div
-          role="tablist"
-          aria-label="Admin sections"
-          className="flex items-center gap-1 p-1.5 rounded-2xl bg-slate-900 border border-slate-800 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        >
-          {[
-            { id: "overview", label: "Overview", icon: BarChart3 },
-            { id: "users", label: "Surveyors", icon: Users, count: users.length },
-            { id: "activities", label: "Activity", icon: Activity, count: Math.max(activitiesTotal, allActivities.length) },
-            { id: "downloads", label: "Downloads", icon: Download, count: downloads.length },
-            { id: "files", label: "Files", icon: Files, count: stats?.totalFilesStored },
-            { id: "conversions", label: "Points", icon: Globe, count: conversionsTotal },
-            { id: "traverse", label: "Traverse & Level", icon: Compass, count: stats?.traverse?.jobs },
-            { id: "releases", label: "Releases", icon: Megaphone },
-            { id: "reviews", label: "Reviews", icon: Star, count: pendingReviews || undefined },
-            { id: "messages", label: "Messages", icon: Inbox, count: newMessages || undefined },
-            { id: "settings", label: "Settings", icon: Settings },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const active = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                role="tab"
-                aria-selected={active}
-                ref={(el) => {
-                  if (el && active) el.scrollIntoView({ block: "nearest", inline: "nearest" });
-                }}
-                onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                className={`flex-1 min-w-max flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl text-[13px] font-bold transition-all whitespace-nowrap cursor-pointer ${
-                  active
-                    ? "bg-blue-600 text-white shadow-lg shadow-blue-600/30"
-                    : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/60"
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                <span>{tab.label}</span>
-                {tab.count !== undefined && (
-                  <span
-                    className={`px-1.5 py-px rounded-md text-[11px] font-mono ${
-                      active ? "bg-white/20 text-white" : "bg-slate-800 text-slate-400"
-                    }`}
-                  >
-                    {tab.count.toLocaleString()}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-
+      {/* Remounted by Refresh, so every page loads its data again */}
+      <div key={refreshKey} className="flex flex-col gap-8">
         {/* ================================================================== */}
         {/* TAB 1: OVERVIEW & TELEMETRY */}
         {/* ================================================================== */}
         {activeTab === "overview" && (
           <div className="space-y-8">
             {/* Stat Cards (5 metrics) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-              <div className="p-5 rounded-3xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+              <div className="p-4 sm:p-5 rounded-2xl bg-[var(--adm-card)] border border-[var(--adm-line)] flex flex-col justify-between min-w-0 last:col-span-2 lg:last:col-span-1">
                 <div className="flex items-center justify-between text-slate-400 mb-3">
                   <span className="text-xs font-bold uppercase tracking-wider">Surveyors</span>
                   <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center">
@@ -742,12 +723,12 @@ export default function AdminClient() {
                   </div>
                 </div>
                 <div>
-                  <div className="text-3xl font-black text-white">{stats?.totalUsers ?? users.length}</div>
+                  <div className="text-[28px] leading-none font-extrabold tracking-tight text-white tabular-nums">{stats?.totalUsers ?? users.length}</div>
                   <p className="text-[11px] text-slate-400 mt-1">Registered accounts</p>
                 </div>
               </div>
 
-              <div className="p-5 rounded-3xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
+              <div className="p-4 sm:p-5 rounded-2xl bg-[var(--adm-card)] border border-[var(--adm-line)] flex flex-col justify-between min-w-0 last:col-span-2 lg:last:col-span-1">
                 <div className="flex items-center justify-between text-slate-400 mb-3">
                   <span className="text-xs font-bold uppercase tracking-wider">Downloads</span>
                   <div className="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
@@ -755,12 +736,12 @@ export default function AdminClient() {
                   </div>
                 </div>
                 <div>
-                  <div className="text-3xl font-black text-white">{stats?.totalDownloads ?? downloads.length}</div>
+                  <div className="text-[28px] leading-none font-extrabold tracking-tight text-white tabular-nums">{stats?.totalDownloads ?? downloads.length}</div>
                   <p className="text-[11px] text-slate-400 mt-1">Installer and sample files</p>
                 </div>
               </div>
 
-              <div className="p-5 rounded-3xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
+              <div className="p-4 sm:p-5 rounded-2xl bg-[var(--adm-card)] border border-[var(--adm-line)] flex flex-col justify-between min-w-0 last:col-span-2 lg:last:col-span-1">
                 <div className="flex items-center justify-between text-slate-400 mb-3">
                   <span className="text-xs font-bold uppercase tracking-wider">Points Kept</span>
                   <div className="w-8 h-8 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center">
@@ -768,14 +749,14 @@ export default function AdminClient() {
                   </div>
                 </div>
                 <div>
-                  <div className="text-3xl font-black text-cyan-400 font-mono">
+                  <div className="text-[28px] leading-none font-extrabold tracking-tight text-cyan-300 tabular-nums">
                     {(stats?.totalPointsKept ?? conversionsTotal).toLocaleString()}
                   </div>
                   <p className="text-[11px] text-slate-400 mt-1">Converted points in saved files</p>
                 </div>
               </div>
 
-              <div className="p-5 rounded-3xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
+              <div className="p-4 sm:p-5 rounded-2xl bg-[var(--adm-card)] border border-[var(--adm-line)] flex flex-col justify-between min-w-0 last:col-span-2 lg:last:col-span-1">
                 <div className="flex items-center justify-between text-slate-400 mb-3">
                   <span className="text-xs font-bold uppercase tracking-wider">Activity</span>
                   <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
@@ -783,14 +764,14 @@ export default function AdminClient() {
                   </div>
                 </div>
                 <div>
-                  <div className="text-3xl font-black text-white">
+                  <div className="text-[28px] leading-none font-extrabold tracking-tight text-white tabular-nums">
                     {(stats?.totalActivities ?? allActivities.length) || conversions.length}
                   </div>
                   <p className="text-[11px] text-slate-400 mt-1">Conversions, saves and opens logged</p>
                 </div>
               </div>
 
-              <div className="p-5 rounded-3xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
+              <div className="p-4 sm:p-5 rounded-2xl bg-[var(--adm-card)] border border-[var(--adm-line)] flex flex-col justify-between min-w-0 last:col-span-2 lg:last:col-span-1">
                 <div className="flex items-center justify-between text-slate-400 mb-3">
                   <span className="text-xs font-bold uppercase tracking-wider">Files Stored</span>
                   <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center">
@@ -798,7 +779,7 @@ export default function AdminClient() {
                   </div>
                 </div>
                 <div>
-                  <div className="text-3xl font-black text-white">{(stats?.totalFilesStored ?? 0).toLocaleString()}</div>
+                  <div className="text-[28px] leading-none font-extrabold tracking-tight text-white tabular-nums">{(stats?.totalFilesStored ?? 0).toLocaleString()}</div>
                   <p className="text-[11px] text-slate-400 mt-1">
                     {fmtBytes(stats?.totalStorageBytes ?? 0)} kept in {(stats?.totalFilesWithCopy ?? 0).toLocaleString()} copies
                   </p>
@@ -809,7 +790,7 @@ export default function AdminClient() {
             {/* Quick Actions & Live Telemetry Feed */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Asset Distribution */}
-              <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-6">
+              <div className="p-6 rounded-2xl bg-[var(--adm-card)] border border-[var(--adm-line)] space-y-6">
                 <div className="flex items-center justify-between">
                   <h3 className="text-base font-bold text-white flex items-center gap-2">
                     <Layers className="w-4 h-4 text-blue-400" /> Downloads by file
@@ -928,7 +909,7 @@ export default function AdminClient() {
               </div>
 
               {/* Live Application Telemetry Feed (Desktop & Web App) */}
-              <div className="lg:col-span-2 p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-4">
+              <div className="lg:col-span-2 p-6 rounded-2xl bg-[var(--adm-card)] border border-[var(--adm-line)] space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-base font-bold text-white flex items-center gap-2">
@@ -1006,7 +987,7 @@ export default function AdminClient() {
             {/* Geographic Distribution & Origin Analytics */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Top Locations Card */}
-              <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-4">
+              <div className="p-6 rounded-2xl bg-[var(--adm-card)] border border-[var(--adm-line)] space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-base font-bold text-white flex items-center gap-2">
                     <Globe className="w-4 h-4 text-emerald-400" /> Where downloads come from
@@ -1050,7 +1031,7 @@ export default function AdminClient() {
               </div>
 
               {/* Recent Real-time Activity Card */}
-              <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-4">
+              <div className="p-6 rounded-2xl bg-[var(--adm-card)] border border-[var(--adm-line)] space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-base font-bold text-white flex items-center gap-2">
                     <Download className="w-4 h-4 text-blue-400" /> Latest downloads
@@ -1760,6 +1741,6 @@ export default function AdminClient() {
         }}
         onToast={showToast}
       />
-    </div>
+    </AdminShell>
   );
 }
