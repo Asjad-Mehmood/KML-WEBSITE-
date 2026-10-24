@@ -6,6 +6,7 @@ import SystemList from "../../../../components/SystemList";
 import GridSearch from "../../../../components/GridSearch";
 import { BIG_COUNTRY, countries, countryBySlug, countryRegions } from "@/lib/epsgCatalog";
 import { SITE_URL, jsonLd, openGraphFor } from "@/lib/site";
+import { factsFaq, factsOf, factsSummary } from "@/lib/countryFacts";
 
 export const dynamicParams = false;
 export function generateStaticParams() {
@@ -32,6 +33,14 @@ export default async function CountryPage({ params }: { params: Promise<{ slug: 
   if (!c) notFound();
   const big = c.systems.length > BIG_COUNTRY;
   const regions = countryRegions(slug);
+  const place = c.name === "World" ? "world-wide use" : c.name;
+  const facts = factsOf(c.systems, slug);
+  const faq = factsFaq(place, facts);
+  const faqLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faq.map((x) => ({ "@type": "Question", name: x.q, acceptedAnswer: { "@type": "Answer", text: x.a } })),
+  };
 
   const breadcrumb = {
     "@context": "https://schema.org",
@@ -46,6 +55,7 @@ export default async function CountryPage({ params }: { params: Promise<{ slug: 
   return (
     <PageShell>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumb) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(faqLd) }} />
       <div className="max-w-[1140px] mx-auto px-5 sm:px-8">
         <nav aria-label="Breadcrumb" className="text-[12.5px] text-slate-500 mb-5">
           <ol className="flex flex-wrap items-center gap-1.5">
@@ -64,6 +74,19 @@ export default async function CountryPage({ params }: { params: Promise<{ slug: 
             ? `Choose a ${c.name === "World" ? "datum" : "state or region"} to see its systems.`
             : "Pick one to open a converter already set to it, with its parameters and area of use."}
         </p>
+
+        <p className="mt-3 max-w-3xl text-[15px] text-slate-600 leading-relaxed">{factsSummary(place, facts)}</p>
+        {facts.popular.length > 0 && (
+          <p className="mt-3 text-[14.5px] text-slate-700">
+            Most used:{" "}
+            {facts.popular.map((g, i) => (
+              <span key={g.slug}>
+                {i > 0 && ", "}
+                <Link href={`/convert/${g.slug}`} className="font-semibold text-[#0071e3] hover:underline">{g.name}</Link>
+              </span>
+            ))}
+          </p>
+        )}
 
         <div className="mt-6 max-w-xl">
           <GridSearch id="grid-search" />
@@ -94,6 +117,18 @@ export default async function CountryPage({ params }: { params: Promise<{ slug: 
             <SystemList systems={[...c.systems].sort((a, b) => a.name.localeCompare(b.name))} />
           )}
         </div>
+
+        <section aria-labelledby="faq-h" className="mt-12 max-w-3xl">
+          <h2 id="faq-h" className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">Questions about {place === "world-wide use" ? "world-wide" : place} coordinates</h2>
+          <dl className="mt-4 divide-y divide-slate-100 border-y border-slate-100">
+            {faq.map((x) => (
+              <div key={x.q} className="py-4">
+                <dt className="font-semibold text-slate-900">{x.q}</dt>
+                <dd className="mt-1.5 text-[14.5px] text-slate-600 leading-relaxed">{x.a}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
 
         <p className="mt-10 text-[14px]">
           <Link href="/convert#find" className="font-semibold text-[#0071e3] hover:underline">← All countries and popular grids</Link>

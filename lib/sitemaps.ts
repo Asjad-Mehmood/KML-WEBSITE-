@@ -11,7 +11,7 @@ import { BIG_COUNTRY, allSystems, countries, countryRegions } from "@/lib/epsgCa
 
 // Update this when the pages' content really changes. A date that changes on
 // every request makes Google ignore lastmod for the whole site.
-const CONTENT_UPDATED = "2026-09-28";
+const CONTENT_UPDATED = "2026-10-24";
 
 export interface Entry {
   path: string;

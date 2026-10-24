@@ -6,6 +6,7 @@ import SystemList from "../../../../../components/SystemList";
 import GridSearch from "../../../../../components/GridSearch";
 import { BIG_COUNTRY, countries, countryBySlug, countryRegions } from "@/lib/epsgCatalog";
 import { SITE_URL, jsonLd, openGraphFor } from "@/lib/site";
+import { factsOf, factsSummary } from "@/lib/countryFacts";
 
 // Region pages exist only for big countries (their country page lists regions instead of systems)
 export const dynamicParams = false;
@@ -73,6 +74,8 @@ export default async function RegionPage({ params }: { params: Promise<{ slug: s
           {d.region.systems.length} EPSG coordinate {d.region.systems.length === 1 ? "system" : "systems"}. Pick one to open a
           converter already set to it, with its parameters and area of use.
         </p>
+        <p className="mt-3 max-w-3xl text-[15px] text-slate-600 leading-relaxed">{factsSummary(label(d.country, d.region.name), factsOf(d.region.systems))}</p>
+
         <div className="mt-6 max-w-xl">
           <GridSearch id="grid-search" />
         </div>
