@@ -9,6 +9,8 @@ import { GRID_PAGES } from "@/lib/gridPages";
 import { BIG_COUNTRY, codeLabel, countryBySlug, countryRegions, regionOf, systemByCode, toRow } from "@/lib/epsgCatalog";
 import { epsgDescription, epsgLead, epsgNotes, epsgTitle, hasWestSouthAxes } from "@/lib/epsgPageText";
 import { areaBox, gridParameterRows } from "@/lib/gridParams";
+import { examplePoints, fmtDeg, fmtGrid } from "@/lib/epsgExample";
+import { UNIT } from "@/lib/countryFacts";
 import { SITE_URL, jsonLd, openGraphFor } from "@/lib/site";
 import WebAppLink from "@/components/WebAppLink";
 
@@ -57,6 +59,8 @@ export default async function EpsgPage({ params }: { params: Promise<{ code: str
   const others = group.systems.filter((o) => o.code !== s.code);
   const related = others.slice(0, 12);
   const axes = hasWestSouthAxes(s);
+  const examples = examplePoints(s);
+  const unitWord = UNIT[s.unit] ?? s.unit;
 
   const breadcrumb = {
     "@context": "https://schema.org",
@@ -139,6 +143,40 @@ export default async function EpsgPage({ params }: { params: Promise<{ code: str
                 <li>Under <strong className="text-slate-900">Coordinate system</strong>, search for &ldquo;{s.code}&rdquo; and pick <em>{s.name}</em>.</li>
                 <li>Check one point you know on the map, then press <strong className="text-slate-900">Save KML</strong> or <strong className="text-slate-900">Save KMZ</strong> and open it in Google Earth.</li>
               </ol>
+            )}
+            {examples.length > 0 && (
+              <>
+                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 mt-10 mb-3">Check points for {codeLabel(s.code)}</h2>
+                <p>
+                  Five points inside the area of use of {s.name}, with their latitude and longitude on WGS 84 and their easting and
+                  northing in this grid ({unitWord}). Enter an easting and northing in the converter above: you should get the latitude
+                  and longitude shown, to a few centimetres.
+                </p>
+                <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200">
+                  <table className="w-full text-[13px] whitespace-nowrap">
+                    <thead className="bg-slate-50 text-left text-slate-500">
+                      <tr>
+                        <th scope="col" className="px-3 py-2 font-semibold">Point</th>
+                        <th scope="col" className="px-3 py-2 font-semibold">Latitude</th>
+                        <th scope="col" className="px-3 py-2 font-semibold">Longitude</th>
+                        <th scope="col" className="px-3 py-2 font-semibold text-right">Easting</th>
+                        <th scope="col" className="px-3 py-2 font-semibold text-right">Northing</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 font-mono text-slate-800">
+                      {examples.map((x) => (
+                        <tr key={x.label}>
+                          <th scope="row" className="px-3 py-2 font-sans font-medium text-slate-700 text-left">{x.label}</th>
+                          <td className="px-3 py-2">{fmtDeg(x.lat, "N", "S")}</td>
+                          <td className="px-3 py-2">{fmtDeg(x.lon, "E", "W")}</td>
+                          <td className="px-3 py-2 text-right">{fmtGrid(x.e)}</td>
+                          <td className="px-3 py-2 text-right">{fmtGrid(x.n)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             )}
             <p className="mt-4 text-[14px] text-slate-600">
               New to this? Read <Link href="/guides/easting-northing-to-latitude-longitude" className="text-[#0071e3] font-medium hover:underline">how to convert easting and northing to latitude and longitude</Link>.
