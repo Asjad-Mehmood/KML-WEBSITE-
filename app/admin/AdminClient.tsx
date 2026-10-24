@@ -602,7 +602,7 @@ export default function AdminClient() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0f1a] flex items-center justify-center text-white">
+      <div className="min-h-screen bg-[var(--adm-bg)] flex items-center justify-center text-white">
         <div className="flex flex-col items-center gap-3">
           <RefreshCw className="w-8 h-8 text-blue-500 animate-spin" />
           <p className="text-sm font-semibold text-slate-400">Verifying Administrator Privileges...</p>
@@ -715,7 +715,7 @@ export default function AdminClient() {
           <div className="space-y-8">
             {/* Stat Cards (5 metrics) */}
             <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
-              <div className="p-4 sm:p-5 rounded-2xl bg-[#0f1626] border border-white/[0.07] flex flex-col justify-between min-w-0 last:col-span-2 lg:last:col-span-1">
+              <div className="p-4 sm:p-5 rounded-2xl bg-[var(--adm-card)] border border-[var(--adm-line)] flex flex-col justify-between min-w-0 last:col-span-2 lg:last:col-span-1">
                 <div className="flex items-center justify-between text-slate-400 mb-3">
                   <span className="text-xs font-bold uppercase tracking-wider">Surveyors</span>
                   <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center">
@@ -728,7 +728,7 @@ export default function AdminClient() {
                 </div>
               </div>
 
-              <div className="p-4 sm:p-5 rounded-2xl bg-[#0f1626] border border-white/[0.07] flex flex-col justify-between min-w-0 last:col-span-2 lg:last:col-span-1">
+              <div className="p-4 sm:p-5 rounded-2xl bg-[var(--adm-card)] border border-[var(--adm-line)] flex flex-col justify-between min-w-0 last:col-span-2 lg:last:col-span-1">
                 <div className="flex items-center justify-between text-slate-400 mb-3">
                   <span className="text-xs font-bold uppercase tracking-wider">Downloads</span>
                   <div className="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
@@ -741,7 +741,7 @@ export default function AdminClient() {
                 </div>
               </div>
 
-              <div className="p-4 sm:p-5 rounded-2xl bg-[#0f1626] border border-white/[0.07] flex flex-col justify-between min-w-0 last:col-span-2 lg:last:col-span-1">
+              <div className="p-4 sm:p-5 rounded-2xl bg-[var(--adm-card)] border border-[var(--adm-line)] flex flex-col justify-between min-w-0 last:col-span-2 lg:last:col-span-1">
                 <div className="flex items-center justify-between text-slate-400 mb-3">
                   <span className="text-xs font-bold uppercase tracking-wider">Points Kept</span>
                   <div className="w-8 h-8 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center">
@@ -756,7 +756,7 @@ export default function AdminClient() {
                 </div>
               </div>
 
-              <div className="p-4 sm:p-5 rounded-2xl bg-[#0f1626] border border-white/[0.07] flex flex-col justify-between min-w-0 last:col-span-2 lg:last:col-span-1">
+              <div className="p-4 sm:p-5 rounded-2xl bg-[var(--adm-card)] border border-[var(--adm-line)] flex flex-col justify-between min-w-0 last:col-span-2 lg:last:col-span-1">
                 <div className="flex items-center justify-between text-slate-400 mb-3">
                   <span className="text-xs font-bold uppercase tracking-wider">Activity</span>
                   <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
@@ -771,7 +771,7 @@ export default function AdminClient() {
                 </div>
               </div>
 
-              <div className="p-4 sm:p-5 rounded-2xl bg-[#0f1626] border border-white/[0.07] flex flex-col justify-between min-w-0 last:col-span-2 lg:last:col-span-1">
+              <div className="p-4 sm:p-5 rounded-2xl bg-[var(--adm-card)] border border-[var(--adm-line)] flex flex-col justify-between min-w-0 last:col-span-2 lg:last:col-span-1">
                 <div className="flex items-center justify-between text-slate-400 mb-3">
                   <span className="text-xs font-bold uppercase tracking-wider">Files Stored</span>
                   <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center">
@@ -790,7 +790,7 @@ export default function AdminClient() {
             {/* Quick Actions & Live Telemetry Feed */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Asset Distribution */}
-              <div className="p-6 rounded-2xl bg-[#0f1626] border border-white/[0.07] space-y-6">
+              <div className="p-6 rounded-2xl bg-[var(--adm-card)] border border-[var(--adm-line)] space-y-6">
                 <div className="flex items-center justify-between">
                   <h3 className="text-base font-bold text-white flex items-center gap-2">
                     <Layers className="w-4 h-4 text-blue-400" /> Downloads by file
@@ -909,7 +909,7 @@ export default function AdminClient() {
               </div>
 
               {/* Live Application Telemetry Feed (Desktop & Web App) */}
-              <div className="lg:col-span-2 p-6 rounded-2xl bg-[#0f1626] border border-white/[0.07] space-y-4">
+              <div className="lg:col-span-2 p-6 rounded-2xl bg-[var(--adm-card)] border border-[var(--adm-line)] space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-base font-bold text-white flex items-center gap-2">
@@ -987,7 +987,7 @@ export default function AdminClient() {
             {/* Geographic Distribution & Origin Analytics */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Top Locations Card */}
-              <div className="p-6 rounded-2xl bg-[#0f1626] border border-white/[0.07] space-y-4">
+              <div className="p-6 rounded-2xl bg-[var(--adm-card)] border border-[var(--adm-line)] space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-base font-bold text-white flex items-center gap-2">
                     <Globe className="w-4 h-4 text-emerald-400" /> Where downloads come from
@@ -1031,7 +1031,7 @@ export default function AdminClient() {
               </div>
 
               {/* Recent Real-time Activity Card */}
-              <div className="p-6 rounded-2xl bg-[#0f1626] border border-white/[0.07] space-y-4">
+              <div className="p-6 rounded-2xl bg-[var(--adm-card)] border border-[var(--adm-line)] space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-base font-bold text-white flex items-center gap-2">
                     <Download className="w-4 h-4 text-blue-400" /> Latest downloads

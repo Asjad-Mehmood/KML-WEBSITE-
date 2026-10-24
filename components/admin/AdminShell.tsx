@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowUpRight, LogOut, Menu, RefreshCw, Shield, X, type LucideIcon } from "lucide-react";
+import { ArrowUpRight, LogOut, Menu, Moon, RefreshCw, Shield, Sun, X, type LucideIcon } from "lucide-react";
+import "@/app/admin/admin-theme.css";
 
 export interface AdminSection {
   id: string;
@@ -20,6 +21,18 @@ export interface AdminGroup {
   sections: AdminSection[];
 }
 
+// Light or dark, remembered on this device; the first time it follows the computer's setting
+const THEME_KEY = "kml.admin.theme";
+function savedTheme(): "light" | "dark" {
+  try {
+    const v = localStorage.getItem(THEME_KEY);
+    if (v === "light" || v === "dark") return v;
+  } catch {
+    // storage blocked: fall through to the system setting
+  }
+  return typeof window !== "undefined" && window.matchMedia?.("(prefers-color-scheme: light)").matches ? "light" : "dark";
+}
+
 const ago = (t: number, now: number) => {
   const s = Math.max(0, Math.round((now - t) / 1000));
   if (s < 10) return "just now";
@@ -30,7 +43,8 @@ const ago = (t: number, now: number) => {
 
 /**
  * The admin's frame: a menu down the left grouped by topic (a drawer on phones), and a header
- * over each page with its title, when the data was loaded and a Refresh button.
+ * over each page with its title, when the data was loaded, a light/dark switch and a Refresh
+ * button. Light mode is a stylesheet that turns the dark colours around (app/admin/admin-theme.css).
  */
 export default function AdminShell({
   groups,
@@ -59,6 +73,22 @@ export default function AdminShell({
     const t = setInterval(() => setNow(Date.now()), 15_000);
     return () => clearInterval(t);
   }, []);
+  // Only shown after the sign-in check (never server-rendered), so reading storage here is safe
+  const [theme, setTheme] = useState<"light" | "dark">(savedTheme);
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.toggle("admin-light", theme === "light");
+    return () => root.classList.remove("admin-light");
+  }, [theme]);
+  const flipTheme = () => {
+    const next = theme === "light" ? "dark" : "light";
+    setTheme(next);
+    try {
+      localStorage.setItem(THEME_KEY, next);
+    } catch {
+      // not remembered, still switched
+    }
+  };
   useEffect(() => {
     if (!drawer) return;
     const close = (e: KeyboardEvent) => e.key === "Escape" && setDrawer(false);
@@ -86,7 +116,7 @@ export default function AdminShell({
                     }}
                     aria-current={on ? "page" : undefined}
                     className={`group w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13.5px] font-semibold transition-colors cursor-pointer ${
-                      on ? "bg-blue-500/15 text-white" : "text-slate-400 hover:text-slate-100 hover:bg-white/[0.04]"
+                      on ? "bg-blue-500/15 text-white" : "text-slate-400 hover:text-slate-100 hover:bg-[var(--adm-hover)]"
                     }`}
                   >
                     <s.icon className={`w-[17px] h-[17px] shrink-0 ${on ? "text-blue-400" : "text-slate-500 group-hover:text-slate-300"}`} aria-hidden />
@@ -94,7 +124,7 @@ export default function AdminShell({
                     {s.count !== undefined && s.count > 0 && (
                       <span
                         className={`min-w-[22px] px-1.5 py-px rounded-md text-[11px] font-bold tabular-nums text-center ${
-                          s.attention ? "bg-amber-400 text-slate-950" : on ? "bg-blue-500/25 text-blue-200" : "bg-white/[0.06] text-slate-400"
+                          s.attention ? "bg-amber-400 text-slate-950" : on ? "bg-blue-500/25 text-blue-200" : "bg-[var(--adm-hover)] text-slate-400"
                         }`}
                       >
                         {s.count > 9999 ? `${Math.round(s.count / 1000)}k` : s.count.toLocaleString()}
@@ -111,7 +141,7 @@ export default function AdminShell({
   );
 
   const brand = (
-    <div className="flex items-center gap-2.5 px-5 h-16 border-b border-white/[0.06] shrink-0">
+    <div className="flex items-center gap-2.5 px-5 h-16 border-b border-[var(--adm-line)] shrink-0">
       <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-600/25">
         <Shield className="w-4 h-4 text-white" aria-hidden />
       </span>
@@ -123,8 +153,8 @@ export default function AdminShell({
   );
 
   const account = (
-    <div className="shrink-0 border-t border-white/[0.06] p-3 space-y-1">
-      <Link href="/" className="flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-semibold text-slate-400 hover:text-slate-100 hover:bg-white/[0.04]">
+    <div className="shrink-0 border-t border-[var(--adm-line)] p-3 space-y-1">
+      <Link href="/" className="flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-semibold text-slate-400 hover:text-slate-100 hover:bg-[var(--adm-hover)]">
         <ArrowUpRight className="w-4 h-4" aria-hidden /> View the website
       </Link>
       <div className="flex items-center gap-3 px-3 py-2">
@@ -141,9 +171,9 @@ export default function AdminShell({
   );
 
   return (
-    <div className="min-h-screen bg-[#0a0f1a] text-slate-100 selection:bg-blue-500/30">
+    <div className="min-h-screen bg-[var(--adm-bg)] text-slate-100 selection:bg-blue-500/30">
       {/* Menu: always there on a wide screen */}
-      <aside className="hidden lg:flex fixed inset-y-0 left-0 w-64 flex-col bg-[#0d1322] border-r border-white/[0.06] z-30">
+      <aside className="hidden lg:flex fixed inset-y-0 left-0 w-64 flex-col bg-[var(--adm-side)] border-r border-[var(--adm-line)] z-30">
         {brand}
         {nav}
         {account}
@@ -153,8 +183,8 @@ export default function AdminShell({
       {drawer && (
         <div className="lg:hidden fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="Admin menu">
           <button className="absolute inset-0 bg-black/60 backdrop-blur-[2px]" aria-label="Close the menu" onClick={() => setDrawer(false)} />
-          <aside className="relative h-full w-[280px] max-w-[85vw] flex flex-col bg-[#0d1322] border-r border-white/[0.06] shadow-2xl">
-            <button onClick={() => setDrawer(false)} aria-label="Close the menu" className="absolute right-3 top-4 p-2 rounded-lg text-slate-400 hover:bg-white/[0.06] cursor-pointer">
+          <aside className="relative h-full w-[280px] max-w-[85vw] flex flex-col bg-[var(--adm-side)] border-r border-[var(--adm-line)] shadow-2xl">
+            <button onClick={() => setDrawer(false)} aria-label="Close the menu" className="absolute right-3 top-4 p-2 rounded-lg text-slate-400 hover:bg-[var(--adm-hover)] cursor-pointer">
               <X className="w-4 h-4" aria-hidden />
             </button>
             {brand}
@@ -166,9 +196,9 @@ export default function AdminShell({
 
       <div className="lg:pl-64 flex flex-col min-h-screen">
         {/* Page header */}
-        <header className="sticky top-0 z-20 bg-[#0a0f1a]/85 backdrop-blur-xl border-b border-white/[0.06]">
+        <header className="sticky top-0 z-20 bg-[var(--adm-bg-glass)] backdrop-blur-xl border-b border-[var(--adm-line)]">
           <div className="max-w-[1400px] mx-auto px-4 sm:px-8 h-16 flex items-center gap-3">
-            <button onClick={() => setDrawer(true)} aria-label="Open the menu" className="lg:hidden -ml-1 p-2 rounded-lg text-slate-300 hover:bg-white/[0.06] cursor-pointer">
+            <button onClick={() => setDrawer(true)} aria-label="Open the menu" className="lg:hidden -ml-1 p-2 rounded-lg text-slate-300 hover:bg-[var(--adm-hover)] cursor-pointer">
               <Menu className="w-5 h-5" aria-hidden />
             </button>
             <div className="min-w-0 flex-1">
@@ -184,9 +214,17 @@ export default function AdminShell({
               </span>
             )}
             <button
+              onClick={flipTheme}
+              className="p-2 rounded-lg bg-[var(--adm-hover)] hover:bg-[var(--adm-hover-strong)] border border-[var(--adm-line)] text-slate-200 cursor-pointer"
+              title={theme === "light" ? "Dark mode" : "Light mode"}
+              aria-label={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
+            >
+              {theme === "light" ? <Moon className="w-4 h-4" aria-hidden /> : <Sun className="w-4 h-4" aria-hidden />}
+            </button>
+            <button
               onClick={onRefresh}
               disabled={refreshing}
-              className="inline-flex items-center gap-2 px-3 sm:px-3.5 py-2 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] text-[13px] font-semibold text-slate-100 disabled:opacity-60 cursor-pointer"
+              className="inline-flex items-center gap-2 px-3 sm:px-3.5 py-2 rounded-lg bg-[var(--adm-hover)] hover:bg-[var(--adm-hover-strong)] border border-[var(--adm-line)] text-[13px] font-semibold text-slate-100 disabled:opacity-60 cursor-pointer"
               title="Load everything again"
             >
               <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} aria-hidden />
