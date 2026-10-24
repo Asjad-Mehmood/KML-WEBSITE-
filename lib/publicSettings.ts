@@ -18,6 +18,10 @@ export interface PublicSettings {
   maintenanceMessage?: string;
   /** Traverse adjust shown in the app */
   traverseEnabled?: boolean;
+  /** Invite signed-out visitors to sign up after they look around */
+  signupPrompt?: boolean;
+  /** Ask for a review after a download */
+  reviewPrompt?: boolean;
 }
 
 let pending: Promise<PublicSettings | null> | null = null;

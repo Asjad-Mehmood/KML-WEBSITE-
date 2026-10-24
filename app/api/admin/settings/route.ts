@@ -33,6 +33,8 @@ const LABELS: Record<keyof AllSettings, string> = {
   tlKeepFiles: "Traverse & Level file copies",
   tlMaxJobs: "Traverse & Level jobs per account",
   tlBlocked: "Traverse & Level blocked accounts",
+  signupPrompt: "Sign-up invitation",
+  reviewPrompt: "Review after download",
 };
 
 async function allSettings(): Promise<AllSettings> {
@@ -111,7 +113,7 @@ function cleanSettings(body: Record<string, unknown>): Partial<AllSettings> | { 
   const out: Record<string, string | number | boolean> = {};
   const bools = [
     "requireAuthForDownload", "maintenanceMode", "announcementActive", "allowSignups", "googleSignInEnabled",
-    "traverseEnabled", "tlEnabled", "tlSharing", "tlKeepFiles",
+    "traverseEnabled", "tlEnabled", "tlSharing", "tlKeepFiles", "signupPrompt", "reviewPrompt",
   ];
   for (const k of bools) if (typeof body[k] === "boolean") out[k] = body[k] as boolean;
   const texts: [string, number][] = [

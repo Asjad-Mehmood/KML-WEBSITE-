@@ -1,10 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "../context/AuthContext";
 import SiteNotice from "../components/SiteNotice";
 import AuthModal from "../components/AuthModal";
+import AdSenseScript from "../components/AdSenseScript";
+import SignupPrompt from "../components/SignupPrompt";
+import ReviewPrompt from "../components/ReviewPrompt";
 import { DEFAULT_TITLE, FACEBOOK_DOMAIN_VERIFICATION, FACEBOOK_PAGE_ID, OG_IMAGE, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -107,13 +109,7 @@ export default function RootLayout({
     >
       <head>
         <link rel="preconnect" href="https://api.github.com" />
-        
-  <Script
-    async
-    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5279736504936799"
-    crossOrigin="anonymous"
-    strategy="beforeInteractive"
-  />
+
 
         <meta name="google-adsense-account" content="ca-pub-5279736504936799" />
 
@@ -125,7 +121,10 @@ export default function RootLayout({
           {children}
           <AuthModal />
           <SiteNotice />
+          <SignupPrompt />
+          <ReviewPrompt />
         </AuthProvider>
+        <AdSenseScript />
         <Analytics />
         <SpeedInsights />
       </body>

@@ -113,3 +113,8 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .step-flip-out, .step-flip-in, .step-caption { animation: none; }
 }
+
+/* SignupPrompt / ReviewPrompt: slide up into view */
+@keyframes corner-card-in { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+.signup-prompt { animation: corner-card-in 0.35s ease-out both; }
+@media (prefers-reduced-motion: reduce) { .signup-prompt { animation: none; } }

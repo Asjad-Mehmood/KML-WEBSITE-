@@ -11,6 +11,7 @@ export const ACTION_LABEL: Record<string, string> = {
   settings_update: "Account updated",
   settings_changed: "Site settings changed",
   app_signin: "App signed in with a code",
+  review: "Review written",
   traverse: "Traverse adjusted",
   levelling: "Level run closed",
   // Traverse & Level app

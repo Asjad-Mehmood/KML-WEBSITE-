@@ -26,6 +26,8 @@ export async function GET() {
         googleSignIn: isGoogleConfigured() && x.googleSignInEnabled,
         // read by the Windows and phone apps too (another origin), so it is open to any
         traverseEnabled: x.traverseEnabled,
+        signupPrompt: x.signupPrompt,
+        reviewPrompt: x.reviewPrompt,
       },
       {
         headers: {

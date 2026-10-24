@@ -18,6 +18,7 @@ import {
   SquareStack,
 } from "lucide-react";
 import PageShell from "../../components/PageShell";
+import ProductReviews from "../../components/ProductReviews";
 import FolderManagerDownload from "../../components/FolderManagerDownload";
 import {
   PFM_FEATURES,
@@ -241,6 +242,8 @@ export default function FolderManagerPage() {
             ))}
           </div>
         </section>
+
+        <ProductReviews product="project-folder-manager" name="Project Folder Manager" />
 
         {/* Download */}
         <section id="download" aria-labelledby="download-h" className="scroll-mt-28 mt-20 rounded-3xl border border-slate-200 bg-gradient-to-b from-blue-50/70 to-white p-6 sm:p-10">

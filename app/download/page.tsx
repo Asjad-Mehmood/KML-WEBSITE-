@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import PageShell from "../../components/PageShell";
 import { BreadcrumbStructuredData } from "../../components/StructuredData";
 import DownloadClient from "./DownloadClient";
+import ProductReviews from "../../components/ProductReviews";
 import { openGraphFor } from "@/lib/site";
 
 const TITLE = "Download";
@@ -20,6 +21,9 @@ export default function DownloadPage() {
     <PageShell>
       <BreadcrumbStructuredData name="Download" path="/download" />
       <DownloadClient />
+      <div className="max-w-[1140px] mx-auto px-5 sm:px-8 pb-6">
+        <ProductReviews product="excel-to-kml" name="Excel to KML" />
+      </div>
     </PageShell>
   );
 }
