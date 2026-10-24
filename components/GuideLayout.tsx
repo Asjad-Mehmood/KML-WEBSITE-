@@ -5,6 +5,10 @@ import LegalShell from "./LegalShell";
 import { GUIDES, guideBySlug } from "@/lib/guides";
 import { SITE_NAME, SITE_URL, jsonLd } from "@/lib/site";
 import WebAppLink from "./WebAppLink";
+import { TRAVERSE_APP } from "@/lib/traverse";
+
+const primary = "!no-underline inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] !text-white text-[14px] font-semibold";
+const secondary = "!no-underline inline-flex items-center px-5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 !text-slate-700 text-[14px] font-semibold";
 
 const fmt = (iso: string) =>
   new Date(iso + "T00:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
@@ -35,15 +39,43 @@ export default function GuideLayout({ slug, children }: { slug: string; children
       <p className="!text-[17px] !text-slate-600">{guide.description}</p>
       {children}
       <div className="not-prose mt-12 rounded-2xl bg-slate-50 border border-slate-200 p-6">
-        <p className="!mb-3 font-semibold text-slate-900">Try it with your own sheet</p>
-        <div className="flex flex-wrap gap-2.5">
-          <WebAppLink className="!no-underline inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] !text-white text-[14px] font-semibold">
-            Open the web app <ArrowRight className="w-4 h-4" aria-hidden />
-          </WebAppLink>
-          <Link href="/convert" className="!no-underline inline-flex items-center px-5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 !text-slate-700 text-[14px] font-semibold">
-            Find your grid
-          </Link>
-        </div>
+        {guide.product === "traverse" ? (
+          <>
+            <p className="!mb-3 font-semibold text-slate-900">Adjust your own traverse or level book</p>
+            <div className="flex flex-wrap gap-2.5">
+              <Link href={TRAVERSE_APP} className={primary}>
+                Open Traverse &amp; Level <ArrowRight className="w-4 h-4" aria-hidden />
+              </Link>
+              <Link href="/tools/traverse-adjustment" className={secondary}>
+                Free traverse calculator
+              </Link>
+            </div>
+          </>
+        ) : guide.product === "roadpro" ? (
+          <>
+            <p className="!mb-3 font-semibold text-slate-900">Draw your next road with RoadPro</p>
+            <div className="flex flex-wrap gap-2.5">
+              <Link href="/roadpro#download" className={primary}>
+                Get RoadPro free <ArrowRight className="w-4 h-4" aria-hidden />
+              </Link>
+              <Link href="/roadpro#demo" className={secondary}>
+                Watch the demo
+              </Link>
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="!mb-3 font-semibold text-slate-900">Try it with your own sheet</p>
+            <div className="flex flex-wrap gap-2.5">
+              <WebAppLink className={primary}>
+                Open the web app <ArrowRight className="w-4 h-4" aria-hidden />
+              </WebAppLink>
+              <Link href="/convert" className={secondary}>
+                Find your grid
+              </Link>
+            </div>
+          </>
+        )}
       </div>
       <h2>More guides</h2>
       <ul>

@@ -466,3 +466,85 @@ export function fmt(v: number, dp = 3): string {
   if (!Number.isFinite(v)) return "—";
   return v.toLocaleString("en-US", { maximumFractionDigits: dp, minimumFractionDigits: 0 });
 }
+
+/* ─────────────────────────── horizontal curves ─────────────────────────── */
+
+/** A chainage as kilometres + metres: 1234.5 → "1+234.500" */
+export function formatChainage(m: number, dp = 3): string {
+  const neg = m < 0;
+  const a = Math.abs(m);
+  let km = Math.floor(a / 1000);
+  let rest = Number((a - km * 1000).toFixed(dp));
+  if (rest >= 1000) {
+    km += 1;
+    rest = 0;
+  }
+  return `${neg ? "-" : ""}${km}+${rest.toFixed(dp).padStart(dp ? 4 + dp : 3, "0")}`;
+}
+
+/** Read a chainage typed as 1+234.5 or 1234.5 (metres) */
+export function parseChainage(s: string): number | null {
+  const t = String(s ?? "").trim();
+  const m = t.match(/^(-?)(\d+)\+(\d+(?:\.\d*)?)$/);
+  if (m) return (m[1] ? -1 : 1) * (Number(m[2]) * 1000 + Number(m[3]));
+  return parseNumber(t);
+}
+
+export interface CurvePeg {
+  /** chainage of the peg */
+  ch: number;
+  /** arc length from the start of the curve (TC) */
+  arc: number;
+  /** tangential (deflection) angle from the tangent at TC, degrees */
+  deflection: number;
+  /** chord from the previous peg */
+  subChord: number;
+  /** long chord from TC */
+  chordFromTC: number;
+  /** offsets from the tangent at TC: along it and square off it */
+  x: number;
+  y: number;
+}
+
+export interface CurveResult {
+  T: number; L: number; C: number; E: number; M: number;
+  chTC: number; chCT: number;
+  pegs: CurvePeg[];
+}
+
+/**
+ * A simple circular curve between two straights: radius R, deflection angle Δ (degrees) at the
+ * intersection point, the intersection point's chainage and the peg interval. Setting out by
+ * tangential angles from TC (Rankine's method), with offsets from the tangent as a check.
+ */
+export function horizontalCurve(R: number, deltaDeg: number, chPI: number, interval: number): CurveResult | null {
+  if (!(R > 0) || !(deltaDeg > 0 && deltaDeg < 180) || !(interval > 0)) return null;
+  const d = (deltaDeg * Math.PI) / 180;
+  const T = R * Math.tan(d / 2);
+  const L = R * d;
+  const C = 2 * R * Math.sin(d / 2);
+  const E = R * (1 / Math.cos(d / 2) - 1);
+  const M = R * (1 - Math.cos(d / 2));
+  const chTC = chPI - T;
+  const chCT = chTC + L;
+  const chs: number[] = [];
+  for (let c = Math.floor(chTC / interval + 1e-9) * interval + interval; c < chCT - 1e-6 && chs.length < 2000; c += interval) chs.push(c);
+  chs.push(chCT);
+  let prevArc = 0;
+  const pegs = chs.map((ch) => {
+    const arc = ch - chTC;
+    const phi = arc / R; // angle at the centre
+    const peg: CurvePeg = {
+      ch,
+      arc,
+      deflection: ((phi / 2) * 180) / Math.PI,
+      subChord: 2 * R * Math.sin((arc - prevArc) / (2 * R)),
+      chordFromTC: 2 * R * Math.sin(phi / 2),
+      x: R * Math.sin(phi),
+      y: R * (1 - Math.cos(phi)),
+    };
+    prevArc = arc;
+    return peg;
+  });
+  return { T, L, C, E, M, chTC, chCT, pegs };
+}

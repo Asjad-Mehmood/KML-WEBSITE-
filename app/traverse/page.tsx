@@ -360,6 +360,11 @@ export default function TraversePage() {
             </ul>
           </div>
           <p className="mt-5 text-[13px] text-slate-500">
+            Guides: <Link href="/guides/bowditch-traverse-adjustment" className="text-[#0071e3] hover:underline">adjusting a closed traverse by the Bowditch rule</Link>,{" "}
+            <Link href="/guides/level-book-rise-and-fall-height-of-instrument" className="text-[#0071e3] hover:underline">reducing a level book</Link> and{" "}
+            <Link href="/guides/traverse-misclosure-and-precision" className="text-[#0071e3] hover:underline">misclosure and precision</Link>.
+          </p>
+          <p className="mt-2 text-[13px] text-slate-500">
             Need a quick check in the browser? Try the free{" "}
             <Link href="/tools/traverse-adjustment" className="text-[#0071e3] hover:underline">online traverse adjustment</Link>. Questions or a feature
             request? <Link href="/contact?topic=idea&program=traverse" className="text-[#0071e3] hover:underline">Write to us</Link>.

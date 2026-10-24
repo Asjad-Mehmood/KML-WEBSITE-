@@ -71,6 +71,14 @@ export const TOOLS: Tool[] = [
     group: "Survey calculations",
   },
   {
+    slug: "horizontal-curve",
+    name: "Horizontal curve",
+    title: "Horizontal Curve Calculator: Tangent Length, Chainages and Setting Out",
+    description:
+      "Work out a road curve from its radius and deflection angle: tangent length, curve length, long chord, external and mid-ordinate, the TC and CT chainages, and a setting-out table of deflection angles and chords.",
+    group: "Survey calculations",
+  },
+  {
     slug: "area-converter",
     name: "Land area units",
     title: "Land Area Converter: Acre, Hectare, Kanal, Marla, m², ft²",

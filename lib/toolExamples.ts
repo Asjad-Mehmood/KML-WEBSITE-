@@ -2,7 +2,7 @@
 // so the page can never disagree with the tool.
 import {
   AREA_UNITS, LENGTH_UNITS, compassPoint, convertUnit, fmt, formatBearing, formatDdm, formatDms, gridInverse, inverse,
-  parseDms, planarArea, slopeFromRiseRun, toUtm, fromUtm,
+  parseDms, planarArea, slopeFromRiseRun, toUtm, fromUtm, horizontalCurve, formatChainage,
 } from "@/lib/toolMath";
 import { SURV, computeAll, exampleState } from "@/lib/traverseModel";
 
@@ -112,6 +112,20 @@ export function toolExample(slug: string): Example | null {
           ["Angular misclosure", `${SURV.fmtSec(cl.angMis ?? 0, 1).replace('"', "″")} (allowed ±${cl.angAllow.toFixed(1)}″)`],
           ["Linear precision", `1 : ${fmt(Math.floor(cl.precision ?? 0), 0)}`],
           ["TS-01 adjusted", `E ${f3(ts.E)} · N ${f3(ts.N)}`],
+        ],
+      };
+    }
+    case "horizontal-curve": {
+      const c = horizontalCurve(300, parseDms(`35°24'30"`)!, 1245.6, 20);
+      if (!c) return null;
+      const first = c.pegs[0];
+      return {
+        title: "A 300 m radius bend on a site road",
+        input: [["Curve", `R 300 m · Δ 35°24'30" · IP at 1+245.600 · pegs every 20 m`]],
+        output: [
+          ["Tangent · curve length", `T ${c.T.toFixed(3)} m · L ${c.L.toFixed(3)} m`],
+          ["TC → CT", `${formatChainage(c.chTC)} → ${formatChainage(c.chCT)}`],
+          ["First peg", `${formatChainage(first.ch)}: deflection ${formatDms(first.deflection, undefined, 1)}, chord ${first.subChord.toFixed(3)} m`],
         ],
       };
     }

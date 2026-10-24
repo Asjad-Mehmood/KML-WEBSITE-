@@ -35,9 +35,17 @@ export default function Page() {
             Work out the primary traverse first. Its adjusted stations become known points, so a secondary traverse can start on one
             and close on another, and a level run can start or close on them. Every station ends up in one list you can download.
           </p>
+          <h2>Keep, share and sign the job</h2>
           <p>
-            For many points at once, or to see the stations on Google Earth, the same Traverse adjust is in the{" "}
-            <Link href="/download">Excel to KML app</Link>.
+            This calculator keeps your work in this browser only. <Link href="/traverse">Traverse &amp; Level</Link>, our free traverse
+            and levelling app, saves every traverse and level book to your account, shares it with your team by email and prints a
+            report ready to sign, in the browser, on a phone or as a Windows program. To see the stations on Google Earth, the same
+            Traverse adjust is in the <Link href="/download">Excel to KML app</Link>.
+          </p>
+          <p>
+            Step-by-step guides: <Link href="/guides/bowditch-traverse-adjustment">adjusting a closed traverse by the Bowditch rule</Link>,{" "}
+            <Link href="/guides/level-book-rise-and-fall-height-of-instrument">reducing a level book</Link> and{" "}
+            <Link href="/guides/traverse-misclosure-and-precision">traverse misclosure and precision</Link>.
           </p>
         </>
       }
