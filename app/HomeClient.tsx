@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import Navbar from "../components/Navbar";
 import Hero from "../components/Hero";
+import HeroClassic from "../components/HeroClassic";
 import Showcase from "../components/Showcase";
 // Hidden from the home page to keep it short; uncomment here and below to bring it back
 // import MetricsRibbon from "../components/MetricsRibbon";
@@ -14,8 +15,7 @@ import Features from "../components/Features";
 // import Workflow from "../components/Workflow";
 import TutorialTeaser from "../components/TutorialTeaser";
 import ConverterSection from "../components/ConverterSection";
-// Hidden from the home page (the hero now has a tile for every program)
-// import ProductSpotlight from "../components/ProductSpotlight";
+import ProductSpotlight from "../components/ProductSpotlight";
 import DownloadHub from "../components/DownloadHub";
 // Hidden from the home page (the same ground as /formats and the grids section)
 // import SpecsTable from "../components/SpecsTable";
@@ -24,6 +24,11 @@ import GridsAndGuides from "../components/GridsAndGuides";
 import CtaBanner from "../components/CtaBanner";
 import Footer from "../components/Footer";
 import { useAuth } from "../context/AuthContext";
+
+// Which hero the home page shows: "new" has a tab and screenshot for every program, with the
+// converter in its own section below; "classic" is the earlier one (the converter inside the
+// hero, then the "More software" cards). Change this one word to switch.
+const HERO_STYLE = "new" as "new" | "classic";
 
 export default function HomeClient() {
   const { requireAuth, trackDownload } = useAuth();
@@ -66,20 +71,19 @@ export default function HomeClient() {
 
       {/* Main Content Landmark for Search Engine Crawlers & Accessibility */}
       <main id="main-content">
-        {/* Hero */}
-        <Hero
-          versionTag={versionTag}
-          fileSizeText={fileSizeText}
-          onDownloadClick={handleDownloadApp}
-        />
-
-        {/* The live coordinate converter */}
-        <ConverterSection />
-
-        {/* Spotlight on our other software: hidden, the hero tiles cover it.
-            Uncomment this and its import to bring it back.
-        <ProductSpotlight />
-        */}
+        {HERO_STYLE === "classic" ? (
+          <>
+            {/* Hero with the converter, then the spotlight on our other software */}
+            <HeroClassic versionTag={versionTag} fileSizeText={fileSizeText} onDownloadClick={handleDownloadApp} />
+            <ProductSpotlight />
+          </>
+        ) : (
+          <>
+            {/* Hero with a tab for every program, then the live coordinate converter */}
+            <Hero versionTag={versionTag} fileSizeText={fileSizeText} onDownloadClick={handleDownloadApp} />
+            <ConverterSection />
+          </>
+        )}
 
         {/* Showcase Window */}
         <Showcase versionTag={versionTag} onToast={showToast} />

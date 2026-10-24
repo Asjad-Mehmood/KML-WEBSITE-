@@ -227,7 +227,8 @@ export default function Hero({ versionTag, fileSizeText, onDownloadClick }: Hero
                       aria-hidden={i !== active}
                       width={t.shot.width}
                       height={t.shot.height}
-                      priority={i === 0}
+                      loading={i === 0 ? "eager" : "lazy"}
+                      fetchPriority={i === 0 ? "high" : "auto"}
                       sizes="(min-width: 1180px) 1140px, 100vw"
                       style={{ objectPosition: t.shot.position ?? "left top" }}
                       className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
