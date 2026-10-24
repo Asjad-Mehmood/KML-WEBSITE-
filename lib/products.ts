@@ -1,6 +1,6 @@
 // Our other software, besides the Excel to KML app itself. Everything that
-// promotes them reads this list: the hero badges, the home page spotlight,
-// the menu, the footer and the sitemap. To add a tool, add an entry here and
+// promotes them reads this list: the home page hero tabs, the menu, the
+// footer and the sitemap. To add a tool, add an entry here and
 // give it a page at its href.
 import { ROADPRO_VERSION } from "@/lib/roadpro";
 import { TRAVERSE_FILES, TRAVERSE_SHORT, TRAVERSE_VERSION } from "@/lib/traverse";
@@ -28,8 +28,11 @@ export interface Product {
   comingSoon?: boolean;
   /** Shows a "New" label until this date (YYYY-MM-DD) */
   newUntil?: string;
-  /** Show a badge in the home page hero */
+  /** Show a tab in the home page hero, after Excel to KML */
   inHero?: boolean;
+  /** The screenshot in the hero's window frame (16:10) and its title bar. The frame is filled
+      from the top left unless position (CSS object-position) says which part to keep. */
+  shot?: { src: string; width: number; height: number; alt: string; title: string; position?: string };
   /** Show a link in the main menu */
   inNav?: boolean;
 }
@@ -54,6 +57,14 @@ export const PRODUCTS: Product[] = [
     highlights: ["Lanes, median, sidewalks", "Junctions and turning lanes", "Signs and markings to standard", "Barricades, cones, kerb", "Widening and tapers", "Excel report and LandXML"],
     newUntil: "2027-01-31",
     inHero: true,
+    shot: {
+      src: "/roadpro/roadpro-3-network.webp",
+      width: 1600,
+      height: 636,
+      alt: "RoadPro in AutoCAD: lane widening, a T-junction and a skewed junction with kerb returns, road markings and chainage",
+      title: "AutoCAD Civil 3D · RoadPro",
+      position: "right center",
+    },
     inNav: true,
   },
   {
@@ -77,6 +88,13 @@ export const PRODUCTS: Product[] = [
     comingSoon: !TRAVERSE_FILES.setup.href,
     newUntil: "2027-01-31",
     inHero: true,
+    shot: {
+      src: "/traverse/screens/v2-traverse-plan.webp",
+      width: 1440,
+      height: 900,
+      alt: "Traverse & Level: an adjusted traverse from CP-01 to CP-03 with its plan, bearings and distances",
+      title: "Traverse & Level · Bowditch adjustment",
+    },
     inNav: true,
   },
   {
@@ -97,6 +115,13 @@ export const PRODUCTS: Product[] = [
     highlights: ["Modules by discipline", "Instant search", "Copy, move, rename", "Drive space"],
     newUntil: "2027-01-31",
     inHero: true,
+    shot: {
+      src: PFM_FILES.shots.main.src,
+      width: PFM_FILES.shots.main.width,
+      height: PFM_FILES.shots.main.height,
+      alt: "Project Folder Manager: the eleven project modules from Admin to Archive, each with its discipline",
+      title: "Project Folder Manager · D:\\Project",
+    },
     inNav: false,
   },
 ];

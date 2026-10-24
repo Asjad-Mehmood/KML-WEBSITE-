@@ -1,29 +1,24 @@
 "use client";
 
-import React from "react";
-import dynamic from "next/dynamic";
+import React, { useEffect, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import {
   Download,
   ChevronRight,
+  ArrowRight,
+  Check,
   FileSpreadsheet,
+  Route,
+  Compass,
+  FolderTree,
+  ShieldCheck,
   Layers,
-  Globe,
-  ArrowRight
+  MonitorSmartphone,
+  type LucideIcon,
 } from "lucide-react";
-import Link from "next/link";
 import WebAppLink from "./WebAppLink";
-import { PRODUCTS, badgeLabel } from "@/lib/products";
-
-// Dynamically import HeroConverter with radar without SSR
-const HeroConverter = dynamic(() => import("./HeroConverter"), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full h-[420px] rounded-2xl bg-slate-950 border border-slate-800 flex flex-col items-center justify-center gap-2 text-cyan-300 font-mono text-xs">
-      <Globe className="w-6 h-6 animate-spin text-cyan-500" aria-hidden />
-      <span>Loading Coordinate Converter...</span>
-    </div>
-  ),
-});
+import { PRODUCTS, badgeLabel, isNew } from "@/lib/products";
 
 interface HeroProps {
   versionTag: string;
@@ -31,135 +26,220 @@ interface HeroProps {
   onDownloadClick: () => void;
 }
 
+type Tab = {
+  id: string;
+  name: string;
+  /** On phones, where four tabs share two rows */
+  short: string;
+  version: string;
+  platform: string;
+  tagline: string;
+  highlights: string[];
+  href: string;
+  badge: string | null;
+  Icon: LucideIcon;
+  shot: { src: string; width: number; height: number; alt: string; title: string; position?: string };
+};
+
+const ICONS: Record<string, LucideIcon> = { roadpro: Route, traverse: Compass, "folder-manager": FolderTree };
+const ROTATE_MS = 7000;
+
+// The home page hero, in the manner of a software maker's front page: one headline for the
+// whole toolkit, then a tab per program with its real screenshot in a window frame.
+// Excel to KML is the first tab and the main download; the rest come from lib/products.ts (inHero).
 export default function Hero({ versionTag, fileSizeText, onDownloadClick }: HeroProps) {
+  const tabs: Tab[] = [
+    {
+      id: "excel-to-kml",
+      name: "Excel to KML",
+      short: "Excel to KML",
+      version: versionTag,
+      platform: "Windows and web",
+      tagline: "Excel and CSV coordinates into Google Earth, on any of 5,800+ grids",
+      highlights: ["KML, KMZ and DXF", "Site photos and PDF reports", "Quality checks before you save"],
+      href: "/features",
+      badge: null,
+      Icon: FileSpreadsheet,
+      shot: {
+        src: "/tutorial/load-points.webp",
+        width: 1600,
+        height: 1000,
+        alt: "Excel to KML: twelve survey points read from Excel on the Qatar National Grid, shown as a table and on the map, ready to save as KMZ",
+        title: "Excel to KML · Benchmarks",
+      },
+    },
+    ...PRODUCTS.filter((p) => p.inHero && p.shot).map((p) => ({
+      id: p.id,
+      name: p.name,
+      short: p.name.replace("Project ", "").replace(" & Level", ""),
+      version: p.version,
+      platform: p.platform,
+      tagline: p.tagline,
+      highlights: p.highlights.slice(0, 3),
+      href: p.href,
+      badge: p.comingSoon ? "Soon" : badgeLabel(p),
+      Icon: ICONS[p.id] ?? FileSpreadsheet,
+      shot: p.shot!,
+    })),
+  ];
+  const news = PRODUCTS.find((p) => isNew(p) && !p.comingSoon);
+
+  const [active, setActive] = useState(0);
+  const [auto, setAuto] = useState(true);
+  const [paused, setPaused] = useState(false);
+
+  // Steps through the programs until the visitor picks one; still while the pointer is on it
+  useEffect(() => {
+    if (!auto || paused) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const t = setTimeout(() => setActive((i) => (i + 1) % tabs.length), ROTATE_MS);
+    return () => clearTimeout(t);
+  }, [active, auto, paused, tabs.length]);
+
+  const pick = (i: number) => {
+    setAuto(false);
+    setActive(i);
+  };
+  const tab = tabs[active];
+
   return (
-    <section className="relative pt-24 pb-14 md:pt-28 md:pb-16 lg:pt-32 lg:pb-20 overflow-hidden bg-white border-b border-slate-100">
-      {/* Subtle Ambient Light */}
-      <div className="absolute top-0 right-1/4 w-[500px] h-[300px] bg-blue-50/50 rounded-full blur-[100px] -z-10 pointer-events-none" />
+    <section className="hero-grid relative pt-28 pb-16 md:pt-32 md:pb-20 lg:pt-32 lg:pb-24 overflow-hidden bg-white border-b border-slate-100">
+      <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[900px] h-[480px] bg-[radial-gradient(closest-side,rgba(0,113,227,0.14),transparent)] pointer-events-none" aria-hidden />
 
-      <div className="max-w-[1280px] mx-auto px-5 sm:px-8">
-        <div className="grid lg:grid-cols-12 gap-10 lg:gap-8 items-center">
-
-          {/* ══════════════════════════════════════════════════════════════════
-              LEFT: Minimal, Modern & Balanced Typography
-             ══════════════════════════════════════════════════════════════════ */}
-          <div className="lg:col-span-5 flex flex-col items-start text-left">
-
-            {/* Version badge, then one chip per product we spotlight (lib/products.ts), each on its own line */}
-            <div className="flex flex-col items-start gap-2 mb-6">
-            <a
-              href="#download"
-              className="group inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-50/90 border border-slate-200/90 shadow-xs hover:border-slate-300 hover:bg-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+      <div className="relative max-w-[1180px] mx-auto px-5 sm:px-8">
+        <div className="max-w-[860px] mx-auto text-center flex flex-col items-center">
+          {news && (
+            <Link
+              href={news.href}
+              className="group inline-flex items-center gap-2 pl-1.5 pr-3 py-1 rounded-full bg-white border border-slate-200 shadow-xs hover:border-slate-300 text-[13px] text-slate-700 transition-colors"
             >
-              <span className="flex h-2 w-2 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#0071e3]"></span>
+              <span className="px-2 py-0.5 rounded-full bg-[#0071e3] text-white text-[11px] font-bold">New</span>
+              <span className="font-medium">
+                {news.name} {news.version}
+                <span className="hidden sm:inline text-slate-500"> · {news.tagline}</span>
               </span>
-              <span className="text-xs font-semibold text-slate-800">
-                Excel to KML <span className="text-[#0071e3] font-bold">{versionTag}</span>
-              </span>
-              <span className="text-slate-300">·</span>
-              <span className="text-xs font-medium text-slate-500 flex items-center gap-1">
-                Windows 64-bit
-                <ArrowRight className="w-3 h-3 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
-              </span>
-            </a>
-            {PRODUCTS.filter((p) => p.inHero).map((p) => (
-              <Link
-                key={p.id}
-                href={p.href}
-                title={`${p.name} ${p.version} · ${p.platform}`}
-                className="group inline-flex items-center gap-2 pl-1.5 pr-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 hover:border-amber-300 hover:bg-amber-100/70 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
-              >
-                {badgeLabel(p) && (
-                  <span className="px-1.5 py-px rounded-full bg-amber-500 text-white text-[9.5px] font-bold uppercase tracking-wider whitespace-nowrap">
-                    {p.comingSoon ? "Soon" : badgeLabel(p)}
-                  </span>
-                )}
-                <span className="text-xs font-semibold text-slate-800 whitespace-nowrap">
-                  {p.name} <span className="text-amber-700 font-bold">{p.version}</span>
-                </span>
-                <span className="hidden min-[400px]:inline text-slate-300">·</span>
-                <span className="hidden min-[400px]:flex items-center gap-1 text-xs font-medium text-slate-500 whitespace-nowrap">
-                  {p.platform}
-                  <ArrowRight className="w-3 h-3 text-slate-400 group-hover:translate-x-0.5 transition-transform" aria-hidden />
-                </span>
-              </Link>
-            ))}
-            </div>
+              <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 transition-transform" aria-hidden />
+            </Link>
+          )}
 
-            {/* Headline: kept short (under 70 characters) for search engines */}
-            <h1 className="text-[29px] sm:text-[38px] lg:text-[42px] font-extrabold tracking-tight text-slate-900 leading-[1.12] text-balance">
-              Convert Geospatial Coordinate Tables into{" "}
-              <span className="whitespace-nowrap text-transparent bg-clip-text bg-gradient-to-r from-[#0071e3] via-[#0284c7] to-[#0ea5e9]">
-                Google Earth 3D
-              </span>
-            </h1>
-            <p className="mt-4 mb-5 flex flex-wrap items-center gap-x-2.5 gap-y-2">
-              <span className="sr-only">Save as KML, KMZ and DXF with site photos and comprehensive reports</span>
-              {["KML", "KMZ", "DXF"].map((f) => (
-                <span
-                  key={f}
-                  aria-hidden
-                  className="inline-flex items-center px-2.5 py-1 rounded-lg bg-blue-50 border border-blue-100 text-[13px] sm:text-sm font-bold tracking-wide text-[#0071e3]"
+          {/* Kept under 70 characters for search engines */}
+          <h1 className="mt-6 text-[34px] sm:text-[48px] lg:text-[60px] font-extrabold tracking-[-0.03em] text-slate-900 leading-[1.05] text-balance">
+            Professional survey software for{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0071e3] to-[#0ea5e9]">engineers on site</span>
+          </h1>
+          <p className="mt-5 text-base sm:text-lg text-slate-600 leading-relaxed max-w-[680px] text-balance">
+            Excel to KML, RoadPro, Traverse &amp; Level and Project Folder Manager: from survey coordinates to finished drawings, adjustments and reports. Free for Windows, AutoCAD and the web.
+          </p>
+
+          <div className="mt-8 flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+            <button
+              onClick={onDownloadClick}
+              className="group inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-xl text-[15px] font-semibold shadow-[0_6px_20px_rgba(0,113,227,0.3)] hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+            >
+              <Download className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" aria-hidden />
+              Download Excel to KML
+              <span className="text-white/75 text-xs font-normal">{fileSizeText}</span>
+            </button>
+            <WebAppLink className="group inline-flex items-center justify-center gap-1.5 px-6 py-3.5 rounded-xl bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-800 text-[15px] font-semibold shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
+              Try it in your browser
+              <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" aria-hidden />
+            </WebAppLink>
+          </div>
+
+          <ul className="mt-6 flex flex-wrap justify-center gap-x-6 gap-y-2 text-[13px] font-medium text-slate-500">
+            <li className="flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-emerald-600" aria-hidden /> Free with an account</li>
+            <li className="flex items-center gap-1.5"><Layers className="w-4 h-4 text-indigo-500" aria-hidden /> 5,800+ EPSG grids</li>
+            <li className="flex items-center gap-1.5"><MonitorSmartphone className="w-4 h-4 text-[#0071e3]" aria-hidden /> Windows, AutoCAD and the web</li>
+          </ul>
+        </div>
+
+        {/* One tab per program, then its screenshot */}
+        <div className="mt-12 lg:mt-14" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+          <div role="tablist" aria-label="Our programs" className="mx-auto w-full sm:w-fit grid grid-cols-2 sm:flex gap-1 p-1 rounded-2xl bg-slate-100/90 border border-slate-200/80">
+            {tabs.map((t, i) => {
+              const on = i === active;
+              return (
+                <button
+                  key={t.id}
+                  id={`hero-tab-${t.id}`}
+                  role="tab"
+                  aria-selected={on}
+                  aria-controls="hero-panel"
+                  onClick={() => pick(i)}
+                  className={`relative overflow-hidden flex items-center justify-center gap-2 px-3 sm:px-4 py-2.5 rounded-xl text-[13px] sm:text-[14px] font-semibold whitespace-nowrap cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+                    on ? "bg-white text-slate-900 shadow-[0_1px_3px_rgba(15,23,42,0.12)]" : "text-slate-600 hover:text-slate-900"
+                  }`}
                 >
-                  {f}
-                </span>
-              ))}
-              <span aria-hidden className="text-[15px] sm:text-base font-medium text-slate-500 leading-snug">
-                with site photos &amp; comprehensive reports
-              </span>
-            </p>
-
-            {/* Subtitle */}
-            <p className="text-base sm:text-[17px] text-slate-600 leading-relaxed mb-8 max-w-[480px]">
-              Open your Excel or CSV coordinates on any grid and get a file that opens straight in Google Earth — points, boundaries and elevations in seconds, no GIS software needed.
-            </p>
-
-            {/* Action Buttons with subtle modern polish */}
-            <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 mb-8 w-full">
-              <button
-                onClick={onDownloadClick}
-                className="group inline-flex items-center justify-center gap-2.5 px-6 py-3 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-xl text-sm font-semibold shadow-[0_4px_14px_rgba(0,113,227,0.28)] hover:shadow-[0_6px_20px_rgba(0,113,227,0.38)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-              >
-                <Download className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" />
-                <span>Download for Windows</span>
-                <span className="text-white text-xs font-normal">· {fileSizeText}</span>
-              </button>
-
-              <WebAppLink
-                className="group inline-flex items-center justify-center gap-1.5 px-5 py-3 text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200/90 hover:border-slate-300 rounded-xl text-sm font-medium shadow-xs transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-              >
-                <span>Try in browser</span>
-                <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
-              </WebAppLink>
-            </div>
-
-            {/* Minimal Modern Technical Badges */}
-            <div className="flex flex-wrap items-center gap-2 pt-5 border-t border-slate-100 w-full max-w-[480px]">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-50 text-slate-700 text-xs font-medium border border-slate-200/60">
-                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
-                <span>XLSX &amp; CSV Input</span>
-              </div>
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-50 text-slate-700 text-xs font-medium border border-slate-200/60">
-                <Globe className="w-3.5 h-3.5 text-[#0071e3]" />
-                <span>KML &amp; KMZ Output</span>
-              </div>
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-50 text-slate-700 text-xs font-medium border border-slate-200/60">
-                <Layers className="w-3.5 h-3.5 text-indigo-500" />
-                <span>5,800+ EPSG Grids</span>
-              </div>
-            </div>
-
+                  <t.Icon className={`w-4 h-4 shrink-0 ${on ? "text-[#0071e3]" : "text-slate-400"}`} aria-hidden />
+                  <span className="sm:hidden">{t.short}</span>
+                  <span className="hidden sm:inline">{t.name}</span>
+                  {t.badge && <span className="w-1.5 h-1.5 rounded-full bg-amber-500" aria-label={t.badge} />}
+                  {on && auto && !paused && (
+                    <span key={active} className="hero-tab-progress absolute left-3 right-3 bottom-1 h-0.5 rounded-full bg-[#0071e3]/70 origin-left" style={{ animationDuration: `${ROTATE_MS}ms` }} aria-hidden />
+                  )}
+                </button>
+              );
+            })}
           </div>
 
-          {/* ══════════════════════════════════════════════════════════════════
-              RIGHT: Live Geospatial Coordinate Converter with Radar
-             ══════════════════════════════════════════════════════════════════ */}
-          <div className="lg:col-span-7 w-full min-w-0 flex items-center justify-center lg:justify-end">
-            <HeroConverter />
-          </div>
+          <div id="hero-panel" role="tabpanel" aria-labelledby={`hero-tab-${tab.id}`} className="mt-7">
+            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-5">
+              <div className="min-w-0">
+                <p className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[13px]">
+                  <span className="font-bold text-slate-900">{tab.name}</span>
+                  <span className="font-semibold text-[#0071e3]">{tab.version}</span>
+                  {tab.badge && <span className="px-1.5 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold uppercase tracking-wider">{tab.badge}</span>}
+                  <span className="text-slate-400">·</span>
+                  <span className="text-slate-500">{tab.platform}</span>
+                </p>
+                <h2 className="mt-1.5 text-xl sm:text-2xl font-bold tracking-tight text-slate-900">{tab.tagline}</h2>
+                <ul className="mt-2.5 flex flex-wrap gap-x-5 gap-y-1.5">
+                  {tab.highlights.map((h) => (
+                    <li key={h} className="flex items-center gap-1.5 text-[13.5px] text-slate-600">
+                      <Check className="w-4 h-4 text-emerald-600 shrink-0" aria-hidden /> {h}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <Link href={tab.href} className="group shrink-0 inline-flex items-center gap-1.5 text-[14px] font-semibold text-[#0071e3] hover:text-[#0058b0]">
+                {tab.id === "excel-to-kml" ? "See every feature" : `Explore ${tab.name}`}
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" aria-hidden />
+              </Link>
+            </div>
 
+            {/* The window: every screenshot is stacked and faded in, so switching is instant */}
+            <div className="rounded-2xl p-1.5 sm:p-2 bg-gradient-to-b from-slate-200/80 to-slate-100/40 shadow-[0_40px_100px_-20px_rgba(15,23,42,0.35)]">
+              <div className="rounded-xl overflow-hidden border border-slate-300/70 bg-slate-950">
+                <div className="flex items-center gap-3 px-3.5 h-9 bg-slate-100 border-b border-slate-200">
+                  <span className="flex gap-1.5" aria-hidden>
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#febc2e]" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#28c840]" />
+                  </span>
+                  <span className="flex-1 text-center text-[12px] font-medium text-slate-500 truncate pr-10">{tab.shot.title}</span>
+                </div>
+                <div className="relative aspect-[16/10] bg-black">
+                  {tabs.map((t, i) => (
+                    <Image
+                      key={t.id}
+                      src={t.shot.src}
+                      alt={i === active ? t.shot.alt : ""}
+                      aria-hidden={i !== active}
+                      width={t.shot.width}
+                      height={t.shot.height}
+                      loading={i === 0 ? "eager" : "lazy"}
+                      fetchPriority={i === 0 ? "high" : "auto"}
+                      sizes="(min-width: 1180px) 1140px, 100vw"
+                      style={{ objectPosition: t.shot.position ?? "left top" }}
+                      className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
+                        i === active ? "opacity-100" : "opacity-0"
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
