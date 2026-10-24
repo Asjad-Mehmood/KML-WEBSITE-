@@ -82,20 +82,38 @@ export class SiteRemote {
     } catch (e) { throw new AuthError('Could not reach exceltokml.com. Check your connection and try again.', 'network'); }
     let j = {};
     try { j = await r.json(); } catch (e) { /* empty reply */ }
-    if (!r.ok) throw new AuthError(j.error || `The server answered ${r.status}.`, r.status);
+    if (!r.ok) { const e = new AuthError(j.error || `The server answered ${r.status}.`, r.status); e.data = j; throw e; }
     return j;
   }
+  /** The account's email isn't confirmed yet: the server emailed a code (challenge + where it went) */
+  static verifyFrom(err) { return err && err.data && err.data.verifyRequired && err.data.challenge ? { challenge: err.data.challenge, sentTo: err.data.sentTo || 'your email' } : null; }
   async session() { const j = await this.call('GET', '/api/auth/me'); return SiteRemote.userFrom(j.user); }
   onAuth() { /* the website has no push events; the session is read at start */ }
   async signUp({ email, password, name, company }) {
-    const j = await this.call('POST', '/api/auth/register', { name, email: normEmail(email), password, organization: company || undefined });
-    return { user: SiteRemote.userFrom(j.user), needsConfirm: false };
+    try {
+      const j = await this.call('POST', '/api/auth/register', { name, email: normEmail(email), password, organization: company || undefined });
+      return { user: SiteRemote.userFrom(j.user), needsConfirm: false };
+    } catch (err) {
+      const verify = SiteRemote.verifyFrom(err);
+      if (verify) return { user: null, verify };
+      throw err;
+    }
   }
   async signIn({ email, password }) {
-    const j = await this.call('POST', '/api/auth/login', { email: normEmail(email), password });
+    let j;
+    try { j = await this.call('POST', '/api/auth/login', { email: normEmail(email), password }); }
+    catch (err) {
+      const verify = SiteRemote.verifyFrom(err);
+      if (verify) { const e = new AuthError(err.message, 'verify'); e.verify = verify; throw e; }
+      throw err;
+    }
     if (j.otpRequired) throw new AuthError('This admin account needs the code sent by email. Press “Sign in with your browser” below.', 'otp');
     return SiteRemote.userFrom(j.user);
   }
+  /** The 6-digit code from the confirmation email: confirms the address and signs in */
+  async confirmEmail(challenge, code) { const j = await this.call('POST', '/api/auth/verify-email', { challenge, code }); return SiteRemote.userFrom(j.user); }
+  /** A new confirmation code; returns the new challenge */
+  async resendConfirm(challenge) { const j = await this.call('POST', '/api/auth/resend-verify', { challenge }); return { challenge: j.challenge, sentTo: j.sentTo }; }
   async signOut() { await this.call('POST', '/api/auth/logout'); }
   /** Sign in with a code confirmed in the browser at exceltokml.com/link (Google and admin accounts). */
   async startCode(app) { return this.call('POST', '/api/auth/device/start', { app }); }

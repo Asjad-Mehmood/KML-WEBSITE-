@@ -20,7 +20,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<AuthResult>;
-  /** Set while an admin sign-in waits for the emailed code */
+  /** Set while a sign-in waits for an emailed code: an admin's sign-in code, or a new account confirming its email */
   otp: OtpState | null;
   verifyOtp: (code: string, trust: boolean) => Promise<AuthResult>;
   resendOtp: () => Promise<{ ok: true; sentTo: string } | { ok: false; error: string }>;
@@ -50,6 +50,8 @@ interface AuthContextType {
 export type AuthResult = { ok: true; isAdmin?: boolean } | { ok: false; error: string; otpRequired?: boolean };
 
 export interface OtpState {
+  /** admin: the admin sign-in code; email: confirming the email of an account */
+  kind: "admin" | "email";
   challenge: string;
   sentTo: string;
 }
@@ -101,12 +103,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       const data = await res.json().catch(() => ({}));
+      // The account's email isn't confirmed yet: a code was emailed
+      if (data.verifyRequired && data.challenge) {
+        setOtp({ kind: "email", challenge: data.challenge, sentTo: data.sentTo });
+        return { ok: false, error: "", otpRequired: true };
+      }
       if (!res.ok) {
         return { ok: false, error: data.error || "Sign-in failed. Please try again." };
       }
       // Admin from a browser we don't know yet: a code was emailed
       if (data.otpRequired) {
-        setOtp({ challenge: data.challenge, sentTo: data.sentTo });
+        setOtp({ kind: "admin", challenge: data.challenge, sentTo: data.sentTo });
         return { ok: false, error: "", otpRequired: true };
       }
 
@@ -136,14 +143,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const verifyOtp = async (code: string, trust: boolean): Promise<AuthResult> => {
     if (!otp) return { ok: false, error: "Start again from the sign-in page." };
     try {
-      const res = await fetch("/api/auth/verify-otp", {
+      const res = await fetch(otp.kind === "email" ? "/api/auth/verify-email" : "/api/auth/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ challenge: otp.challenge, code, trust }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        // an expired or used-up code can't be retried: back to the password step
+        // an expired or used-up admin code can't be retried: back to the password step
+        // (an email confirmation stays on the code step, where a new code can be sent)
         if (data.restart) setOtp(null);
         return { ok: false, error: data.error || "That code didn't work. Please try again." };
       }
@@ -157,7 +165,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const resendOtp = async () => {
     if (!otp) return { ok: false as const, error: "Start again from the sign-in page." };
     try {
-      const res = await fetch("/api/auth/resend-otp", {
+      const res = await fetch(otp.kind === "email" ? "/api/auth/resend-verify" : "/api/auth/resend-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ challenge: otp.challenge }),
@@ -167,7 +175,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (data.restart) setOtp(null);
         return { ok: false as const, error: data.error || "Couldn't send a new code." };
       }
-      setOtp({ challenge: data.challenge, sentTo: data.sentTo });
+      setOtp({ kind: otp.kind, challenge: data.challenge, sentTo: data.sentTo });
       return { ok: true as const, sentTo: data.sentTo as string };
     } catch (err) {
       console.error(err);
@@ -192,22 +200,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       const resData = await res.json().catch(() => ({}));
+      // The new account confirms its email with the code we just sent, then it is signed in
+      if (resData.verifyRequired && resData.challenge) {
+        setOtp({ kind: "email", challenge: resData.challenge, sentTo: resData.sentTo });
+        return { ok: false, error: "", otpRequired: true };
+      }
       if (!res.ok) {
         return { ok: false, error: resData.error || "Couldn't create your account. Please try again." };
       }
 
-      setUser(resData.user);
-      setAuthModalOpen(false);
-
-      // Execute queued download action if any
-      if (pendingDownloadAction) {
-        setTimeout(() => {
-          pendingDownloadAction();
-          setPendingDownloadAction(null);
-        }, 150);
-      }
-
-      return { ok: true };
+      return finishSignIn(resData.user);
     } catch (err) {
       console.error(err);
       return { ok: false, error: NETWORK_ERROR };

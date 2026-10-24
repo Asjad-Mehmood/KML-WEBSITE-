@@ -37,6 +37,8 @@ export interface AllSettings {
   announcementLink: string;
   announcementEndsAt: string;
   allowSignups: boolean;
+  verifyEmails: boolean;
+  verifyOldAccounts: boolean;
   googleSignInEnabled: boolean;
   traverseEnabled: boolean;
   tlEnabled: boolean;
@@ -211,6 +213,20 @@ export default function SettingsPanel({
             text="Off: the sign-up form and Google stop creating accounts. People who already have one still sign in."
             checked={draft.allowSignups}
             onChange={(v) => set("allowSignups", v)}
+            tone="emerald"
+          />
+          <Toggle
+            label="Confirm new accounts' email"
+            text="New accounts made with an email and password get a 6-digit code and a link by email, and can't sign in until they use one. Fake, mistyped and throwaway addresses never get in. Google accounts are confirmed by Google. Needs email to be set up; without it sign-up works as before."
+            checked={draft.verifyEmails}
+            onChange={(v) => set("verifyEmails", v)}
+            tone="emerald"
+          />
+          <Toggle
+            label="Older accounts confirm their email too"
+            text="Accounts made before email confirmation started are asked for the code the next time they sign in. Off: they sign in as before (Admin → Users shows which are confirmed)."
+            checked={draft.verifyOldAccounts}
+            onChange={(v) => set("verifyOldAccounts", v)}
             tone="emerald"
           />
           <Toggle

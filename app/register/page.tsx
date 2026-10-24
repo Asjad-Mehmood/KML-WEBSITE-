@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 import { safeNextPath } from "../../lib/authRedirect";
 import GoogleSignIn, { GOOGLE_ERRORS } from "../../components/GoogleSignIn";
+import OtpForm from "../../components/OtpForm";
 import { OCCUPATIONS, OCCUPATION_MAX } from "../../lib/occupations";
 import { usePublicSettings } from "../../lib/publicSettings";
 
@@ -24,7 +25,7 @@ export default function RegisterPage() {
     () => null
   );
   const googleError = googleErrorCode ? GOOGLE_ERRORS[googleErrorCode] ?? null : null;
-  const { register } = useAuth();
+  const { register, otp } = useAuth();
   const signupsClosed = usePublicSettings()?.signupsOpen === false;
 
   const [name, setName] = useState("");
@@ -42,6 +43,9 @@ export default function RegisterPage() {
   const orgId = useId();
   const roleId = useId();
   const agreeId = useId();
+
+  // Back to where the visitor was headed (e.g. /app or /dashboard), else home
+  const goOn = () => router.push(safeNextPath(new URLSearchParams(window.location.search).get("next")));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,12 +78,9 @@ export default function RegisterPage() {
       role,
     });
 
-    if (result.ok) {
-      // Back to where the visitor was headed (e.g. /app or /dashboard), else home
-      router.push(safeNextPath(new URLSearchParams(window.location.search).get("next")));
-    } else {
-      setError(result.error);
-    }
+    if (result.ok) goOn();
+    // a code was emailed to confirm the address: the code step shows instead of the form
+    else if (!result.otpRequired) setError(result.error);
     setIsSubmitting(false);
   };
 
@@ -117,6 +118,10 @@ export default function RegisterPage() {
 
       {/* Main Registration Card */}
       <div className="max-w-lg w-full mx-auto my-8 bg-white rounded-3xl border border-slate-200 shadow-xl shadow-slate-200/60 p-8 sm:p-10">
+        {otp ? (
+          <OtpForm onSuccess={goOn} />
+        ) : (
+        <>
         <div className="text-center mb-8">
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight">
             Create Account
@@ -256,6 +261,8 @@ export default function RegisterPage() {
             Sign In Here &rarr;
           </Link>
         </div>
+        </>
+        )}
 
       </div>
 

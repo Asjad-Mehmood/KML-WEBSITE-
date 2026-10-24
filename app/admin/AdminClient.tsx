@@ -57,6 +57,8 @@ interface UserItem {
   location?: string;
   hasFullAccess?: boolean;
   customMaxPoints?: number;
+  /** confirmed, waiting (signed up but never confirmed: maybe a fake address) or older (before confirmation started) */
+  emailState?: "confirmed" | "waiting" | "older";
 }
 
 interface DownloadItem {
@@ -1202,6 +1204,12 @@ export default function AdminClient() {
                                   )}
                                 </button>
                                 <div className="text-xs text-slate-400 truncate max-w-[240px]">{u.email}</div>
+                                {u.emailState === "confirmed" && (
+                                  <span className="mt-0.5 inline-block text-[10px] font-bold text-emerald-400" title="The email address is confirmed">✓ Email confirmed</span>
+                                )}
+                                {u.emailState === "waiting" && (
+                                  <span className="mt-0.5 inline-block text-[10px] font-bold text-amber-400" title="Signed up but never entered the code or opened the link: the address may be fake">Not confirmed yet</span>
+                                )}
                               </div>
                             </div>
                           </td>

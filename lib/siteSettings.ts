@@ -9,6 +9,10 @@ export type NoticeTone = "info" | "success" | "warning";
 export interface ExtraSettings {
   /** New accounts (email and Google). Off: existing users still sign in. */
   allowSignups: boolean;
+  /** New email-and-password accounts confirm their email (code or link) before they can sign in */
+  verifyEmails: boolean;
+  /** Accounts made before confirmation existed must confirm too, the next time they sign in */
+  verifyOldAccounts: boolean;
   /** "Continue with Google" button, when Google is configured */
   googleSignInEnabled: boolean;
   /** Shown instead of the standard maintenance text; empty = standard */
@@ -45,6 +49,8 @@ export const HOME_HEROES: HomeHero[] = ["new", "classic"];
 
 export const EXTRA_DEFAULTS: ExtraSettings = {
   allowSignups: true,
+  verifyEmails: true,
+  verifyOldAccounts: false,
   googleSignInEnabled: true,
   maintenanceMessage: "",
   announcementTone: "info",

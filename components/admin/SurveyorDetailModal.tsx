@@ -34,6 +34,8 @@ import FileViewer, { type ViewerFile } from "@/components/FileViewer";
 import { TraverseUserJobs } from "@/components/admin/AdminTraverse";
 import { actionLabel, adminActionTag } from "@/lib/activityKinds";
 import AppVersions from "@/components/AppVersions";
+import EmailConfirmPanel from "@/components/admin/EmailConfirmPanel";
+import type { EmailStatus } from "@/lib/emailVerify";
 import type { ProgramVersions } from "@/lib/appUsage";
 
 export interface UserItem {
@@ -141,6 +143,7 @@ interface UserDetailResponse {
   traverseJobs?: number;
   /** Which version of each program they have, and where they last opened it */
   programs?: ProgramVersions[];
+  emailStatus?: EmailStatus | null;
   points?: { total: number; conversions: UserPointItem[] };
 }
 
@@ -548,6 +551,18 @@ export default function SurveyorDetailModal({
                       <div className="text-[11px] text-slate-500 mt-1">Primary coordinate system</div>
                     </div>
                   </div>
+
+                  {/* Whether the email address is confirmed */}
+                  {user && (
+                    <EmailConfirmPanel
+                      userId={user.id}
+                      status={data?.emailStatus ?? null}
+                      isAdmin={user.role === "ADMIN"}
+                      fetcher={adminFetch}
+                      onChanged={(s) => setData((d) => (d ? { ...d, emailStatus: s } : d))}
+                      onToast={onToast}
+                    />
+                  )}
 
                   {/* Which version of each program they have */}
                   {programs.length > 0 && (
