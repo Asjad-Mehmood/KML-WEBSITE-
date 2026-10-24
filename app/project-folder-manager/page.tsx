@@ -264,7 +264,7 @@ export default function FolderManagerPage() {
             </div>
           </div>
           <p className="mt-5 text-[13px] text-slate-500">
-            Questions or a feature request? <Link href="/contact?topic=idea" className="text-[#0071e3] hover:underline">Write to us</Link>.
+            Questions or a feature request? <Link href="/contact?topic=idea&program=folder-manager" className="text-[#0071e3] hover:underline">Write to us</Link>.
           </p>
         </section>
       </div>

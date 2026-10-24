@@ -362,7 +362,7 @@ export default function TraversePage() {
           <p className="mt-5 text-[13px] text-slate-500">
             Need a quick check in the browser? Try the free{" "}
             <Link href="/tools/traverse-adjustment" className="text-[#0071e3] hover:underline">online traverse adjustment</Link>. Questions or a feature
-            request? <Link href="/contact?topic=idea" className="text-[#0071e3] hover:underline">Write to us</Link>.
+            request? <Link href="/contact?topic=idea&program=traverse" className="text-[#0071e3] hover:underline">Write to us</Link>.
           </p>
         </section>
       </div>

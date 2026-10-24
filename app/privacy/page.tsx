@@ -18,12 +18,14 @@ export default function PrivacyPage() {
     <LegalShell title={TITLE} updated={PRIVACY_UPDATED}>
       <p>
         This policy explains how Excel to KML (&ldquo;we&rdquo;, &ldquo;us&rdquo;) handles information when you use this
-        website, the web app and the Windows app.
+        website and its programs: the Excel to KML web app and Windows app, RoadPro, Traverse &amp; Level and Project Folder
+        Manager.
       </p>
 
       <h2>The short version</h2>
       <ul>
-        <li>Converting coordinates happens on your own computer or in your browser.</li>
+        <li>Converting coordinates happens on your own computer or in your browser. RoadPro and Project Folder Manager run
+          entirely on your computer and send us nothing.</li>
         <li>
           When you&apos;re signed in, the files you open and save, and the points in them, are kept in your account so you
           can find them again. Signed out, your coordinates and files stay on your computer.
@@ -48,7 +50,17 @@ export default function PrivacyPage() {
           open on any computer where you sign in; files and jobs together count towards the 200 MB.
         </li>
         <li>
-          <strong>Downloads:</strong> which version of the Windows app you downloaded, and when.
+          <strong>Traverse &amp; Level jobs:</strong> the traverses and level runs you save in Traverse &amp; Level (their points,
+          observations, settings and results, up to 2 MB each), so they open wherever you sign in, and the email addresses of
+          anyone you share a job with. People you share a job with can open it and keep their own copy. If the copies are switched
+          on, files you import into or export from Traverse &amp; Level are kept in your account&apos;s files as well.
+        </li>
+        <li>
+          <strong>Downloads:</strong> which of our programs you downloaded, which version, and when.
+        </li>
+        <li>
+          <strong>Reviews:</strong> the star rating and comment you give a program, and its version. Once we publish a review,
+          the program&apos;s pages show it with your first name, the first letter of your last name and your organization.
         </li>
         <li>
           <strong>Messages you send us:</strong> your name, email address and what you write, so we can reply.
@@ -128,9 +140,10 @@ export default function PrivacyPage() {
         <li>Account details are kept while your account exists.</li>
         <li>Saved files and their points are kept for 12 months, then deleted automatically. You can delete them sooner at any time.</li>
         <li>Your activity history is kept until you delete your account.</li>
+        <li>Traverse &amp; Level jobs and reviews are kept until you delete them or your account.</li>
         <li>
-          When you delete your account, your details, files, points and history are removed. Download counts are kept without anything
-          that identifies you.
+          When you delete your account, your details, files, points, Traverse &amp; Level jobs, reviews and history are removed.
+          Download counts are kept without anything that identifies you.
         </li>
         <li>Messages you send us are kept while we deal with them and for our records, and are deleted on request.</li>
         <li>Technical information is kept only as long as needed for security and to run the service.</li>
@@ -142,6 +155,8 @@ export default function PrivacyPage() {
           See and update your details in your <Link href="/dashboard">dashboard</Link>.
         </li>
         <li>Delete any saved file from the dashboard&apos;s Files tab; its points are deleted with it.</li>
+        <li>Delete a Traverse &amp; Level job, or stop sharing it, in the Traverse &amp; Level app.</li>
+        <li>To change or remove a review, email us.</li>
         <li>
           Delete your whole account from <strong>Dashboard → Account → Delete account</strong>.
         </li>

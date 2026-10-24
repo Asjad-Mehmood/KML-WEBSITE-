@@ -181,7 +181,7 @@ export default function RoadProPage() {
         </header>
 
         {/* What's new in this version */}
-        <section aria-labelledby="new-h" className="mt-14 rounded-3xl border border-amber-200/80 bg-amber-50/60 p-6 sm:p-8">
+        <section id="new" aria-labelledby="new-h" className="scroll-mt-28 mt-14 rounded-3xl border border-amber-200/80 bg-amber-50/60 p-6 sm:p-8">
           <h2 id="new-h" className="flex items-center gap-2 text-lg sm:text-xl font-extrabold text-slate-900">
             <Sparkles className="w-5 h-5 text-amber-500" aria-hidden /> New in RoadPro {ROADPRO_VERSION}
           </h2>
@@ -537,7 +537,7 @@ export default function RoadProPage() {
             </div>
           </div>
           <p className="mt-5 text-[13px] text-slate-500">
-            Questions or a feature request? <Link href="/contact?topic=idea" className="text-[#0071e3] hover:underline">Write to us</Link>.
+            Questions or a feature request? <Link href="/contact?topic=idea&program=roadpro" className="text-[#0071e3] hover:underline">Write to us</Link>.
           </p>
         </section>
       </div>
