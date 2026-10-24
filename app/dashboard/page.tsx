@@ -6,6 +6,7 @@ import { sessionForToken } from "@/lib/serverSession";
 import { listJobs } from "@/lib/userJobs";
 import { cardsOwn, cardsShared } from "@/lib/traverseJobs";
 import DashboardClient, { type DashboardData } from "./DashboardClient";
+import { programVersionsFor } from "@/lib/appUsage";
 
 // Checked on every request: each visitor only ever sees their own account
 export const dynamic = "force-dynamic";
@@ -32,6 +33,8 @@ export default async function DashboardPage() {
   ]);
 
   const isAdmin = db.isAdmin(user);
+  // which version of each program they have, for the Account tab
+  const programs = await programVersionsFor(user.id, downloads).catch(() => []);
 
   // Totals over everything recorded for this account
   const formats: Record<string, number> = {};
@@ -102,6 +105,7 @@ export default async function DashboardPage() {
     })),
     jobs,
     traverse: { own: tlOwn, shared: tlShared },
+    programs,
     points: {
       total: points.total,
       rows: points.conversions.map((c) => ({

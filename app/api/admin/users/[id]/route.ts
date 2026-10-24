@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { listJobs } from "@/lib/userJobs";
 import { countOwn } from "@/lib/traverseJobs";
 import { describeAccountChanges } from "@/lib/accountChanges";
+import { programVersionsFor } from "@/lib/appUsage";
 
 export async function GET(
   req: NextRequest,
@@ -51,6 +52,9 @@ export async function GET(
     const jobs = await listJobs(user.id).catch(() => []);
     const traverseJobs = await countOwn(user.id).catch(() => 0);
 
+    // Which version of each program they have, and where they last opened it
+    const programs = await programVersionsFor(user.id, downloads).catch(() => []);
+
     return NextResponse.json({
       success: true,
       user: sanitized,
@@ -61,6 +65,7 @@ export async function GET(
       points,
       jobs,
       traverseJobs,
+      programs,
     });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Failed to retrieve user details";

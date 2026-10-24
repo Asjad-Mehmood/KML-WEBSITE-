@@ -58,6 +58,16 @@ export class SupabaseRemote {
 // carries the session and jobs are kept in the website's database (/api/traverse/jobs).
 const LOGQ = 'tl.activity.queue';
 
+// Sent with every request, so the website knows which version and device each account uses
+// (Admin → user profile). The version is filled in by build.mjs.
+/* global __TL_VERSION__ */
+const APP_VERSION = typeof __TL_VERSION__ === 'string' ? __TL_VERSION__ : '';
+const APP_PLATFORM = typeof location === 'undefined' ? 'web'
+  : /[?&]app=1(&|$)/.test(location.search) ? 'windows'
+  : (typeof matchMedia === 'function' && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true ? 'installed'
+  : 'web';
+const APP_HEADERS = { 'X-App-Name': 'traverse', 'X-App-Platform': APP_PLATFORM, ...(APP_VERSION ? { 'X-App-Version': APP_VERSION } : {}) };
+
 export class SiteRemote {
   constructor(api = '') { this.kind = 'site'; this.api = api; }
   static userFrom(u) { return u && { id: u.id, email: normEmail(u.email), name: u.name || '', company: u.organization || '' }; }
@@ -66,7 +76,7 @@ export class SiteRemote {
     try {
       r = await fetch(this.api + path, {
         method, credentials: 'include', cache: 'no-store',
-        headers: body ? { 'Content-Type': 'application/json' } : {},
+        headers: body ? { 'Content-Type': 'application/json', ...APP_HEADERS } : { ...APP_HEADERS },
         body: body ? JSON.stringify(body) : undefined,
       });
     } catch (e) { throw new AuthError('Could not reach exceltokml.com. Check your connection and try again.', 'network'); }

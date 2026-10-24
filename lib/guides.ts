@@ -1,5 +1,5 @@
 // How-to guides at /guides/<slug> (the page files live in app/guides/<slug>/page.tsx)
-export type GuideCategory = "Getting started" | "Coordinates" | "Checking the work" | "Deliverables";
+export type GuideCategory = "Getting started" | "Coordinates" | "Checking the work" | "Deliverables" | "Traverse and levelling" | "Roads in AutoCAD";
 
 export interface Guide {
   slug: string;
@@ -7,9 +7,11 @@ export interface Guide {
   description: string;
   category: GuideCategory;
   published: string; // ISO date
+  /** The program the guide is about, for its closing panel (Excel to KML when left out) */
+  product?: "traverse" | "roadpro";
 }
 
-export const GUIDE_CATEGORIES: GuideCategory[] = ["Getting started", "Coordinates", "Checking the work", "Deliverables"];
+export const GUIDE_CATEGORIES: GuideCategory[] = ["Getting started", "Coordinates", "Checking the work", "Deliverables", "Traverse and levelling", "Roads in AutoCAD"];
 
 export const GUIDES: Guide[] = [
   {
@@ -195,6 +197,61 @@ export const GUIDES: Guide[] = [
       "Give every point its chainage along a road, pipe or kerb line and its offset left or right, and save a level profile with grades.",
     category: "Deliverables",
     published: "2026-09-26",
+  },
+  // Traverse & Level and RoadPro
+  {
+    slug: "bowditch-traverse-adjustment",
+    title: "How to Adjust a Closed Traverse by the Bowditch Rule",
+    description:
+      "A worked example of a four-station closed loop: balance the angles, work out bearings and coordinate changes, find the misclosure and spread it by the Bowditch (compass) rule.",
+    category: "Traverse and levelling",
+    published: "2026-10-24",
+    product: "traverse",
+  },
+  {
+    slug: "level-book-rise-and-fall-height-of-instrument",
+    title: "Reducing a Level Book: Rise and Fall vs Height of Instrument",
+    description:
+      "Reduce the same level book both ways, run the arithmetic checks, compare the misclosure with the allowable and spread it over the set-ups.",
+    category: "Traverse and levelling",
+    published: "2026-10-24",
+    product: "traverse",
+  },
+  {
+    slug: "traverse-misclosure-and-precision",
+    title: "Traverse Misclosure and Precision: What 1 : 10,000 Means",
+    description:
+      "Angular and linear misclosure, how the precision ratio is worked out, typical limits, and what to check before you adjust a traverse that fails.",
+    category: "Traverse and levelling",
+    published: "2026-10-24",
+    product: "traverse",
+  },
+  {
+    slug: "draw-a-road-in-autocad",
+    title: "How to Draw a Complete Road in AutoCAD from a Centre Line",
+    description:
+      "From one polyline to a finished road plan with RoadPro: edges, turning radius, barricades or kerb, chainage, signs, markings, a cross section and an Excel report.",
+    category: "Roads in AutoCAD",
+    published: "2026-10-24",
+    product: "roadpro",
+  },
+  {
+    slug: "road-junction-and-turning-lane-autocad",
+    title: "Road Junctions, Widening and Turning Lanes in AutoCAD",
+    description:
+      "Join a new road to an existing one with kerb returns and an auxiliary lane, add a lane between two chainages and taper a road, with RoadPro's RDJ, RDW and RDT.",
+    category: "Roads in AutoCAD",
+    published: "2026-10-24",
+    product: "roadpro",
+  },
+  {
+    slug: "road-quantities-and-setting-out-report",
+    title: "Road Quantities and Setting-Out Data from AutoCAD to Excel",
+    description:
+      "What RoadPro's report lists: barricade, cone and kerb quantities, signs, marking paint, curve data and the setting-out coordinates of the centre line and edges.",
+    category: "Roads in AutoCAD",
+    published: "2026-10-24",
+    product: "roadpro",
   },
 ];
 

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { trackAppUse } from "@/lib/appUsage";
 import { db } from "@/lib/db";
 
 export async function GET(req: NextRequest) {
@@ -17,6 +18,8 @@ export async function GET(req: NextRequest) {
     if (!sessionData) {
       return NextResponse.json({ user: null });
     }
+    // the apps check the sign-in when they open: note which app, device and version (Admin → user profile)
+    trackAppUse(req, sessionData.user.id);
 
     return NextResponse.json({
       user: db.sanitizeUser(sessionData.user),

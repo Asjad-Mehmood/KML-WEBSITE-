@@ -13,7 +13,7 @@ import { usePublicSettings } from "@/lib/publicSettings";
 
 type Due = { product: string; name: string; downloadedAt: string; version: string };
 
-const QUIET = ["/login", "/register", "/forgot-password", "/reset-password", "/admin", "/app", "/link", "/app-signin", "/unsubscribe"];
+const QUIET = ["/login", "/register", "/forgot-password", "/reset-password", "/admin", "/app", "/link", "/app-signin", "/unsubscribe", "/review"];
 const key = (p: string) => `kml.review.snooze.${p}`;
 const snoozed = (p: string) => {
   try { return Number(localStorage.getItem(key(p)) || 0) > Date.now(); } catch { return false; }

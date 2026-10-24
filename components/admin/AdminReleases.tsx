@@ -16,6 +16,7 @@ import {
   RefreshCw,
   Send,
   Square,
+  Star,
   Trash2,
   Users,
   X,
@@ -39,6 +40,8 @@ interface Broadcast {
   createdBy: string;
   /** app: people who use the app; all: everyone with an account */
   audience: "app" | "all";
+  /** release: a version announcement; review: asking the app's users for a review */
+  kind: "release" | "review";
   createdAt: string;
   finishedAt: string | null;
 }
@@ -58,7 +61,13 @@ interface Release {
 }
 interface Data {
   /** users: people who downloaded or used the app with their account */
-  groups: { app: App; users: number; releases: Release[] }[];
+  groups: {
+    app: App;
+    users: number;
+    releases: Release[];
+    /** reviewed: reviews of the app; toAsk: its users who haven't reviewed it; notAskedYet: those never asked */
+    review: { reviewed: number; toAsk: number; notAskedYet: number; broadcasts: Broadcast[] };
+  }[];
   audience: { everyone: number; optedOut: number };
   mail: { configured: boolean; from: string };
 }
@@ -79,6 +88,7 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
   const [editing, setEditing] = useState<{ release: Partial<Release> & { app: string }; isNew: boolean } | null>(null);
   const [preview, setPreview] = useState<{ subject: string; html: string; text: string } | null>(null);
   const [confirming, setConfirming] = useState<{ release: Release; who: "app" | "all" } | null>(null);
+  const [asking, setAsking] = useState<string | null>(null); // the app whose users are about to be asked for a review
   const [running, setRunning] = useState<string | null>(null); // broadcast id being sent from this page
   const [busy, setBusy] = useState<string | null>(null);
   const [failed, setFailed] = useState<{ id: string; list: { email: string; error: string | null }[] } | null>(null);
@@ -125,6 +135,7 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
               groups: d.groups.map((g) => ({
                 ...g,
                 releases: g.releases.map((rel) => ({ ...rel, broadcasts: rel.broadcasts.map((b) => (b.id === broadcast.id ? broadcast : b)) })),
+                review: { ...g.review, broadcasts: g.review.broadcasts.map((b) => (b.id === broadcast.id ? broadcast : b)) },
               })),
             }
           );
@@ -173,6 +184,34 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
     toast.current(`Test sent to ${to}`);
   };
 
+  const reviewPreview = async (app: App) => {
+    setBusy(`rpreview-${app.id}`);
+    const r = await adminFetch(`/api/admin/review-requests/preview?app=${encodeURIComponent(app.id)}`);
+    setBusy(null);
+    if (!r.ok) return toast.current(await errorOf(r), "error");
+    setPreview(await r.json());
+  };
+
+  const reviewTest = async (app: App) => {
+    setBusy(`rtest-${app.id}`);
+    const r = await adminFetch("/api/admin/review-requests/test", json({ app: app.id }));
+    setBusy(null);
+    if (!r.ok) return toast.current(await errorOf(r), "error");
+    const { to } = await r.json();
+    toast.current(`Test sent to ${to}`);
+  };
+
+  const startReviews = async (app: App, onlyNew: boolean) => {
+    setBusy(`rstart-${app.id}`);
+    const r = await adminFetch("/api/admin/review-requests", json({ app: app.id, onlyNew, confirm: true }));
+    setBusy(null);
+    if (!r.ok) return toast.current(await errorOf(r), "error");
+    setAsking(null);
+    const { broadcastId } = await r.json();
+    await load();
+    run(broadcastId);
+  };
+
   const remove = async (rel: Release, appName: string) => {
     const sent = rel.broadcasts.reduce((n, b) => n + b.sent, 0);
     if (!confirm(`Delete ${appName} ${rel.version} from the list?${sent ? ` Its broadcast history (${sent} emails sent) goes too.` : ""}`)) return;
@@ -196,6 +235,61 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
     const r = await adminFetch(`/api/admin/broadcasts/${b.id}`);
     if (!r.ok) return toast.current(await errorOf(r), "error");
     setFailed({ id: b.id, list: (await r.json()).failed });
+  };
+
+  // One broadcast's progress and its Pause / Continue / Stop buttons (releases and review requests)
+  const broadcastRow = (b: Broadcast, appName: string) => {
+    const done = b.sent + b.failed;
+    const pct = b.total ? Math.round((done / b.total) * 100) : 0;
+    const live = running === b.id;
+    return (
+      <li key={b.id} className="rounded-xl bg-slate-950/60 border border-slate-800 px-3.5 py-2.5 text-xs">
+        <div className="flex flex-wrap items-center gap-2">
+          {b.status === "done" ? (
+            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          ) : b.status === "paused" ? (
+            <AlertTriangle className="w-4 h-4 text-amber-400" />
+          ) : (
+            <Loader2 className={`w-4 h-4 text-blue-400 ${live ? "animate-spin" : ""}`} />
+          )}
+          <span className="text-slate-200 font-semibold">
+            {b.status === "done" ? `Sent to ${b.sent} of ${b.total}` : `${b.status === "paused" ? "Paused" : "Sending"}: ${done} of ${b.total}`}
+          </span>
+          <span className="px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">{b.kind === "review" ? `Review request · ${appName} users` : b.audience === "app" ? `${appName} users` : "Everyone"}</span>
+          {b.failed > 0 && (
+            <button onClick={() => showFailed(b)} className="text-rose-300 hover:underline cursor-pointer">
+              {b.failed} failed
+            </button>
+          )}
+          <span className="text-slate-500">
+            {when(b.createdAt)} by {b.createdBy}
+          </span>
+          <span className="ml-auto flex gap-1.5">
+            {b.status === "sending" && live && (
+              <button onClick={() => act(b, "pause")} className={`${btn} bg-slate-800 hover:bg-slate-700 text-slate-200`}>
+                <Pause className="w-3.5 h-3.5" /> Pause
+              </button>
+            )}
+            {((b.status === "sending" && !live && !running) || b.status === "paused") && (
+              <button onClick={() => (b.status === "paused" ? act(b, "resume") : run(b.id))} disabled={!!running} className={`${btn} bg-blue-600 hover:bg-blue-500 text-white`}>
+                <Play className="w-3.5 h-3.5" /> Continue
+              </button>
+            )}
+            {b.status !== "done" && (
+              <button onClick={() => act(b, "cancel")} className={`${btn} text-rose-300 hover:bg-rose-500/10`}>
+                <Square className="w-3.5 h-3.5" /> Stop
+              </button>
+            )}
+          </span>
+        </div>
+        {b.status !== "done" && (
+          <div className="mt-2 h-1.5 rounded-full bg-slate-800 overflow-hidden">
+            <div className="h-full bg-blue-500 transition-all" style={{ width: `${pct}%` }} />
+          </div>
+        )}
+        {b.lastError && b.status !== "sending" && <p className="mt-1.5 text-amber-300/90 break-words">{b.lastError}</p>}
+      </li>
+    );
   };
 
   if (loading && !data) {
@@ -269,7 +363,9 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
       <div role="tablist" aria-label="Apps" className="flex gap-2 overflow-x-auto pb-1">
         {data.groups.map(({ app, releases }) => {
           const active = app.id === shown.app.id;
-          const sending = releases.some((r) => r.broadcasts.some((b) => b.status !== "done"));
+          const sending =
+            releases.some((r) => r.broadcasts.some((b) => b.status !== "done")) ||
+            data.groups.find((g) => g.app.id === app.id)!.review.broadcasts.some((b) => b.status !== "done");
           return (
             <button
               key={app.id}
@@ -288,7 +384,7 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
         })}
       </div>
 
-      {[shown].map(({ app, users, releases }) => (
+      {[shown].map(({ app, users, releases, review }) => (
         <section key={app.id} role="tabpanel" className="rounded-2xl border border-slate-800 bg-slate-900/40">
           <header className="flex flex-wrap items-center gap-3 px-5 py-4 border-b border-slate-800">
             <div className="mr-auto">
@@ -316,6 +412,43 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
               <Plus className="w-3.5 h-3.5" /> Add release
             </button>
           </header>
+
+          {/* Ask the app's users for a review */}
+          <div className="px-5 py-4 border-b border-slate-800 bg-amber-500/[0.04]">
+            <div className="flex flex-wrap items-start gap-3">
+              <div className="mr-auto">
+                <p className="flex items-center gap-2 text-sm font-bold text-white">
+                  <Star className="w-4 h-4 text-amber-400" /> Ask for reviews
+                </p>
+                <p className="mt-0.5 text-xs text-slate-400">
+                  <span className="text-slate-200 font-semibold">{review.reviewed}</span> {review.reviewed === 1 ? "review" : "reviews"} so far ·{" "}
+                  <span className="text-slate-200 font-semibold">{review.toAsk}</span> of the {users} {users === 1 ? "user hasn't" : "users haven't"} reviewed it ·{" "}
+                  <span className="text-slate-200 font-semibold">{review.notAskedYet}</span> never asked
+                </p>
+                <p className="mt-0.5 text-[11.5px] text-slate-500">
+                  An email with five star links; each opens the review form set to that rating. Reviews wait in Admin → Reviews until you publish them.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button onClick={() => reviewPreview(app)} disabled={busy === `rpreview-${app.id}`} className={`${btn} bg-slate-800 hover:bg-slate-700 text-slate-200`}>
+                  <Eye className="w-3.5 h-3.5" /> Preview
+                </button>
+                <button onClick={() => reviewTest(app)} disabled={!data.mail.configured || busy === `rtest-${app.id}`} className={`${btn} bg-slate-800 hover:bg-slate-700 text-slate-200`}>
+                  {busy === `rtest-${app.id}` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Mail className="w-3.5 h-3.5" />} Send test to me
+                </button>
+                {!review.broadcasts.some((b) => b.status !== "done") && (
+                  <button
+                    onClick={() => setAsking(app.id)}
+                    disabled={!data.mail.configured || !!running || review.toAsk === 0}
+                    className={`${btn} bg-amber-500 hover:bg-amber-400 text-slate-950`}
+                  >
+                    <Send className="w-3.5 h-3.5" /> Ask {review.toAsk} {review.toAsk === 1 ? "person" : "people"}
+                  </button>
+                )}
+              </div>
+            </div>
+            {review.broadcasts.length > 0 && <ul className="mt-3 space-y-2">{review.broadcasts.map((b) => broadcastRow(b, app.name))}</ul>}
+          </div>
 
           {releases.length === 0 ? (
             <p className="px-5 py-6 text-sm text-slate-400">No releases yet. Add one{app.github ? ", or import them from GitHub" : ""}.</p>
@@ -348,59 +481,7 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
                     {/* Broadcast history, newest first */}
                     {rel.broadcasts.length > 0 && (
                       <ul className="mt-3 space-y-2">
-                        {rel.broadcasts.map((b) => {
-                          const done = b.sent + b.failed;
-                          const pct = b.total ? Math.round((done / b.total) * 100) : 0;
-                          const live = running === b.id;
-                          return (
-                            <li key={b.id} className="rounded-xl bg-slate-950/60 border border-slate-800 px-3.5 py-2.5 text-xs">
-                              <div className="flex flex-wrap items-center gap-2">
-                                {b.status === "done" ? (
-                                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                                ) : b.status === "paused" ? (
-                                  <AlertTriangle className="w-4 h-4 text-amber-400" />
-                                ) : (
-                                  <Loader2 className={`w-4 h-4 text-blue-400 ${live ? "animate-spin" : ""}`} />
-                                )}
-                                <span className="text-slate-200 font-semibold">
-                                  {b.status === "done" ? `Sent to ${b.sent} of ${b.total}` : `${b.status === "paused" ? "Paused" : "Sending"}: ${done} of ${b.total}`}
-                                </span>
-                                <span className="px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">{b.audience === "app" ? `${app.name} users` : "Everyone"}</span>
-                                {b.failed > 0 && (
-                                  <button onClick={() => showFailed(b)} className="text-rose-300 hover:underline cursor-pointer">
-                                    {b.failed} failed
-                                  </button>
-                                )}
-                                <span className="text-slate-500">
-                                  {when(b.createdAt)} by {b.createdBy}
-                                </span>
-                                <span className="ml-auto flex gap-1.5">
-                                  {b.status === "sending" && live && (
-                                    <button onClick={() => act(b, "pause")} className={`${btn} bg-slate-800 hover:bg-slate-700 text-slate-200`}>
-                                      <Pause className="w-3.5 h-3.5" /> Pause
-                                    </button>
-                                  )}
-                                  {((b.status === "sending" && !live && !running) || b.status === "paused") && (
-                                    <button onClick={() => (b.status === "paused" ? act(b, "resume") : run(b.id))} disabled={!!running} className={`${btn} bg-blue-600 hover:bg-blue-500 text-white`}>
-                                      <Play className="w-3.5 h-3.5" /> Continue
-                                    </button>
-                                  )}
-                                  {b.status !== "done" && (
-                                    <button onClick={() => act(b, "cancel")} className={`${btn} text-rose-300 hover:bg-rose-500/10`}>
-                                      <Square className="w-3.5 h-3.5" /> Stop
-                                    </button>
-                                  )}
-                                </span>
-                              </div>
-                              {b.status !== "done" && (
-                                <div className="mt-2 h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                                  <div className="h-full bg-blue-500 transition-all" style={{ width: `${pct}%` }} />
-                                </div>
-                              )}
-                              {b.lastError && b.status !== "sending" && <p className="mt-1.5 text-amber-300/90 break-words">{b.lastError}</p>}
-                            </li>
-                          );
-                        })}
+                        {rel.broadcasts.map((b) => broadcastRow(b, app.name))}
                       </ul>
                     )}
 
@@ -464,6 +545,20 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
       )}
 
       {preview && <PreviewModal preview={preview} onClose={() => setPreview(null)} />}
+
+      {asking && (() => {
+        const g = data.groups.find((x) => x.app.id === asking)!;
+        return (
+          <ConfirmReviews
+            appName={g.app.name}
+            toAsk={g.review.toAsk}
+            notAskedYet={g.review.notAskedYet}
+            busy={busy === `rstart-${g.app.id}`}
+            onClose={() => setAsking(null)}
+            onStart={(onlyNew) => startReviews(g.app, onlyNew)}
+          />
+        );
+      })()}
 
       {confirming && (
         <ConfirmBroadcast
@@ -740,6 +835,51 @@ function ConfirmBroadcast({
         <button onClick={() => onStart(onlyNew, who)} disabled={!checked || count === 0} className={`${btn} px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white`}>
           <Send className="w-3.5 h-3.5" /> Send to {count}
         </button>
+      </div>
+    </Modal>
+  );
+}
+
+function ConfirmReviews({
+  appName,
+  toAsk,
+  notAskedYet,
+  busy,
+  onClose,
+  onStart,
+}: {
+  appName: string;
+  toAsk: number;
+  notAskedYet: number;
+  busy: boolean;
+  onClose: () => void;
+  onStart: (onlyNew: boolean) => void;
+}) {
+  const [onlyNew, setOnlyNew] = useState(notAskedYet > 0 && notAskedYet < toAsk);
+  const count = onlyNew ? notAskedYet : toAsk;
+  const choice = (on: boolean, title: string, n: number, text: string) => (
+    <label className={`flex items-start gap-3 rounded-xl border p-3 cursor-pointer ${onlyNew === on ? "border-amber-500/60 bg-amber-500/10" : "border-slate-700"}`}>
+      <input type="radio" name="review-who" checked={onlyNew === on} onChange={() => setOnlyNew(on)} className="mt-1" />
+      <span>
+        <span className="block text-sm font-semibold text-white">
+          {title} <span className="text-slate-400 font-normal">({n})</span>
+        </span>
+        <span className="block text-xs text-slate-400">{text}</span>
+      </span>
+    </label>
+  );
+  return (
+    <Modal title={`Ask ${appName} users for a review`} onClose={onClose}>
+      <div className="space-y-3">
+        {choice(false, "Everyone who hasn't reviewed it", toAsk, `People who downloaded or used ${appName} with their account and haven't written a review.`)}
+        {choice(true, "Only people never asked", notAskedYet, "Leaves out anyone who got a review request for it before.")}
+        <p className="text-xs text-slate-500">People who stopped our emails are left out. Each email has a link to stop them.</p>
+        <div className="flex justify-end gap-2 pt-1">
+          <button onClick={onClose} className={`${btn} bg-slate-800 hover:bg-slate-700 text-slate-200`}>Cancel</button>
+          <button onClick={() => onStart(onlyNew)} disabled={busy || count === 0} className={`${btn} bg-amber-500 hover:bg-amber-400 text-slate-950`}>
+            {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />} Send to {count} {count === 1 ? "person" : "people"}
+          </button>
+        </div>
       </div>
     </Modal>
   );

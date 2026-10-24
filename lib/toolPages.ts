@@ -185,6 +185,32 @@ export const TOOL_PAGES: Record<string, ToolPage> = {
       { q: "How is the angular misclosure allowed?", a: "As C√n seconds, where n is the number of angles. The primary, secondary and tertiary presets set C and the linear precision required; you can change both." },
       { q: "Does it adjust heights?", a: "Yes, if you type the height difference for each leg the heights are carried round and their misclosure is spread too. For proper levelling use the Level run tab." },
       { q: "Is my work saved?", a: "Only in this browser, so it is there when you come back. Nothing is sent anywhere. Start again clears it." },
+      { q: "Can I keep jobs and share them with my team?", a: "Yes, in Traverse & Level, our free traverse and levelling app. It saves every job to your account, shares it with colleagues by email and prints a signed PDF report, in the browser, on a phone or as a Windows program." },
+    ],
+  },
+  "horizontal-curve": {
+    tagline: "Type a curve's radius, deflection angle and the chainage of the intersection point, and get every curve element and a setting-out table of deflection angles and chords.",
+    features: [
+      { title: "Every element", text: "Tangent length, curve length, long chord, external distance and mid-ordinate, worked out together." },
+      { title: "TC and CT chainages", text: "From the intersection point's chainage, with CT carried along the arc as it should be, not along the tangents." },
+      { title: "Setting-out table", text: "A peg on every whole chainage: deflection angle from TC, the chord from the last peg and from TC, and offsets from the tangent as a check." },
+      { title: "Copy to Excel", text: "Copy the whole table in one go and paste it into a spreadsheet or your field book template." },
+    ],
+    steps: [
+      "Press Use the tool.",
+      "Type the radius, the deflection angle Δ and the chainage of the intersection point, and pick the peg interval.",
+      "Read the curve elements, then copy the setting-out table.",
+    ],
+    audience: [
+      "Surveyors setting out a road or track curve with a total station or theodolite",
+      "Site engineers checking a curve on a drawing before pegging it",
+      "Civil engineering students learning simple circular curves",
+    ],
+    faqs: [
+      { q: "What is the deflection angle Δ?", a: "The angle between the two straights at their intersection point: how much the road turns. It is also the angle the curve makes at its centre. Type it in degrees, minutes and seconds or in decimal degrees." },
+      { q: "Why is CT not IP plus the tangent length?", a: "Chainage runs along the road, and the road follows the arc. So CT = TC + curve length. The tangent from IP is shorter than the way round on the curve." },
+      { q: "Which definition of the curve does it use?", a: "The radius (arc) definition used by most road design today. If a drawing gives a degree of curve instead, work out the radius from it first." },
+      { q: "Does it work for transition (spiral) curves?", a: "No, only simple circular curves. Transitions need their own length and offsets." },
     ],
   },
   "area-converter": {

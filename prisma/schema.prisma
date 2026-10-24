@@ -233,6 +233,8 @@ model ReleaseBroadcast {
   createdBy  String
   /// app (people who downloaded or used the app) | all (everyone with an account)
   audience   String             @default("all")
+  /// release (a version announcement) | review (asking the app's users to rate it)
+  kind       String             @default("release")
   createdAt  DateTime           @default(now())
   finishedAt DateTime?
   recipients ReleaseRecipient[]

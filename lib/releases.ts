@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { mailFrom, mailTransport, isMailConfigured } from "@/lib/mailer";
 import { releaseEmail, type ReleaseForEmail } from "@/lib/releaseEmail";
+import { reviewRequestEmail } from "@/lib/reviewEmail";
 import { PRODUCTS } from "@/lib/products";
 import { LATEST_VERSION, SITE_NAME } from "@/lib/site";
 
@@ -77,6 +78,8 @@ export function ensureReleaseTables(): Promise<void> {
         CONSTRAINT "release_broadcasts_pkey" PRIMARY KEY ("id")
       )`);
       await run(`ALTER TABLE "release_broadcasts" ADD COLUMN IF NOT EXISTS "audience" TEXT NOT NULL DEFAULT 'all'`);
+      // release: a version announcement; review: asking an app's users to rate it (tied to the app's newest release)
+      await run(`ALTER TABLE "release_broadcasts" ADD COLUMN IF NOT EXISTS "kind" TEXT NOT NULL DEFAULT 'release'`);
       await run(`CREATE INDEX IF NOT EXISTS "release_broadcasts_releaseId_idx" ON "release_broadcasts"("releaseId")`);
       await run(`DO $$ BEGIN
         ALTER TABLE "release_broadcasts" ADD CONSTRAINT "release_broadcasts_releaseId_fkey" FOREIGN KEY ("releaseId")
@@ -341,7 +344,7 @@ async function recipientsSql(appId: string, who: Audience): Promise<string> {
 const alreadySentSql = `
     AND NOT EXISTS (
       SELECT 1 FROM "release_recipients" r JOIN "release_broadcasts" b ON b."id" = r."broadcastId"
-      WHERE b."releaseId" = $2 AND r."status" = 'sent' AND r."email" = lower(trim(u."email")))`;
+      WHERE b."releaseId" = $2 AND b."kind" = 'release' AND r."status" = 'sent' AND r."email" = lower(trim(u."email")))`;
 
 async function count(sql: string, ...args: unknown[]): Promise<number> {
   const [r] = await prisma.$queryRawUnsafe<{ n: number }[]>(`SELECT count(*)::int AS n FROM (${sql}) e`, ...args);
@@ -352,7 +355,12 @@ async function count(sql: string, ...args: unknown[]): Promise<number> {
 export async function listReleases() {
   await ensureReleaseTables();
   const releases = await prisma.productRelease.findMany({
-    include: { broadcasts: { orderBy: { createdAt: "desc" } } },
+    include: { broadcasts: { where: { kind: "release" }, orderBy: { createdAt: "desc" } } },
+  });
+  const reviewBroadcasts = await prisma.releaseBroadcast.findMany({
+    where: { kind: "review" },
+    include: { release: { select: { app: true } } },
+    orderBy: { createdAt: "desc" },
   });
   const everyone = await count(eligibleSql, NEVER_EMAIL);
   const [optedOut] = await prisma.$queryRawUnsafe<{ n: number }[]>(`SELECT count(*)::int AS n FROM "email_optouts"`);
@@ -366,6 +374,11 @@ export async function listReleases() {
         app,
         // people who downloaded or used this app
         users: await count(appSql, NEVER_EMAIL),
+        // asking them for a review: who could be asked, and the requests sent before
+        review: {
+          ...(await reviewCounts(app.id)),
+          broadcasts: reviewBroadcasts.filter((b) => b.release.app === app.id).map((b) => ({ ...b, release: undefined })),
+        },
         releases: await Promise.all(
           own.map(async (r) => ({
             ...r,
@@ -487,6 +500,7 @@ export async function sendNextBatch(id: string, budgetMs = 40_000, batch = 25) {
 
   const started = Date.now();
   const release = forEmail(b.release);
+  const review = b.kind === "review" ? reviewAskFor(b.release.app) : null;
   const transport = claimed.length ? mailTransport(true) : null;
   let stopWith: string | null = null;
   try {
@@ -502,7 +516,7 @@ export async function sendNextBatch(id: string, budgetMs = 40_000, batch = 25) {
         await prisma.releaseRecipient.update({ where: { id: r.id }, data: { status: "failed", error: "Unsubscribed" } });
         continue;
       }
-      const m = releaseEmail(release, { name: r.name, email: r.email });
+      const m = review ? reviewRequestEmail(review, { name: r.name, email: r.email }) : releaseEmail(release, { name: r.name, email: r.email });
       try {
         await transport!.sendMail({ from: mailFrom(), to: r.email, subject: m.subject, text: m.text, html: m.html, list: m.list, headers: m.headers });
         await prisma.releaseRecipient.update({ where: { id: r.id }, data: { status: "sent", sentAt: new Date(), error: null } });
@@ -547,6 +561,110 @@ export async function cancelBroadcast(id: string) {
 export async function failedRecipients(id: string) {
   await ensureReleaseTables();
   return prisma.releaseRecipient.findMany({ where: { broadcastId: id, status: "failed" }, select: { email: true, error: true }, take: 200 });
+}
+
+// ---------- asking for reviews ----------
+// The id a program's reviews are saved under (lib/reviews.ts)
+const REVIEW_PRODUCT: Record<string, string> = {
+  "excel-to-kml": "excel-to-kml",
+  roadpro: "roadpro",
+  traverse: "traverse",
+  "folder-manager": "project-folder-manager",
+};
+const reviewAskFor = (appId: string) => ({ appName: appById(appId)?.name || appId, product: REVIEW_PRODUCT[appId] || appId });
+
+let reviewsTable: Promise<boolean> | null = null;
+const hasReviews = () => {
+  if (!reviewsTable) {
+    reviewsTable = prisma
+      .$queryRawUnsafe<{ ok: boolean }[]>(`SELECT to_regclass('public.reviews') IS NOT NULL AS ok`)
+      .then(([r]) => {
+        if (!r.ok) reviewsTable = null; // look again next time
+        return r.ok;
+      });
+  }
+  return reviewsTable;
+};
+
+/** The app's users who haven't reviewed it yet; askedBefore also leaves out anyone asked already */
+async function reviewRecipientsSql(appId: string, leaveOutAsked: boolean): Promise<string> {
+  const product = REVIEW_PRODUCT[appId];
+  if (!product) return `${eligibleSql} AND FALSE`;
+  const reviewed = (await hasReviews())
+    ? `\n    AND NOT EXISTS (SELECT 1 FROM "reviews" rv WHERE rv."userId" = u."id" AND rv."product" = '${product}')`
+    : "";
+  const asked = leaveOutAsked
+    ? `\n    AND NOT EXISTS (
+      SELECT 1 FROM "release_recipients" r JOIN "release_broadcasts" b ON b."id" = r."broadcastId" JOIN "product_releases" pr ON pr."id" = b."releaseId"
+      WHERE b."kind" = 'review' AND pr."app" = '${appId}' AND r."status" = 'sent' AND r."email" = lower(trim(u."email")))`
+    : "";
+  return `${eligibleSql}\n    AND ${await appUserSql(appId)}${reviewed}${asked}`;
+}
+
+/** For the admin page: the app's users who reviewed it, could be asked, and were never asked */
+async function reviewCounts(appId: string) {
+  const [toAsk, notAskedYet] = await Promise.all([
+    count(await reviewRecipientsSql(appId, false), NEVER_EMAIL),
+    count(await reviewRecipientsSql(appId, true), NEVER_EMAIL),
+  ]);
+  const product = REVIEW_PRODUCT[appId];
+  const reviewed = product && (await hasReviews())
+    ? (await prisma.$queryRawUnsafe<{ n: number }[]>(`SELECT count(*)::int AS n FROM "reviews" WHERE "product" = $1`, product))[0].n
+    : 0;
+  return { reviewed, toAsk, notAskedYet };
+}
+
+/** A review request is filed under the app's newest release (there is always one) */
+async function newestRelease(appId: string) {
+  const all = await prisma.productRelease.findMany({ where: { app: appId } });
+  return all.sort((x, y) => compareVersions(y.version, x.version))[0] ?? null;
+}
+
+export async function previewReviewRequest(appId: string, to: { name: string; email: string }) {
+  if (!appById(appId)) return null;
+  const m = reviewRequestEmail(reviewAskFor(appId), to);
+  return { subject: m.subject, html: m.html, text: m.text };
+}
+
+export async function sendReviewTest(appId: string, to: { name: string; email: string }) {
+  if (!appById(appId)) throw new Error("Unknown program.");
+  const m = reviewRequestEmail(reviewAskFor(appId), to);
+  const t = mailTransport();
+  await t.sendMail({ from: mailFrom(), to: to.email, subject: `[Test] ${m.subject}`, text: m.text, html: m.html, list: m.list, headers: m.headers });
+}
+
+/**
+ * Start asking an app's users for a review: everyone who used it and hasn't reviewed it, or
+ * (onlyNew) only those never asked before. Reuses an unfinished request for the same app.
+ */
+export async function startReviewRequest(appId: string, onlyNew: boolean, createdBy: string) {
+  await ensureReleaseTables();
+  const app = appById(appId);
+  if (!app || !REVIEW_PRODUCT[appId]) throw new Error("Unknown program.");
+  const open = await prisma.releaseBroadcast.findFirst({ where: { kind: "review", status: { in: ["sending", "paused"] }, release: { app: appId } } });
+  if (open) {
+    await prisma.releaseBroadcast.update({ where: { id: open.id }, data: { status: "sending", lastError: null } });
+    return open.id;
+  }
+  const release = await newestRelease(appId);
+  if (!release) throw new Error(`Add a release of ${app.name} first.`);
+  const people = await reviewRecipientsSql(appId, onlyNew);
+  const b = await prisma.releaseBroadcast.create({
+    data: { releaseId: release.id, subject: `How is ${app.name} working for you?`, createdBy, audience: "app", kind: "review" },
+  });
+  const inserted = await prisma.$executeRawUnsafe(
+    `INSERT INTO "release_recipients" ("id", "broadcastId", "email", "name", "status")
+     SELECT gen_random_uuid()::text, $2, e.email, e.name, 'pending' FROM (${people}) e
+     ON CONFLICT ("broadcastId", "email") DO NOTHING`,
+    NEVER_EMAIL,
+    b.id
+  );
+  if (!inserted) {
+    await prisma.releaseBroadcast.delete({ where: { id: b.id } });
+    throw new Error(onlyNew ? `Everyone who uses ${app.name} has reviewed it or been asked already.` : `Everyone who uses ${app.name} has reviewed it already, or nobody has used it yet.`);
+  }
+  await prisma.releaseBroadcast.update({ where: { id: b.id }, data: { total: inserted } });
+  return b.id;
 }
 
 // ---------- unsubscribe ----------

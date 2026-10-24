@@ -67,7 +67,9 @@ export default function PrivacyPage() {
         </li>
         <li>
           <strong>Technical information</strong> that browsers send to every website, such as your IP address, the approximate
-          area it comes from, and your browser and device type.
+          area it comes from, and your browser and device type. When you&apos;re signed in to one of our apps, we also note which app
+          it is, the kind of device (Windows, Android or the web) and the app&apos;s version, so you can see whether you have the
+          newest one.
         </li>
       </ul>
 
@@ -76,8 +78,9 @@ export default function PrivacyPage() {
         <li>To run your account and show your history and files in your dashboard.</li>
         <li>To send emails you ask for, such as a password reset link, a one-time welcome after your first download, or a reply to your message.</li>
         <li>
-          To tell you when there&apos;s a new version of our software (Excel to KML, RoadPro, Traverse &amp; Level, Project Folder Manager).
-          Every one of these emails has a link to stop them; account emails such as password resets still arrive.
+          To tell you when there&apos;s a new version of our software (Excel to KML, RoadPro, Traverse &amp; Level, Project Folder Manager),
+          and now and then to ask you to review a program you downloaded or used. Every one of these emails has a link to stop them;
+          account emails such as password resets still arrive.
         </li>
         <li>To answer messages you send us through the contact form or by email.</li>
         <li>To keep the service secure and prevent misuse.</li>

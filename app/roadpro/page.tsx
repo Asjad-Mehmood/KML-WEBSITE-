@@ -537,6 +537,12 @@ export default function RoadProPage() {
             </div>
           </div>
           <p className="mt-5 text-[13px] text-slate-500">
+            Guides: <Link href="/guides/draw-a-road-in-autocad" className="text-[#0071e3] hover:underline">draw a complete road from a centre line</Link>,{" "}
+            <Link href="/guides/road-junction-and-turning-lane-autocad" className="text-[#0071e3] hover:underline">junctions, widening and turning lanes</Link>,{" "}
+            <Link href="/guides/road-quantities-and-setting-out-report" className="text-[#0071e3] hover:underline">quantities and setting-out data</Link>, and the free{" "}
+            <Link href="/tools/horizontal-curve" className="text-[#0071e3] hover:underline">horizontal curve calculator</Link>.
+          </p>
+          <p className="mt-2 text-[13px] text-slate-500">
             Questions or a feature request? <Link href="/contact?topic=idea&program=roadpro" className="text-[#0071e3] hover:underline">Write to us</Link>.
           </p>
         </section>
