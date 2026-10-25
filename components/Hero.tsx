@@ -175,8 +175,8 @@ export default function Hero({ versionTag, fileSizeText, onDownloadClick, stats 
           </div>
 
           {showStats && (
-            <p className="mt-7 inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-emerald-50 border border-emerald-200 text-[15px] sm:text-base font-bold text-emerald-900 shadow-[0_2px_10px_rgba(16,185,129,0.12)]">
-              <Globe2 className="w-5 h-5 text-emerald-600" aria-hidden />
+            <p className="mt-6 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-100 text-[13px] font-semibold text-emerald-900">
+              <Globe2 className="w-4 h-4 text-emerald-600" aria-hidden />
               Used in more than {moreThan(stats.countries)} countries
             </p>
           )}
