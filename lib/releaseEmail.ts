@@ -1,7 +1,7 @@
 // The release announcement emailed from Admin → Releases, and the signed link in it
 // that unsubscribes the reader from release emails. Uses the site's SMTP settings.
 import crypto from "crypto";
-import { SITE_NAME, SITE_URL, SUPPORT_EMAIL } from "@/lib/site";
+import { SHOW_ANDROID, SITE_NAME, SITE_URL, SUPPORT_EMAIL } from "@/lib/site";
 import { TRAVERSE_APP } from "@/lib/traverse";
 
 export const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
@@ -53,15 +53,15 @@ interface UpdateGuide {
 
 const UPDATE_GUIDES: Record<string, UpdateGuide> = {
   "excel-to-kml": {
-    platform: "Windows, Android and web",
+    platform: SHOW_ANDROID ? "Windows, Android and web" : "Windows and web",
     automatic: true,
     steps: [
       "Windows: open Excel to KML while you're online. It checks for the new version when it starts; press Yes and it updates and restarts by itself.",
       "Your jobs, settings and symbol library are kept through the update.",
-      "Android: install the new .apk from the download page over the one you have.",
+      ...(SHOW_ANDROID ? ["Android: install the new .apk from the download page over the one you have."] : []),
       "In your browser: nothing to do, the web version is always the newest.",
     ],
-    newUser: "Don't have it yet? Download it free for Windows or Android, or use it in your browser.",
+    newUser: `Don't have it yet? Download it free for Windows${SHOW_ANDROID ? " or Android" : ""}, or use it in your browser.`,
     more: { label: "Full release notes", href: "/whats-new" },
   },
   traverse: {

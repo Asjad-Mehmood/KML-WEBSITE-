@@ -22,6 +22,7 @@ import {
 import WebAppLink from "./WebAppLink";
 import { PRODUCTS, badgeLabel, isNew } from "@/lib/products";
 import { roundedCount, type PublicStats } from "@/lib/publicCounts";
+import { SHOW_ANDROID } from "@/lib/site";
 
 interface HeroProps {
   versionTag: string;
@@ -34,7 +35,8 @@ interface HeroProps {
 // An Android phone gets the Android app as the main button (the Windows installer is no use there).
 // Read on the client only: the server renders the Windows button.
 const noSubscribe = () => () => {};
-const onAndroid = () => /Android/i.test(navigator.userAgent);
+// (only while the Android app is shown: lib/site.ts SHOW_ANDROID)
+const onAndroid = () => SHOW_ANDROID && /Android/i.test(navigator.userAgent);
 
 type Tab = {
   id: string;
@@ -179,7 +181,7 @@ export default function Hero({ versionTag, fileSizeText, onDownloadClick, stats 
             <li className="flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-emerald-600" aria-hidden /> Free with an account</li>
             <li className="flex items-center gap-1.5"><Layers className="w-4 h-4 text-indigo-500" aria-hidden /> 5,800+ EPSG grids</li>
             <li className="flex items-center gap-1.5"><MonitorSmartphone className="w-4 h-4 text-[#0071e3]" aria-hidden /> Windows, AutoCAD and the web</li>
-            {!android && (
+            {SHOW_ANDROID && !android && (
               <li>
                 <Link href="/download#android" className="flex items-center gap-1.5 text-[#0071e3] hover:underline">
                   <Smartphone className="w-4 h-4" aria-hidden /> Android app

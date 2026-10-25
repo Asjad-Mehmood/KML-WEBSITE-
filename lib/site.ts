@@ -17,6 +17,12 @@ export const SITE_URL = siteUrl();
 
 export const SITE_NAME = "Excel to KML";
 
+/**
+ * The Excel to KML Android app is hidden for now: no page, link, button or email mentions it.
+ * Set to true to show it again everywhere (download page, home page, about, terms, privacy, emails).
+ */
+export const SHOW_ANDROID = false;
+
 export const DEFAULT_TITLE = "Excel to KML — Survey Coordinates to KML, KMZ & DXF";
 
 export const SITE_DESCRIPTION =

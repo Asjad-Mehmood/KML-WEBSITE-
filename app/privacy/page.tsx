@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import LegalShell from "../../components/LegalShell";
-import { PRIVACY_UPDATED, SUPPORT_EMAIL, openGraphFor } from "@/lib/site";
+import { PRIVACY_UPDATED, SHOW_ANDROID, SUPPORT_EMAIL, openGraphFor } from "@/lib/site";
 
 const TITLE = "Privacy Policy";
 const DESCRIPTION = "How Excel to KML handles your information, the choices you have, and how to delete your account.";
@@ -68,7 +68,7 @@ export default function PrivacyPage() {
         <li>
           <strong>Technical information</strong> that browsers send to every website, such as your IP address, the approximate
           area it comes from, and your browser and device type. When you&apos;re signed in to one of our apps, we also note which app
-          it is, the kind of device (Windows, Android or the web) and the app&apos;s version, so you can see whether you have the
+          it is, the kind of device ({SHOW_ANDROID ? "Windows, Android or the web" : "Windows or the web"}) and the app&apos;s version, so you can see whether you have the
           newest one.
         </li>
       </ul>

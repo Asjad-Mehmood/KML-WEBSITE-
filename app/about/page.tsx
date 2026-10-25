@@ -5,7 +5,7 @@ import PageShell from "../../components/PageShell";
 import PageIntro from "../../components/PageIntro";
 import NextSteps from "../../components/NextSteps";
 import { BreadcrumbStructuredData } from "../../components/StructuredData";
-import { openGraphFor } from "@/lib/site";
+import { SHOW_ANDROID, openGraphFor } from "@/lib/site";
 import { PRODUCTS } from "@/lib/products";
 
 const TITLE = "About";
@@ -43,7 +43,7 @@ const POINTS: { icon: React.ElementType; title: string; text: string }[] = [
   {
     icon: Wallet,
     title: "Free to use",
-    text: "Every program is free: Excel to KML for Windows, Android and the web, RoadPro, Traverse & Level and Project Folder Manager. A free account is all you need.",
+    text: `Every program is free: Excel to KML for Windows${SHOW_ANDROID ? ", Android" : ""} and the web, RoadPro, Traverse & Level and Project Folder Manager. A free account is all you need.`,
   },
   {
     icon: HeartHandshake,
@@ -73,7 +73,7 @@ export default function AboutPage() {
           <h2 id="programs-h" className="text-[22px] font-extrabold tracking-tight text-slate-900">Our programs</h2>
           <ul className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
             {[
-              { name: "Excel to KML", platform: "Windows, Android and web", tagline: "Survey coordinates on any grid into Google Earth, GIS and CAD", href: "/features" },
+              { name: "Excel to KML", platform: SHOW_ANDROID ? "Windows, Android and web" : "Windows and web", tagline: "Survey coordinates on any grid into Google Earth, GIS and CAD", href: "/features" },
               ...PRODUCTS.map((p) => ({ name: p.name, platform: p.platform, tagline: p.tagline, href: p.href })),
             ].map((p) => (
               <li key={p.name}>

@@ -10,6 +10,7 @@ import { TRAVERSE_FILES, TRAVERSE_VERSION } from "@/lib/traverse";
 import { PFM_VERSION } from "@/lib/folderManager";
 import { useTraverseRelease } from "@/lib/useTraverseRelease";
 import { roundedCount, type PublicStats } from "@/lib/publicCounts";
+import { SHOW_ANDROID } from "@/lib/site";
 
 const button =
   "w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-sm font-semibold cursor-pointer transition-colors";
@@ -98,7 +99,7 @@ export default function DownloadCentre({
             name="Excel to KML"
             version={versionTag}
             file={`Windows installer${fileSizeText ? ` · ${fileSizeText}` : ""}`}
-            needs="Windows 10 and 11, 64-bit. Also on Android and in your browser."
+            needs={`Windows 10 and 11, 64-bit. Also ${SHOW_ANDROID ? "on Android and " : ""}in your browser.`}
             href="/download"
             action={
               <button onClick={onDownloadClick} className={button}>
@@ -107,12 +108,14 @@ export default function DownloadCentre({
             }
             guide={{ href: "/tutorial", label: "Tutorial" }}
             extra={
+              SHOW_ANDROID && (
               <Link
                 href="/download#android"
                 className="mt-2 w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-[13px] font-semibold text-slate-800"
               >
                 <Smartphone className="w-4 h-4 text-slate-500" aria-hidden /> Android app
               </Link>
+              )
             }
           />
           <Card

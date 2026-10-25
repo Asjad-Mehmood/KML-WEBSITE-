@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import LegalShell from "../../components/LegalShell";
-import { GITHUB_REPO_URL, LEGAL_UPDATED, SUPPORT_EMAIL, openGraphFor } from "@/lib/site";
+import { GITHUB_REPO_URL, LEGAL_UPDATED, SHOW_ANDROID, SUPPORT_EMAIL, openGraphFor } from "@/lib/site";
 
 const TITLE = "Terms of Use";
 const DESCRIPTION = "The terms for using this website and its programs: Excel to KML, RoadPro, Traverse & Level and Project Folder Manager.";
@@ -17,14 +17,13 @@ export default function TermsPage() {
   return (
     <LegalShell title={TITLE} updated={LEGAL_UPDATED}>
       <p>
-        These terms apply when you use this website and the programs offered on it: Excel to KML (the web app, the Windows
-        app and the Android app), RoadPro, Traverse &amp; Level and Project Folder Manager (together, &ldquo;the
+        These terms apply when you use this website and the programs offered on it: Excel to KML (the web app{SHOW_ANDROID ? ", the Windows app and the Android app" : " and the Windows app"}), RoadPro, Traverse &amp; Level and Project Folder Manager (together, &ldquo;the
         service&rdquo;). By using the service you agree to them. If you don&apos;t agree, please don&apos;t use it.
       </p>
 
       <h2>The software</h2>
       <p>
-        Excel to KML, including the website, the web app, the Windows app and the Android app, is owned by Asjad
+        Excel to KML, including the website, the web app{SHOW_ANDROID ? ", the Windows app and the Android app" : " and the Windows app"}, is owned by Asjad
         Mehmood, who keeps all rights in it. You may use it, free of charge unless stated otherwise, but you may not copy,
         change, resell or redistribute it, or try to take it apart to reach its code, except where the law allows this
         anyway. RoadPro, Traverse &amp; Level and Project Folder Manager are offered on the same basis: free to use, but not to
