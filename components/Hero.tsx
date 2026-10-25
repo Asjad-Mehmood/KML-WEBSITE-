@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useSyncExternalStore } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -15,16 +15,28 @@ import {
   ShieldCheck,
   Layers,
   MonitorSmartphone,
+  Smartphone,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 import WebAppLink from "./WebAppLink";
 import { PRODUCTS, badgeLabel, isNew } from "@/lib/products";
+import { roundedCount, type PublicStats } from "@/lib/publicCounts";
+import { SHOW_ANDROID } from "@/lib/site";
 
 interface HeroProps {
   versionTag: string;
   fileSizeText: string;
   onDownloadClick: () => void;
+  /** real account and country counts; shown once there are enough to mean something */
+  stats?: PublicStats | null;
 }
+
+// An Android phone gets the Android app as the main button (the Windows installer is no use there).
+// Read on the client only: the server renders the Windows button.
+const noSubscribe = () => () => {};
+// (only while the Android app is shown: lib/site.ts SHOW_ANDROID)
+const onAndroid = () => SHOW_ANDROID && /Android/i.test(navigator.userAgent);
 
 type Tab = {
   id: string;
@@ -47,7 +59,9 @@ const ROTATE_MS = 7000;
 // The home page hero, in the manner of a software maker's front page: one headline for the
 // whole toolkit, then a tab per program with its real screenshot in a window frame.
 // Excel to KML is the first tab and the main download; the rest come from lib/products.ts (inHero).
-export default function Hero({ versionTag, fileSizeText, onDownloadClick }: HeroProps) {
+export default function Hero({ versionTag, fileSizeText, onDownloadClick, stats }: HeroProps) {
+  const android = useSyncExternalStore(noSubscribe, onAndroid, () => false);
+  const showStats = stats && stats.accounts >= 50;
   const tabs: Tab[] = [
     {
       id: "excel-to-kml",
@@ -132,24 +146,48 @@ export default function Hero({ versionTag, fileSizeText, onDownloadClick }: Hero
           </p>
 
           <div className="mt-8 flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-            <button
-              onClick={onDownloadClick}
-              className="group inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-xl text-[15px] font-semibold shadow-[0_6px_20px_rgba(0,113,227,0.3)] hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-            >
-              <Download className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" aria-hidden />
-              Download Excel to KML
-              <span className="text-white/75 text-xs font-normal">{fileSizeText}</span>
-            </button>
+            {android ? (
+              <Link
+                href="/download#android"
+                className="group inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-xl text-[15px] font-semibold shadow-[0_6px_20px_rgba(0,113,227,0.3)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+              >
+                <Smartphone className="w-4 h-4" aria-hidden />
+                Get the Android app
+              </Link>
+            ) : (
+              <button
+                onClick={onDownloadClick}
+                className="group inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-xl text-[15px] font-semibold shadow-[0_6px_20px_rgba(0,113,227,0.3)] hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+              >
+                <Download className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" aria-hidden />
+                Download Excel to KML
+                <span className="text-white/75 text-xs font-normal">{fileSizeText}</span>
+              </button>
+            )}
             <WebAppLink className="group inline-flex items-center justify-center gap-1.5 px-6 py-3.5 rounded-xl bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-800 text-[15px] font-semibold shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
               Try it in your browser
               <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" aria-hidden />
             </WebAppLink>
           </div>
 
-          <ul className="mt-6 flex flex-wrap justify-center gap-x-6 gap-y-2 text-[13px] font-medium text-slate-500">
+          {showStats && (
+            <p className="mt-6 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-100 text-[13px] font-semibold text-emerald-900">
+              <Users className="w-4 h-4 text-emerald-600" aria-hidden />
+              Used by {roundedCount(stats.accounts)} surveyors and engineers
+              {stats.countries >= 5 ? ` in ${stats.countries} countries` : ""}
+            </p>
+          )}
+          <ul className={`${showStats ? "mt-4" : "mt-6"} flex flex-wrap justify-center gap-x-6 gap-y-2 text-[13px] font-medium text-slate-500`}>
             <li className="flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-emerald-600" aria-hidden /> Free with an account</li>
             <li className="flex items-center gap-1.5"><Layers className="w-4 h-4 text-indigo-500" aria-hidden /> 5,800+ EPSG grids</li>
             <li className="flex items-center gap-1.5"><MonitorSmartphone className="w-4 h-4 text-[#0071e3]" aria-hidden /> Windows, AutoCAD and the web</li>
+            {SHOW_ANDROID && !android && (
+              <li>
+                <Link href="/download#android" className="flex items-center gap-1.5 text-[#0071e3] hover:underline">
+                  <Smartphone className="w-4 h-4" aria-hidden /> Android app
+                </Link>
+              </li>
+            )}
           </ul>
         </div>
 
