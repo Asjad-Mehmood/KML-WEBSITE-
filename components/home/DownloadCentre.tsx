@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Compass, Download, FileSpreadsheet, FileText, FolderTree, Route, ShieldCheck, type LucideIcon } from "lucide-react";
+import { Compass, Download, FileSpreadsheet, FileText, FolderTree, Info, Route, ShieldCheck, Smartphone, UserCheck, type LucideIcon } from "lucide-react";
 import RoadProDownload from "../RoadProDownload";
 import TraverseDownload from "../TraverseDownload";
 import FolderManagerDownload from "../FolderManagerDownload";
@@ -9,6 +9,7 @@ import { ROADPRO_FILES, ROADPRO_VERSION } from "@/lib/roadpro";
 import { TRAVERSE_FILES, TRAVERSE_VERSION } from "@/lib/traverse";
 import { PFM_VERSION } from "@/lib/folderManager";
 import { useTraverseRelease } from "@/lib/useTraverseRelease";
+import { roundedCount, type PublicStats } from "@/lib/publicCounts";
 
 const button =
   "w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-sm font-semibold cursor-pointer transition-colors";
@@ -22,6 +23,7 @@ function Card({
   action,
   guide,
   href,
+  extra,
 }: {
   Icon: LucideIcon;
   name: string;
@@ -31,6 +33,8 @@ function Card({
   action: React.ReactNode;
   guide?: { href: string; label: string };
   href: string;
+  /** another way to get it, under the main button */
+  extra?: React.ReactNode;
 }) {
   return (
     <li className="flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
@@ -46,6 +50,7 @@ function Card({
       <p className="mt-1 text-[13px] font-medium text-slate-700">{file}</p>
       <p className="mt-1 text-[12.5px] text-slate-500 leading-relaxed flex-1">{needs}</p>
       <div className="mt-5">{action}</div>
+      {extra}
       {guide && (
         <a href={guide.href} className="mt-3 inline-flex items-center justify-center gap-1.5 text-[12.5px] font-semibold text-slate-600 hover:text-[#0071e3]">
           <FileText className="w-3.5 h-3.5" aria-hidden /> {guide.label}
@@ -56,7 +61,17 @@ function Card({
 }
 
 // Home page: every program's download in one place, each behind the same free-account sign-in
-export default function DownloadCentre({ versionTag, fileSizeText, onDownloadClick }: { versionTag: string; fileSizeText: string; onDownloadClick: () => void }) {
+export default function DownloadCentre({
+  versionTag,
+  fileSizeText,
+  onDownloadClick,
+  stats,
+}: {
+  versionTag: string;
+  fileSizeText: string;
+  onDownloadClick: () => void;
+  stats?: PublicStats | null;
+}) {
   const traverse = useTraverseRelease();
   return (
     <section id="download" aria-labelledby="download-heading" className="scroll-mt-24 py-20 lg:py-24 bg-slate-50 border-b border-slate-100">
@@ -68,7 +83,8 @@ export default function DownloadCentre({ versionTag, fileSizeText, onDownloadCli
               Every program, free
             </h2>
             <p className="mt-3 text-[15px] sm:text-base text-slate-600 leading-relaxed">
-              Sign in or create a free account once, and download any of them. Each download is kept in your dashboard.
+              Create a free account once (30 seconds, or one click with Google) and download any of them. Each download is kept in your dashboard.
+              {stats && stats.downloads >= 100 ? ` Downloaded ${roundedCount(stats.downloads)} times so far.` : ""}
             </p>
           </div>
           <p className="flex items-center gap-2 text-[13px] text-slate-500">
@@ -90,6 +106,14 @@ export default function DownloadCentre({ versionTag, fileSizeText, onDownloadCli
               </button>
             }
             guide={{ href: "/tutorial", label: "Tutorial" }}
+            extra={
+              <Link
+                href="/download#android"
+                className="mt-2 w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-[13px] font-semibold text-slate-800"
+              >
+                <Smartphone className="w-4 h-4 text-slate-500" aria-hidden /> Android app
+              </Link>
+            }
           />
           <Card
             Icon={Route}
@@ -122,6 +146,32 @@ export default function DownloadCentre({ versionTag, fileSizeText, onDownloadCli
             guide={{ href: "/project-folder-manager#install", label: "Install steps" }}
           />
         </ul>
+
+        {/* What a first-time visitor meets on the way: the account, and Windows' warning */}
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-5">
+            <Info className="w-5 h-5 mt-0.5 shrink-0 text-amber-700" aria-hidden />
+            <div className="text-[13.5px] leading-relaxed text-amber-950">
+              <p className="font-bold">&ldquo;Windows protected your PC&rdquo; when you open it?</p>
+              <p className="mt-1 text-amber-900/90">
+                That is normal for new programs that aren&apos;t signed with a paid certificate yet. Press <b>More info</b>, then <b>Run anyway</b>. Each
+                file comes from our official GitHub releases, with its SHA-256 published on the{" "}
+                <Link href="/download" className="font-semibold underline">download page</Link> to check it.
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-3 rounded-2xl border border-slate-200 bg-white p-5">
+            <UserCheck className="w-5 h-5 mt-0.5 shrink-0 text-[#0071e3]" aria-hidden />
+            <div className="text-[13.5px] leading-relaxed text-slate-700">
+              <p className="font-bold text-slate-900">Why an account?</p>
+              <p className="mt-1">
+                It is free and keeps your downloads, files and jobs in one place, tells you when there&apos;s an update, and lets us answer you if
+                something goes wrong. We don&apos;t sell your information; read the{" "}
+                <Link href="/privacy" className="font-semibold text-[#0071e3] hover:underline">privacy policy</Link>.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );

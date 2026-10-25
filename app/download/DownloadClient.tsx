@@ -34,7 +34,7 @@ export default function DownloadClient() {
 
       <div className="max-w-[1140px] mx-auto px-5 sm:px-8 mt-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <section className={card}>
+          <section id="android" className={`${card} scroll-mt-28`}>
             <Smartphone className="w-5 h-5 text-[#0071e3]" aria-hidden />
             <h2 className="mt-3 text-[18px] font-bold text-slate-900">Android</h2>
             <p className="mt-1.5 text-[14px] text-slate-600 leading-relaxed">

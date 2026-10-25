@@ -30,11 +30,16 @@ import HomeFaq from "../components/home/HomeFaq";
 import AccountCta from "../components/home/AccountCta";
 import { useAuth } from "../context/AuthContext";
 import type { HomeHero } from "@/lib/siteSettings";
+import type { PublicStats } from "@/lib/publicCounts";
 
 // heroStyle (Admin → Settings → Home page): "new" is the home page for every program (a tab
 // for each in the hero, then a section for each, every download and questions about them all);
 // "classic" is the earlier home page, all about Excel to KML
-export default function HomeClient({ heroStyle = "new" }: { heroStyle?: HomeHero }) {
+// What the sign-in popup says when a download needs an account: why, and that it's quick
+const DOWNLOAD_INTENT =
+  "Create a free account to download: it takes 30 seconds, or one click with Google. It keeps your downloads and files, and tells you when there's an update.";
+
+export default function HomeClient({ heroStyle = "new", stats = null }: { heroStyle?: HomeHero; stats?: PublicStats | null }) {
   const { requireAuth, trackDownload } = useAuth();
   const router = useRouter();
 
@@ -58,7 +63,7 @@ export default function HomeClient({ heroStyle = "new" }: { heroStyle?: HomeHero
       // Record it, then the thank-you page starts the file
       trackDownload("windows_installer", fileName, versionTag);
       goToDownload(router.push, downloadUrl, versionTag);
-    }, "Sign in or create a free account to download the Windows app.");
+    }, DOWNLOAD_INTENT);
   };
 
   return (
@@ -105,7 +110,7 @@ export default function HomeClient({ heroStyle = "new" }: { heroStyle?: HomeHero
         ) : (
           <>
             {/* A tab and screenshot for every program */}
-            <Hero versionTag={versionTag} fileSizeText={fileSizeText} onDownloadClick={handleDownloadApp} />
+            <Hero versionTag={versionTag} fileSizeText={fileSizeText} onDownloadClick={handleDownloadApp} stats={stats} />
             {/* How the four programs follow one job */}
             <ToolkitFlow />
             {/* A section for each program, Excel to KML first with the live converter */}
@@ -116,7 +121,7 @@ export default function HomeClient({ heroStyle = "new" }: { heroStyle?: HomeHero
             {/* Published reviews of any program; hidden until there are some */}
             <HomeReviews />
             {/* Every program's download */}
-            <DownloadCentre versionTag={versionTag} fileSizeText={fileSizeText} onDownloadClick={handleDownloadApp} />
+            <DownloadCentre versionTag={versionTag} fileSizeText={fileSizeText} onDownloadClick={handleDownloadApp} stats={stats} />
             {/* Grid converter pages and guides */}
             <GridsAndGuides leftHeading />
             {/* Questions about every program (FaqStructuredData home in app/page.tsx) */}
