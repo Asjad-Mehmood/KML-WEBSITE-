@@ -1,4 +1,4 @@
-// Real numbers for the home page ("1,200+ surveyors and engineers in 40 countries"), so a
+// Real numbers for the home page ("Used in 32 countries", "Downloaded 150+ times"), so a
 // first-time visitor sees that other people use the programs. Counted from the database; the
 // page is rebuilt every few minutes (app/page.tsx), so this runs rarely.
 import { prisma } from "@/lib/prisma";

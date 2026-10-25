@@ -16,19 +16,19 @@ import {
   Layers,
   MonitorSmartphone,
   Smartphone,
-  Users,
+  Globe2,
   type LucideIcon,
 } from "lucide-react";
 import WebAppLink from "./WebAppLink";
 import { PRODUCTS, badgeLabel, isNew } from "@/lib/products";
-import { roundedCount, type PublicStats } from "@/lib/publicCounts";
+import type { PublicStats } from "@/lib/publicCounts";
 import { SHOW_ANDROID } from "@/lib/site";
 
 interface HeroProps {
   versionTag: string;
   fileSizeText: string;
   onDownloadClick: () => void;
-  /** real account and country counts; shown once there are enough to mean something */
+  /** real counts; the hero shows the number of countries once there are a few */
   stats?: PublicStats | null;
 }
 
@@ -61,7 +61,8 @@ const ROTATE_MS = 7000;
 // Excel to KML is the first tab and the main download; the rest come from lib/products.ts (inHero).
 export default function Hero({ versionTag, fileSizeText, onDownloadClick, stats }: HeroProps) {
   const android = useSyncExternalStore(noSubscribe, onAndroid, () => false);
-  const showStats = stats && stats.accounts >= 50;
+  // only the number of countries (not the number of accounts), once there are a few
+  const showStats = stats && stats.countries >= 5;
   const tabs: Tab[] = [
     {
       id: "excel-to-kml",
@@ -172,9 +173,8 @@ export default function Hero({ versionTag, fileSizeText, onDownloadClick, stats 
 
           {showStats && (
             <p className="mt-6 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-100 text-[13px] font-semibold text-emerald-900">
-              <Users className="w-4 h-4 text-emerald-600" aria-hidden />
-              Used by {roundedCount(stats.accounts)} surveyors and engineers
-              {stats.countries >= 5 ? ` in ${stats.countries} countries` : ""}
+              <Globe2 className="w-4 h-4 text-emerald-600" aria-hidden />
+              Used in {stats.countries} countries
             </p>
           )}
           <ul className={`${showStats ? "mt-4" : "mt-6"} flex flex-wrap justify-center gap-x-6 gap-y-2 text-[13px] font-medium text-slate-500`}>
