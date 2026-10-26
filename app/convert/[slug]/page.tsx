@@ -7,9 +7,12 @@ import GridConverter from "../../../components/GridConverter";
 import GridSearch from "../../../components/GridSearch";
 import { GRID_PAGES, gridBySlug } from "@/lib/gridPages";
 import { systemByCode } from "@/lib/epsgCatalog";
+import { gridSearchDescription, gridSearchTitle } from "@/lib/epsgPageText";
 import { areaBox, gridParameterRows, unitLabel } from "@/lib/gridParams";
 import { SITE_URL, jsonLd, openGraphFor } from "@/lib/site";
 import WebAppLink from "@/components/WebAppLink";
+import GridCheckPoints from "@/components/GridCheckPoints";
+import GridPitfalls from "@/components/GridPitfalls";
 
 // Only the grids listed in lib/gridPages.ts exist; anything else is a 404
 export const dynamicParams = false;
@@ -21,15 +24,15 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const g = gridBySlug((await params).slug);
   if (!g) return {};
-  const title = `${g.name} to KML (EPSG:${g.code})`;
-  const description = `Convert ${g.name} (EPSG:${g.code}) eastings and northings to latitude, longitude and Google Earth KML or KMZ. Free, with the grid's parameters.`;
+  // "converter", "Excel" and the brand when they fit (lib/epsgPageText.ts)
+  const { title, share } = gridSearchTitle(g.name, `EPSG:${g.code}`);
+  const description = gridSearchDescription(g.name, `EPSG:${g.code}`);
   const path = `/convert/${g.slug}`;
   return {
-    // Long grid names: drop the site-name suffix so the title fits in search results
-    title: title.length > 42 ? { absolute: title } : title,
+    title,
     description,
     alternates: { canonical: path },
-    openGraph: openGraphFor(path, title, description),
+    openGraph: openGraphFor(path, share, description),
   };
 }
 
@@ -116,6 +119,10 @@ export default async function GridPage({ params }: { params: Promise<{ slug: str
                 This grid is in <strong>{unitLabel(def)}</strong>. Enter coordinates in those units, not metres.
               </p>
             )}
+
+            {/* worked out from this grid's definition, so every page has its own */}
+            <GridCheckPoints s={sys} name={g.name} />
+            <GridPitfalls s={sys} name={g.name} />
 
             {g.tip && (
               <>

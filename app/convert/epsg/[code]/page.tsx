@@ -7,12 +7,13 @@ import GridConverter from "../../../../components/GridConverter";
 import GridSearch from "../../../../components/GridSearch";
 import { GRID_PAGES } from "@/lib/gridPages";
 import { BIG_COUNTRY, codeLabel, countryBySlug, countryRegions, regionOf, systemByCode, toRow } from "@/lib/epsgCatalog";
-import { epsgDescription, epsgLead, epsgNotes, epsgTitle, hasWestSouthAxes } from "@/lib/epsgPageText";
+import { epsgDescription, epsgLead, epsgNotes, gridSearchTitle, hasWestSouthAxes } from "@/lib/epsgPageText";
 import { areaBox, gridParameterRows } from "@/lib/gridParams";
 import { examplePoints, fmtDeg, fmtGrid } from "@/lib/epsgExample";
 import { UNIT } from "@/lib/countryFacts";
 import { SITE_URL, jsonLd, openGraphFor } from "@/lib/site";
 import WebAppLink from "@/components/WebAppLink";
+import GridPitfalls from "@/components/GridPitfalls";
 
 // One page per EPSG system (5,800+). Rendered on first visit, then cached;
 // grids with a hand-written page redirect there.
@@ -33,14 +34,14 @@ async function load(params: Promise<{ code: string }>) {
 export async function generateMetadata({ params }: { params: Promise<{ code: string }> }): Promise<Metadata> {
   const s = await load(params);
   if (!s || curatedSlug(s.code)) return {};
-  const title = epsgTitle(s);
+  const { title, share } = gridSearchTitle(s.name, codeLabel(s.code));
   const description = epsgDescription(s);
   const path = `/convert/epsg/${s.code}`;
   return {
-    title: title.length > 42 ? { absolute: title } : title,
+    title,
     description,
     alternates: { canonical: path },
-    openGraph: openGraphFor(path, title, description),
+    openGraph: openGraphFor(path, share, description),
   };
 }
 
@@ -178,6 +179,7 @@ export default async function EpsgPage({ params }: { params: Promise<{ code: str
                 </div>
               </>
             )}
+            <GridPitfalls s={s} name={s.name} />
             <p className="mt-4 text-[14px] text-slate-600">
               New to this? Read <Link href="/guides/easting-northing-to-latitude-longitude" className="text-[#0071e3] font-medium hover:underline">how to convert easting and northing to latitude and longitude</Link>.
             </p>

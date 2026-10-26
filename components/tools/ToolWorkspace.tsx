@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowLeft, Info } from "lucide-react";
 import PageShell from "../PageShell";
 import { TOOLS, toolBySlug } from "@/lib/tools";
+import ToolCta from "./ToolCta";
 
 /** The tool itself, full width and ready to use; its front page is one click away. */
 export default function ToolWorkspace({ slug, children }: { slug: string; children: React.ReactNode }) {
@@ -31,6 +32,9 @@ export default function ToolWorkspace({ slug, children }: { slug: string; childr
         </section>
 
         <p className="mt-4 text-[12.5px] text-slate-500">Worked out in your browser: nothing you type here is sent anywhere or kept.</p>
+
+        {/* the program that does this for a whole survey */}
+        <ToolCta slug={slug} className="mt-6" />
 
         <nav aria-label="Other tools" className="mt-10 flex flex-wrap items-center gap-2">
           <Link href="/tools" className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-[13px] font-semibold text-slate-600 hover:text-[#0071e3]">

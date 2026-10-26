@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import ToolCta from "./ToolCta";
 import { ArrowRight, CheckCircle2, ChevronDown, Users } from "lucide-react";
 import PageShell from "../PageShell";
 import NextSteps from "../NextSteps";
@@ -104,6 +105,9 @@ export default function ToolLanding({ slug, notes }: { slug: string; notes?: Rea
             </div>
           )}
         </section>
+
+        {/* the program that does this for a whole survey */}
+        <ToolCta slug={slug} className="mt-12" />
 
         {/* what it does */}
         <section className="mt-20">

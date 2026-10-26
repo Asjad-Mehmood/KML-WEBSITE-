@@ -56,12 +56,13 @@ export default function DownloadClient() {
           </section>
           )}
 
-          <section className={card}>
+          <section id="mac" className={`${card} scroll-mt-28`}>
             <Globe className="w-5 h-5 text-[#0071e3]" aria-hidden />
-            <h2 className="mt-3 text-[18px] font-bold text-slate-900">In your browser</h2>
+            <h2 className="mt-3 text-[18px] font-bold text-slate-900">On a Mac, Linux or in your browser</h2>
             <p className="mt-1.5 text-[14px] text-slate-600 leading-relaxed">
-              Nothing to install: the web app runs in Chrome, Edge, Firefox or Safari on any computer, tablet or phone. Sign in with a free
-              account to use it. Neither the web app nor the Windows app has a point limit.
+              The installed program is for Windows. On a Mac or Linux computer, a tablet or a phone, use the web app: the same converter
+              with every grid and export, in Chrome, Edge, Firefox or Safari, with nothing to install. Sign in with a free account to use
+              it. Neither the web app nor the Windows app has a point limit.
             </p>
             <WebAppLink className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 hover:border-slate-300 text-[13.5px] font-semibold text-slate-800">
               Open the web app
@@ -82,7 +83,8 @@ export default function DownloadClient() {
             </Link>
           </section>
 
-          <section className={card}>
+          {/* full width while the Android card is hidden, so the row has no gap */}
+          <section className={`${card} ${SHOW_ANDROID ? "" : "md:col-span-2"}`}>
             <Wrench className="w-5 h-5 text-[#0071e3]" aria-hidden />
             <h2 className="mt-3 text-[18px] font-bold text-slate-900">If it won&apos;t install or open</h2>
             <ul className="mt-2 space-y-2 text-[14px] text-slate-600 leading-relaxed list-disc pl-5">

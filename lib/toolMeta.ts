@@ -16,10 +16,13 @@ export function toolMetadata(slug: string): Metadata {
 /** The tool itself (/tools/<slug>/use): searches land on its front page instead. */
 export function toolUseMetadata(slug: string): Metadata {
   const t = toolBySlug(slug)!;
+  const title = `${t.name} — free tool | Excel to KML`;
   return {
-    title: { absolute: `${t.name} — free tool | Excel to KML` },
+    title: { absolute: title },
     description: t.description,
     alternates: { canonical: `/tools/${slug}` },
     robots: { index: false, follow: true },
+    // shared links show this tool, not the home page
+    openGraph: openGraphFor(`/tools/${slug}/use`, title, t.description),
   };
 }
