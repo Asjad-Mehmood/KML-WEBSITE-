@@ -60,7 +60,6 @@ const structuredData = {
   url: `${SITE_URL}/project-folder-manager`,
   image: `${SITE_URL}${PFM_FILES.shots.main.src}`,
   offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
-  author: { "@type": "Person", name: "Muhammad Abdullah" },
   publisher: { "@id": `${SITE_URL}/#organization` },
 };
 
@@ -128,7 +127,7 @@ export default function FolderManagerPage() {
               </a>
             </div>
             <p className="mt-3 text-[12.5px] text-slate-500">
-              {PFM_FILES.package.detail} · Windows 10 or 11 · Free account needed · Developed by Muhammad Abdullah
+              {PFM_FILES.package.detail} · Windows 10 or 11 · Free account needed
             </p>
           </div>
           <figure className="rounded-2xl border border-slate-200 bg-slate-900 p-1.5 shadow-[0_16px_40px_rgba(15,23,42,0.18)]">
