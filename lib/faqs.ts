@@ -63,7 +63,14 @@ export const FAQS: FaqItem[] = [
     category: "security",
     categoryLabel: "Privacy & PC",
     q: "Why does Windows SmartScreen show an unrecognized app prompt on first run?",
-    a: "Windows SmartScreen routinely shows this safety prompt on new software that isn't signed with an expensive commercial code-signing certificate yet. Click \"More info\" and then \"Run anyway\". You can also verify the official SHA-256 binary hash on GitHub.",
+    a: "Windows SmartScreen routinely shows this safety prompt on new software that isn't signed with an expensive commercial code-signing certificate yet. Click \"More info\" and then \"Run anyway\". You can also check the installer's SHA-256 against the one shown on the download page.",
+  },
+  {
+    id: 9,
+    category: "security",
+    categoryLabel: "Privacy & PC",
+    q: "Does Excel to KML work on a Mac?",
+    a: "Use the web app: it runs in Safari, Chrome, Edge or Firefox on a Mac, a Linux computer, a tablet or a phone, with the same converter, grids and exports, and nothing to install. The installed program is for Windows 10 and 11.",
   },
 ];
 
@@ -93,6 +100,11 @@ export const HOME_FAQS: { q: string; a: string; href?: string }[] = [
     q: "Does Project Folder Manager need installing?",
     a: "No. Unzip it and open Project_Folder_Manager.exe, keeping the .exe and the .hta together. It runs on Windows' own HTML application host, so there is nothing else to install. Point it at your project's master folder and press INDEX once for instant search.",
     href: "/project-folder-manager",
+  },
+  {
+    q: "I use a Mac. Can I still use Excel to KML?",
+    a: "Yes: open the web app in Safari, Chrome, Edge or Firefox. It is the same converter, with every grid and export, and there is nothing to install. The installed program, RoadPro, Traverse & Level's Windows program and Project Folder Manager are for Windows; Traverse & Level also runs in the browser.",
+    href: "/app",
   },
   {
     q: "Why does Windows say it protected my PC?",

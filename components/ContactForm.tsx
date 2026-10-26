@@ -137,6 +137,13 @@ export default function ContactForm() {
             </label>
           ))}
         </div>
+        {topic === "business" && (
+          <p className="mt-3 rounded-xl bg-slate-50 border border-slate-200 px-4 py-3 text-[13px] text-slate-600 leading-relaxed">
+            For companies and teams: ask us about putting the programs on your team&apos;s computers, training, a grid, format or
+            feature your work needs, partnerships or sponsorship. The programs stay free to use; tell us your company, how many people
+            and what you have in mind, and we&apos;ll reply by email.
+          </p>
+        )}
       </fieldset>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

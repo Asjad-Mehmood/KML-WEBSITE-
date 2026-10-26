@@ -7,6 +7,7 @@ import NextSteps from "../../components/NextSteps";
 import { BreadcrumbStructuredData } from "../../components/StructuredData";
 import { TOOLS, TOOL_GROUPS, type ToolGroup } from "@/lib/tools";
 import { openGraphFor } from "@/lib/site";
+import ToolCta from "../../components/tools/ToolCta";
 
 const TITLE = "Free Survey and Coordinate Tools";
 const DESCRIPTION =
@@ -32,6 +33,8 @@ export default function ToolsIndex() {
       <BreadcrumbStructuredData name="Free tools" path="/tools" />
       <div className="max-w-[1140px] mx-auto px-5 sm:px-8">
         <PageIntro eyebrow="Free tools" title={TITLE} lead={DESCRIPTION} />
+        {/* near the top, not only at the bottom: the program behind the tools */}
+        <ToolCta slug="" className="mt-8" />
         {TOOL_GROUPS.map((g) => {
           const Icon = ICONS[g];
           return (

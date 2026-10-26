@@ -13,6 +13,30 @@ export function epsgTitle(s: EpsgSystem) {
   return `${s.name} to KML (${codeLabel(s.code)})`;
 }
 
+const BRAND = " | Excel to KML";
+/**
+ * The search-result title of a grid page, with the words people type ("converter", "Excel",
+ * "CSV") and the brand when they fit: the longest of these that stays within about 65 characters.
+ *   "Qatar National Grid (QNG) to KML Converter (EPSG:2932) | Excel to KML"
+ */
+export function gridSearchTitle(name: string, code: string): { title: string | { absolute: string }; share: string } {
+  const options = [
+    `${name} to KML: Excel & CSV Converter (${code})`,
+    `${name} to KML Converter (${code})`,
+    `${name} to KML Converter`,
+    `${name} to KML`,
+  ];
+  for (const t of options) if (t.length + BRAND.length <= 70) return { title: t, share: t };
+  const t = options.find((o) => o.length <= 70) ?? options[options.length - 1];
+  return { title: { absolute: t }, share: t };
+}
+
+/** The search-result description of a grid page */
+export function gridSearchDescription(name: string, code: string, area?: string | null) {
+  const base = `Convert ${name} (${code}) eastings and northings from Excel or CSV to latitude, longitude and Google Earth KML or KMZ. Free, with the grid's parameters.`;
+  return clip(area ? `${base} Used in ${area}.` : base, 158);
+}
+
 export function epsgDescription(s: EpsgSystem) {
   const base = `Convert ${s.name} (${codeLabel(s.code)}) coordinates to latitude, longitude and Google Earth KML or KMZ.`;
   return clip(s.area ? `${base} Area of use: ${s.area}.` : base, 158);

@@ -37,21 +37,6 @@ export const metadata: Metadata = {
     template: "%s | Excel to KML",
   },
   description: SITE_DESCRIPTION,
-  keywords: [
-    "Excel to KML",
-    "CSV to KML",
-    "Excel to KMZ",
-    "Excel to DXF",
-    "survey coordinates to Google Earth",
-    "easting northing to latitude longitude",
-    "UTM to lat long",
-    "EPSG coordinate converter",
-    "QNG to WGS84",
-    "DLTM to WGS84",
-    "total station CSV to KML",
-    "KMZ with photos",
-    "survey benchmark converter",
-  ],
   authors: [{ name: "Asjad Mehmood" }],
   creator: "Asjad Mehmood",
   publisher: SITE_NAME,
@@ -86,11 +71,10 @@ export const metadata: Metadata = {
     locale: "en_US",
     images: [OG_IMAGE],
   },
+  // Only the card type: X reads each page's own title, description and image from its Open
+  // Graph tags, so a shared grid or guide page shows that page and not the home page
   twitter: {
     card: "summary_large_image",
-    title: DEFAULT_TITLE,
-    description: SITE_DESCRIPTION,
-    images: [OG_IMAGE.url],
   },
   formatDetection: { telephone: false, address: false, email: false },
   // Proves to Meta that we own exceltokml.com (Business Suite → Brand safety → Domains)

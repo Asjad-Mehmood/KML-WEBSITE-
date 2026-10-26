@@ -63,7 +63,9 @@ export function useLatestRelease(): LatestRelease {
         }));
       }
       try {
-        const res = await fetch(RELEASES_API_URL);
+        // this site's copy first (it always has the SHA-256), GitHub itself if that fails
+        let res = await fetch("/api/latest-release").catch(() => null);
+        if (!res || !res.ok) res = await fetch(RELEASES_API_URL);
         if (!res.ok) return;
         const data = await res.json();
         const assets: Asset[] = Array.isArray(data.assets) ? data.assets : [];
