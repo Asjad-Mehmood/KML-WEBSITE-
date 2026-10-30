@@ -5,7 +5,7 @@
 // edit those files here). Calculations are kept in the exceltokml.com account (lib/slopeJobs.ts).
 
 export const SLOPE_NAME = "Slope Calculator";
-export const SLOPE_VERSION = "1.0.0";
+export const SLOPE_VERSION = "1.0.2";
 export const SLOPE_RELEASED = "2026-10-30";
 
 export const SLOPE_PAGE = "/slope-calculation";

@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import WebAppLink from "./WebAppLink";
-import { PRODUCTS, badgeLabel } from "@/lib/products";
+import { PRODUCTS, badgeLabel, type Product } from "@/lib/products";
 
 // Dynamically import HeroConverter with radar without SSR
 const HeroConverter = dynamic(() => import("./HeroConverter"), {
@@ -34,6 +34,34 @@ interface HeroProps {
 // The home page hero as it was until October 2026: Excel to KML on the left, the live
 // coordinate converter on the right, and a chip for each of our other programs. Kept to switch
 // back to: Admin → Settings → Home page.
+/** A product's line in the hero: amber with "New" while it is new, plain after */
+const heroChip = (p: Product) => (
+          <Link
+            key={p.id}
+            href={p.href}
+            title={`${p.name} ${p.version} · ${p.platform}`}
+            className={`group inline-flex items-center gap-2 pr-3 py-1.5 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 ${
+              badgeLabel(p)
+                ? "pl-1.5 bg-amber-50 border border-amber-200 hover:border-amber-300 hover:bg-amber-100/70 focus-visible:ring-amber-500"
+                : "pl-3 bg-slate-50/90 border border-slate-200/90 hover:border-slate-300 hover:bg-white focus-visible:ring-blue-500"
+            }`}
+          >
+            {badgeLabel(p) && (
+              <span className="px-1.5 py-px rounded-full bg-amber-500 text-white text-[9.5px] font-bold uppercase tracking-wider whitespace-nowrap">
+                {p.comingSoon ? "Soon" : badgeLabel(p)}
+              </span>
+            )}
+            <span className="text-xs font-semibold text-slate-800 whitespace-nowrap">
+              {p.name} <span className={`${badgeLabel(p) ? "text-amber-700" : "text-[#0071e3]"} font-bold`}>{p.version}</span>
+            </span>
+            <span className="hidden min-[400px]:inline text-slate-300">·</span>
+            <span className="hidden min-[400px]:flex items-center gap-1 text-xs font-medium text-slate-500 whitespace-nowrap">
+              {p.platform}
+              <ArrowRight className="w-3 h-3 text-slate-400 group-hover:translate-x-0.5 transition-transform" aria-hidden />
+            </span>
+          </Link>
+);
+
 export default function HeroClassic({ versionTag, fileSizeText, onDownloadClick }: HeroProps) {
   return (
     <section className="relative pt-24 pb-14 md:pt-28 md:pb-16 lg:pt-32 lg:pb-20 overflow-hidden bg-white border-b border-slate-100">
@@ -48,8 +76,10 @@ export default function HeroClassic({ versionTag, fileSizeText, onDownloadClick 
              ══════════════════════════════════════════════════════════════════ */}
           <div className="lg:col-span-5 flex flex-col items-start text-left">
 
-            {/* Version badge, then one chip per product we spotlight (lib/products.ts), each on its own line */}
+            {/* One chip per product we spotlight (lib/products.ts), each on its own line: the new one
+                first (amber, "New"), then the Excel to KML version, then the others */}
             <div className="flex flex-col items-start gap-2 mb-6">
+            {PRODUCTS.filter((p) => p.inHero && badgeLabel(p)).map(heroChip)}
             <a
               href="#download"
               className="group inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-50/90 border border-slate-200/90 shadow-xs hover:border-slate-300 hover:bg-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
@@ -67,28 +97,7 @@ export default function HeroClassic({ versionTag, fileSizeText, onDownloadClick 
                 <ArrowRight className="w-3 h-3 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
               </span>
             </a>
-            {PRODUCTS.filter((p) => p.inHero).map((p) => (
-              <Link
-                key={p.id}
-                href={p.href}
-                title={`${p.name} ${p.version} · ${p.platform}`}
-                className="group inline-flex items-center gap-2 pl-1.5 pr-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 hover:border-amber-300 hover:bg-amber-100/70 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
-              >
-                {badgeLabel(p) && (
-                  <span className="px-1.5 py-px rounded-full bg-amber-500 text-white text-[9.5px] font-bold uppercase tracking-wider whitespace-nowrap">
-                    {p.comingSoon ? "Soon" : badgeLabel(p)}
-                  </span>
-                )}
-                <span className="text-xs font-semibold text-slate-800 whitespace-nowrap">
-                  {p.name} <span className="text-amber-700 font-bold">{p.version}</span>
-                </span>
-                <span className="hidden min-[400px]:inline text-slate-300">·</span>
-                <span className="hidden min-[400px]:flex items-center gap-1 text-xs font-medium text-slate-500 whitespace-nowrap">
-                  {p.platform}
-                  <ArrowRight className="w-3 h-3 text-slate-400 group-hover:translate-x-0.5 transition-transform" aria-hidden />
-                </span>
-              </Link>
-            ))}
+            {PRODUCTS.filter((p) => p.inHero && !badgeLabel(p)).map(heroChip)}
             </div>
 
             {/* Headline: kept short (under 70 characters) for search engines */}

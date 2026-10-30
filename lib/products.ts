@@ -40,6 +40,34 @@ export interface Product {
 
 export const PRODUCTS: Product[] = [
   {
+    id: "slope",
+    name: SLOPE_NAME,
+    platform: "Web app and Windows",
+    version: SLOPE_VERSION,
+    tagline: "Slope, gradient and the level at every chainage",
+    description:
+      "Enter the start and end level and chainage: get the slope %, the gradient and the level at every station, a live profile, crossfall, a level book with checks and Excel, PDF and CSV reports. Free in the browser, offline, and on Windows.",
+    href: SLOPE_PAGE,
+    demoHref: SLOPE_APP,
+    image: {
+      src: SLOPE_FILES.shots.calculator.src,
+      width: SLOPE_FILES.shots.calculator.width,
+      height: SLOPE_FILES.shots.calculator.height,
+      alt: "Slope Calculator: a falling slope of −1.500 % from 1+000 to 1+250 with its profile and chainage probe",
+    },
+    highlights: ["Slope % and 1 in N", "Level at every chainage", "Live profile", "Excel, PDF and CSV"],
+    newUntil: "2027-03-31",
+    inHero: true,
+    shot: {
+      src: SLOPE_FILES.shots.calculator.src,
+      width: SLOPE_FILES.shots.calculator.width,
+      height: SLOPE_FILES.shots.calculator.height,
+      alt: "Slope Calculator: start and end level and chainage, the slope result and the profile",
+      title: "Slope Calculator · 1+000 to 1+250",
+    },
+    inNav: true,
+  },
+  {
     id: "roadpro",
     name: "RoadPro",
     platform: "AutoCAD plugin",
@@ -56,7 +84,6 @@ export const PRODUCTS: Product[] = [
       alt: "RoadPro in AutoCAD: lane widening, a T-junction and a skewed junction with kerb returns, road markings, barricades and chainage",
     },
     highlights: ["Lanes, median, sidewalks", "Junctions and turning lanes", "Signs and markings to standard", "Barricades, cones, kerb", "Widening and tapers", "Excel report and LandXML"],
-    newUntil: "2027-01-31",
     inHero: true,
     shot: {
       src: "/roadpro/roadpro-3-network.webp",
@@ -87,7 +114,6 @@ export const PRODUCTS: Product[] = [
     video: { src: TRAVERSE_FILES.video.loop, webm: TRAVERSE_FILES.video.loopWebm },
     highlights: ["Coordinate traverse and levelling", "Bowditch, Transit, Equal", "PDF reports and sharing", "Works offline and on a phone"],
     comingSoon: !TRAVERSE_FILES.setup.href,
-    newUntil: "2027-01-31",
     inHero: true,
     shot: {
       src: "/traverse/screens/v2-traverse-plan.webp",
@@ -95,34 +121,6 @@ export const PRODUCTS: Product[] = [
       height: 900,
       alt: "Traverse & Level: an adjusted traverse from CP-01 to CP-03 with its plan, bearings and distances",
       title: "Traverse & Level · Bowditch adjustment",
-    },
-    inNav: true,
-  },
-  {
-    id: "slope",
-    name: SLOPE_NAME,
-    platform: "Web app and Windows",
-    version: SLOPE_VERSION,
-    tagline: "Slope, gradient and the level at every chainage",
-    description:
-      "Enter the start and end level and chainage: get the slope %, the gradient and the level at every station, a live profile, crossfall, a level book with checks and Excel, PDF and CSV reports. Free in the browser, offline, and on Windows.",
-    href: SLOPE_PAGE,
-    demoHref: SLOPE_APP,
-    image: {
-      src: SLOPE_FILES.shots.calculator.src,
-      width: SLOPE_FILES.shots.calculator.width,
-      height: SLOPE_FILES.shots.calculator.height,
-      alt: "Slope Calculator: a falling slope of −1.500 % from 1+000 to 1+250 with its profile and chainage probe",
-    },
-    highlights: ["Slope % and 1 in N", "Level at every chainage", "Live profile", "Excel, PDF and CSV"],
-    newUntil: "2027-03-31",
-    inHero: true,
-    shot: {
-      src: SLOPE_FILES.shots.calculator.src,
-      width: SLOPE_FILES.shots.calculator.width,
-      height: SLOPE_FILES.shots.calculator.height,
-      alt: "Slope Calculator: start and end level and chainage, the slope result and the profile",
-      title: "Slope Calculator · 1+000 to 1+250",
     },
     inNav: true,
   },
@@ -142,7 +140,6 @@ export const PRODUCTS: Product[] = [
       alt: "Project Folder Manager: the eleven project modules from Admin to Archive, each with its discipline",
     },
     highlights: ["Modules by discipline", "Instant search", "Copy, move, rename", "Drive space"],
-    newUntil: "2027-01-31",
     inHero: true,
     shot: {
       src: PFM_FILES.shots.main.src,
