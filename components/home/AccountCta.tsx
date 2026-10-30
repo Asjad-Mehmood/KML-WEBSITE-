@@ -26,7 +26,7 @@ export default function AccountCta() {
               <p className="mt-4 text-[15px] sm:text-base text-slate-300 leading-relaxed max-w-[560px]">
                 {user
                   ? "Your downloads, converted files and Traverse & Level jobs are in your dashboard, ready to open again."
-                  : "Create it once and download Excel to KML, RoadPro, Traverse & Level and Project Folder Manager. Your work is kept for you too."}
+                  : "Create it once and download Excel to KML, RoadPro, Traverse & Level, Slope Calculator and Project Folder Manager. Your work is kept for you too."}
               </p>
               <div className="mt-8 flex flex-col sm:flex-row gap-3">
                 {user ? (

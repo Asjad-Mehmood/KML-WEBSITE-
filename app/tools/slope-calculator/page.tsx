@@ -23,6 +23,11 @@ export default function Page() {
             <li>Road crossfall: about 2.5%.</li>
           </ul>
           <p>Always check the code or specification for your job; these are only rough guides.</p>
+          <h2>Levels along the whole line</h2>
+          <p>
+            Need the level at every chainage, the profile, crossfall and an Excel or PDF report? Use{" "}
+            <a href="/slope-calculation">Slope Calculator</a>, our free app for the browser and Windows.
+          </p>
         </>
       }
     />

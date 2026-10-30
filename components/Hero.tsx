@@ -146,7 +146,7 @@ export default function Hero({ versionTag, fileSizeText, onDownloadClick, stats 
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0071e3] to-[#0ea5e9]">engineers on site</span>
           </h1>
           <p className="mt-5 text-base sm:text-lg text-slate-600 leading-relaxed max-w-[680px] text-balance">
-            Excel to KML, RoadPro, Traverse &amp; Level and Project Folder Manager: from survey coordinates to finished drawings, adjustments and reports. Free for Windows, AutoCAD and the web.
+            Excel to KML, RoadPro, Traverse &amp; Level, Slope Calculator and Project Folder Manager: from survey coordinates to finished drawings, adjustments and reports. Free for Windows, AutoCAD and the web.
           </p>
 
           <div className="mt-8 flex flex-col sm:flex-row gap-3 w-full sm:w-auto">

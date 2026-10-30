@@ -16,6 +16,7 @@ const NAMES: Record<ReviewProduct, string> = {
   roadpro: "RoadPro",
   traverse: "Traverse & Level",
   "project-folder-manager": "Project Folder Manager",
+  "slope-calculator": "Slope Calculator",
 };
 
 // Home page: what people who downloaded our programs say (reviews published in Admin → Reviews).

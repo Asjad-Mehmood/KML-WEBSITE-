@@ -19,6 +19,7 @@ const PROGRAMS: [string, string][] = [
   ["roadpro", "RoadPro"],
   ["traverse", "Traverse & Level"],
   ["folder-manager", "Project Folder Manager"],
+  ["slope", "Slope Calculator"],
   ["website", "The website or my account"],
 ];
 

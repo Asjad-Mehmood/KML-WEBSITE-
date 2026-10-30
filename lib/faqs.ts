@@ -79,7 +79,7 @@ export const FAQS: FaqItem[] = [
 export const HOME_FAQS: { q: string; a: string; href?: string }[] = [
   {
     q: "Are the programs free?",
-    a: "Yes. Excel to KML, RoadPro, Traverse & Level and Project Folder Manager are free to download and use. You only need a free account, which also keeps your downloads, converted files and Traverse & Level jobs together in your dashboard.",
+    a: "Yes. Excel to KML, RoadPro, Traverse & Level, Slope Calculator and Project Folder Manager are free to download and use. You only need a free account, which also keeps your downloads, converted files and Traverse & Level jobs together in your dashboard.",
   },
   {
     q: "Which coordinate systems does Excel to KML support?",

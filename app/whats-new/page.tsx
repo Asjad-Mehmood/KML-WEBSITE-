@@ -12,7 +12,7 @@ import { TRAVERSE_RELEASED, TRAVERSE_RELEASES, TRAVERSE_VERSION } from "@/lib/tr
 import { PFM_RELEASED, PFM_VERSION } from "@/lib/folderManager";
 
 const TITLE = "What's New";
-const DESCRIPTION = "What changed in each version of Excel to KML, and the latest versions of RoadPro, Traverse & Level and Project Folder Manager.";
+const DESCRIPTION = "What changed in each version of Excel to KML, and the latest versions of RoadPro, Traverse & Level, Slope Calculator and Project Folder Manager.";
 
 // The other programs' latest versions, with where their changes are listed
 const OTHERS = [

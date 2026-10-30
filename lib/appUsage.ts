@@ -17,7 +17,7 @@ import { after, type NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { RELEASE_APPS, compareVersions, normVersion } from "@/lib/releases";
 
-export type UsageApp = "excel-to-kml" | "traverse";
+export type UsageApp = "excel-to-kml" | "traverse" | "slope";
 
 export interface AppUse {
   app: UsageApp;
@@ -80,7 +80,7 @@ export function detectApp(req: NextRequest): { app: UsageApp; platform: string; 
   const name = (req.headers.get("x-app-name") || "").trim().toLowerCase();
   const version = cleanVersion(req.headers.get("x-app-version"));
   const platformHeader = (req.headers.get("x-app-platform") || "").trim().toLowerCase();
-  if (name === "traverse" || name === "excel-to-kml") {
+  if (name === "traverse" || name === "excel-to-kml" || name === "slope") {
     return { app: name, platform: PLATFORMS[platformHeader] || "Web", version };
   }
 
@@ -99,6 +99,7 @@ export function detectApp(req: NextRequest): { app: UsageApp; platform: string; 
     const viaProgram = /[?&]app=1(&|$)/.test(req.headers.get("referer") || "");
     return { app: "traverse", platform: viaProgram ? "Windows" : "Web", version };
   }
+  if (ref === "/slope-calculation/app" || ref.startsWith("/slope-calculation/app/")) return { app: "slope", platform: "Web", version };
   if (ref === "/app" || ref.startsWith("/app/")) return { app: "excel-to-kml", platform: "Web", version };
   return null;
 }
@@ -160,6 +161,7 @@ const ASSETS: Record<string, string[]> = {
   roadpro: ["roadpro"],
   traverse: ["traverse"],
   "folder-manager": ["folder_manager"],
+  slope: ["slope"],
 };
 
 export interface ProgramVersions {

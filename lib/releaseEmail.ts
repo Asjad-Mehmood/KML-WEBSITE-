@@ -3,6 +3,7 @@
 import crypto from "crypto";
 import { SHOW_ANDROID, SITE_NAME, SITE_URL, SUPPORT_EMAIL } from "@/lib/site";
 import { TRAVERSE_APP } from "@/lib/traverse";
+import { SLOPE_APP } from "@/lib/slope";
 
 export const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 
@@ -86,6 +87,17 @@ const UPDATE_GUIDES: Record<string, UpdateGuide> = {
     ],
     newUser: "New to RoadPro? The download page has the plugin, a step-by-step install guide and the user manual.",
     more: { label: "Install guide", href: "/roadpro#install" },
+  },
+  slope: {
+    platform: "Web app and Windows",
+    automatic: true,
+    steps: [
+      "Windows program: open it while you're online and it offers the update, then installs it and opens again.",
+      `Web app: nothing to do, ${SITE_URL.replace(/^https?:\/\//, "")}${SLOPE_APP} always runs the newest version.`,
+      "Your saved calculations are kept in your account.",
+    ],
+    newUser: "Don't have it yet? Open the web app, or install the Windows program.",
+    more: { label: "What it does", href: "/slope-calculation" },
   },
   "folder-manager": {
     platform: "Windows 10 and 11",
