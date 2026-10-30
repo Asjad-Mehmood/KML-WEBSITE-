@@ -2,7 +2,7 @@
 // tool/web_build.sh, which fills in the cache name and the file list for each build.
 'use strict';
 
-const CACHE = 'slope-1.0.3-8feeffe9424b';
+const CACHE = 'slope-1.0.4-5ef56d881bf4';
 const FILES = ["assets/AssetManifest.bin", "assets/AssetManifest.bin.json", "assets/FontManifest.json", "assets/NOTICES", "assets/assets/brand/icon-512.png", "assets/assets/fonts/Inter_400Regular.ttf", "assets/assets/fonts/Inter_500Medium.ttf", "assets/assets/fonts/Inter_600SemiBold.ttf", "assets/assets/fonts/Inter_700Bold.ttf", "assets/assets/fonts/Inter_800ExtraBold.ttf", "assets/assets/fonts/JetBrainsMono_500Medium.ttf", "assets/assets/fonts/JetBrainsMono_700Bold.ttf", "assets/fonts/MaterialIcons-Regular.otf", "assets/fonts/fallback/Roboto-Regular.ttf", "assets/shaders/ink_sparkle.frag", "assets/shaders/stretch_effect.frag", "canvaskit/canvaskit.js", "canvaskit/canvaskit.wasm", "canvaskit/chromium/canvaskit.js", "canvaskit/chromium/canvaskit.wasm", "favicon.png", "flutter.js", "flutter_bootstrap.js", "icons/Icon-192.png", "icons/Icon-512.png", "icons/Icon-maskable-192.png", "icons/Icon-maskable-512.png", "main.dart.js", "manifest.json", "version.json"];
 // CanvasKit comes in two builds (Chromium browsers and the rest) of 5 to 7 MB; only the one this
 // browser loaded is kept, when the page says which (see flutter_bootstrap.js)

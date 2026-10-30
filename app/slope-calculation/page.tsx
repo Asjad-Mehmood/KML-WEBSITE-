@@ -226,6 +226,18 @@ export default function SlopeCalculatorPage() {
               <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" aria-hidden />
               The Windows program isn&apos;t code-signed yet, so Windows SmartScreen may warn the first time. Choose More info, then Run anyway.
             </p>
+            {/* the manual and the Excel template */}
+            <div className="mt-6 flex flex-wrap gap-3 border-t border-white/10 pt-6">
+              <Link href={SLOPE_FILES.manual.href} className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-[14px] font-semibold hover:bg-white/15">
+                <BookOpen className="w-4 h-4 text-[#ffd21f]" aria-hidden /> User manual
+              </Link>
+              <a href={SLOPE_FILES.manual.pdf} download={SLOPE_FILES.manual.pdfName} className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-[14px] font-semibold hover:bg-white/15">
+                <Download className="w-4 h-4 text-[#ffd21f]" aria-hidden /> Manual (PDF)
+              </a>
+              <a href={SLOPE_FILES.template.href} download={SLOPE_FILES.template.name} className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-[14px] font-semibold hover:bg-white/15">
+                <FileSpreadsheet className="w-4 h-4 text-[#ffd21f]" aria-hidden /> Excel template
+              </a>
+            </div>
           </div>
         </section>
 
