@@ -54,9 +54,10 @@ export const SLOPE_STEPS: { title: string; text: string }[] = [
 ];
 
 export const SLOPE_FAQ: { q: string; a: string }[] = [
-  { q: "Is it free?", a: "Yes. The web app and the Windows program are free. A free exceltokml.com account is needed to download the program and to keep calculations in your account; the calculator itself works without one." },
+  { q: "Is it free?", a: "Yes. The web app and the Windows program are free. You sign in with a free exceltokml.com account (the same one as Excel to KML and Traverse & Level) the first time you open it; create one in a minute with your email or Google." },
+  { q: "Why do I have to sign in?", a: "Your account keeps your calculations, so they open on every device, and tells us who uses the app so we can keep improving it. After the first sign-in the app remembers you: it opens straight away, offline too, until you sign out." },
   { q: "Web app or Windows program?", a: "They are the same app. The web app runs in any modern browser, on a phone too, and can be installed from the browser. The Windows program runs in its own window and updates itself." },
-  { q: "Does it work offline?", a: "Yes. Once opened, the web app keeps its files and opens without a connection. Calculations you save offline wait on the device and are sent to your account when you are back online." },
+  { q: "Does it work offline?", a: "Yes, after the first sign-in. The web app keeps its files and opens without a connection, and the Windows program never needs one to calculate. Calculations you save offline wait on the device and are sent to your account when you are back online." },
   { q: "How is the slope worked out?", a: "M = (Y2 − Y1) ÷ (X2 − X1): the rise or fall over the horizontal length. Slope % is M × 100 and the gradient is 1 in 1 ÷ |M|. Levels at the stations follow the straight line from Y1 to Y2." },
   { q: "Which chainage formats can I type?", a: "Plain metres (1250, 1250.5) or kilometre + metres (1+250, 1+250.500). Negative chainages work too." },
   { q: "If Windows warns about the installer", a: "The program isn't code-signed yet, so Windows SmartScreen may say it protected your PC the first time. Choose More info, then Run anyway." },
