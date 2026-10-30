@@ -7,6 +7,7 @@ import AdminReleases from "../../components/admin/AdminReleases";
 import SettingsPanel from "../../components/admin/SettingsPanel";
 import AdminPoints from "../../components/admin/AdminPoints";
 import AdminTraverse from "../../components/admin/AdminTraverse";
+import AdminSlope from "../../components/admin/AdminSlope";
 import AdminFiles from "../../components/admin/AdminFiles";
 import AdminShell, { type AdminGroup } from "../../components/admin/AdminShell";
 import {
@@ -36,6 +37,7 @@ import {
   Inbox,
   Star,
   Megaphone,
+  TrendingUp,
 } from "lucide-react";
 import SurveyorDetailModal from "@/components/admin/SurveyorDetailModal";
 import FileViewer, { type ViewerFile } from "@/components/FileViewer";
@@ -187,7 +189,7 @@ const ASSET_NAME: Record<string, string> = {
   folder_manager: "Project Folder Manager (Windows)",
 };
 
-const ADMIN_TABS = ["overview", "users", "activities", "downloads", "files", "conversions", "traverse", "releases", "reviews", "messages", "settings"] as const;
+const ADMIN_TABS = ["overview", "users", "activities", "downloads", "files", "conversions", "traverse", "slope", "releases", "reviews", "messages", "settings"] as const;
 type AdminTab = (typeof ADMIN_TABS)[number];
 function tabFromAddress(): AdminTab {
   const id = typeof window === "undefined" ? "" : window.location.hash.slice(1);
@@ -229,6 +231,8 @@ export default function AdminClient() {
     totalStorageBytes?: number;
     /** Traverse & Level jobs: null when their tables could not be read */
     traverse?: { jobs: number; traverses: number; levels: number; accepted: number; rejected: number; surveyors: number } | null;
+    /** Slope Calculator: calculations kept in accounts; null when the table could not be read */
+    slope?: { jobs: number; surveyors: number } | null;
     roleCounts: Record<string, number>;
     assetCounts: Record<string, number>;
     locationCounts?: Record<string, number>;
@@ -664,6 +668,7 @@ export default function AdminClient() {
         { id: "files", label: "Files", icon: Files, text: "Files people imported into and exported from the apps", count: stats?.totalFilesStored },
         { id: "conversions", label: "Points", icon: Globe, text: "The converted points in saved files", count: conversionsTotal },
         { id: "traverse", label: "Traverse & Level", icon: Compass, text: "Jobs, usage and the switches for Traverse & Level", count: stats?.traverse?.jobs },
+        { id: "slope", label: "Slope Calculator", icon: TrendingUp, text: "Calculations surveyors keep in their accounts from Slope Calculator", count: stats?.slope?.jobs },
       ],
     },
     {
@@ -1602,6 +1607,7 @@ export default function AdminClient() {
 
         {activeTab === "conversions" && <AdminPoints adminFetch={adminFetch} onToast={showToast} />}
         {activeTab === "traverse" && <AdminTraverse adminFetch={adminFetch} onToast={showToast} />}
+        {activeTab === "slope" && <AdminSlope adminFetch={adminFetch} onToast={showToast} />}
 
         {/* ================================================================== */}
         {/* TAB 6: SETTINGS & RELEASE MANAGEMENT */}

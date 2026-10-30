@@ -90,10 +90,42 @@ export async function remove(userId: string, jobId: string) {
 /** Admin: one row per surveyor with how many calculations they keep, newest first. */
 export async function adminSummary() {
   await ensureSlopeTables();
-  const rows = await prisma.$queryRawUnsafe<{ userId: string; email: string | null; name: string | null; jobs: bigint; lastSaved: Date | null }[]>(
-    `SELECT j."ownerId" AS "userId", u."email", u."name", COUNT(*) AS jobs, MAX(j."updatedAt") AS "lastSaved"
+  const rows = await prisma.$queryRawUnsafe<{ userId: string; email: string | null; name: string | null; organization: string | null; jobs: bigint; lastSaved: Date | null }[]>(
+    `SELECT j."ownerId" AS "userId", u."email", u."name", u."organization", COUNT(*) AS jobs, MAX(j."updatedAt") AS "lastSaved"
      FROM "slope_jobs" j LEFT JOIN "users" u ON u."id" = j."ownerId"
-     GROUP BY j."ownerId", u."email", u."name" ORDER BY MAX(j."updatedAt") DESC LIMIT 500`
+     GROUP BY j."ownerId", u."email", u."name", u."organization" ORDER BY MAX(j."updatedAt") DESC LIMIT 500`
   );
   return rows.map((r) => ({ ...r, jobs: Number(r.jobs), lastSaved: r.lastSaved ? r.lastSaved.toISOString() : null }));
+}
+
+/** Admin: one surveyor's calculations, with what was saved */
+export async function adminJobsOf(userId: string) {
+  await ensureSlopeTables();
+  const rows = await prisma.$queryRawUnsafe<(Row & { size: number; createdAt: Date; updatedAt: Date })[]>(
+    `SELECT "id","name","data","summary","clientUpdated","size","createdAt","updatedAt" FROM "slope_jobs"
+     WHERE "ownerId" = $1 ORDER BY "updatedAt" DESC`,
+    userId
+  );
+  return rows.map((r) => ({
+    ...out(r),
+    size: Number(r.size),
+    created_at: r.createdAt.toISOString(),
+    saved_at: r.updatedAt.toISOString(),
+  }));
+}
+
+/** Admin: delete one calculation; false when there was none */
+export async function adminRemove(jobId: string): Promise<boolean> {
+  await ensureSlopeTables();
+  const n = await prisma.$executeRawUnsafe(`DELETE FROM "slope_jobs" WHERE "id" = $1`, jobId);
+  return n > 0;
+}
+
+/** Admin: the totals for the overview */
+export async function adminTotals() {
+  await ensureSlopeTables();
+  const r = await prisma.$queryRawUnsafe<{ jobs: bigint; surveyors: bigint }[]>(
+    `SELECT COUNT(*) AS jobs, COUNT(DISTINCT "ownerId") AS surveyors FROM "slope_jobs"`
+  );
+  return { jobs: Number(r[0]?.jobs ?? 0), surveyors: Number(r[0]?.surveyors ?? 0) };
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/adminAuth";
 import { db } from "@/lib/db";
 import { adminGroups } from "@/lib/traverseJobs";
+import { adminTotals as slopeTotals } from "@/lib/slopeJobs";
 
 export async function GET(req: NextRequest) {
   try {
@@ -19,6 +20,8 @@ export async function GET(req: NextRequest) {
     const fileTotals = await db.getFileTotals();
     // Traverse & Level jobs (their own tables, created on first use)
     const traverse = await adminGroups().then((g) => g.totals).catch(() => null);
+    // Slope Calculator: calculations kept in accounts
+    const slope = await slopeTotals().catch(() => null);
 
     // Breakdown by role
     const roleCounts: Record<string, number> = {};
@@ -60,6 +63,7 @@ export async function GET(req: NextRequest) {
         totalStorageBytes: fileTotals.bytes,
         totalPointsKept: conversions.total,
         traverse,
+        slope,
         totalPointsProcessed,
         roleCounts,
         assetCounts,
