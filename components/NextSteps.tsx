@@ -12,7 +12,7 @@ export default function NextSteps({ title = "Try it on your own points", everyPr
         <div className="max-w-xl">
           <h2 className="text-[22px] sm:text-[26px] font-extrabold tracking-tight">Download any of our programs</h2>
           <p className="mt-2 text-[15px] text-slate-300 leading-relaxed">
-            Excel to KML, RoadPro, Traverse &amp; Level and Project Folder Manager are all free with one account.
+            Excel to KML, RoadPro, Traverse &amp; Level, Slope Calculator and Project Folder Manager are all free with one account.
           </p>
         </div>
         <div className="flex flex-wrap gap-3">

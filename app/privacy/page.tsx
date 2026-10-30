@@ -18,7 +18,7 @@ export default function PrivacyPage() {
     <LegalShell title={TITLE} updated={PRIVACY_UPDATED}>
       <p>
         This policy explains how Excel to KML (&ldquo;we&rdquo;, &ldquo;us&rdquo;) handles information when you use this
-        website and its programs: the Excel to KML web app and Windows app, RoadPro, Traverse &amp; Level and Project Folder
+        website and its programs: the Excel to KML web app and Windows app, RoadPro, Traverse &amp; Level, Slope Calculator and Project Folder
         Manager.
       </p>
 

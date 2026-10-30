@@ -36,7 +36,7 @@ export const RELEASE_APPS: ReleaseApp[] = [
     name: p.name,
     href: p.href,
     current: normVersion(p.version),
-    ...(p.id === "traverse" ? { github: "Asjad-Mehmood/Traiverse" } : {}),
+    ...(p.id === "traverse" ? { github: "Asjad-Mehmood/Traiverse" } : p.id === "slope" ? { github: "Asjad-Mehmood/Slope-calculator-" } : {}),
   })),
 ];
 export const appById = (id: string) => RELEASE_APPS.find((a) => a.id === id);
@@ -286,18 +286,18 @@ const eligibleSql = `
     AND NOT EXISTS (SELECT 1 FROM "email_optouts" o WHERE o."email" = lower(trim(u."email")))
     AND NOT EXISTS (SELECT 1 FROM "user_email_status" v WHERE v."userId" = u."id" AND v."required" AND v."verifiedAt" IS NULL)`;
 
-// The tables that show who uses which app. activities and user_files may be missing on a
-// database that has never had them; the checks that need them are left out until they exist.
+// The tables that show who uses which app. activities, user_files and slope_jobs may be missing
+// on a database that has never had them; the checks that need them are left out until they exist.
 let tablesSeen: Promise<Set<string>> | null = null;
 function usageTables(): Promise<Set<string>> {
   if (!tablesSeen) {
     tablesSeen = prisma
       .$queryRawUnsafe<{ t: string }[]>(
-        `SELECT t FROM unnest(ARRAY['downloads', 'activities', 'user_files']) AS t WHERE to_regclass('public.' || quote_ident(t)) IS NOT NULL`
+        `SELECT t FROM unnest(ARRAY['downloads', 'activities', 'user_files', 'slope_jobs']) AS t WHERE to_regclass('public.' || quote_ident(t)) IS NOT NULL`
       )
       .then((rows) => new Set(rows.map((r) => r.t)));
     tablesSeen.then((t) => {
-      if (t.size < 3) tablesSeen = null; // look again next time
+      if (t.size < 4) tablesSeen = null; // look again next time
     });
   }
   return tablesSeen;
@@ -311,7 +311,8 @@ const downloaded = (types: string[]) =>
  * SQL that is true for a user of the app (u is the users row). Excel to KML: downloaded the
  * Windows app or used the converter (web, Android or Windows all log conversions). Traverse &
  * Level: downloaded the Windows program or used the web app (its activity starts with tl_).
- * RoadPro and Project Folder Manager: downloaded them.
+ * RoadPro and Project Folder Manager: downloaded them. Slope Calculator: downloaded the Windows
+ * program or keeps calculations in the account.
  */
 async function appUserSql(appId: string): Promise<string> {
   const t = await usageTables();
@@ -334,6 +335,11 @@ async function appUserSql(appId: string): Promise<string> {
       return downloaded(["roadpro"]);
     case "folder-manager":
       return downloaded(["folder_manager"]);
+    case "slope":
+      return or([
+        downloaded(["slope"]),
+        t.has("slope_jobs") && `EXISTS (SELECT 1 FROM "slope_jobs" j WHERE j."ownerId" = u."id")`,
+      ]);
     default:
       return "FALSE";
   }
@@ -580,6 +586,7 @@ const REVIEW_PRODUCT: Record<string, string> = {
   roadpro: "roadpro",
   traverse: "traverse",
   "folder-manager": "project-folder-manager",
+  slope: "slope-calculator",
 };
 const reviewAskFor = (appId: string) => ({ appName: appById(appId)?.name || appId, product: REVIEW_PRODUCT[appId] || appId });
 

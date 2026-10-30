@@ -4,7 +4,7 @@ import LegalShell from "../../components/LegalShell";
 import { GITHUB_REPO_URL, LEGAL_UPDATED, SHOW_ANDROID, SUPPORT_EMAIL, openGraphFor } from "@/lib/site";
 
 const TITLE = "Terms of Use";
-const DESCRIPTION = "The terms for using this website and its programs: Excel to KML, RoadPro, Traverse & Level and Project Folder Manager.";
+const DESCRIPTION = "The terms for using this website and its programs: Excel to KML, RoadPro, Traverse & Level, Slope Calculator and Project Folder Manager.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -17,7 +17,7 @@ export default function TermsPage() {
   return (
     <LegalShell title={TITLE} updated={LEGAL_UPDATED}>
       <p>
-        These terms apply when you use this website and the programs offered on it: Excel to KML (the web app{SHOW_ANDROID ? ", the Windows app and the Android app" : " and the Windows app"}), RoadPro, Traverse &amp; Level and Project Folder Manager (together, &ldquo;the
+        These terms apply when you use this website and the programs offered on it: Excel to KML (the web app{SHOW_ANDROID ? ", the Windows app and the Android app" : " and the Windows app"}), RoadPro, Traverse &amp; Level, Slope Calculator and Project Folder Manager (together, &ldquo;the
         service&rdquo;). By using the service you agree to them. If you don&apos;t agree, please don&apos;t use it.
       </p>
 
@@ -26,7 +26,7 @@ export default function TermsPage() {
         Excel to KML, including the website, the web app{SHOW_ANDROID ? ", the Windows app and the Android app" : " and the Windows app"}, is owned by Asjad
         Mehmood, who keeps all rights in it. You may use it, free of charge unless stated otherwise, but you may not copy,
         change, resell or redistribute it, or try to take it apart to reach its code, except where the law allows this
-        anyway. RoadPro, Traverse &amp; Level and Project Folder Manager are offered on the same basis: free to use, but not to
+        anyway. RoadPro, Traverse &amp; Level, Slope Calculator and Project Folder Manager are offered on the same basis: free to use, but not to
         copy, change, resell or redistribute. Downloads and release notes are published on this website and on{" "}
         <a href={GITHUB_REPO_URL} target="_blank" rel="noopener noreferrer">
           GitHub

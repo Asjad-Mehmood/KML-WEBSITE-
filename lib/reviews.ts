@@ -13,6 +13,7 @@ export const REVIEW_PRODUCTS = {
   roadpro: { name: "RoadPro", assets: ["roadpro"], href: "/roadpro" },
   traverse: { name: "Traverse & Level", assets: ["traverse"], href: "/traverse" },
   "project-folder-manager": { name: "Project Folder Manager", assets: ["folder_manager"], href: "/project-folder-manager" },
+  "slope-calculator": { name: "Slope Calculator", assets: ["slope"], href: "/slope-calculation" },
 } as const;
 export type ReviewProduct = keyof typeof REVIEW_PRODUCTS;
 export const isReviewProduct = (p: unknown): p is ReviewProduct => typeof p === "string" && p in REVIEW_PRODUCTS;

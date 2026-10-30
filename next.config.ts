@@ -26,13 +26,22 @@ const nextConfig: NextConfig = {
     ];
   },
   // The Traverse & Level app lives at /traverse/app, one level above its service worker
-  // (/traverse/app/sw.js), so the worker needs permission for that wider scope to open offline
+  // (/traverse/app/sw.js), so the worker needs permission for that wider scope to open offline.
+  // Slope Calculator the same.
   async headers() {
     return [
       {
         source: "/traverse/app/sw.js",
         headers: [
           { key: "Service-Worker-Allowed", value: "/traverse/app" },
+          { key: "Cache-Control", value: "no-cache" },
+        ],
+      },
+      // the same for the Slope Calculator web app (/slope-calculation/app/sw.js)
+      {
+        source: "/slope-calculation/app/sw.js",
+        headers: [
+          { key: "Service-Worker-Allowed", value: "/slope-calculation/app" },
           { key: "Cache-Control", value: "no-cache" },
         ],
       },

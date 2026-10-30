@@ -18,7 +18,7 @@ const card =
 
 const PLACES = [
   { href: "/convert", icon: Layers, title: "Find your grid", text: "UTM, DLTM, Qatar National Grid and 5,800+ coordinate systems." },
-  { href: "/#download", icon: Download, title: "Downloads", text: "Excel to KML, RoadPro, Traverse & Level and Project Folder Manager. All free." },
+  { href: "/#download", icon: Download, title: "Downloads", text: "Excel to KML, RoadPro, Traverse & Level, Slope Calculator and Project Folder Manager. All free." },
   { href: "/guides", icon: BookOpen, title: "Guides", text: "Survey points to Google Earth, KML or KMZ, DXF for AutoCAD." },
   { href: "/tools", icon: Wrench, title: "Tools", text: "Free calculators: DMS and UTM, distance and bearing, plot area and more." },
   { href: "/faq", icon: HelpCircle, title: "Common questions", text: "Grids, site calibration, total station files and levels." },

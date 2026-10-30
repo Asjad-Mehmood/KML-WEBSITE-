@@ -56,7 +56,7 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
               </span>
             </div>
             <p className="text-xs sm:text-sm text-slate-500 leading-relaxed max-w-[320px]">
-              Free survey and engineering software: Excel to KML, RoadPro, Traverse &amp; Level and Project Folder Manager.
+              Free survey and engineering software: Excel to KML, RoadPro, Traverse &amp; Level, Slope Calculator and Project Folder Manager.
             </p>
             <Link href="/#download" className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-[#0071e3] hover:underline">
               Every download in one place <ArrowRight className="w-3.5 h-3.5" aria-hidden />

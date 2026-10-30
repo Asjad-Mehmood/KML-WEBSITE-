@@ -187,6 +187,7 @@ const ASSET_NAME: Record<string, string> = {
   traverse_manual: "Traverse & Level manual",
   traverse_sample: "Traverse & Level sample file",
   folder_manager: "Project Folder Manager (Windows)",
+  slope: "Slope Calculator (Windows)",
 };
 
 const ADMIN_TABS = ["overview", "users", "activities", "downloads", "files", "conversions", "traverse", "slope", "releases", "reviews", "messages", "settings"] as const;
@@ -868,6 +869,21 @@ export default function AdminClient() {
 
                   <div>
                     <div className="flex justify-between text-xs font-semibold mb-1.5">
+                      <span className="text-slate-300">Slope Calculator for Windows (.exe)</span>
+                      <span className="text-sky-300">{stats?.assetCounts?.slope ?? 0} downloads</span>
+                    </div>
+                    <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+                      <div
+                        className="h-full bg-sky-400 rounded-full"
+                        style={{
+                          width: barWidth(stats?.assetCounts?.slope ?? 0, downloads.length),
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between text-xs font-semibold mb-1.5">
                       <span className="text-slate-300">Sample Survey Benchmarks (.csv)</span>
                       <span className="text-indigo-400">{stats?.assetCounts?.sample_csv ?? 0} downloads</span>
                     </div>
@@ -1471,7 +1487,7 @@ export default function AdminClient() {
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="flex items-center gap-2">
-                {["all", "windows_installer", "roadpro", "traverse", "folder_manager", "sample_csv", "test_kml"].map((type) => (
+                {["all", "windows_installer", "roadpro", "traverse", "folder_manager", "slope", "sample_csv", "test_kml"].map((type) => (
                   <button
                     key={type}
                     onClick={() => setDownloadFilter(type)}

@@ -8,7 +8,7 @@ export type { PublicStats };
 
 // Seeded and staff accounts that aren't real users
 const NOT_USERS = ["admin@exceltokml.com", "surveyor@geotech.com", "demo@surveyor.io", "surveyor.demo@geotech.com"];
-const PROGRAM_FILES = ["windows_installer", "roadpro", "traverse", "folder_manager"];
+const PROGRAM_FILES = ["windows_installer", "roadpro", "traverse", "folder_manager", "slope"];
 
 /** The country at the end of a stored location ("Lahore, Pakistan" → "Pakistan"); null when unknown */
 export function countryOf(location: string | null | undefined): string | null {

@@ -43,7 +43,7 @@ const POINTS: { icon: React.ElementType; title: string; text: string }[] = [
   {
     icon: Wallet,
     title: "Free to use",
-    text: `Every program is free: Excel to KML for Windows${SHOW_ANDROID ? ", Android" : ""} and the web, RoadPro, Traverse & Level and Project Folder Manager. A free account is all you need.`,
+    text: `Every program is free: Excel to KML for Windows${SHOW_ANDROID ? ", Android" : ""} and the web, RoadPro, Traverse & Level, Slope Calculator and Project Folder Manager. A free account is all you need.`,
   },
   {
     icon: HeartHandshake,
@@ -94,7 +94,7 @@ export default function AboutPage() {
           <h2 className="text-[22px] font-extrabold tracking-tight text-slate-900">Who makes it</h2>
           <p className="mt-3 text-[15px] text-slate-600 leading-relaxed">
             Excel to KML is developed by <strong className="text-slate-900">Asjad Mehmood</strong>, who owns it and keeps all rights in
-            it. RoadPro, Traverse &amp; Level and Project Folder Manager are published here alongside it. Everything here is free to use under the{" "}
+            it. RoadPro, Traverse &amp; Level, Slope Calculator and Project Folder Manager are published here alongside it. Everything here is free to use under the{" "}
             <Link href="/terms" className="text-[#0071e3] hover:underline">terms</Link>; how your information is handled is set out in
             the <Link href="/privacy" className="text-[#0071e3] hover:underline">privacy policy</Link>.
           </p>

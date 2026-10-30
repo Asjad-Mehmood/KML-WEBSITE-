@@ -5,6 +5,7 @@
 import { ROADPRO_VERSION } from "@/lib/roadpro";
 import { TRAVERSE_FILES, TRAVERSE_SHORT, TRAVERSE_VERSION } from "@/lib/traverse";
 import { PFM_FILES, PFM_NAME, PFM_VERSION } from "@/lib/folderManager";
+import { SLOPE_APP, SLOPE_FILES, SLOPE_NAME, SLOPE_PAGE, SLOPE_VERSION } from "@/lib/slope";
 
 export interface Product {
   id: string;
@@ -94,6 +95,34 @@ export const PRODUCTS: Product[] = [
       height: 900,
       alt: "Traverse & Level: an adjusted traverse from CP-01 to CP-03 with its plan, bearings and distances",
       title: "Traverse & Level · Bowditch adjustment",
+    },
+    inNav: true,
+  },
+  {
+    id: "slope",
+    name: SLOPE_NAME,
+    platform: "Web app and Windows",
+    version: SLOPE_VERSION,
+    tagline: "Slope, gradient and the level at every chainage",
+    description:
+      "Enter the start and end level and chainage: get the slope %, the gradient and the level at every station, a live profile, crossfall, a level book with checks and Excel, PDF and CSV reports. Free in the browser, offline, and on Windows.",
+    href: SLOPE_PAGE,
+    demoHref: SLOPE_APP,
+    image: {
+      src: SLOPE_FILES.shots.calculator.src,
+      width: SLOPE_FILES.shots.calculator.width,
+      height: SLOPE_FILES.shots.calculator.height,
+      alt: "Slope Calculator: a falling slope of −1.500 % from 1+000 to 1+250 with its profile and chainage probe",
+    },
+    highlights: ["Slope % and 1 in N", "Level at every chainage", "Live profile", "Excel, PDF and CSV"],
+    newUntil: "2027-03-31",
+    inHero: true,
+    shot: {
+      src: SLOPE_FILES.shots.calculator.src,
+      width: SLOPE_FILES.shots.calculator.width,
+      height: SLOPE_FILES.shots.calculator.height,
+      alt: "Slope Calculator: start and end level and chainage, the slope result and the profile",
+      title: "Slope Calculator · 1+000 to 1+250",
     },
     inNav: true,
   },
