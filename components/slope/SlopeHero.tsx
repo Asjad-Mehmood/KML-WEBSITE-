@@ -77,7 +77,7 @@ export default function SlopeHero() {
             </Link>
             <SlopeDownload className="inline-flex items-center gap-2 rounded-full border-2 border-white/40 px-5 py-3 text-[15px] font-bold text-white hover:bg-white/10 cursor-pointer" />
           </div>
-          <p className="mt-3 text-[12.5px] text-blue-100/70">Runs in your browser and on a phone, works offline. Free account to save and to download.</p>
+          <p className="mt-3 text-[12.5px] text-blue-100/70">Sign in with a free exceltokml.com account. Runs in your browser and on a phone, offline too.</p>
         </div>
 
         <ProfileCard />

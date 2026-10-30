@@ -195,7 +195,7 @@ export default function SlopeCalculatorPage() {
               In your browser or on Windows. Free.
             </h2>
             <p className="mt-2 max-w-3xl text-[15px] text-blue-100/85">
-              The same app either way. A free exceltokml.com account keeps your calculations, ready to open on any device.
+              The same app either way. Sign in with your free exceltokml.com account: it keeps your calculations, ready to open on any device.
             </p>
             <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="rounded-2xl border border-white/15 bg-white/5 p-6 flex flex-col">
@@ -203,7 +203,7 @@ export default function SlopeCalculatorPage() {
                 <h3 className="mt-3 text-lg font-bold">Web app</h3>
                 <ul className="mt-2 space-y-1.5 text-[14px] text-blue-50/90 flex-1">
                   <li className="flex gap-2"><CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0 text-emerald-400" aria-hidden /> Nothing to install: Chrome, Edge, Firefox or Safari, on a computer or a phone</li>
-                  <li className="flex gap-2"><WifiOff className="w-4 h-4 mt-0.5 shrink-0 text-emerald-400" aria-hidden /> Works offline once opened</li>
+                  <li className="flex gap-2"><WifiOff className="w-4 h-4 mt-0.5 shrink-0 text-emerald-400" aria-hidden /> Works offline after the first sign-in</li>
                   <li className="flex gap-2"><SquareStack className="w-4 h-4 mt-0.5 shrink-0 text-emerald-400" aria-hidden /> Install it from the browser to open it like an app</li>
                 </ul>
                 <Link
