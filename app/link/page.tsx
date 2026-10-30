@@ -18,7 +18,7 @@ export default async function LinkPage({ searchParams }: { searchParams: Promise
   const session = await sessionForToken((await cookies()).get("surveyor_auth_token")?.value);
   if (!session) redirect(`/login?next=${encodeURIComponent(code ? `/link?code=${code}` : "/link")}`);
   return (
-    <AuthShell title="Sign in an app" subtitle="Enter the code shown in Traverse & Level on your computer. It signs that window in with your account.">
+    <AuthShell title="Sign in an app" subtitle="Enter the code shown in Traverse & Level or Slope Calculator on your computer. It signs that app in with your account.">
       <LinkForm email={session.user.email} initial={code} />
     </AuthShell>
   );

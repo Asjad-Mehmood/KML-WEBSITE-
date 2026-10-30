@@ -45,6 +45,9 @@ const nextConfig: NextConfig = {
       beforeFiles: [
         { source: "/traverse/app", destination: "/traverse/app/index.html" },
         { source: "/traverse/app/", destination: "/traverse/app/index.html" },
+        // the Slope Calculator web app (a Flutter build in public/slope-calculation/app), the same way
+        { source: "/slope-calculation/app", destination: "/slope-calculation/app/index.html" },
+        { source: "/slope-calculation/app/", destination: "/slope-calculation/app/index.html" },
       ],
       afterFiles: [],
       fallback: [],
