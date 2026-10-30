@@ -29,6 +29,19 @@ export const SLOPE_FILES = {
     phone: { src: "/slope-calculation/screens/phone.webp", width: 780, height: 1688 },
   },
   icon: "/slope-calculation/icon-512.png",
+  // the user manual: a page on this site, and the same page printed to PDF
+  // (scripts/slope-manual-pdf.mjs)
+  manual: {
+    href: "/slope-calculation/manual",
+    pdf: "/slope-calculation/Slope-Calculator-User-Manual.pdf",
+    pdfName: "Slope-Calculator-User-Manual.pdf",
+  },
+  // the Excel template, made by tool/excel_template.dart in the app's repository
+  template: {
+    href: "/slope-calculation/Slope-Calculator-Template.xlsx",
+    name: "Slope-Calculator-Template.xlsx",
+    detail: "The same slope, stations and crossfall in Excel formulas",
+  },
 };
 
 /** The four lines beside the icons in the hero */
