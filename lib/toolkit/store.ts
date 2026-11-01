@@ -1,0 +1,152 @@
+import { prisma } from "@/lib/prisma";
+
+// Survey Toolkit (beta test): who may use it, their PCs, and what it did on them. Three tables of
+// its own, created on first use like slope_jobs, so no migration and no change to any other table.
+// Deleting them (and lib/toolkit, app/api/toolkit) removes the test without a trace.
+//   toolkit_testers  emails allowed in the beta (admins always are)
+//   toolkit_devices  one row per PC: its name, Windows, Toolkit version and installed tools
+//   toolkit_events   installed / updated / uninstalled / failed, newest kept
+
+export const TOOLKIT_ACTIONS = ["installed", "updated", "uninstalled", "failed", "opened"] as const;
+export type ToolkitAction = (typeof TOOLKIT_ACTIONS)[number];
+const MAX_EVENTS_PER_DEVICE = 1000;
+
+let ready: Promise<void> | null = null;
+export function ensureToolkitTables(): Promise<void> {
+  if (!ready) {
+    ready = (async () => {
+      const run = (sql: string) => prisma.$executeRawUnsafe(sql);
+      await run(`CREATE TABLE IF NOT EXISTS "toolkit_testers" (
+        "email" TEXT NOT NULL,
+        "note" TEXT NOT NULL DEFAULT '',
+        "addedBy" TEXT NOT NULL DEFAULT '',
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "toolkit_testers_pkey" PRIMARY KEY ("email")
+      )`);
+      await run(`CREATE TABLE IF NOT EXISTS "toolkit_devices" (
+        "id" TEXT NOT NULL,
+        "userId" TEXT NOT NULL,
+        "name" TEXT NOT NULL DEFAULT '',
+        "windows" TEXT NOT NULL DEFAULT '',
+        "toolkitVersion" TEXT NOT NULL DEFAULT '',
+        "tools" TEXT NOT NULL DEFAULT '{}',
+        "firstSeen" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "lastSeen" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "toolkit_devices_pkey" PRIMARY KEY ("id")
+      )`);
+      await run(`CREATE INDEX IF NOT EXISTS "toolkit_devices_userId_idx" ON "toolkit_devices"("userId")`);
+      await run(`DO $$ BEGIN
+        ALTER TABLE "toolkit_devices" ADD CONSTRAINT "toolkit_devices_userId_fkey" FOREIGN KEY ("userId")
+          REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+      EXCEPTION WHEN duplicate_object THEN NULL; END $$`);
+      await run(`CREATE TABLE IF NOT EXISTS "toolkit_events" (
+        "id" BIGSERIAL NOT NULL,
+        "deviceId" TEXT NOT NULL,
+        "userId" TEXT NOT NULL,
+        "tool" TEXT NOT NULL,
+        "action" TEXT NOT NULL,
+        "fromVersion" TEXT NOT NULL DEFAULT '',
+        "toVersion" TEXT NOT NULL DEFAULT '',
+        "message" TEXT NOT NULL DEFAULT '',
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "toolkit_events_pkey" PRIMARY KEY ("id")
+      )`);
+      await run(`CREATE INDEX IF NOT EXISTS "toolkit_events_deviceId_idx" ON "toolkit_events"("deviceId", "createdAt")`);
+      await run(`CREATE INDEX IF NOT EXISTS "toolkit_events_createdAt_idx" ON "toolkit_events"("createdAt")`);
+      await run(`DO $$ BEGIN
+        ALTER TABLE "toolkit_events" ADD CONSTRAINT "toolkit_events_deviceId_fkey" FOREIGN KEY ("deviceId")
+          REFERENCES "toolkit_devices"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+      EXCEPTION WHEN duplicate_object THEN NULL; END $$`);
+    })().catch((e) => {
+      ready = null;
+      throw e;
+    });
+  }
+  return ready;
+}
+
+const normEmail = (e: string) => e.trim().toLowerCase();
+export const isEmail = (e: string) => /^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,}$/.test(e.trim());
+
+export async function isTester(email: string | null | undefined): Promise<boolean> {
+  if (!email) return false;
+  await ensureToolkitTables();
+  const r = await prisma.$queryRawUnsafe<{ n: bigint }[]>(`SELECT COUNT(*) AS n FROM "toolkit_testers" WHERE "email" = $1`, normEmail(email));
+  return Number(r[0]?.n ?? 0) > 0;
+}
+
+export async function listTesters() {
+  await ensureToolkitTables();
+  return prisma.$queryRawUnsafe<{ email: string; note: string; addedBy: string; createdAt: Date }[]>(
+    `SELECT "email","note","addedBy","createdAt" FROM "toolkit_testers" ORDER BY "createdAt" DESC`
+  );
+}
+
+export async function addTester(email: string, note: string, addedBy: string) {
+  await ensureToolkitTables();
+  await prisma.$executeRawUnsafe(
+    `INSERT INTO "toolkit_testers" ("email","note","addedBy") VALUES ($1,$2,$3)
+     ON CONFLICT ("email") DO UPDATE SET "note" = $2`,
+    normEmail(email),
+    note.slice(0, 200),
+    addedBy.slice(0, 200)
+  );
+}
+
+export async function removeTester(email: string): Promise<boolean> {
+  await ensureToolkitTables();
+  return (await prisma.$executeRawUnsafe(`DELETE FROM "toolkit_testers" WHERE "email" = $1`, normEmail(email))) > 0;
+}
+
+export interface DeviceReport {
+  id: string;
+  name: string;
+  windows: string;
+  toolkitVersion: string;
+  /** tool id → installed version ("" when not installed) */
+  tools: Record<string, string>;
+}
+
+/** Records the PC as seen now. A PC that signs in to another account moves to that account. */
+export async function seeDevice(userId: string, d: DeviceReport) {
+  await ensureToolkitTables();
+  await prisma.$executeRawUnsafe(
+    `INSERT INTO "toolkit_devices" ("id","userId","name","windows","toolkitVersion","tools")
+     VALUES ($1,$2,$3,$4,$5,$6)
+     ON CONFLICT ("id") DO UPDATE SET "userId"=$2,"name"=$3,"windows"=$4,"toolkitVersion"=$5,"tools"=$6,"lastSeen"=CURRENT_TIMESTAMP`,
+    d.id,
+    userId,
+    d.name,
+    d.windows,
+    d.toolkitVersion,
+    JSON.stringify(d.tools)
+  );
+}
+
+export interface EventReport {
+  tool: string;
+  action: ToolkitAction;
+  fromVersion: string;
+  toVersion: string;
+  message: string;
+}
+
+export async function addEvent(userId: string, deviceId: string, e: EventReport) {
+  await ensureToolkitTables();
+  await prisma.$executeRawUnsafe(
+    `INSERT INTO "toolkit_events" ("deviceId","userId","tool","action","fromVersion","toVersion","message") VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+    deviceId,
+    userId,
+    e.tool,
+    e.action,
+    e.fromVersion,
+    e.toVersion,
+    e.message
+  );
+  // keep the newest events of each PC only
+  await prisma.$executeRawUnsafe(
+    `DELETE FROM "toolkit_events" WHERE "deviceId" = $1 AND "id" NOT IN (
+       SELECT "id" FROM "toolkit_events" WHERE "deviceId" = $1 ORDER BY "createdAt" DESC, "id" DESC LIMIT ${MAX_EVENTS_PER_DEVICE})`,
+    deviceId
+  );
+}
