@@ -15,8 +15,10 @@ import {
   ChevronRight,
   Download,
   LayoutDashboard,
+  LayoutTemplate,
   Loader2,
   Monitor,
+  Star,
   Trash2,
   UserPlus,
   Users,
@@ -70,7 +72,7 @@ interface Data {
   downloads: { total: number; releases: { tag: string; published: string | null; prerelease: boolean; downloads: number }[] } | null;
 }
 
-type Section = "overview" | "testers" | "pcs" | "activity";
+type Section = "overview" | "testers" | "pcs" | "activity" | "front";
 
 /** 1.0.10 is newer than 1.0.9 */
 export function isOlder(a: string, b: string): boolean {
@@ -238,6 +240,10 @@ export default function ToolkitAdmin() {
         },
       ],
     },
+    {
+      label: "Launch",
+      sections: [{ id: "front", label: "Front page", icon: LayoutTemplate, text: "The Toolkit's front page: the chosen design in full, and all five options" }],
+    },
   ];
 
   const logout = async () => {
@@ -292,6 +298,7 @@ export default function ToolkitAdmin() {
       {section === "testers" && <Testers data={data} onChanged={load} onToast={setToast} />}
       {section === "pcs" && <Pcs data={data} now={now} onChanged={load} onToast={setToast} />}
       {section === "activity" && <ActivityList data={data} />}
+      {section === "front" && <FrontPage />}
       {toast && (
         <div role="status" className="fixed bottom-5 right-5 z-50 px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-[13.5px] text-slate-100 shadow-xl">
           {toast}
@@ -670,5 +677,54 @@ function ActivityList({ data }: { data: Data }) {
       <EventTable events={shown} tools={data.tools} />
       <p className="px-5 py-3 border-t border-[var(--adm-line)] text-[12px] text-slate-500">The newest 300 events. Each PC keeps its newest 1,000.</p>
     </section>
+  );
+}
+
+/** The front page: the chosen design (C, the hub) in full, and the five options to compare */
+function FrontPage() {
+  const links = [
+    {
+      href: "/toolkit-beta/home",
+      title: "The front page, in detail",
+      tag: "Chosen: C · Hub Diagram",
+      text: "The whole page in the chosen style: the hub, the five tools, how it works, the workspace, updates, safety, requirements and questions. A draft until the launch.",
+      chosen: true,
+    },
+    {
+      href: "/toolkit-beta/home-options",
+      title: "All five options",
+      tag: "A to E, side by side",
+      text: "Update Center, Dark Steps, Hub Diagram, Bold Yellow and App Window, live, with a note on each animation. Kept to compare.",
+      chosen: false,
+    },
+  ];
+  return (
+    <div className="space-y-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {links.map((l) => (
+          <a
+            key={l.href}
+            href={l.href}
+            target="_blank"
+            rel="noopener"
+            className={`${card} group block p-6 hover:border-blue-500/50 transition-colors`}
+          >
+            <span
+              className={`inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[11.5px] font-bold ${
+                l.chosen ? "bg-amber-400/15 text-amber-300" : "bg-[var(--adm-hover)] text-slate-400"
+              }`}
+            >
+              {l.chosen && <Star className="w-3.5 h-3.5" aria-hidden />} {l.tag}
+            </span>
+            <p className="mt-3 text-[17px] font-bold text-white group-hover:text-blue-300">{l.title} ↗</p>
+            <p className="mt-1.5 text-[13.5px] text-slate-400">{l.text}</p>
+            <p className="mt-3 text-[12.5px] font-mono text-slate-500">{l.href}</p>
+          </a>
+        ))}
+      </div>
+      <p className="text-[13px] text-slate-500">
+        Both pages are for admins only and never indexed. At the launch, the chosen page goes on the website and its Download button goes to the public installer.
+      </p>
+    </div>
   );
 }
