@@ -55,6 +55,9 @@ export const OPTIONS = [
 
 export type OptionId = (typeof OPTIONS)[number]["id"];
 
+/** The owner's choice, made into the full front page (/toolkit-beta/home) */
+export const CHOSEN: OptionId = "c";
+
 const ICONS: Record<string, LucideIcon> = {
   "excel-to-kml": Globe,
   roadpro: Route,
@@ -330,6 +333,73 @@ const nodeAt = (i: number, n: number) => {
   return { x: HUB.cx + HUB.r * Math.cos(a), y: HUB.cy + HUB.r * Math.sin(a), left: Math.cos(a) < -0.2, right: Math.cos(a) > 0.2 };
 };
 
+/** Option C's picture: the Toolkit at the centre, the five tools around it, updates travelling out */
+export function HubGraphic({ tools, className = "" }: { tools: OptionTool[]; className?: string }) {
+  return (
+    <div className={className} aria-hidden>
+      <svg viewBox="-40 0 540 460" className="w-full h-auto overflow-visible">
+        <circle className="ho-c-ring" cx={HUB.cx} cy={HUB.cy} r={HUB.r + 32} fill="none" stroke="#1e4fd8" strokeOpacity="0.35" strokeWidth="1.5" strokeDasharray="4 9" />
+        {tools.map((t, i) => {
+          const p = nodeAt(i, tools.length);
+          return <line key={t.id} x1={HUB.cx} y1={HUB.cy} x2={p.x} y2={p.y} stroke="#1e4fd8" strokeOpacity="0.22" strokeWidth="2" />;
+        })}
+        {tools.map((t, i) => {
+          const p = nodeAt(i, tools.length);
+          return (
+            <circle
+              key={t.id}
+              className="ho-c-pulse"
+              cx={HUB.cx}
+              cy={HUB.cy}
+              r="6"
+              fill="#ffd21f"
+              style={{ "--i": i, "--dx": `${p.x - HUB.cx}px`, "--dy": `${p.y - HUB.cy}px` } as CSSProperties}
+            />
+          );
+        })}
+        {/* the hub */}
+        <circle cx={HUB.cx} cy={HUB.cy} r="52" fill="#071a44" />
+        <circle cx={HUB.cx} cy={HUB.cy} r="52" fill="none" stroke="#ffd21f" strokeWidth="3" />
+        <g transform={`translate(${HUB.cx - 17} ${HUB.cy - 17})`} fill="none" stroke="#ffd21f" strokeWidth="3">
+          <rect x="0" y="0" width="14" height="14" rx="3" />
+          <rect x="20" y="0" width="14" height="14" rx="3" />
+          <rect x="0" y="20" width="14" height="14" rx="3" />
+          <circle cx="27" cy="27" r="7" fill="#ffd21f" />
+        </g>
+        {tools.map((t, i) => {
+          const p = nodeAt(i, tools.length);
+          const anchor = p.left ? "end" : p.right ? "start" : "middle";
+          const dx = p.left ? -36 : p.right ? 36 : 0;
+          const dy = !p.left && !p.right ? -54 : 0;
+          const Icon = iconOf(t.id);
+          return (
+            <g key={t.id}>
+              <circle className="ho-c-glow" cx={p.x} cy={p.y} r="28" fill="#ffd21f" style={{ "--i": i } as CSSProperties} />
+              <circle cx={p.x} cy={p.y} r="26" fill="#ffffff" stroke="#071a44" strokeWidth="2" />
+              <Icon x={p.x - 11} y={p.y - 11} width={22} height={22} color="#071a44" strokeWidth={2.2} />
+              <text className="ho-c-label" x={p.x + dx} y={p.y + dy - 2} textAnchor={anchor} fontSize="14" fontWeight="700" fill="#0f172a">
+                {t.name}
+              </text>
+              <text className="ho-c-label" x={p.x + dx} y={p.y + dy + 15} textAnchor={anchor} fontSize="12.5" fill="#475569">
+                {ver(t)}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+      {/* on a phone the diagram's labels would be too small: the tools are listed under it */}
+      <ul className="mt-2 grid grid-cols-2 gap-x-4 gap-y-2 sm:hidden">
+        {tools.map((t) => (
+          <li key={t.id} className="flex items-baseline justify-between gap-2 border-b border-slate-200 pb-1.5 text-[13.5px]">
+            <span className="font-semibold text-slate-900">{t.name}</span>
+            <span className="tabular-nums text-slate-500">{ver(t)}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export function OptionC({ tools, toolkitVersion, heroOnly }: OptionProps) {
   return (
     <Shell id="c" below={!heroOnly && <Below id="c" tools={tools} theme="light" />}>
@@ -342,67 +412,7 @@ export function OptionC({ tools, toolkitVersion, heroOnly }: OptionProps) {
             <Buttons id="c" primary="bg-[#071a44] text-white hover:bg-[#0b2560]" secondary="border border-slate-300 text-slate-800 hover:bg-white" />
             <p className="ho-enter ho-enter-3 mt-4 text-[13px] text-slate-500">{meta(toolkitVersion)}</p>
           </div>
-          <div className="ho-enter ho-enter-graphic mx-auto w-full max-w-[520px]" aria-hidden>
-            <svg viewBox="-40 0 540 460" className="w-full h-auto overflow-visible">
-              <circle className="ho-c-ring" cx={HUB.cx} cy={HUB.cy} r={HUB.r + 32} fill="none" stroke="#1e4fd8" strokeOpacity="0.35" strokeWidth="1.5" strokeDasharray="4 9" />
-              {tools.map((t, i) => {
-                const p = nodeAt(i, tools.length);
-                return <line key={t.id} x1={HUB.cx} y1={HUB.cy} x2={p.x} y2={p.y} stroke="#1e4fd8" strokeOpacity="0.22" strokeWidth="2" />;
-              })}
-              {tools.map((t, i) => {
-                const p = nodeAt(i, tools.length);
-                return (
-                  <circle
-                    key={t.id}
-                    className="ho-c-pulse"
-                    cx={HUB.cx}
-                    cy={HUB.cy}
-                    r="6"
-                    fill="#ffd21f"
-                    style={{ "--i": i, "--dx": `${p.x - HUB.cx}px`, "--dy": `${p.y - HUB.cy}px` } as CSSProperties}
-                  />
-                );
-              })}
-              {/* the hub */}
-              <circle cx={HUB.cx} cy={HUB.cy} r="52" fill="#071a44" />
-              <circle cx={HUB.cx} cy={HUB.cy} r="52" fill="none" stroke="#ffd21f" strokeWidth="3" />
-              <g transform={`translate(${HUB.cx - 17} ${HUB.cy - 17})`} fill="none" stroke="#ffd21f" strokeWidth="3">
-                <rect x="0" y="0" width="14" height="14" rx="3" />
-                <rect x="20" y="0" width="14" height="14" rx="3" />
-                <rect x="0" y="20" width="14" height="14" rx="3" />
-                <circle cx="27" cy="27" r="7" fill="#ffd21f" />
-              </g>
-              {tools.map((t, i) => {
-                const p = nodeAt(i, tools.length);
-                const anchor = p.left ? "end" : p.right ? "start" : "middle";
-                const dx = p.left ? -36 : p.right ? 36 : 0;
-                const dy = !p.left && !p.right ? -54 : 0;
-                const Icon = iconOf(t.id);
-                return (
-                  <g key={t.id}>
-                    <circle className="ho-c-glow" cx={p.x} cy={p.y} r="28" fill="#ffd21f" style={{ "--i": i } as CSSProperties} />
-                    <circle cx={p.x} cy={p.y} r="26" fill="#ffffff" stroke="#071a44" strokeWidth="2" />
-                    <Icon x={p.x - 11} y={p.y - 11} width={22} height={22} color="#071a44" strokeWidth={2.2} />
-                    <text className="ho-c-label" x={p.x + dx} y={p.y + dy - 2} textAnchor={anchor} fontSize="14" fontWeight="700" fill="#0f172a">
-                      {t.name}
-                    </text>
-                    <text className="ho-c-label" x={p.x + dx} y={p.y + dy + 15} textAnchor={anchor} fontSize="12.5" fill="#475569">
-                      {ver(t)}
-                    </text>
-                  </g>
-                );
-              })}
-            </svg>
-            {/* on a phone the diagram's labels would be too small: the tools are listed under it */}
-            <ul className="mt-2 grid grid-cols-2 gap-x-4 gap-y-2 sm:hidden">
-              {tools.map((t) => (
-                <li key={t.id} className="flex items-baseline justify-between gap-2 border-b border-slate-200 pb-1.5 text-[13.5px]">
-                  <span className="font-semibold text-slate-900">{t.name}</span>
-                  <span className="tabular-nums text-slate-500">{ver(t)}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <HubGraphic tools={tools} className="ho-enter ho-enter-graphic mx-auto w-full max-w-[520px]" />
         </div>
       </section>
     </Shell>

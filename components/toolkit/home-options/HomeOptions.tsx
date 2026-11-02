@@ -4,10 +4,11 @@
 // down, with a note on its animation; any one full size; a Pause button. The animations also
 // pause while the tab is hidden, and are still for anyone who asks their system for reduced
 // motion. Only for the owner to choose one (app/toolkit-beta/home-options).
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import { ArrowLeft, ArrowRight, Columns3, Pause, Play } from "lucide-react";
-import { OPTIONS, OPTION_VIEWS, type OptionId, type OptionTool } from "./options";
-import "./home-options.css";
+import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import Link from "next/link";
+import { ArrowLeft, ArrowRight, Columns3, Pause, Play, Star } from "lucide-react";
+import MotionRoot from "./MotionRoot";
+import { CHOSEN, OPTIONS, OPTION_VIEWS, type OptionId, type OptionTool } from "./options";
 
 /** The width each option is drawn at in the side-by-side view, then scaled down to fit */
 const PREVIEW_WIDTH = 1280;
@@ -47,42 +48,8 @@ function Scaled({ children }: { children: ReactNode }) {
 }
 
 export default function HomeOptions({ tools, toolkitVersion }: { tools: OptionTool[]; toolkitVersion: string | null }) {
-  const root = useRef<HTMLDivElement>(null);
   const [view, setView] = useState<"all" | OptionId>("all");
   const [paused, setPaused] = useState(false);
-  const [hidden, setHidden] = useState(false);
-
-  // pause while the tab is hidden
-  useEffect(() => {
-    const onVisibility = () => setHidden(document.visibilityState === "hidden");
-    document.addEventListener("visibilitychange", onVisibility);
-    return () => document.removeEventListener("visibilitychange", onVisibility);
-  }, []);
-
-  // sections fade and slide in as they come into view (straight away with reduced motion)
-  useEffect(() => {
-    const el = root.current;
-    if (!el) return;
-    el.classList.add("ho-js");
-    const items = Array.from(el.querySelectorAll<HTMLElement>(".ho-reveal:not(.ho-in)"));
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || !("IntersectionObserver" in window)) {
-      items.forEach((i) => i.classList.add("ho-in"));
-      return;
-    }
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting) {
-            e.target.classList.add("ho-in");
-            io.unobserve(e.target);
-          }
-        }
-      },
-      { rootMargin: "0px 0px -8% 0px" }
-    );
-    items.forEach((i) => io.observe(i));
-    return () => io.disconnect();
-  }, [view]);
 
   const show = (v: "all" | OptionId) => {
     setView(v);
@@ -93,7 +60,7 @@ export default function HomeOptions({ tools, toolkitVersion }: { tools: OptionTo
   const View = current ? OPTION_VIEWS[current.id] : null;
 
   return (
-    <div ref={root} className="ho-root min-h-screen bg-[#f4f6fa] text-slate-900" data-paused={paused || hidden ? "true" : "false"}>
+    <MotionRoot className="min-h-screen bg-[#f4f6fa] text-slate-900" paused={paused} revealKey={view}>
       <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center gap-3">
           <div className="min-w-0 basis-full sm:basis-auto sm:flex-1">
@@ -135,6 +102,12 @@ export default function HomeOptions({ tools, toolkitVersion }: { tools: OptionTo
       {view === "all" || !current || !View ? (
         <main className="max-w-[1400px] mx-auto px-4 sm:px-6 py-8">
           <h1 className="text-2xl sm:text-[28px] font-extrabold tracking-tight">Five ways to open the Toolkit&apos;s front page</h1>
+          <p className="mt-2 inline-flex flex-wrap items-center gap-2 rounded-lg bg-amber-50 px-3 py-2 text-[14px] text-amber-900">
+            <Star className="w-4 h-4" aria-hidden /> Chosen: <strong>{OPTIONS.find((o) => o.id === CHOSEN)?.name}</strong>.
+            <Link href="/toolkit-beta/home" className="font-bold underline underline-offset-2">
+              See the full front page
+            </Link>
+          </p>
           <p className="mt-2 max-w-3xl text-[15px] text-slate-600">
             Same words in each, with the tools&apos; real versions; only the look and the motion differ. Each one is live below; open any one full size to scroll
             through it, hover the buttons and cards, and see it on a phone. Then tell us which letter to take forward.
@@ -150,6 +123,11 @@ export default function HomeOptions({ tools, toolkitVersion }: { tools: OptionTo
                   <div className="mt-4 flex items-center gap-2">
                     <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#071a44] text-[13px] font-extrabold text-[#ffd21f]">{o.id.toUpperCase()}</span>
                     <h2 className="text-[16px] font-bold">{o.name}</h2>
+                    {o.id === CHOSEN && (
+                      <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-[12px] font-bold text-amber-800">
+                        <Star className="w-3.5 h-3.5" aria-hidden /> Chosen
+                      </span>
+                    )}
                   </div>
                   <p className="mt-2 flex-1 text-[13.5px] leading-relaxed text-slate-600">
                     <span className="font-semibold text-slate-800">Animation: </span>
@@ -161,6 +139,14 @@ export default function HomeOptions({ tools, toolkitVersion }: { tools: OptionTo
                   >
                     See {o.id.toUpperCase()} full size <ArrowRight className="w-4 h-4" aria-hidden />
                   </button>
+                  {o.id === CHOSEN && (
+                    <Link
+                      href="/toolkit-beta/home"
+                      className="mt-2 inline-flex items-center justify-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2.5 text-[14px] font-bold text-amber-900 hover:bg-amber-100"
+                    >
+                      <Star className="w-4 h-4" aria-hidden /> The full front page, in detail
+                    </Link>
+                  )}
                 </li>
               );
             })}
@@ -204,6 +190,6 @@ export default function HomeOptions({ tools, toolkitVersion }: { tools: OptionTo
           </div>
         </main>
       )}
-    </div>
+    </MotionRoot>
   );
 }
