@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
 
 // Survey Toolkit (beta test): who may use it, their PCs, and what it did on them. Three tables of
@@ -6,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 //   toolkit_testers  emails allowed in the beta (admins always are)
 //   toolkit_devices  one row per PC: its name, Windows, Toolkit version and installed tools
 //   toolkit_events   installed / updated / uninstalled / failed, newest kept
+//   toolkit_handoffs single-use codes that sign the Toolkit's built-in web app window in
 
 export const TOOLKIT_ACTIONS = ["installed", "updated", "uninstalled", "failed", "opened"] as const;
 export type ToolkitAction = (typeof TOOLKIT_ACTIONS)[number];
@@ -56,6 +58,17 @@ export function ensureToolkitTables(): Promise<void> {
       await run(`DO $$ BEGIN
         ALTER TABLE "toolkit_events" ADD CONSTRAINT "toolkit_events_deviceId_fkey" FOREIGN KEY ("deviceId")
           REFERENCES "toolkit_devices"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+      EXCEPTION WHEN duplicate_object THEN NULL; END $$`);
+      await run(`CREATE TABLE IF NOT EXISTS "toolkit_handoffs" (
+        "codeHash" TEXT NOT NULL,
+        "userId" TEXT NOT NULL,
+        "next" TEXT NOT NULL,
+        "expiresAt" TIMESTAMP(3) NOT NULL,
+        CONSTRAINT "toolkit_handoffs_pkey" PRIMARY KEY ("codeHash")
+      )`);
+      await run(`DO $$ BEGIN
+        ALTER TABLE "toolkit_handoffs" ADD CONSTRAINT "toolkit_handoffs_userId_fkey" FOREIGN KEY ("userId")
+          REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
       EXCEPTION WHEN duplicate_object THEN NULL; END $$`);
     })().catch((e) => {
       ready = null;
@@ -149,4 +162,42 @@ export async function addEvent(userId: string, deviceId: string, e: EventReport)
        SELECT "id" FROM "toolkit_events" WHERE "deviceId" = $1 ORDER BY "createdAt" DESC, "id" DESC LIMIT ${MAX_EVENTS_PER_DEVICE})`,
     deviceId
   );
+}
+
+// ---------------------------------------------------------------- sign-in handover
+//
+// The Toolkit shows the web apps (Excel to KML, Traverse & Level, Slope Calculator) inside its own
+// window. So the user doesn't sign in a second time there, the Toolkit, already signed in, asks for
+// a code (POST /api/toolkit/handoff) and opens /api/toolkit/handoff?code=… in that window, which
+// signs it in and goes on to the app. The code works once, for 60 seconds, only for those three
+// addresses, and only its SHA-256 is stored. The long-lived sign-in never goes into an address.
+
+/** The pages the handover may go on to: the three web apps */
+export const HANDOFF_PAGES = ["/app", "/traverse/app", "/slope-calculation/app"] as const;
+const HANDOFF_SECONDS = 60;
+const hashOf = (code: string) => crypto.createHash("sha256").update(code).digest("hex");
+
+export async function createHandoff(userId: string, next: string): Promise<string> {
+  await ensureToolkitTables();
+  const code = crypto.randomBytes(32).toString("hex");
+  await prisma.$executeRawUnsafe(`DELETE FROM "toolkit_handoffs" WHERE "expiresAt" < NOW()`);
+  await prisma.$executeRawUnsafe(
+    `INSERT INTO "toolkit_handoffs" ("codeHash","userId","next","expiresAt") VALUES ($1,$2,$3,NOW() + ($4 || ' seconds')::interval)`,
+    hashOf(code),
+    userId,
+    next,
+    String(HANDOFF_SECONDS)
+  );
+  return code;
+}
+
+/** Uses up a code: who it was for and where it goes, or null when unknown, used or expired */
+export async function takeHandoff(code: string): Promise<{ userId: string; next: string } | null> {
+  if (!/^[0-9a-f]{64}$/.test(code)) return null;
+  await ensureToolkitTables();
+  const rows = await prisma.$queryRawUnsafe<{ userId: string; next: string }[]>(
+    `DELETE FROM "toolkit_handoffs" WHERE "codeHash" = $1 AND "expiresAt" > NOW() RETURNING "userId","next"`,
+    hashOf(code)
+  );
+  return rows[0] ?? null;
 }
