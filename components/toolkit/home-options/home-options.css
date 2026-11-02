@@ -1,0 +1,241 @@
+/*
+ * Survey Toolkit (beta test): the motion of the five front-page options (options.tsx).
+ *
+ * Rules, from the brief:
+ * - transform and opacity only, apart from the self-drawing check marks (stroke-dashoffset);
+ * - loops of 4 to 8 seconds, natural easing, no flashing; the ticker and the slow drifts are
+ *   continuous movements rather than loops;
+ * - an element's own style is its still, finished state: the animation only plays over it, so
+ *   with reduced motion (or paused) the page is complete and calm;
+ * - paused by the page's Pause button and while the tab is hidden (data-paused on .ho-root).
+ * Everything is under .ho-root, so nothing leaks into the rest of the site.
+ */
+
+.ho-root {
+  --ho-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* ------------------------------------------------------------ entrance, in sequence */
+.ho-root .ho-enter {
+  animation: ho-enter 0.7s var(--ho-ease) both;
+}
+.ho-root .ho-enter-0 { animation-delay: 0.05s; }
+.ho-root .ho-enter-1 { animation-delay: 0.15s; }
+.ho-root .ho-enter-2 { animation-delay: 0.3s; }
+.ho-root .ho-enter-3 { animation-delay: 0.45s; }
+.ho-root .ho-enter-graphic {
+  animation: ho-enter-graphic 0.9s var(--ho-ease) 0.35s both;
+}
+@keyframes ho-enter {
+  from { opacity: 0; translate: 0 14px; }
+  to { opacity: 1; translate: 0 0; }
+}
+@keyframes ho-enter-graphic {
+  from { opacity: 0; translate: 0 22px; scale: 0.98; }
+  to { opacity: 1; translate: 0 0; scale: 1; }
+}
+
+/* ------------------------------------------------------------ on scroll (the script adds .ho-in) */
+.ho-root.ho-js .ho-reveal:not(.ho-in) {
+  opacity: 0;
+}
+.ho-root .ho-reveal.ho-in {
+  animation: ho-enter 0.6s var(--ho-ease) calc(var(--i, 0) * 70ms) both;
+}
+
+/* ------------------------------------------------------------ hover and focus */
+.ho-root .ho-btn {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  padding: 0.8rem 1.5rem;
+  font-size: 16px;
+  font-weight: 800;
+  transition: transform 0.2s var(--ho-ease), background-color 0.2s, box-shadow 0.2s;
+}
+.ho-root .ho-btn:hover {
+  transform: translateY(-2px);
+}
+.ho-root .ho-btn:focus-visible {
+  outline: 3px solid #ffd21f;
+  outline-offset: 3px;
+}
+.ho-root .ho-arrow {
+  transition: transform 0.2s var(--ho-ease);
+}
+.ho-root .ho-btn:hover .ho-arrow,
+.ho-root .ho-btn:focus-visible .ho-arrow {
+  transform: translateX(4px);
+}
+/* the Download button: three soft pulses, then still */
+.ho-root .ho-pulse::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: inherit;
+  opacity: 0;
+  animation: ho-pulse 1.6s ease-out 1.4s 3;
+}
+@keyframes ho-pulse {
+  0% { transform: scale(1); opacity: 0.35; }
+  100% { transform: scale(1.12, 1.4); opacity: 0; }
+}
+.ho-root .ho-card {
+  transition: transform 0.25s var(--ho-ease), box-shadow 0.25s, border-color 0.25s;
+}
+.ho-root .ho-card:hover {
+  transform: translateY(-4px);
+}
+
+/* the check marks' finished state is drawn */
+.ho-root .ho-draw path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+
+/* ------------------------------------------------------------ A: Update Center (8 s) */
+.ho-root .ho-a-row {
+  --d: calc(var(--i, 0) * 1.6s);
+}
+.ho-root .ho-a-glow { opacity: 0; animation: ho-a-glow 8s var(--d) infinite; }
+.ho-root .ho-a-s1 { opacity: 0; animation: ho-a-s1 8s var(--d) infinite; }
+.ho-root .ho-a-s2 { opacity: 0; animation: ho-a-s2 8s var(--d) infinite; }
+.ho-root .ho-a-s3 { animation: ho-a-s3 8s var(--d) infinite; }
+.ho-root .ho-a-track { opacity: 0; animation: ho-a-track 8s var(--d) infinite; }
+.ho-root .ho-a-bar { transform-origin: left; animation: ho-a-bar 8s ease-in-out var(--d) infinite; }
+.ho-root .ho-a-check path { animation: ho-a-check 8s ease-out var(--d) infinite; }
+@keyframes ho-a-glow { 0%, 17% { opacity: 1; } 24%, 100% { opacity: 0; } }
+@keyframes ho-a-s1 { 0%, 5% { opacity: 1; } 6.5%, 100% { opacity: 0; } }
+@keyframes ho-a-s2 { 0%, 5% { opacity: 0; } 6.5%, 16% { opacity: 1; } 17.5%, 100% { opacity: 0; } }
+@keyframes ho-a-s3 { 0%, 16% { opacity: 0; } 17.5%, 100% { opacity: 1; } }
+@keyframes ho-a-track { 0%, 5% { opacity: 0; } 6.5%, 16% { opacity: 1; } 19%, 100% { opacity: 0; } }
+@keyframes ho-a-bar { 0%, 6% { transform: scaleX(0); } 16%, 100% { transform: scaleX(1); } }
+@keyframes ho-a-check { 0%, 17% { stroke-dashoffset: 1; } 23%, 100% { stroke-dashoffset: 0; } }
+.ho-root .ho-a-spin { animation: ho-turn 8s var(--ho-ease) infinite; }
+.ho-root .ho-a-checking-now { opacity: 0; animation: ho-a-now 8s infinite; }
+.ho-root .ho-a-checked { animation: ho-a-then 8s infinite; }
+@keyframes ho-turn { 0% { transform: rotate(0); } 12%, 100% { transform: rotate(360deg); } }
+@keyframes ho-a-now { 0%, 10% { opacity: 1; } 13%, 100% { opacity: 0; } }
+@keyframes ho-a-then { 0%, 10% { opacity: 0; } 13%, 100% { opacity: 1; } }
+
+/* ------------------------------------------------------------ B: Dark Steps (6 s) */
+.ho-root .ho-b-grid {
+  background-image: linear-gradient(rgba(156, 184, 255, 0.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(156, 184, 255, 0.09) 1px, transparent 1px);
+  background-size: 48px 48px;
+  animation: ho-b-drift 18s linear infinite;
+}
+@keyframes ho-b-drift { to { transform: translate(48px, 48px); } }
+.ho-root .ho-b-runner { transform: translateX(100%); animation: ho-b-run 6s var(--ho-ease) infinite; }
+.ho-root .ho-b-dot {
+  opacity: 0;
+  box-shadow: 0 0 18px 6px rgba(255, 210, 31, 0.55);
+  animation: ho-b-dot 6s infinite;
+}
+@keyframes ho-b-run {
+  0%, 8% { transform: translateX(0); }
+  38%, 46% { transform: translateX(50%); }
+  76%, 100% { transform: translateX(100%); }
+}
+@keyframes ho-b-dot { 0% { opacity: 0; } 4%, 86% { opacity: 1; } 96%, 100% { opacity: 0; } }
+.ho-root .ho-b-light { opacity: 0; animation: 6s infinite; }
+.ho-root .ho-b-step:nth-child(1) .ho-b-light { animation-name: ho-b-l1; }
+.ho-root .ho-b-step:nth-child(2) .ho-b-light { animation-name: ho-b-l2; }
+.ho-root .ho-b-step:nth-child(3) .ho-b-light { animation-name: ho-b-l3; }
+@keyframes ho-b-l1 { 0%, 8% { opacity: 1; } 20%, 100% { opacity: 0; } }
+@keyframes ho-b-l2 { 0%, 34% { opacity: 0; } 40%, 48% { opacity: 1; } 60%, 100% { opacity: 0; } }
+@keyframes ho-b-l3 { 0%, 72% { opacity: 0; } 78%, 94% { opacity: 1; } 100% { opacity: 0; } }
+.ho-root .ho-b-bar { transform-origin: left; animation: ho-b-bar 6s ease-in-out infinite; }
+@keyframes ho-b-bar { 0%, 76% { transform: scaleX(0); } 95%, 100% { transform: scaleX(1); } }
+
+/* ------------------------------------------------------------ C: Hub Diagram (7.5 s) */
+.ho-root .ho-c-ring { transform-box: fill-box; transform-origin: center; animation: ho-spin 90s linear infinite; }
+@keyframes ho-spin { to { transform: rotate(360deg); } }
+.ho-root .ho-c-pulse {
+  opacity: 0;
+  filter: drop-shadow(0 0 6px rgba(255, 210, 31, 0.9));
+  animation: ho-c-pulse 7.5s ease-in-out calc(var(--i, 0) * 1.5s) infinite;
+}
+@keyframes ho-c-pulse {
+  0% { transform: translate(0, 0); opacity: 0; }
+  3%, 16% { opacity: 1; }
+  20% { transform: translate(var(--dx), var(--dy)); opacity: 0; }
+  100% { transform: translate(var(--dx), var(--dy)); opacity: 0; }
+}
+.ho-root .ho-c-glow {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  animation: ho-c-glow 7.5s ease-out calc(var(--i, 0) * 1.5s) infinite;
+}
+@keyframes ho-c-glow {
+  0%, 17% { opacity: 0; transform: scale(0.85); }
+  21% { opacity: 0.6; transform: scale(1); }
+  36%, 100% { opacity: 0; transform: scale(1.7); }
+}
+
+@media (max-width: 639px) {
+  .ho-root .ho-c-label { display: none; }
+}
+
+/* ------------------------------------------------------------ D: Bold Yellow (8 s) */
+.ho-root .ho-d-ticker { animation: ho-ticker 28s linear infinite; }
+@keyframes ho-ticker { to { transform: translateX(-50%); } }
+.ho-root .ho-d-check path { animation: ho-d-check 8s ease-out calc(var(--i, 0) * 0.45s) infinite; }
+@keyframes ho-d-check { 0% { stroke-dashoffset: 1; } 9%, 86% { stroke-dashoffset: 0; } 95%, 100% { stroke-dashoffset: 1; } }
+.ho-root .ho-d-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: inherit;
+  opacity: 0;
+  animation: ho-ping 2.4s ease-out infinite;
+}
+@keyframes ho-ping { 0% { transform: scale(1); opacity: 0.6; } 75%, 100% { transform: scale(2.6); opacity: 0; } }
+
+/* ------------------------------------------------------------ E: App Window (8 s) */
+.ho-root .ho-e-toast { opacity: 0; transform: translateY(16px); animation: ho-e-toast 8s var(--ho-ease) infinite; }
+@keyframes ho-e-toast {
+  0%, 10% { opacity: 0; transform: translateY(16px); }
+  15%, 34% { opacity: 1; transform: translateY(0); }
+  40%, 100% { opacity: 0; transform: translateY(16px); }
+}
+.ho-root .ho-e-ok { animation: ho-e-ok 8s infinite; }
+.ho-root .ho-e-avail { opacity: 0; animation: ho-e-avail 8s infinite; }
+@keyframes ho-e-ok {
+  0%, 12% { opacity: 1; transform: translateY(0); }
+  15%, 62% { opacity: 0; transform: translateY(-8px); }
+  66%, 100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes ho-e-avail {
+  0%, 12% { opacity: 0; transform: translateY(8px); }
+  15%, 62% { opacity: 1; transform: translateY(0); }
+  66%, 100% { opacity: 0; transform: translateY(8px); }
+}
+.ho-root .ho-e-amber { opacity: 0; animation: ho-e-amber 8s infinite; }
+.ho-root .ho-e-busy { opacity: 0; animation: ho-e-amber 8s infinite, ho-spin 0.9s linear infinite; }
+@keyframes ho-e-amber { 0%, 22% { opacity: 0; } 25%, 60% { opacity: 1; } 64%, 100% { opacity: 0; } }
+.ho-root .ho-e-bar { transform-origin: left; animation: ho-e-bar 8s ease-in-out infinite; }
+@keyframes ho-e-bar { 0%, 24% { transform: scaleX(0); } 60%, 100% { transform: scaleX(1); } }
+
+/* ------------------------------------------------------------ paused, and reduced motion */
+/* the entrance and the scroll reveal always finish, so nothing stays hidden */
+.ho-root[data-paused="true"] .ho-opt *:not(.ho-enter):not(.ho-reveal),
+.ho-root[data-paused="true"] .ho-opt *::before,
+.ho-root[data-paused="true"] .ho-opt *::after {
+  animation-play-state: paused !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ho-root *,
+  .ho-root *::before,
+  .ho-root *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
