@@ -201,3 +201,106 @@ export async function takeHandoff(code: string): Promise<{ userId: string; next:
   );
   return rows[0] ?? null;
 }
+
+// ---------------------------------------------------------------- Admin (T6)
+//
+// What /toolkit-beta/admin shows: the testers (and whether they have an account yet), each PC
+// with its tool versions, and what the Toolkits did. Read only, apart from removing a PC.
+
+export interface TesterRow {
+  email: string;
+  note: string;
+  addedBy: string;
+  createdAt: Date;
+  /** null until they create an account on the website */
+  name: string | null;
+  lastLogin: Date | null;
+  devices: number;
+}
+
+export async function listTesterRows(): Promise<TesterRow[]> {
+  await ensureToolkitTables();
+  const rows = await prisma.$queryRawUnsafe<(Omit<TesterRow, "devices"> & { devices: bigint })[]>(
+    `SELECT t."email", t."note", t."addedBy", t."createdAt", u."name", u."lastLoginAt" AS "lastLogin",
+            (SELECT COUNT(*) FROM "toolkit_devices" d WHERE d."userId" = u."id") AS "devices"
+       FROM "toolkit_testers" t LEFT JOIN "users" u ON LOWER(u."email") = t."email"
+      ORDER BY t."createdAt" DESC`
+  );
+  return rows.map((r) => ({ ...r, devices: Number(r.devices ?? 0) }));
+}
+
+export interface DeviceRow {
+  id: string;
+  email: string | null;
+  userName: string | null;
+  name: string;
+  windows: string;
+  toolkitVersion: string;
+  tools: Record<string, string>;
+  firstSeen: Date;
+  lastSeen: Date;
+}
+
+export async function listDevices(): Promise<DeviceRow[]> {
+  await ensureToolkitTables();
+  const rows = await prisma.$queryRawUnsafe<(Omit<DeviceRow, "tools"> & { tools: string })[]>(
+    `SELECT d."id", u."email", u."name" AS "userName", d."name", d."windows", d."toolkitVersion", d."tools",
+            d."firstSeen", d."lastSeen"
+       FROM "toolkit_devices" d LEFT JOIN "users" u ON u."id" = d."userId"
+      ORDER BY d."lastSeen" DESC LIMIT 500`
+  );
+  return rows.map((r) => {
+    let tools: Record<string, string> = {};
+    try {
+      const t = JSON.parse(r.tools) as unknown;
+      if (t && typeof t === "object") tools = t as Record<string, string>;
+    } catch {
+      // stored by seeDevice as JSON; anything else shows as no tools
+    }
+    return { ...r, tools };
+  });
+}
+
+/** Forgets a PC and its events (it comes back the next time its Toolkit reports) */
+export async function removeDevice(id: string): Promise<boolean> {
+  await ensureToolkitTables();
+  return (await prisma.$executeRawUnsafe(`DELETE FROM "toolkit_devices" WHERE "id" = $1`, id)) > 0;
+}
+
+export interface EventRow {
+  id: string;
+  deviceId: string;
+  deviceName: string | null;
+  email: string | null;
+  tool: string;
+  action: string;
+  fromVersion: string;
+  toVersion: string;
+  message: string;
+  createdAt: Date;
+}
+
+/** The newest events, all PCs */
+export async function listEvents(limit = 300): Promise<EventRow[]> {
+  await ensureToolkitTables();
+  return prisma.$queryRawUnsafe<EventRow[]>(
+    `SELECT e."id"::text AS "id", e."deviceId", d."name" AS "deviceName", u."email", e."tool", e."action",
+            e."fromVersion", e."toVersion", e."message", e."createdAt"
+       FROM "toolkit_events" e
+       LEFT JOIN "toolkit_devices" d ON d."id" = e."deviceId"
+       LEFT JOIN "users" u ON u."id" = e."userId"
+      ORDER BY e."createdAt" DESC, e."id" DESC LIMIT $1`,
+    Math.max(1, Math.min(1000, Math.floor(limit)))
+  );
+}
+
+/** The last [days] days: how many of each action, and how many were automatic updates (T5) */
+export async function eventCounts(days = 30): Promise<Record<string, { all: number; automatic: number }>> {
+  await ensureToolkitTables();
+  const rows = await prisma.$queryRawUnsafe<{ action: string; n: bigint; auto: bigint }[]>(
+    `SELECT "action", COUNT(*) AS "n", COUNT(*) FILTER (WHERE "message" LIKE 'automatic%') AS "auto"
+       FROM "toolkit_events" WHERE "createdAt" > NOW() - ($1 || ' days')::interval GROUP BY "action"`,
+    String(Math.max(1, Math.floor(days)))
+  );
+  return Object.fromEntries(rows.map((r) => [r.action, { all: Number(r.n), automatic: Number(r.auto) }]));
+}
