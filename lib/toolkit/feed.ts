@@ -1,9 +1,10 @@
 // Survey Toolkit (beta test): the version feed at /api/toolkit/feed. For each of the five tools:
 // the latest version, where to download it, its size and SHA-256, and how to install it.
-//   The three Windows programs: their latest.json (the same file their own update check reads)
-//   and their latest GitHub release.
-//   RoadPro and Project Folder Manager: the version in lib/roadpro.ts and lib/folderManager.ts,
-//   and the zip on this website, downloaded once by the server and hashed.
+//   The Windows programs (Excel to KML, Traverse & Level, Slope Calculator and, from version 7,
+//   Project Folder Manager): their latest.json (the same file their own update check reads) and
+//   their latest GitHub release.
+//   RoadPro: the version in lib/roadpro.ts and the zip on this website, downloaded once by the
+//   server and hashed.
 // A tool whose source can't be read, or whose SHA-256 sources disagree, gets no download and
 // a problem instead, so the Toolkit never installs anything it can't check.
 import crypto from "crypto";

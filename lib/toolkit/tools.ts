@@ -3,7 +3,6 @@
 // installer and files in the Toolkit's T0 research (its docs/TOOLS.md) and checked on Windows by
 // its Probe workflow. Only the Toolkit's own routes (/api/toolkit/*) use this file.
 import { ROADPRO_FILES, ROADPRO_RELEASED, ROADPRO_VERSION } from "@/lib/roadpro";
-import { PFM_FILES, PFM_RELEASED, PFM_VERSION } from "@/lib/folderManager";
 
 export type ToolkitToolId = "excel-to-kml" | "roadpro" | "traverse" | "folder-manager" | "slope";
 
@@ -104,15 +103,17 @@ export const TOOLKIT_TOOLS: ToolkitTool[] = [
     name: "Project Folder Manager",
     platform: "Windows",
     page: "/project-folder-manager",
+    // version 7 and later: a Windows program with an installer, released on GitHub with latest.json
+    // (6.2 was a zip from this website; the Toolkit from 0.6.2 updates such a copy to 7)
     source: {
-      kind: "zip",
-      href: PFM_FILES.package.href,
-      file: PFM_FILES.package.name,
-      version: PFM_VERSION,
-      released: PFM_RELEASED,
-      files: ["Project_Folder_Manager.exe", "Project_Folder_Manager.hta", "READ_ME.txt", "dashboard_icon.ico"],
-      keep: ["Project_Folder_Manager_config.txt"],
-      main: "Project_Folder_Manager.exe",
+      kind: "installer",
+      repo: "Asjad-Mehmood/Project-manager",
+      installer: "ProjectFolderManager-Setup.exe",
+      registryKey: "ProjectFolderManager",
+      exe: ["ProjectFolderManager.exe"],
+      silentArgs: ["/S"],
+      opensAfterSilentInstall: false,
+      closesOpenCopy: true,
     },
   },
   {
