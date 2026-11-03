@@ -101,13 +101,13 @@ const UPDATE_GUIDES: Record<string, UpdateGuide> = {
   },
   "folder-manager": {
     platform: "Windows 10 and 11",
-    automatic: false,
+    automatic: true,
     steps: [
-      "Download Project_Folder_Manager.zip.",
-      "Replace only Project_Folder_Manager.hta in your program folder, next to the .exe.",
-      "Your settings and search index are kept, since they're saved next to the program.",
+      "Version 7 or later: open it while you're online and it offers the update, then installs it and opens again.",
+      "Still on 6.2? Download the version 7 installer once; its start page offers to bring in your 6.2 settings.",
+      "Your folders and settings are kept through every update.",
     ],
-    newUser: "New to Project Folder Manager? Unzip it anywhere, open the .exe and point it at your project folder.",
+    newUser: "New to Project Folder Manager? Download the installer, open it, and choose a drive or a folder to start.",
     more: { label: "Install guide", href: "/project-folder-manager#install" },
   },
 };

@@ -142,8 +142,8 @@ export default function DownloadCentre({
             Icon={FolderTree}
             name="Project Folder Manager"
             version={`v${PFM_VERSION}`}
-            file="Windows program · ZIP, 65 KB"
-            needs="Windows 10 and 11. Nothing to install."
+            file="Windows installer · 9 MB"
+            needs="Windows 10 and 11, updates itself."
             href="/project-folder-manager"
             action={<FolderManagerDownload className={button} label="Download" />}
             guide={{ href: "/project-folder-manager#install", label: "Install steps" }}
