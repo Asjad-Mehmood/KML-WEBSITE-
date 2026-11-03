@@ -50,6 +50,7 @@ export interface AllSettings {
   signupPrompt: boolean;
   reviewPrompt: boolean;
   homeHero: "new" | "classic";
+  adminTwoFactor: boolean;
 }
 
 type Draft = AllSettings;
@@ -196,13 +197,14 @@ export default function SettingsPanel({
       <div className="space-y-6">
         {/* Status at a glance (what is live now, not the unsaved draft) */}
         <Section id="status" icon={CheckCircle2} title="Live now" text="What visitors see right now, from the saved settings.">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
             <Pill label="Web app" value={saved.maintenanceMode ? "Maintenance" : "Running"} warn={saved.maintenanceMode} />
             <Pill label="Traverse & Level" value={saved.tlEnabled ? "Open" : "Closed"} warn={!saved.tlEnabled} />
             <Pill label="Traverse adjust" value={saved.traverseEnabled ? "Shown" : "Hidden"} warn={!saved.traverseEnabled} />
             <Pill label="New sign-ups" value={saved.allowSignups ? "Open" : "Paused"} warn={!saved.allowSignups} />
             <Pill label="Downloads" value={saved.requireAuthForDownload ? "Sign-in needed" : "Open to all"} />
             <Pill label="Announcement" value={announcementLive ? "Showing" : "Off"} />
+            <Pill label="Admin two-factor" value={saved.adminTwoFactor ? "On" : "Off"} warn={!saved.adminTwoFactor} />
           </div>
         </Section>
 
@@ -463,8 +465,22 @@ export default function SettingsPanel({
         </Section>
 
         {/* Security */}
-        <Section id="security" icon={ShieldCheck} title="Security" text="Admin sign-in from new browsers.">
-          <SignInSecurity adminFetch={adminFetch} />
+        <Section id="security" icon={ShieldCheck} title="Security" text="Two-factor admin sign-in, and the browsers that skip the code.">
+          <SignInSecurity
+            adminFetch={adminFetch}
+            twoFactor={draft.adminTwoFactor}
+            savedTwoFactor={saved.adminTwoFactor}
+            onTwoFactor={(v) => {
+              if (
+                !v &&
+                !confirm(
+                  "Switch off two-factor sign-in?\n\nAdmin sign-in becomes password only: anyone with the admin password can sign in from any browser. You'll get an email when it's switched off.\n\nThe change takes effect when you save."
+                )
+              )
+                return;
+              set("adminTwoFactor", v);
+            }}
+          />
         </Section>
 
         {/* System */}

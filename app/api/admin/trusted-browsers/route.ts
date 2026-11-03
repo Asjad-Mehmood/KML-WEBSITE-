@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/adminAuth";
-import { listTrustedBrowsers, otpAvailable, revokeTrustedBrowsers } from "@/lib/adminOtp";
+import { listTrustedBrowsers, otpAvailable, otpEnabled, revokeTrustedBrowsers } from "@/lib/adminOtp";
 
 // Admin → Settings → Sign-in security: browsers that skip the email code, and whether the code step is active
 export async function GET(req: NextRequest) {
   const session = await getAdminSession(req);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   return NextResponse.json({
-    otpActive: otpAvailable(),
+    otpActive: await otpEnabled(),
+    // can the code be sent at all (email set up, not forced off with ADMIN_OTP=off)
+    otpAvailable: otpAvailable(),
+    forcedOff: process.env.ADMIN_OTP === "off",
     email: session.user.email,
     browsers: await listTrustedBrowsers(session.user.id, req),
   });
