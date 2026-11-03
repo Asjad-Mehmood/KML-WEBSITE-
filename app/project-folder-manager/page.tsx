@@ -56,25 +56,35 @@ const structuredData = {
   operatingSystem: "Windows 10, Windows 11",
   softwareVersion: PFM_VERSION,
   datePublished: PFM_RELEASED,
-  downloadUrl: `${SITE_URL}${PFM_FILES.package.href}`,
+  downloadUrl: PFM_FILES.package.href,
   url: `${SITE_URL}/project-folder-manager`,
   image: `${SITE_URL}${PFM_FILES.shots.main.src}`,
   offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
   publisher: { "@id": `${SITE_URL}/#organization` },
 };
 
-const FEATURE_ICONS = [FolderTree, Eye, Search, ClipboardCopy, PencilLine, HardDrive, LayoutPanelLeft, RefreshCw];
+const FEATURE_ICONS = [HardDrive, FolderTree, Search, ClipboardCopy, PencilLine, RefreshCw, LayoutPanelLeft, Eye];
 
 const SHOTS = [
   {
     ...PFM_FILES.shots.main,
     title: "The project at a glance",
-    alt: "Project Folder Manager: the eleven numbered modules from 00 Admin to 99 Archive, each with its discipline, sub-folder count, VIEW and OPEN, under a title bar with a clock and calendar",
+    alt: "Project Folder Manager 7: the folders of a project from 00 Admin to 99 Archive, each with its discipline and sub-folders, VIEW and OPEN, under one calm top bar with search",
   },
   {
     ...PFM_FILES.shots.panel,
     title: "A folder in the panel, and the drives",
-    alt: "Project Folder Manager with the drives strip showing free space, and the 10_Survey folder open in the side panel with copy, cut, paste, rename and delete",
+    alt: "Project Folder Manager 7 with the drives strip and the 02_Topographic Survey folder open in the side panel, with its files, filter, sort and Explorer",
+  },
+  {
+    ...PFM_FILES.shots.start,
+    title: "The first start: a drive or a folder",
+    alt: "Project Folder Manager 7's start page: the PC's drives with their free space, and Choose a folder, Type a path and Find projects",
+  },
+  {
+    ...PFM_FILES.shots.manual,
+    title: "The manual inside (F1)",
+    alt: "Project Folder Manager 7's built-in manual: nine topics, here the side panel with its keys",
   },
 ];
 
@@ -116,9 +126,9 @@ export default function FolderManagerPage() {
               Project Folder Manager: every project folder <span className="text-[#0071e3]">one click away</span>
             </h1>
             <p className="mt-4 text-[16px] sm:text-[17px] text-slate-600 leading-relaxed">
-              One screen for your project&apos;s master folder. The eleven modules, from Admin and Survey to Design &amp; Drawings and the
-              Archive, are listed by discipline. You can see inside any folder, search the whole project instantly, and copy, move or rename files without
-              digging through Explorer.
+              One screen for your project folders. Open a drive or any folder and its folders are listed by discipline, from Admin and Survey to
+              Design &amp; Drawings and the Archive. See inside any folder, search everything instantly, and copy, move or rename files without digging
+              through Explorer. Version 7: a proper Windows program that installs and updates itself.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <FolderManagerDownload />
@@ -164,7 +174,7 @@ export default function FolderManagerPage() {
 
         {/* Screenshots */}
         <section id="screens" aria-labelledby="shots-h" className="scroll-mt-28 mt-20">
-          <SectionHead id="shots-h" eyebrow="Screenshots" title="How it looks" text="Shown with an example project in D:\Project. Tap a picture to see it full size." Icon={SquareStack} />
+          <SectionHead id="shots-h" eyebrow="Screenshots" title="How it looks" text="Version 7 with an example project in D:\Projects\North Gas Field. Tap a picture to see it full size." Icon={SquareStack} />
           <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-5">
             {SHOTS.map((s) => (
               <figure key={s.src}>
@@ -183,7 +193,7 @@ export default function FolderManagerPage() {
             id="modules-h"
             eyebrow="Modules"
             title="Eleven modules, each with its discipline"
-            text="Read from the project's top-level folders: a folder's number gives its discipline, and you can pick another for any folder. New folders on the disk are added with SCAN."
+            text="Read from the folders in the folder you open: a folder's number gives its discipline, and you can pick another for any folder. New folders on the disk show up by themselves."
             Icon={FolderTree}
           />
           <ul className="mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -199,7 +209,7 @@ export default function FolderManagerPage() {
         {/* Install */}
         <section id="install" aria-labelledby="install-h" className="scroll-mt-28 mt-20 grid grid-cols-1 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] gap-8">
           <div>
-            <SectionHead id="install-h" eyebrow="Install" title="Ready in a minute" text="Nothing to install: unzip and open." Icon={Download} />
+            <SectionHead id="install-h" eyebrow="Install" title="Ready in a minute" text="One installer, no administrator rights." Icon={Download} />
             <ol className="mt-6 space-y-4">
               {PFM_INSTALL.map((s, i) => (
                 <li key={s.title} className="flex gap-4">
@@ -251,14 +261,14 @@ export default function FolderManagerPage() {
             <div className="rounded-2xl border border-blue-200 bg-white p-5 flex flex-col">
               <Package className="w-6 h-6 text-[#0071e3]" aria-hidden />
               <h3 className="mt-2 font-bold text-slate-900">{PFM_FILES.package.label}</h3>
-              <p className="text-[13.5px] text-slate-500 flex-1">{PFM_FILES.package.detail}. Unzip everything into one folder.</p>
-              <FolderManagerDownload className="mt-4 inline-flex justify-center items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-sm font-semibold cursor-pointer" label="Download (.zip)" />
+              <p className="text-[13.5px] text-slate-500 flex-1">{PFM_FILES.package.detail}. It installs for your Windows user and keeps itself up to date.</p>
+              <FolderManagerDownload className="mt-4 inline-flex justify-center items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-sm font-semibold cursor-pointer" label="Download (.exe)" />
             </div>
             <div className="rounded-2xl border border-slate-200 bg-white p-5 flex flex-col">
               <AlertTriangle className="w-6 h-6 text-slate-500" aria-hidden />
               <h3 className="mt-2 font-bold text-slate-900">If Windows warns you</h3>
               <p className="text-[13.5px] text-slate-500 flex-1">
-                The program isn&apos;t code-signed, so Windows SmartScreen may say it protected your PC the first time. Choose More info, then Run anyway.
+                The installer isn&apos;t code-signed yet, so Windows SmartScreen may say it protected your PC the first time. Choose More info, then Run anyway.
               </p>
             </div>
           </div>

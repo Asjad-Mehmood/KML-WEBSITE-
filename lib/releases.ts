@@ -185,6 +185,19 @@ const SEED: { app: string; version: string; releasedAt: string; title: string; n
   },
   {
     app: "folder-manager",
+    version: "7.0.0",
+    releasedAt: "2026-11-03",
+    title: "Project Folder Manager 7: a proper Windows program, cleaner and simpler",
+    notes: [
+      "Installs and updates itself: a normal installer, no administrator rights, listed in Settings → Apps",
+      "Open a drive or any folder; the folder list follows the disk by itself, with nothing to scan or rebuild",
+      "Instant search that indexes itself in the background, UNDO, drag and drop, and a preview before every bulk rename",
+      "One calm top bar, softer colours, and a manual inside (F1)",
+      "Coming from 6.2? Install version 7: its start page offers to bring in your 6.2 settings",
+    ],
+  },
+  {
+    app: "folder-manager",
     version: "6.2",
     releasedAt: "2026-10-16",
     title: "Project Folder Manager 6.2: one screen for any project's folders",

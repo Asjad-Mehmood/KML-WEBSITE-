@@ -854,7 +854,7 @@ export default function AdminClient() {
 
                   <div>
                     <div className="flex justify-between text-xs font-semibold mb-1.5">
-                      <span className="text-slate-300">Project Folder Manager for Windows (.zip)</span>
+                      <span className="text-slate-300">Project Folder Manager for Windows</span>
                       <span className="text-teal-300">{stats?.assetCounts?.folder_manager ?? 0} downloads</span>
                     </div>
                     <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
