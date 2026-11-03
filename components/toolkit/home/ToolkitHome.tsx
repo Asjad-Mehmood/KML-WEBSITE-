@@ -371,7 +371,7 @@ export default function ToolkitHome({ tools, toolkitVersion }: { tools: OptionTo
                 <Point>Microsoft Edge WebView2, built into Windows 11 and an up-to-date Windows 10</Point>
                 <Point>An internet connection to install and update (the tools work offline as usual)</Point>
                 <Point>Your free Excel to KML account</Point>
-                <Point>For RoadPro: full AutoCAD, Civil 3D or Map 3D 2014 or newer (not AutoCAD LT)</Point>
+                <Point>For RoadPro: full AutoCAD, Civil 3D or Map 3D 2013 or newer (not AutoCAD LT)</Point>
               </ul>
             </div>
             <div className="ho-reveal">

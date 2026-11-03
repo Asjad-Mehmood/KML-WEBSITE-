@@ -11,7 +11,7 @@ export default function Guide() {
     <GuideLayout slug={SLUG}>
       <h2>What you need</h2>
       <ul>
-        <li>Full <strong>AutoCAD, Civil 3D or Map 3D 2014 or newer</strong>. AutoCAD LT is not supported.</li>
+        <li>Full <strong>AutoCAD, Civil 3D or Map 3D 2013 or newer</strong>. AutoCAD LT is not supported.</li>
         <li>
           <Link href="/roadpro">RoadPro</Link>, a free plugin: one zip with RoadPro.lsp, the RP_PAVER hatch pattern and install notes.
         </li>
@@ -23,7 +23,7 @@ export default function Guide() {
       <ol>
         <li>Type <strong>APPLOAD</strong> in the AutoCAD command line.</li>
         <li>Select <strong>RoadPro.lsp</strong> and click <strong>Load</strong>.</li>
-        <li>Under <strong>Contents</strong>, add it to the <strong>Startup Suite</strong> so it loads in every session.</li>
+        <li>RoadPro installs itself: it copies itself to AppData and joins the <strong>Startup Suite</strong>, so it loads in every drawing from then on.</li>
         <li>Type <strong>RDP</strong> to open the RoadPro dialog.</li>
       </ol>
 

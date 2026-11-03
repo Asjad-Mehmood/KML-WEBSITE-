@@ -161,8 +161,8 @@ export function RoadProSection() {
       flip
       title="Draw the centre line. RoadPro draws the rest."
       text="One command in AutoCAD adds the edges, turning radius, barricades or kerb, signs sized to the speed limit, road markings, chainage and the cross section, then writes the quantities to Excel. Junctions and turning lanes join new roads to old ones."
-      points={["Lanes, median, sidewalks and drains", "Junctions and turning lanes", "Signs and markings to standard", "Excel quantity report and LandXML"]}
-      needs="Full AutoCAD, Civil 3D or Map 3D 2014 or newer. AutoCAD LT is not supported."
+      points={["Junctions and roundabouts", "Lanes, median, sidewalks and drains", "Asphalt or concrete pavement", "Excel quantity report and LandXML"]}
+      needs="Full AutoCAD, Civil 3D or Map 3D 2013 or newer. AutoCAD LT is not supported."
       shot={{ src: "/roadpro/signs.webp", width: 1330, height: 600, alt: "RoadPro in AutoCAD: a two-lane road with barricades, chainage, lane arrows and the sign legend", title: "AutoCAD · RoadPro sign legend", dark: true }}
       actions={
         <>

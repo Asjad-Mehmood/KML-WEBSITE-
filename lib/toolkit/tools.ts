@@ -79,7 +79,7 @@ export const TOOLKIT_TOOLS: ToolkitTool[] = [
       files: ["RoadPro.lsp", "RP_PAVER.pat", "README.txt"],
       keep: [],
       main: "RoadPro.lsp",
-      needs: "Full AutoCAD, Civil 3D or Map 3D 2014 or newer (not AutoCAD LT)",
+      needs: "Full AutoCAD, Civil 3D or Map 3D 2013 or newer (not AutoCAD LT)",
     },
   },
   {
