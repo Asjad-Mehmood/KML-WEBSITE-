@@ -9,7 +9,6 @@ export const ROADPRO_FILES = {
   guidePdf: { href: "/roadpro/RoadPro_User_Guide.pdf", name: "RoadPro_User_Guide.pdf", label: "User guide", detail: "PDF, 44 pages, 4.1 MB" },
   guide: { href: "/roadpro/RoadPro_User_Guide.pptx", name: "RoadPro_User_Guide.pptx", label: "User guide", detail: "PowerPoint, 44 slides, 5.1 MB" },
   shortcuts: { href: "/roadpro/RoadPro_Shortcuts.xlsx", name: "RoadPro_Shortcuts.xlsx", label: "Shortcut keys", detail: "Excel sheet, 11 KB" },
-  testReport: { href: "/roadpro/RoadPro_Test_Report.pdf", name: "RoadPro_Test_Report.pdf", label: "Test report", detail: "PDF, 26 pages, 1 MB: 122 checks over every step of the user guide" },
   video: { href: "/roadpro/roadpro-demo.mp4", poster: "/roadpro/demo-cover.webp", duration: "PT2M58S" },
   // a one-minute tour of the user manual, with sound
   manualVideo: { href: "/roadpro/roadpro-manual-tour.mp4", poster: "/roadpro/manual-tour-cover.webp", duration: "PT1M" },
@@ -179,7 +178,7 @@ export const ROADPRO_WHATS_NEW: { title: string; text: string }[] = [
 
 // Shown under "New in": moving up from the last version, and how 3.5 was tested
 export const ROADPRO_UPGRADE_NOTE =
-  "Upgrading? Load the new RoadPro.lsp with APPLOAD once: it installs itself and replaces the old file. Your settings are kept and roads drawn with 3.4 keep working; rebuild them once (RDB) to get live update and the replay of widenings, junctions and roundabouts. Version 3.5 passed 122 checks over every step of the user guide (see the test report), but hasn't yet been run inside AutoCAD by its developer, so try it on a copy of a drawing first. The Saudi junction values, roundabout sizes and concrete quantities are typical values for the design engineer to check against the project standard.";
+  "Upgrading? Load the new RoadPro.lsp with APPLOAD once: it installs itself and replaces the old file. Your settings are kept and roads drawn with 3.4 keep working; rebuild them once (RDB) to get live update and the replay of widenings, junctions and roundabouts. Version 3.5 hasn't yet been run inside AutoCAD by its developer, so try it on a copy of a drawing first. The Saudi junction values, roundabout sizes and concrete quantities are typical values for the design engineer to check against the project standard.";
 
 // Where the sign and marking values come from, shown under "New in"
 export const ROADPRO_STANDARDS_NOTE =

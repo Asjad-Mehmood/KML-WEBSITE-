@@ -7,7 +7,6 @@ import {
   BookOpen,
   CheckCircle2,
   CircleDot,
-  ClipboardCheck,
   Download,
   FileSpreadsheet,
   FileText,
@@ -505,7 +504,7 @@ export default function RoadProPage() {
         {/* Downloads */}
         <section id="download" aria-labelledby="download-h" className="scroll-mt-28 mt-20 rounded-3xl border border-slate-200 bg-gradient-to-b from-blue-50/70 to-white p-6 sm:p-10">
           <SectionHead id="download-h" eyebrow="Download" title={`Get RoadPro ${ROADPRO_VERSION}`} text="Free. Sign in or create a free account, then the download starts." Icon={Download} />
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="rounded-2xl border border-blue-200 bg-white p-5 flex flex-col">
               <Package className="w-6 h-6 text-[#0071e3]" aria-hidden />
               <h3 className="mt-2 font-bold text-slate-900">{ROADPRO_FILES.plugin.label}</h3>
@@ -534,14 +533,6 @@ export default function RoadProPage() {
               <p className="text-[13.5px] text-slate-500 flex-1">One page of shortcut keys to print or keep open. {ROADPRO_FILES.shortcuts.detail}.</p>
               <a href={ROADPRO_FILES.shortcuts.href} download={ROADPRO_FILES.shortcuts.name} className="mt-4 inline-flex justify-center items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50">
                 <Download className="w-4 h-4" aria-hidden /> Download
-              </a>
-            </div>
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 flex flex-col">
-              <ClipboardCheck className="w-6 h-6 text-slate-500" aria-hidden />
-              <h3 className="mt-2 font-bold text-slate-900">{ROADPRO_FILES.testReport.label}</h3>
-              <p className="text-[13.5px] text-slate-500 flex-1">How version {ROADPRO_VERSION} was checked. {ROADPRO_FILES.testReport.detail}.</p>
-              <a href={ROADPRO_FILES.testReport.href} target="_blank" rel="noopener" className="mt-4 inline-flex justify-center items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50">
-                <FileText className="w-4 h-4" aria-hidden /> Open PDF
               </a>
             </div>
           </div>
