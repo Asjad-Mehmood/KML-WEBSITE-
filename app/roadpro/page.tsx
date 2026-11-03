@@ -52,7 +52,7 @@ import { SITE_URL, jsonLd, openGraphFor } from "@/lib/site";
 
 const TITLE = "RoadPro: Road Builder Plugin for AutoCAD";
 const DESCRIPTION =
-  "Build a complete road in AutoCAD from one centre line: edges, turning radius, barricades, signs, chainage, cross sections, widening and an Excel report. Free download.";
+  "Build a complete road in AutoCAD from one centre line: edges, turning radius, barricades, signs, junctions, roundabouts, cross sections, widening and an Excel report. Free download.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -73,7 +73,7 @@ const structuredData = {
       description: DESCRIPTION,
       applicationCategory: "DesignApplication",
       applicationSubCategory: "AutoCAD plugin",
-      operatingSystem: "Windows (AutoCAD, Civil 3D or Map 3D 2014 or newer)",
+      operatingSystem: "Windows (AutoCAD, Civil 3D or Map 3D 2013 or newer)",
       softwareVersion: ROADPRO_VERSION,
       datePublished: ROADPRO_RELEASED,
       downloadUrl: `${SITE_URL}${ROADPRO_FILES.plugin.href}`,
@@ -152,7 +152,7 @@ export default function RoadProPage() {
             <p className="mt-4 text-[16px] sm:text-[17px] text-slate-600 leading-relaxed">
               Type <kbd className="px-1.5 py-0.5 rounded-md border border-slate-300 bg-slate-50 font-mono text-[14px] text-slate-800">RDP</kbd>, draw the
               centre line, and RoadPro draws the edges, turning radius, barricades, signs, chainage, cross section and a report with an Excel file,
-              and now the whole corridor: lanes, median, sidewalks, drains and utilities. Free, for AutoCAD, Civil 3D and Map 3D.
+              the whole corridor, and now roundabouts, concrete pavement and a road that follows every edit. Free, for AutoCAD, Civil 3D and Map 3D.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <RoadProDownload />
@@ -164,7 +164,7 @@ export default function RoadProPage() {
               </a>
             </div>
             <p className="mt-3 text-[12.5px] text-slate-500">
-              {ROADPRO_FILES.plugin.detail} · Full AutoCAD 2014 or newer (not LT) · Free account needed
+              {ROADPRO_FILES.plugin.detail} · Full AutoCAD 2013 or newer (not LT) · Free account needed
             </p>
           </div>
           <figure className="rounded-2xl border border-slate-200 bg-slate-900 p-1.5 shadow-[0_16px_40px_rgba(15,23,42,0.18)]">
@@ -185,7 +185,7 @@ export default function RoadProPage() {
           <h2 id="new-h" className="flex items-center gap-2 text-lg sm:text-xl font-extrabold text-slate-900">
             <Sparkles className="w-5 h-5 text-amber-500" aria-hidden /> New in RoadPro {ROADPRO_VERSION}
           </h2>
-          <ul className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <ul className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {ROADPRO_WHATS_NEW.map((n) => (
               <li key={n.title} className="rounded-2xl bg-white border border-amber-200/70 p-4">
                 <h3 className="font-bold text-slate-900">{n.title}</h3>
@@ -198,7 +198,7 @@ export default function RoadProPage() {
           </p>
           <p className="mt-2 text-[13.5px] text-slate-600 leading-relaxed">{ROADPRO_UPGRADE_NOTE}</p>
           <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-5">
-            {[38, 44].map((n) => {
+            {[34, 36].map((n) => {
               const g = ROADPRO_GUIDE_PAGES.find((x) => x.page === n)!;
               return (
                 <figure key={n}>
@@ -353,7 +353,7 @@ export default function RoadProPage() {
         {/* Install */}
         <section id="install" aria-labelledby="install-h" className="scroll-mt-28 mt-20 grid grid-cols-1 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] gap-8">
           <div>
-            <SectionHead id="install-h" eyebrow="Install" title="Install and load in under a minute" text="Unzip RoadPro.zip, then in AutoCAD:" Icon={Download} />
+            <SectionHead id="install-h" eyebrow="Install" title="Install once, loads by itself" text="Unzip RoadPro.zip, then in AutoCAD:" Icon={Download} />
             <ol className="mt-6 space-y-4">
               {ROADPRO_INSTALL.map((s, i) => (
                 <li key={s.title} className="flex gap-4">
@@ -519,10 +519,10 @@ export default function RoadProPage() {
                 Every command, setting, layer and sign, with pictures. {ROADPRO_FILES.guidePdf.detail}; also as {ROADPRO_FILES.guide.detail.split(",")[0]}.
               </p>
               <div className="mt-4 grid grid-cols-2 gap-2">
-                <a href={ROADPRO_FILES.guidePdf.href} target="_blank" rel="noopener" className="inline-flex justify-center items-center gap-1.5 px-3 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50">
+                <a href={ROADPRO_FILES.guidePdf.href} target="_blank" rel="noopener" className="inline-flex justify-center items-center gap-1.5 px-2 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50">
                   <FileText className="w-4 h-4" aria-hidden /> PDF
                 </a>
-                <a href={ROADPRO_FILES.guide.href} download={ROADPRO_FILES.guide.name} className="inline-flex justify-center items-center gap-1.5 px-3 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50">
+                <a href={ROADPRO_FILES.guide.href} download={ROADPRO_FILES.guide.name} className="inline-flex justify-center items-center gap-1.5 px-2 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50">
                   <Download className="w-4 h-4" aria-hidden /> PowerPoint
                 </a>
               </div>

@@ -129,10 +129,12 @@ async function installerTool(t: ToolkitTool, s: InstallerTool): Promise<FeedTool
   };
 }
 
-// The zip's hash, kept for an hour: a zip changes only when the site is deployed with a new one
+// The zip's hash, kept for an hour: a zip changes only when the site is deployed with a new one,
+// and then with a new version. The version is part of the cache key (and of the address read), so
+// a new version is never offered with the hash of the zip before it.
 const zipFacts = unstable_cache(
-  async (url: string): Promise<{ sha256: string; size: number } | null> => {
-    const res = await fetch(url, { headers: { "User-Agent": "exceltokml.com" }, cache: "no-store", signal: AbortSignal.timeout(20_000) });
+  async (url: string, version: string): Promise<{ sha256: string; size: number } | null> => {
+    const res = await fetch(`${url}?v=${encodeURIComponent(version)}`, { headers: { "User-Agent": "exceltokml.com" }, cache: "no-store", signal: AbortSignal.timeout(20_000) });
     if (!res.ok) return null;
     const buf = Buffer.from(await res.arrayBuffer());
     return { sha256: crypto.createHash("sha256").update(buf).digest("hex"), size: buf.length };
@@ -144,7 +146,7 @@ const zipFacts = unstable_cache(
 async function zipTool(t: ToolkitTool, s: ZipTool): Promise<FeedTool> {
   const url = abs(s.href);
   const install = { kind: s.kind, files: s.files, keep: s.keep, main: s.main, ...(s.needs ? { needs: s.needs } : {}) };
-  const facts = await zipFacts(url).catch(() => null);
+  const facts = await zipFacts(url, s.version).catch(() => null);
   return {
     ...base(t),
     version: s.version,

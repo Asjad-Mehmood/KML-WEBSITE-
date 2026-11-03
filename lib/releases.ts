@@ -124,6 +124,19 @@ export function ensureReleaseTables(): Promise<void> {
 const SEED: { app: string; version: string; releasedAt: string; title: string; notes: string[] }[] = [
   {
     app: "roadpro",
+    version: "3.5",
+    releasedAt: "2026-11-03",
+    title: "RoadPro 3.5: roundabouts, Saudi junctions, concrete pavement and live update",
+    notes: [
+      "Roundabouts: twelve FHWA 2000 and NCHRP 672 designs, from mini to multilane with spiral marking, with islands, apron, crossings, signs and setting-out (RDRB, or Roundabout as the junction type in RDJ)",
+      "Saudi Arabia junction standard: RDJ fills the corner radius, auxiliary lane, tapers, storage and island from the road class and design vehicle, and draws sight triangles",
+      "Live update: edit a centre line with grips, MOVE, ROTATE, STRETCH or PEDIT and the road rebuilds itself with its widenings, tapers, junctions and roundabouts (RDLIVE)",
+      "Concrete pavement: JPCP / JRCP with dowels, tie bars and mesh on plan, in section and in the report (RDPV); sidewalks, walkways and drains wrap round junction corners",
+      "Installs itself: load RoadPro.lsp with APPLOAD once and it loads in every drawing; RDHELP lists every command",
+    ],
+  },
+  {
+    app: "roadpro",
     version: "3.4",
     releasedAt: "2026-10-23",
     title: "RoadPro 3.4: lanes, median, sidewalks and LandXML for Civil 3D",

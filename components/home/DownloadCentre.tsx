@@ -123,7 +123,7 @@ export default function DownloadCentre({
             name="RoadPro"
             version={`v${ROADPRO_VERSION}`}
             file="AutoCAD plugin · ZIP, 83 KB"
-            needs="AutoCAD, Civil 3D or Map 3D 2014 or newer."
+            needs="AutoCAD, Civil 3D or Map 3D 2013 or newer."
             href="/roadpro"
             action={<RoadProDownload className={button} label="Download" />}
             guide={{ href: ROADPRO_FILES.guidePdf.href, label: "User guide (PDF)" }}

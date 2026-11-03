@@ -88,7 +88,7 @@ export const HOME_FAQS: { q: string; a: string; href?: string }[] = [
   },
   {
     q: "Which versions of AutoCAD does RoadPro work with?",
-    a: "Full AutoCAD, Civil 3D or Map 3D 2014 or newer. AutoCAD LT is not supported. Load RoadPro.lsp once with APPLOAD (add it to the Startup Suite to load it every time) and type RDP to start.",
+    a: "Full AutoCAD, Civil 3D or Map 3D 2013 or newer. AutoCAD LT is not supported. Load RoadPro.lsp once with APPLOAD: from version 3.5 it installs itself and loads in every drawing. Then type RDP to start.",
     href: "/roadpro",
   },
   {
