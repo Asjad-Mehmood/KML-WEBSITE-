@@ -1,6 +1,7 @@
 // Two-step sign-in for admins. After the password, a browser we haven't seen
 // before must enter a 6-digit code emailed to the admin; a browser that
 // already passed that check (and was trusted) signs in with the password alone.
+// Admin → Settings → Security switches it on or off (adminTwoFactor, on by default).
 //
 // Codes and trust tokens are stored only as HMAC hashes. A code lasts 10
 // minutes, works once and is dead after 5 wrong tries. A trusted browser is
@@ -13,6 +14,7 @@ import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { isMailConfigured, sendMail } from "@/lib/mailer";
 import { SITE_URL } from "@/lib/site";
+import { getExtraSettings } from "@/lib/siteSettings";
 
 export const TRUST_COOKIE = "kml_admin_trust";
 export const TRUST_DAYS = 90;
@@ -20,9 +22,16 @@ const CODE_MINUTES = 10;
 const MAX_TRIES = 5;
 const MAX_CODES_PER_15_MIN = 5;
 
-/** Codes need email. Without SMTP they can't be delivered, so sign-in stays password-only (and Admin → Settings says so). */
+/** The code step can work: email is set up (without SMTP a code can't be delivered) and it isn't forced off with ADMIN_OTP=off in Vercel. */
 export function otpAvailable(): boolean {
   return isMailConfigured() && process.env.ADMIN_OTP !== "off";
+}
+
+/** The code step is on: it can work, and Admin → Settings → Security has two-factor sign-in switched on.
+ *  If the settings can't be read, the default (on) applies, so a database hiccup never turns it off. */
+export async function otpEnabled(): Promise<boolean> {
+  if (!otpAvailable()) return false;
+  return (await getExtraSettings()).adminTwoFactor !== false;
 }
 
 let ready: Promise<void> | null = null;

@@ -4,6 +4,9 @@ import { getAdminSession } from "@/lib/adminAuth";
 import { db, type AppSettings } from "@/lib/db";
 import { prisma } from "@/lib/prisma";
 import { clientIp } from "@/lib/loginThrottle";
+import { browserLabel } from "@/lib/adminOtp";
+import { isMailConfigured, sendMail } from "@/lib/mailer";
+import { SITE_URL } from "@/lib/site";
 import { EXTRA_DEFAULTS, HOME_HEROES, getExtraSettings, safeNoticeLink, saveExtraSettings, type ExtraSettings } from "@/lib/siteSettings";
 
 type AllSettings = AppSettings & ExtraSettings;
@@ -39,6 +42,7 @@ const LABELS: Record<keyof AllSettings, string> = {
   signupPrompt: "Sign-up invitation",
   reviewPrompt: "Review after download",
   homeHero: "Home page",
+  adminTwoFactor: "Admin two-factor sign-in",
 };
 
 async function allSettings(): Promise<AllSettings> {
@@ -82,6 +86,8 @@ export async function PUT(req: NextRequest) {
     if (Object.keys(extra).length) await saveExtraSettings(extra as Partial<ExtraSettings>);
     // the home page is cached; build it again with the hero just chosen
     if ("homeHero" in extra) revalidatePath("/");
+    // a security alert to the admin: switching two-factor off is what someone with a stolen session would do
+    if ("adminTwoFactor" in extra) await twoFactorNotice(admin.user.email, extra.adminTwoFactor === true, clientIp(req), req.headers.get("user-agent"));
 
     const changed = [...Object.keys(core), ...Object.keys(extra)] as (keyof AllSettings)[];
     if (changed.length) {
@@ -114,13 +120,42 @@ export async function PUT(req: NextRequest) {
   }
 }
 
+async function twoFactorNotice(to: string, on: boolean, ip: string, ua: string | null) {
+  if (!isMailConfigured()) return;
+  const when = new Date().toUTCString();
+  const where = `${browserLabel(ua)}${ip !== "unknown" ? `, IP ${ip}` : ""}`;
+  const state = on ? "switched on" : "switched off";
+  const what = on
+    ? "Browsers new to admin must enter a 6-digit code emailed to you again."
+    : "Admin sign-in is now password only: no emailed code is asked for.";
+  const text = [
+    `Two-factor sign-in for Excel to KML admin was ${state}.`,
+    what,
+    "",
+    `When: ${when}`,
+    `From: ${where}`,
+    "",
+    "If this wasn't you, change your admin password now and switch it back in Admin → Settings → Security:",
+    `${SITE_URL}/forgot-password`,
+  ].join("\n");
+  const html = `<div style="font-family:Arial,sans-serif;max-width:480px;margin:auto;color:#1d1d1f">
+  <h2 style="margin:0 0 8px">Two-factor sign-in ${state}</h2>
+  <p style="margin:0 0 16px;color:#555">${what}</p>
+  <p style="margin:0 0 16px;color:#555;font-size:13px">When: ${when}<br>From: ${where.replace(/&/g, "&amp;").replace(/</g, "&lt;")}</p>
+  <p style="color:#b42318;font-size:13px">If this wasn't you, <a href="${SITE_URL}/forgot-password">change your admin password now</a> and switch it back in Admin → Settings → Security.</p>
+</div>`;
+  await sendMail({ to, subject: `Excel to KML admin: two-factor sign-in ${state}`, text, html }).catch((e) =>
+    console.error("Couldn't send the two-factor notice:", e)
+  );
+}
+
 // Only known settings, with the right types and sane ranges
 function cleanSettings(body: Record<string, unknown>): Partial<AllSettings> | { error: string } {
   const out: Record<string, string | number | boolean> = {};
   const bools = [
     "requireAuthForDownload", "maintenanceMode", "announcementActive", "allowSignups", "googleSignInEnabled",
     "verifyEmails", "verifyOldAccounts",
-    "traverseEnabled", "tlEnabled", "tlSharing", "tlKeepFiles", "signupPrompt", "reviewPrompt",
+    "traverseEnabled", "tlEnabled", "tlSharing", "tlKeepFiles", "signupPrompt", "reviewPrompt", "adminTwoFactor",
   ];
   for (const k of bools) if (typeof body[k] === "boolean") out[k] = body[k] as boolean;
   const texts: [string, number][] = [

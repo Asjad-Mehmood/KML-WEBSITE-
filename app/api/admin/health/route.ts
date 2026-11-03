@@ -3,7 +3,7 @@ import { getAdminSession } from "@/lib/adminAuth";
 import { prisma } from "@/lib/prisma";
 import { isMailConfigured, sendMail } from "@/lib/mailer";
 import { isGoogleConfigured } from "@/lib/googleAuth";
-import { otpAvailable } from "@/lib/adminOtp";
+import { otpAvailable, otpEnabled } from "@/lib/adminOtp";
 import { SITE_URL } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
@@ -34,13 +34,20 @@ export async function GET(req: NextRequest) {
     fix: mail ? undefined : "Add SMTP_HOST, SMTP_PORT, SMTP_USER and SMTP_PASS in Vercel, then redeploy.",
   });
 
-  const otp = otpAvailable();
+  const otp = await otpEnabled();
+  const otpOff = process.env.ADMIN_OTP === "off";
   checks.push({
     id: "otp",
-    label: "Admin sign-in code",
+    label: "Admin two-factor sign-in",
     ok: otp,
-    detail: otp ? "On: new browsers need an emailed code" : process.env.ADMIN_OTP === "off" ? "Switched off with ADMIN_OTP=off" : "Off until email is set up",
-    fix: otp ? undefined : process.env.ADMIN_OTP === "off" ? "Remove ADMIN_OTP from Vercel and redeploy." : "Set up email (above).",
+    detail: otp
+      ? "On: new browsers need an emailed code"
+      : otpOff
+        ? "Switched off with ADMIN_OTP=off"
+        : !otpAvailable()
+          ? "Off until email is set up"
+          : "Switched off in Settings → Security: admin sign-in is password only",
+    fix: otp ? undefined : otpOff ? "Remove ADMIN_OTP from Vercel and redeploy." : !otpAvailable() ? "Set up email (above)." : "Switch it on in Settings → Security.",
   });
 
   const secret = (process.env.AUTH_SECRET || "").length >= 32;

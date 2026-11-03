@@ -42,6 +42,8 @@ export interface ExtraSettings {
   reviewPrompt: boolean;
   /** The home page: "new" (every program: hero tabs, a section for each, all downloads) or "classic" (the earlier one, about Excel to KML) */
   homeHero: HomeHero;
+  /** Admin two-factor sign-in: a browser new to admin must also enter a 6-digit code emailed to the admin (needs email set up) */
+  adminTwoFactor: boolean;
 }
 
 export type HomeHero = "new" | "classic";
@@ -66,6 +68,7 @@ export const EXTRA_DEFAULTS: ExtraSettings = {
   signupPrompt: true,
   reviewPrompt: true,
   homeHero: "new",
+  adminTwoFactor: true,
 };
 
 let ready: Promise<void> | null = null;

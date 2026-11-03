@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { clientIp, recordFailure, tooManyFailures } from "@/lib/loginThrottle";
 import { signedInResponse } from "@/lib/loginResponse";
-import { TooManyCodes, isTrustedBrowser, maskEmail, otpAvailable, startChallenge } from "@/lib/adminOtp";
+import { TooManyCodes, isTrustedBrowser, maskEmail, otpEnabled, startChallenge } from "@/lib/adminOtp";
 import { TooManyVerifyCodes, confirmMessage, mustVerify, sendVerification } from "@/lib/emailVerify";
 
 export async function POST(req: NextRequest) {
@@ -36,8 +36,9 @@ export async function POST(req: NextRequest) {
     }
 
     // Admins: a browser that hasn't been through the email code before must
-    // pass it now. (Without email set up the code can't be sent; see lib/adminOtp.)
-    if (db.isAdmin(user) && otpAvailable() && !(await isTrustedBrowser(req, user.id))) {
+    // pass it now, unless two-factor sign-in is switched off in Admin → Settings → Security.
+    // (Without email set up the code can't be sent; see lib/adminOtp.)
+    if (db.isAdmin(user) && (await otpEnabled()) && !(await isTrustedBrowser(req, user.id))) {
       try {
         const challenge = await startChallenge(user.id, user.email, ip, req.headers.get("user-agent"));
         return NextResponse.json({ otpRequired: true, challenge, sentTo: maskEmail(user.email) });
