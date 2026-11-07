@@ -18,6 +18,12 @@ export interface InstallerTool {
   silentArgs: string[];
   /** A silent install opens the program afterwards (T0: Excel to KML and Traverse & Level) */
   opensAfterSilentInstall: boolean;
+  /**
+   * From installer version `from` on, `args` install without opening the program (/NOLAUNCH).
+   * The feed gives them as quietArgs only when the latest release is that new; the Toolkit from
+   * 0.6.3 then updates the tool in the background. Older Toolkits ignore quietArgs.
+   */
+  quiet?: { args: string[]; from: string };
   /** A silent install closes an open copy by force, so never run it while the program is open */
   closesOpenCopy: true;
 }
@@ -61,6 +67,7 @@ export const TOOLKIT_TOOLS: ToolkitTool[] = [
       exe: ["ExcelToKML.exe", "ExcelToKMLPro.exe"],
       silentArgs: ["/S"],
       opensAfterSilentInstall: true,
+      quiet: { args: ["/S", "/NOLAUNCH"], from: "4.4.3" },
       closesOpenCopy: true,
     },
   },
@@ -95,6 +102,7 @@ export const TOOLKIT_TOOLS: ToolkitTool[] = [
       exe: ["TraverseLevel.exe", "TraversePro.exe"],
       silentArgs: ["/S"],
       opensAfterSilentInstall: true,
+      quiet: { args: ["/S", "/NOLAUNCH"], from: "2.1.1" },
       closesOpenCopy: true,
     },
   },
