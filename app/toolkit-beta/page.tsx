@@ -4,10 +4,12 @@ import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { sessionForToken } from "@/lib/serverSession";
 import { isTester } from "@/lib/toolkit/store";
+import { toolkitIsPublic } from "@/lib/toolkit/access";
 import { toolkitDownloads } from "@/lib/toolkit/downloads";
 import ToolkitBeta, { ToolkitBetaClosed } from "@/components/toolkit/ToolkitBeta";
 
-// Survey Toolkit (beta test): the product page and the Download button, for testers only. Never in
+// Survey Toolkit while it is closed to the public (Admin → Settings → Survey Toolkit): the testers'
+// page with the Download button; once it is open to everyone this goes to /toolkit. Never in
 // search engines, the sitemap or the menu: testers get the address from us. Signed out goes to the
 // sign-in and comes back; signed in but not on the beta list sees that the beta is closed.
 export const dynamic = "force-dynamic";
@@ -18,6 +20,8 @@ export const metadata: Metadata = {
 };
 
 export default async function ToolkitBetaPage({ searchParams }: { searchParams: Promise<{ download?: string }> }) {
+  // open to everyone: the public page has the Download (and the testers' old link still works)
+  if (await toolkitIsPublic()) redirect("/toolkit");
   const jar = await cookies();
   const session = await sessionForToken(jar.get("surveyor_auth_token")?.value || jar.get("surveyor_session")?.value);
   if (!session?.user) redirect("/login?next=%2Ftoolkit-beta");

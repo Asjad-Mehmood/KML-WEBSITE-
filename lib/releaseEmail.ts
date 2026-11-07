@@ -99,6 +99,16 @@ const UPDATE_GUIDES: Record<string, UpdateGuide> = {
     newUser: "Don't have it yet? Open the web app, or install the Windows program.",
     more: { label: "What it does", href: "/slope-calculation" },
   },
+  toolkit: {
+    platform: "Windows 10 and 11",
+    automatic: true,
+    steps: [
+      "Open the Survey Toolkit while you're online: it offers its own update and installs it, then opens again.",
+      "Your tools, their settings and your sign-in are kept.",
+    ],
+    newUser: "New to the Survey Toolkit? Download it once, sign in with your free account and install any tool with one click.",
+    more: { label: "What it does", href: "/toolkit" },
+  },
   "folder-manager": {
     platform: "Windows 10 and 11",
     automatic: true,

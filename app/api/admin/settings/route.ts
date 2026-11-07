@@ -43,6 +43,7 @@ const LABELS: Record<keyof AllSettings, string> = {
   reviewPrompt: "Review after download",
   homeHero: "Home page",
   adminTwoFactor: "Admin two-factor sign-in",
+  toolkitPublic: "Survey Toolkit open to everyone",
 };
 
 async function allSettings(): Promise<AllSettings> {
@@ -86,6 +87,12 @@ export async function PUT(req: NextRequest) {
     if (Object.keys(extra).length) await saveExtraSettings(extra as Partial<ExtraSettings>);
     // the home page is cached; build it again with the hero just chosen
     if ("homeHero" in extra) revalidatePath("/");
+    // the Toolkit's page and the home page show or hide it
+    if ("toolkitPublic" in extra) {
+      revalidatePath("/");
+      revalidatePath("/toolkit");
+      revalidatePath("/sitemap.xml");
+    }
     // a security alert to the admin: switching two-factor off is what someone with a stolen session would do
     if ("adminTwoFactor" in extra) await twoFactorNotice(admin.user.email, extra.adminTwoFactor === true, clientIp(req), req.headers.get("user-agent"));
 
@@ -156,6 +163,7 @@ function cleanSettings(body: Record<string, unknown>): Partial<AllSettings> | { 
     "requireAuthForDownload", "maintenanceMode", "announcementActive", "allowSignups", "googleSignInEnabled",
     "verifyEmails", "verifyOldAccounts",
     "traverseEnabled", "tlEnabled", "tlSharing", "tlKeepFiles", "signupPrompt", "reviewPrompt", "adminTwoFactor",
+    "toolkitPublic",
   ];
   for (const k of bools) if (typeof body[k] === "boolean") out[k] = body[k] as boolean;
   const texts: [string, number][] = [

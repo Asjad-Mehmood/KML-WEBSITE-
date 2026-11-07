@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
 import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
-import { addEvent, isTester, seeDevice } from "@/lib/toolkit/store";
+import { addEvent, seeDevice } from "@/lib/toolkit/store";
+import { mayUseToolkit } from "@/lib/toolkit/access";
 import { parseReport } from "@/lib/toolkit/validate";
 
 // Survey Toolkit (beta test): a Toolkit reports its PC and what it did there.
@@ -20,8 +20,8 @@ export async function POST(req: NextRequest) {
   const r = parseReport(body);
   if (!r.ok) return NextResponse.json({ error: r.error }, { status: 400 });
   try {
-    if (!db.isAdmin(s.user) && !(await isTester(s.user.email))) {
-      return NextResponse.json({ error: "The Survey Toolkit beta is closed." }, { status: 403 });
+    if (!(await mayUseToolkit(s.user))) {
+      return NextResponse.json({ error: "The Survey Toolkit isn't open to this account." }, { status: 403 });
     }
     await seeDevice(s.user.id, r.device);
     for (const e of r.events) await addEvent(s.user.id, r.device.id, e);

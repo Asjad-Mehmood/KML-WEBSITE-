@@ -1,6 +1,6 @@
-// Survey Toolkit: the front page, in detail, in the style the owner chose (option C, the hub).
-// A draft for now (admins only, /toolkit-beta/home); at the launch (T10) it becomes the public
-// page. Same motion rules as the options (home-options.css): CSS only, still for reduced motion,
+// Survey Toolkit: the front page, in the style the owner chose (option C, the hub). The public page
+// /toolkit, and the home page when Admin → Settings → Home page is "Survey Toolkit"; also the
+// admins' draft at /toolkit-beta/home while the Toolkit is closed. Same motion rules as the options (home-options.css): CSS only, still for reduced motion,
 // paused while the tab is hidden; the graphics are decorative.
 import type { CSSProperties, ReactNode } from "react";
 import Image from "next/image";
@@ -32,12 +32,20 @@ import {
 import PageShell from "@/components/PageShell";
 import MotionRoot from "@/components/toolkit/home-options/MotionRoot";
 import { HubGraphic, type OptionTool } from "@/components/toolkit/home-options/options";
+import StartDownload from "@/components/toolkit/home/StartDownload";
 import gridPng from "@/components/toolkit/images/9-app-grid.png";
 import updatesPng from "@/components/toolkit/images/10-updates.png";
 import updatingPng from "@/components/toolkit/images/6-updating.png";
 
-/** Where Download goes: the testers' page during the beta, the public download at the launch */
-const DOWNLOAD = "/toolkit-beta";
+/** Download: the newest installer for anyone who may have it (app/api/toolkit/download) */
+const DOWNLOAD = "/api/toolkit/download";
+
+/** Why a download didn't start, from /api/toolkit/download */
+const PROBLEMS: Record<string, string> = {
+  none: "The Toolkit's installer isn't available just now. Please try again in a few minutes.",
+  error: "The download couldn't start. Please try again in a moment.",
+  closed: "The Survey Toolkit isn't open to your account just now.",
+};
 
 const ICONS: Record<string, LucideIcon> = {
   "excel-to-kml": Globe,
@@ -79,7 +87,7 @@ const ABOUT: Record<string, { text: string; points: string[]; page: string; webA
   },
 };
 
-const ver = (t: OptionTool) => (t.version ? `v${t.version}` : "[version]");
+const ver = (t: OptionTool) => (t.version ? `v${t.version}` : "Latest");
 
 function Eyebrow({ Icon, children, light = false }: { Icon: LucideIcon; children: ReactNode; light?: boolean }) {
   return (
@@ -125,24 +133,47 @@ function Shot({ src, alt }: { src: typeof gridPng; alt: string }) {
   );
 }
 
-export default function ToolkitHome({ tools, toolkitVersion }: { tools: OptionTool[]; toolkitVersion: string | null }) {
-  const meta = `Free · Windows 10 and 11 · ${toolkitVersion ? `Version ${toolkitVersion}` : "[Version]"}`;
+export default function ToolkitHome({
+  tools,
+  toolkitVersion,
+  draft = false,
+  download = null,
+}: {
+  tools: OptionTool[];
+  toolkitVersion: string | null;
+  /** The admins' preview while the Toolkit is closed to the public */
+  draft?: boolean;
+  /** ?download= on the page: "start" after signing in to download, or why a download didn't start */
+  download?: string | null;
+}) {
+  const meta = `Free · Windows 10 and 11${toolkitVersion ? ` · Version ${toolkitVersion}` : ""}`;
+  const problem = download ? PROBLEMS[download] : undefined;
   return (
     <PageShell>
       <MotionRoot>
-        {/* the draft notice, for the admin looking at it */}
-        <div className="max-w-[1180px] mx-auto px-5 sm:px-8">
-          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-[13px] text-amber-900">
-            <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden />
-            <span>
-              <strong>Draft of the Survey Toolkit&apos;s front page</strong> (option C, the hub). Only admins see it; it goes public at the launch. During the beta,
-              Download goes to the testers&apos; page.
-            </span>
-            <Link href="/toolkit-beta/home-options" className="font-bold underline underline-offset-2">
-              All five options
-            </Link>
-          </p>
-        </div>
+        {download === "start" && <StartDownload href={DOWNLOAD} />}
+        {draft && (
+          <div className="max-w-[1180px] mx-auto px-5 sm:px-8">
+            <p className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-[13px] text-amber-900">
+              <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden />
+              <span>
+                <strong>Preview of the Survey Toolkit&apos;s page.</strong> The Toolkit is closed to the public (Admin → Settings → Survey Toolkit), so only
+                admins see this page and Download works for admins and testers.
+              </span>
+              <Link href="/toolkit-beta/home-options" className="font-bold underline underline-offset-2">
+                All five options
+              </Link>
+            </p>
+          </div>
+        )}
+        {problem && (
+          <div className="max-w-[1180px] mx-auto px-5 sm:px-8 mt-4">
+            <p role="alert" className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-[14px] text-amber-900">
+              <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden />
+              {problem}
+            </p>
+          </div>
+        )}
 
         {/* ---------------------------------------------------------- hero */}
         <section aria-labelledby="hero-h" className="relative overflow-hidden bg-[radial-gradient(70%_80%_at_80%_40%,#e9f0ff,#ffffff_70%)]">
@@ -390,6 +421,10 @@ export default function ToolkitHome({ tools, toolkitVersion }: { tools: OptionTo
                   { q: "What if a tool is open when an update arrives?", a: "Nothing happens to it. The update waits and installs once you close the tool." },
                   { q: "Can I stop the automatic updates?", a: "Yes. Set any tool to Ask me, and it is only updated when you press Update." },
                   { q: "Does it work offline?", a: "Your tools work as usual. The Toolkit shows what it knew at its last check and catches up when you are back online." },
+                  {
+                    q: "Windows says it protected my PC. Is the Toolkit safe?",
+                    a: "Yes. Windows SmartScreen shows that for new programs it hasn't seen often. Press More info, then Run anyway. Every tool the Toolkit installs is checked against its SHA-256 fingerprint first.",
+                  },
                   { q: "How do I remove it?", a: "Windows Settings, Apps, Survey Toolkit, Uninstall. Your tools stay installed; the Toolkit's own settings and sign-in go with it." },
                 ].map((f) => (
                   <details key={f.q} className="group px-5 py-4">
