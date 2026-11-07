@@ -75,9 +75,20 @@ function base(t: ToolkitTool): Omit<FeedTool, "version" | "released" | "notes" |
   return { id: t.id, name: t.name, platform: t.platform, page: abs(t.page), webApp: t.webApp ? abs(t.webApp) : null };
 }
 
-async function installerTool(t: ToolkitTool, s: InstallerTool): Promise<FeedTool> {
-  const problems: string[] = [];
-  const install = {
+/** 4.4.10 > 4.4.3 > 4.4; null when either isn't plain numbers */
+function versionAtLeast(v: string, min: string): boolean | null {
+  const a = v.split("."), b = min.split(".");
+  if (![...a, ...b].every((x) => /^\d{1,6}$/.test(x))) return null;
+  for (let i = 0; i < Math.max(a.length, b.length); i++) {
+    const d = Number(a[i] ?? 0) - Number(b[i] ?? 0);
+    if (d) return d > 0;
+  }
+  return true;
+}
+
+/** How to install it. quietArgs only when this version's installer has the switch (tools.ts). */
+export function installOf(s: InstallerTool, version: string | null): Record<string, unknown> {
+  const install: Record<string, unknown> = {
     kind: s.kind,
     registryKey: s.registryKey,
     exe: s.exe,
@@ -85,6 +96,12 @@ async function installerTool(t: ToolkitTool, s: InstallerTool): Promise<FeedTool
     opensAfterSilentInstall: s.opensAfterSilentInstall,
     closesOpenCopy: s.closesOpenCopy,
   };
+  if (s.quiet && version && versionAtLeast(version, s.quiet.from)) install.quietArgs = s.quiet.args;
+  return install;
+}
+
+async function installerTool(t: ToolkitTool, s: InstallerTool): Promise<FeedTool> {
+  const problems: string[] = [];
   const token = ghToken();
   const [rel, manifest] = await Promise.all([
     releaseOf(s.repo, token),
@@ -101,11 +118,11 @@ async function installerTool(t: ToolkitTool, s: InstallerTool): Promise<FeedTool
         released: null,
         notes: `https://github.com/${s.repo}/releases/tag/v${v}`,
         download: { url: `https://github.com/${s.repo}/releases/download/v${v}/${s.installer}`, file: s.installer, size: null, sha256: manifest.sha256 },
-        install,
+        install: installOf(s, v),
         problems: [],
       };
     }
-    return { ...base(t), version: null, released: null, notes: null, download: null, install, problems: ["The latest release can't be read just now."] };
+    return { ...base(t), version: null, released: null, notes: null, download: null, install: installOf(s, null), problems: ["The latest release can't be read just now."] };
   }
   const asset = (rel.assets || []).find((a) => a.name === s.installer);
   const tagVersion = (rel.tag_name || "").replace(/^v/i, "") || null;
@@ -119,13 +136,14 @@ async function installerTool(t: ToolkitTool, s: InstallerTool): Promise<FeedTool
   else if (!sha) problems.push("No SHA-256 for the installer, so it can't be checked.");
   else if (digest && isSha(digest) && digest !== sha) problems.push("The SHA-256 in latest.json differs from GitHub's, so the installer is held back.");
   else download = { url: asset.browser_download_url, file: s.installer, size: asset.size, sha256: sha };
+  const version = listed && listed === tagVersion ? listed : tagVersion;
   return {
     ...base(t),
-    version: listed && listed === tagVersion ? listed : tagVersion,
+    version,
     released: rel.published_at || null,
     notes: rel.html_url || null,
     download,
-    install,
+    install: installOf(s, version),
     problems,
   };
 }
