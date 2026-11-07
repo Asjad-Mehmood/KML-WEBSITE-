@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
-import { HANDOFF_PAGES, createHandoff, isTester, takeHandoff } from "@/lib/toolkit/store";
+import { HANDOFF_PAGES, createHandoff, takeHandoff } from "@/lib/toolkit/store";
+import { mayUseToolkit } from "@/lib/toolkit/access";
 
 // Survey Toolkit (beta test): signing in the web apps the Toolkit shows inside its own window
 // (lib/toolkit/store.ts, "sign-in handover").
@@ -19,8 +20,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unknown page." }, { status: 400 });
   }
   try {
-    if (!db.isAdmin(s.user) && !(await isTester(s.user.email))) {
-      return NextResponse.json({ error: "The Survey Toolkit beta is closed." }, { status: 403 });
+    if (!(await mayUseToolkit(s.user))) {
+      return NextResponse.json({ error: "The Survey Toolkit isn't open to this account." }, { status: 403 });
     }
     const code = await createHandoff(s.user.id, next);
     const url = new URL("/api/toolkit/handoff", req.nextUrl.origin);

@@ -18,6 +18,7 @@ import {
   Compass,
   LayoutTemplate,
   ExternalLink,
+  PackageOpen,
 } from "lucide-react";
 import SignInSecurity from "./SignInSecurity";
 import SystemHealth from "./SystemHealth";
@@ -49,8 +50,9 @@ export interface AllSettings {
   tlBlocked: string;
   signupPrompt: boolean;
   reviewPrompt: boolean;
-  homeHero: "new" | "classic";
+  homeHero: "new" | "classic" | "toolkit";
   adminTwoFactor: boolean;
+  toolkitPublic: boolean;
 }
 
 type Draft = AllSettings;
@@ -64,6 +66,7 @@ const SECTIONS = [
   ["access", "Access"],
   ["notices", "Notices"],
   ["home", "Home page"],
+  ["toolkit", "Survey Toolkit"],
   ["features", "App features"],
   ["traverse", "Traverse & Level"],
   ["release", "Release"],
@@ -197,7 +200,7 @@ export default function SettingsPanel({
       <div className="space-y-6">
         {/* Status at a glance (what is live now, not the unsaved draft) */}
         <Section id="status" icon={CheckCircle2} title="Live now" text="What visitors see right now, from the saved settings.">
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
             <Pill label="Web app" value={saved.maintenanceMode ? "Maintenance" : "Running"} warn={saved.maintenanceMode} />
             <Pill label="Traverse & Level" value={saved.tlEnabled ? "Open" : "Closed"} warn={!saved.tlEnabled} />
             <Pill label="Traverse adjust" value={saved.traverseEnabled ? "Shown" : "Hidden"} warn={!saved.traverseEnabled} />
@@ -205,6 +208,7 @@ export default function SettingsPanel({
             <Pill label="Downloads" value={saved.requireAuthForDownload ? "Sign-in needed" : "Open to all"} />
             <Pill label="Announcement" value={announcementLive ? "Showing" : "Off"} />
             <Pill label="Admin two-factor" value={saved.adminTwoFactor ? "On" : "Off"} warn={!saved.adminTwoFactor} />
+            <Pill label="Survey Toolkit" value={saved.toolkitPublic ? "Public" : "Testers only"} />
           </div>
         </Section>
 
@@ -421,7 +425,7 @@ export default function SettingsPanel({
 
         {/* Home page */}
         <Section id="home" icon={LayoutTemplate} title="Home page" text="Which home page visitors see. Saving switches it for everyone straight away.">
-          <div role="radiogroup" aria-label="Home page" className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div role="radiogroup" aria-label="Home page" className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {HEROES.map(([v, name, text]) => {
               const on = draft.homeHero === v;
               return (
@@ -447,6 +451,28 @@ export default function SettingsPanel({
           <a href="/" target="_blank" rel="noopener" className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-400 hover:text-blue-300">
             Open the home page <ExternalLink className="w-3.5 h-3.5" />
           </a>
+        </Section>
+
+        {/* Survey Toolkit */}
+        <Section id="toolkit" icon={PackageOpen} title="Survey Toolkit" text="The Windows program that installs and updates every tool.">
+          <Toggle
+            label="Open to everyone"
+            text="On: anyone with a free account can download the Toolkit from /toolkit and sign in to it, and it can be the home page. Off: only admins and the testers in Toolkit admin; /toolkit is hidden and installed copies show that it isn't open."
+            checked={draft.toolkitPublic}
+            onChange={(v) => set("toolkitPublic", v)}
+            tone="emerald"
+          />
+          {!draft.toolkitPublic && draft.homeHero === "toolkit" && (
+            <p className="text-xs text-amber-300">While the Toolkit is closed the home page shows &quot;Every program&quot; instead.</p>
+          )}
+          <div className="flex flex-wrap gap-x-5 gap-y-2">
+            <a href="/toolkit" target="_blank" rel="noopener" className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-400 hover:text-blue-300">
+              Open the Toolkit page <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+            <a href="/toolkit-beta/admin" className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-400 hover:text-blue-300">
+              Toolkit admin: PCs, updates and testers <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          </div>
         </Section>
 
         {/* Release */}
@@ -617,14 +643,30 @@ function Field({ label, hint, group, children }: { label: string; hint?: string;
 const HEROES = [
   ["new", "Every program", "All four programs: a tab for each in the hero, then a section for each, every download in one place and questions about them all."],
   ["classic", "Excel to KML first", "The earlier home page, about Excel to KML: the converter in the hero, the showcase, features, tutorial and the Windows download."],
+  ["toolkit", "Survey Toolkit", "The Toolkit's page (as on /toolkit): every tool in one download that keeps them up to date. Only while the Toolkit is open to everyone."],
 ] as const;
 
 /** A small drawing of each hero, to tell them apart */
-function HeroSketch({ kind }: { kind: "new" | "classic" }) {
+function HeroSketch({ kind }: { kind: "new" | "classic" | "toolkit" }) {
   const bar = "rounded-full bg-slate-600";
   return (
     <div aria-hidden className="h-28 rounded-xl bg-slate-950 border border-slate-800 p-3 overflow-hidden">
-      {kind === "new" ? (
+      {kind === "toolkit" ? (
+        <div className="grid grid-cols-5 gap-2 h-full items-center">
+          <div className="col-span-2 flex flex-col gap-1.5">
+            <div className={`${bar} h-2 w-full bg-slate-400`} />
+            <div className={`${bar} h-2 w-2/3 bg-blue-400`} />
+            <div className={`${bar} h-1.5 w-full`} />
+            <div className="h-2.5 w-12 mt-1 rounded bg-slate-200" />
+          </div>
+          <div className="col-span-3 relative h-full flex items-center justify-center">
+            <div className="w-7 h-7 rounded-lg bg-blue-500" />
+            {[[-1, -1], [1, -1], [-1, 1], [1, 1], [0, -1.4]].map(([x, y], i) => (
+              <div key={i} className="absolute w-4 h-4 rounded-md bg-slate-600" style={{ transform: `translate(${x * 30}px, ${y * 26}px)` }} />
+            ))}
+          </div>
+        </div>
+      ) : kind === "new" ? (
         <div className="flex flex-col items-center gap-1.5">
           <div className={`${bar} h-2 w-2/3 bg-slate-400`} />
           <div className={`${bar} h-1.5 w-1/2`} />

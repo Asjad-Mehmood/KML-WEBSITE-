@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Compass, Download, FileSpreadsheet, FileText, FolderTree, Info, Route, ShieldCheck, Smartphone, UserCheck, type LucideIcon } from "lucide-react";
+import { ArrowRight, Compass, Download, FileSpreadsheet, FileText, FolderTree, Info, PackageOpen, Route, ShieldCheck, Smartphone, UserCheck, type LucideIcon } from "lucide-react";
 import RoadProDownload from "../RoadProDownload";
 import TraverseDownload from "../TraverseDownload";
 import FolderManagerDownload from "../FolderManagerDownload";
@@ -93,7 +93,26 @@ export default function DownloadCentre({
           </p>
         </div>
 
-        <ul className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* all of them at once: the Survey Toolkit */}
+        <Link
+          href="/toolkit"
+          className="group mt-10 flex flex-col sm:flex-row sm:items-center gap-4 rounded-2xl bg-[radial-gradient(60%_120%_at_90%_50%,#1e4fd8,#071a44_70%)] p-5 sm:p-6 text-white"
+        >
+          <span className="w-12 h-12 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center shrink-0">
+            <PackageOpen className="w-6 h-6 text-[#ffd21f]" aria-hidden />
+          </span>
+          <span className="flex-1">
+            <span className="block text-[17px] font-bold">Get them all with the Survey Toolkit</span>
+            <span className="block mt-1 text-[13.5px] text-blue-100/85">
+              One free Windows download installs any of these with a click and keeps every one of them up to date by itself.
+            </span>
+          </span>
+          <span className="inline-flex items-center gap-2 self-start sm:self-auto px-4 py-2.5 rounded-xl bg-[#ffd21f] text-[#071a44] text-sm font-bold group-hover:bg-[#ffdc4d]">
+            Survey Toolkit <ArrowRight className="w-4 h-4" aria-hidden />
+          </span>
+        </Link>
+
+        <ul className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card
             Icon={FileSpreadsheet}
             name="Excel to KML"

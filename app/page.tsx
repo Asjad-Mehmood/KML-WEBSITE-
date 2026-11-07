@@ -4,6 +4,8 @@ import { FaqStructuredData, HomeStructuredData } from "../components/StructuredD
 import { DEFAULT_TITLE, SITE_DESCRIPTION, openGraphFor } from "@/lib/site";
 import { HOME_HEROES, getExtraSettings } from "@/lib/siteSettings";
 import { publicStats } from "@/lib/publicStats";
+import { frontPageData } from "@/lib/toolkit/frontPage";
+import ToolkitHome from "@/components/toolkit/home/ToolkitHome";
 
 // Built once and kept; saving the hero choice in Admin → Settings builds it again at once,
 // and it is refreshed every few minutes (which also refreshes the user and download counts)
@@ -15,8 +17,18 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const [{ homeHero }, stats] = await Promise.all([getExtraSettings(), publicStats()]);
-  const hero = HOME_HEROES.includes(homeHero) ? homeHero : "new";
+  const [{ homeHero, toolkitPublic }, stats] = await Promise.all([getExtraSettings(), publicStats()]);
+  // the Survey Toolkit hub (as on /toolkit) only while the Toolkit is open to everyone
+  const hero = HOME_HEROES.includes(homeHero) && (homeHero !== "toolkit" || toolkitPublic) ? homeHero : "new";
+  if (hero === "toolkit") {
+    const { tools, toolkitVersion } = await frontPageData();
+    return (
+      <>
+        <HomeStructuredData />
+        <ToolkitHome tools={tools} toolkitVersion={toolkitVersion} />
+      </>
+    );
+  }
   return (
     <>
       <HomeStructuredData />

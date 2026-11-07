@@ -40,14 +40,16 @@ export interface ExtraSettings {
   signupPrompt: boolean;
   /** Ask for a review after someone downloads one of our programs */
   reviewPrompt: boolean;
-  /** The home page: "new" (every program: hero tabs, a section for each, all downloads) or "classic" (the earlier one, about Excel to KML) */
+  /** The home page: "new" (every program: hero tabs, a section for each, all downloads), "classic" (the earlier one, about Excel to KML) or "toolkit" (the Survey Toolkit hub, as on /toolkit) */
   homeHero: HomeHero;
   /** Admin two-factor sign-in: a browser new to admin must also enter a 6-digit code emailed to the admin (needs email set up) */
   adminTwoFactor: boolean;
+  /** Survey Toolkit open to everyone with an account (on), or only to the testers in Admin → Toolkit (off) */
+  toolkitPublic: boolean;
 }
 
-export type HomeHero = "new" | "classic";
-export const HOME_HEROES: HomeHero[] = ["new", "classic"];
+export type HomeHero = "new" | "classic" | "toolkit";
+export const HOME_HEROES: HomeHero[] = ["new", "classic", "toolkit"];
 
 export const EXTRA_DEFAULTS: ExtraSettings = {
   allowSignups: true,
@@ -69,6 +71,7 @@ export const EXTRA_DEFAULTS: ExtraSettings = {
   reviewPrompt: true,
   homeHero: "new",
   adminTwoFactor: true,
+  toolkitPublic: true,
 };
 
 let ready: Promise<void> | null = null;
