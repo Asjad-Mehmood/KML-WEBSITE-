@@ -8,7 +8,8 @@
    place of the native pop-up; picking an item sets the <select> and sends the same input and change
    events a real choice does. It switches itself on only inside WebView2 (window.chrome.webview, here
    or in the window around this frame) and does nothing in an ordinary browser. If the Toolkit's
-   copy already runs in this page, this one leaves it to it. Same code as the Toolkit's
+   copy already runs in this page, the newer of the two handles the lists (with an older one, a
+   choice couldn't be picked with a pen). Same code as the Toolkit's
    lib/src/workspace/select_fix.dart. */
 (() => {
   let embedded = false;
@@ -20,12 +21,28 @@
   }
   if (!embedded) return;
   (() => {
-    if (window.__toolkitSelectFix) return;
+    // Version 2 handles touch and pen itself, and goes by where a press is released. Survey Toolkit
+    // 1.0.x hands a pen tap to the page as a mouse press where the pen last lifted, then a release
+    // where it touches now: version 1 took that press as a press outside the list and closed it, so
+    // a choice couldn't be picked with the pen. A newer copy takes over from an older one: its
+    // listeners sit on the window, which comes before the older copy's listeners on the document,
+    // and stop the events they handle.
+    const VERSION = 2;
+    if ((window.__toolkitSelectFixVersion || 0) >= VERSION) return;
+    window.__toolkitSelectFixVersion = VERSION;
     window.__toolkitSelectFix = true;
 
     let open = null; // { select, host, list, items, active }
+    let press = null; // a touch or pen press on a closed <select>: { id, select, x, y }
+    let tappedAt = 0; // when a touch or pen tap last opened or closed a list
+    let lastPress = null; // the last mouse press: { target }
 
+    const SLOP = 12; // a press that moves further than this is a scroll, not a tap
     const isSingle = (s) => s instanceof HTMLSelectElement && !s.multiple && s.size <= 1 && !s.disabled;
+    const moved = (p, e) => Math.abs(e.clientX - p.x) > SLOP || Math.abs(e.clientY - p.y) > SLOP;
+    const fromTouch = (e) => !!(e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents);
+    // no tap, click or mouse events made from this touch: the list has handled it
+    const eatTouchEnd = (e) => { if (e.cancelable) e.preventDefault(); };
 
     function close(refocus) {
       if (!open) return;
@@ -44,6 +61,11 @@
         select.dispatchEvent(new Event('change', { bubbles: true }));
       }
       close(true);
+    }
+
+    function toggle(select) {
+      select.focus({ preventScroll: true });
+      if (open && open.select === select) close(true); else show(select);
     }
 
     function setActive(i) {
@@ -74,7 +96,8 @@
         .list{position:fixed;box-sizing:border-box;overflow-y:auto;margin:0;padding:4px;
           font:${cs.fontSize}/1.35 ${cs.fontFamily};border-radius:8px;
           background:${dark ? '#1f2329' : '#fff'};color:${dark ? '#e8eaed' : '#111827'};
-          border:1px solid ${dark ? '#3c4043' : '#d1d5db'};box-shadow:0 10px 30px rgba(0,0,0,.22);outline:none}
+          border:1px solid ${dark ? '#3c4043' : '#d1d5db'};box-shadow:0 10px 30px rgba(0,0,0,.22);outline:none;
+          touch-action:pan-y;-webkit-user-select:none;user-select:none}
         .item{padding:6px 10px;border-radius:5px;cursor:default;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
         .item.sel{font-weight:600}
         .item.active{background:${dark ? '#2f6feb' : '#2563eb'};color:#fff}
@@ -85,6 +108,9 @@
       const list = root.querySelector('.list');
       const items = [];
       let group = null;
+      let itemPress = null; // a touch or pen press on an item: { id, k, x, y }
+      let outsidePress = false; // a mouse press outside the list, while it was open
+      const itemOf = new Map(); // item element -> option index
       Array.from(select.options).forEach((o, index) => {
         const g = o.parentElement instanceof HTMLOptGroupElement ? o.parentElement : null;
         if (g && g !== group) {
@@ -104,13 +130,54 @@
         if (usable) {
           const k = items.length;
           items.push({ el, index });
+          itemOf.set(el, index);
           el.addEventListener('mousemove', () => { if (open && open.active !== k) setActive(k); });
-          el.addEventListener('click', (e) => { e.preventDefault(); choose(select, index); });
+          el.addEventListener('click', (e) => { e.preventDefault(); if (open && open.host === host) choose(select, index); });
+          // touch and pen pick on lifting, so a drag still scrolls a long list
+          el.addEventListener('pointerdown', (e) => {
+            if (e.pointerType === 'mouse') return;
+            itemPress = { id: e.pointerId, k, x: e.clientX, y: e.clientY };
+            setActive(k);
+          });
+          el.addEventListener('pointerup', (e) => {
+            const p = itemPress;
+            itemPress = null;
+            if (!p || p.id !== e.pointerId || p.k !== k || moved(p, e)) return;
+            tappedAt = Date.now();
+            if (open && open.host === host) choose(select, index);
+          });
         }
         list.appendChild(el);
       });
-      // a click outside the list closes it, and doesn't reach the page
-      host.addEventListener('mousedown', (e) => { if (e.composedPath()[0] === host) { e.preventDefault(); close(true); } });
+      list.addEventListener('pointercancel', () => { itemPress = null; });
+      // a press outside the list closes it, and doesn't reach the page
+      host.addEventListener('pointerdown', (e) => {
+        if (e.pointerType === 'mouse' || e.composedPath()[0] !== host) return;
+        e.preventDefault();
+        tappedAt = Date.now();
+        close(true);
+      });
+      // the mouse (and a pen in Toolkit 1.0.x): what counts is where the button is released. A
+      // release on an item picks it; a press and release outside the list close it; a release
+      // outside after the press that opened the list, over another drop-down, opens that one.
+      host.addEventListener('mousedown', (e) => {
+        if (e.composedPath()[0] !== host) return;
+        e.preventDefault();
+        outsidePress = e.button === 0 && !fromTouch(e);
+      });
+      host.addEventListener('mouseup', (e) => {
+        const outside = outsidePress;
+        outsidePress = false;
+        if (e.button !== 0 || fromTouch(e) || !open || open.host !== host) return;
+        const path = e.composedPath();
+        const el = path.find((x) => itemOf.has(x));
+        if (el) { e.preventDefault(); choose(select, itemOf.get(el)); return; }
+        if (path[0] !== host) return;
+        if (outside) { close(true); return; }
+        const under = document.elementsFromPoint(e.clientX, e.clientY).find((x) => x !== host);
+        if (isSingle(under) && under !== select) toggle(under);
+      });
+      host.addEventListener('touchend', eatTouchEnd, { passive: false });
       host.addEventListener('wheel', (e) => { if (e.composedPath()[0] === host) close(false); }, { passive: true });
       list.addEventListener('keydown', (e) => keys(e, select));
       document.documentElement.appendChild(host);
@@ -158,19 +225,55 @@
       e.stopPropagation();
     }
 
-    // the native pop-up opens on mousedown, and from the keyboard with Alt+Down, F4, Space or Enter
-    document.addEventListener('mousedown', (e) => {
+    // Touch and pen: the list opens when the finger or pen lifts. Cancelling the press keeps the
+    // pen's mouse events away, and cancelling the touch's end keeps away the tap WebView2 would make
+    // from it (in the Toolkit that tap could also start the native pop-up, which grabs the input).
+    window.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse' || !e.isPrimary || !isSingle(e.target)) return;
+      e.preventDefault();
+      press = { id: e.pointerId, select: e.target, x: e.clientX, y: e.clientY };
+    }, true);
+    window.addEventListener('pointerup', (e) => {
+      const p = press;
+      if (!p || p.id !== e.pointerId) return;
+      press = null;
+      if (moved(p, e)) return;
+      tappedAt = Date.now();
+      toggle(p.select);
+    }, true);
+    window.addEventListener('pointercancel', (e) => { if (press && press.id === e.pointerId) press = null; }, true);
+    window.addEventListener('touchend', (e) => { if (isSingle(e.target)) eatTouchEnd(e); }, { capture: true, passive: false });
+
+    // the mouse: the native pop-up opens on mousedown
+    window.addEventListener('mousedown', (e) => {
       const s = e.target;
       if (e.button !== 0 || !isSingle(s)) return;
       e.preventDefault();
-      s.focus({ preventScroll: true });
-      if (open && open.select === s) close(true); else show(s);
+      e.stopPropagation();
+      // made from a touch or pen press that the pointer events above already handle
+      if (fromTouch(e) || (press && press.select === s) || Date.now() - tappedAt < 800) return;
+      toggle(s);
     }, true);
-    document.addEventListener('keydown', (e) => {
+    // pressed somewhere else and released on a drop-down: a pen tap in Toolkit 1.0.x
+    // (pointer events: a page can cancel a press's mouse events, or capture the pointer)
+    window.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse' && e.button === 0) lastPress = { target: e.target };
+    }, true);
+    window.addEventListener('pointerup', (e) => {
+      const p = lastPress;
+      lastPress = null;
+      if (e.pointerType !== 'mouse' || e.button !== 0 || open || !p) return;
+      const s = isSingle(e.target) ? e.target : document.elementFromPoint(e.clientX, e.clientY);
+      if (!isSingle(s) || p.target === s || Date.now() - tappedAt < 800) return;
+      toggle(s);
+    }, true);
+    // the keyboard: Alt+Down, F4, Space or Enter
+    window.addEventListener('keydown', (e) => {
       const s = e.target;
       if (!isSingle(s) || (open && open.select === s)) return;
       if ((e.key === 'ArrowDown' && e.altKey) || e.key === 'F4' || e.key === ' ' || e.key === 'Enter') {
         e.preventDefault();
+        e.stopPropagation();
         show(s);
       }
     }, true);
