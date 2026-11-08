@@ -287,11 +287,19 @@ export async function deleteRelease(id: string) {
   await prisma.productRelease.delete({ where: { id } });
 }
 
-function forEmail(r: { app: string; version: string; releasedAt: Date; title: string; notes: string; link: string; linkLabel: string }): ReleaseForEmail {
+type ReleaseRow = { app: string; version: string; releasedAt: Date; title: string; notes: string; link: string; linkLabel: string };
+
+function forEmail(r: ReleaseRow, introduces = false): ReleaseForEmail {
   const app = appById(r.app);
   const name = app?.name || r.app;
   const newer = app && app.current && normVersion(app.current) !== normVersion(r.version) && compareVersions(app.current, r.version) > 0 ? app.current : null;
-  return { appId: r.app, appName: name, version: r.version, releasedAt: r.releasedAt, title: r.title, notes: r.notes, link: r.link, linkLabel: r.linkLabel, newerVersion: newer };
+  return { appId: r.app, appName: name, version: r.version, releasedAt: r.releasedAt, title: r.title, notes: r.notes, link: r.link, linkLabel: r.linkLabel, newerVersion: newer, introduces };
+}
+
+/** The app's first release in the list: for a new program (one with an introduction, lib/releaseEmail.ts) its email introduces it */
+async function forEmailOf(r: ReleaseRow): Promise<ReleaseForEmail> {
+  const earlier = await prisma.productRelease.count({ where: { app: r.app, releasedAt: { lt: r.releasedAt } } });
+  return forEmail(r, earlier === 0);
 }
 
 /** 3.10 > 3.9 > 3.4.1 > 3.4; letters compare as text */
@@ -446,7 +454,7 @@ export async function previewRelease(id: string, to: { name: string; email: stri
   await ensureReleaseTables();
   const r = await prisma.productRelease.findUnique({ where: { id } });
   if (!r) return null;
-  const m = releaseEmail(forEmail(r), to);
+  const m = releaseEmail(await forEmailOf(r), to);
   return { subject: m.subject, html: m.html, text: m.text };
 }
 
@@ -454,7 +462,7 @@ export async function sendTest(id: string, to: { name: string; email: string }) 
   await ensureReleaseTables();
   const r = await prisma.productRelease.findUnique({ where: { id } });
   if (!r) throw new Error("That release no longer exists.");
-  const m = releaseEmail(forEmail(r), to);
+  const m = releaseEmail(await forEmailOf(r), to);
   const t = mailTransport();
   await t.sendMail({ from: mailFrom(), replyTo: mailReplyTo(), to: to.email, subject: `[Test] ${m.subject}`, text: m.text, html: m.html, list: m.list, headers: m.headers });
 }
@@ -543,7 +551,7 @@ export async function sendNextBatch(id: string, budgetMs = 40_000, batch = 25) {
   );
 
   const started = Date.now();
-  const release = forEmail(b.release);
+  const release = await forEmailOf(b.release);
   const review = b.kind === "review" ? reviewAskFor(b.release.app) : null;
   const transport = claimed.length ? mailTransport(true) : null;
   const gap = mailGapMs();
