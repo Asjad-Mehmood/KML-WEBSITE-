@@ -43,7 +43,7 @@ export const PRODUCTS: Product[] = [
     id: "toolkit",
     name: "Survey Toolkit",
     platform: "Windows",
-    version: "1.1.0",
+    version: "1.0.2",
     tagline: "Every survey tool in one download, always up to date",
     description:
       "One free Windows program installs Excel to KML, RoadPro, Traverse & Level, Project Folder Manager and Slope Calculator with a click each, then keeps every one of them up to date by itself. The web apps open side by side, already signed in.",
