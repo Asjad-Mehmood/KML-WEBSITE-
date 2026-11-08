@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runCleanup } from "@/lib/cleanup";
+import { kickStalled } from "@/lib/broadcastRunner";
 
 // Called nightly by Vercel Cron (vercel.json). With CRON_SECRET set, Vercel
 // sends it as a Bearer token and nothing else is accepted.
@@ -13,7 +14,9 @@ export async function GET(req: NextRequest) {
   const allowed = secret ? auth === `Bearer ${secret}` : fromVercelCron;
   if (!allowed) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
-    return NextResponse.json({ ok: true, ...(await runCleanup("schedule")) });
+    // and a broadcast whose run stopped carries on
+    const restarted = await kickStalled(req.nextUrl.origin);
+    return NextResponse.json({ ok: true, restartedBroadcasts: restarted, ...(await runCleanup("schedule")) });
   } catch (err) {
     console.error("Clean-up failed:", err);
     return NextResponse.json({ error: "Clean-up failed" }, { status: 500 });
