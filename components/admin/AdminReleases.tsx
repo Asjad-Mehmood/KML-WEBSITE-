@@ -123,7 +123,7 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
     };
   }, [load]);
 
-  // Ask for one batch after another until the broadcast is done or paused
+  // Watch a broadcast the server is sending until it is done or paused (closing the page doesn't stop it)
   const run = useCallback(
     async (broadcastId: string) => {
       setRunning(broadcastId);
@@ -131,7 +131,7 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
       try {
         for (;;) {
           if (stopRef.current) break;
-          const r = await adminFetch(`/api/admin/broadcasts/${broadcastId}`, json({ action: "send" }));
+          const r = await adminFetch(`/api/admin/broadcasts/${broadcastId}`, json({ action: "watch" }));
           if (!r.ok) throw new Error(await errorOf(r));
           const { broadcast } = (await r.json()) as { broadcast: Broadcast };
           setData((d) =>
@@ -152,6 +152,7 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
             toast.current(broadcast.lastError || "Paused", "error");
             break;
           }
+          await new Promise((res) => setTimeout(res, 3000));
         }
       } catch (e) {
         toast.current((e as Error).message, "error");

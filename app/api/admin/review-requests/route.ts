@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
+import { kickBroadcast } from "@/lib/broadcastRunner";
 import { getAdminSession } from "@/lib/adminAuth";
 import { isMailConfigured } from "@/lib/mailer";
 import { startReviewRequest } from "@/lib/releases";
@@ -14,6 +15,7 @@ export async function POST(req: NextRequest) {
   if (body?.confirm !== true) return NextResponse.json({ error: "Confirm the request first." }, { status: 400 });
   try {
     const broadcastId = await startReviewRequest(String(body.app || ""), body.onlyNew === true, session.user.email);
+    after(() => kickBroadcast(req.nextUrl.origin, broadcastId));
     return NextResponse.json({ broadcastId });
   } catch (err) {
     return NextResponse.json({ error: (err as Error).message || "Couldn't start sending." }, { status: 400 });

@@ -1,10 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { getAdminSession } from "@/lib/adminAuth";
-import { cancelBroadcast, failedRecipients, pauseBroadcast, resumeBroadcast, sendNextBatch } from "@/lib/releases";
+import { kickBroadcast, kickStalled } from "@/lib/broadcastRunner";
+import { broadcastStatus, cancelBroadcast, failedRecipients, pauseBroadcast, resumeBroadcast, sendNextBatch } from "@/lib/releases";
 
 type Ctx = { params: Promise<{ id: string }> };
 
-// A batch takes up to ~40 s; the page asks again until the broadcast is done or paused
+// The server sends broadcasts in steps (lib/broadcastRunner.ts); the page watches with "watch",
+// which also restarts a run that stopped. "send" (one batch from here) is kept for older pages.
 export const maxDuration = 60;
 
 // The addresses that couldn't be reached
@@ -14,14 +16,18 @@ export async function GET(req: NextRequest, { params }: Ctx) {
   return NextResponse.json({ failed: await failedRecipients(id) });
 }
 
-// action: send (the next batch) | pause | resume | cancel
+// action: watch (the counts) | send (the next batch) | pause | resume | cancel
 export async function POST(req: NextRequest, { params }: Ctx) {
   if (!(await getAdminSession(req))) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
   const { action } = await req.json().catch(() => ({}));
   try {
+    const origin = req.nextUrl.origin;
+    if (action === "resume") after(() => kickBroadcast(origin, id));
+    if (action === "watch") after(() => kickStalled(origin));
     const b =
-      action === "pause" ? await pauseBroadcast(id)
+      action === "watch" ? await broadcastStatus(id)
+      : action === "pause" ? await pauseBroadcast(id)
       : action === "resume" ? await resumeBroadcast(id)
       : action === "cancel" ? await cancelBroadcast(id)
       : action === "send" ? await sendNextBatch(id)

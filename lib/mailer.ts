@@ -30,7 +30,9 @@ export function sendsFromFreeMailbox(): boolean {
 /** The pause between emails to many people: a steady trickle looks less like spam than a burst */
 export const mailGapMs = () => {
   const n = Number(process.env.MAIL_GAP_MS);
-  return Number.isFinite(n) && n >= 0 ? Math.min(n, 20_000) : 4000;
+  if (Number.isFinite(n) && n >= 0 && process.env.MAIL_GAP_MS?.trim()) return Math.min(n, 20_000);
+  // a sending service such as Brevo takes many emails a second; a mailbox (Gmail) wants a pause
+  return /brevo|sendinblue|sendgrid|mailgun|postmark|amazonaws|resend/i.test(process.env.SMTP_HOST || "") ? 300 : 4000;
 };
 
 export interface MailMessage {

@@ -1,10 +1,13 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
+import { kickStalled } from "@/lib/broadcastRunner";
 import { getAdminSession } from "@/lib/adminAuth";
 import { checkRelease, createRelease, listReleases } from "@/lib/releases";
 
 // Admin → Releases: every release, grouped by app, with its broadcasts and the audience
 export async function GET(req: NextRequest) {
   if (!(await getAdminSession(req))) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // a broadcast whose run stopped carries on
+  after(() => kickStalled(req.nextUrl.origin));
   try {
     return NextResponse.json(await listReleases());
   } catch (err) {

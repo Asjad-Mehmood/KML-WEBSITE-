@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
+import { kickBroadcast } from "@/lib/broadcastRunner";
 import { getAdminSession } from "@/lib/adminAuth";
 import { isMailConfigured } from "@/lib/mailer";
 import { startBroadcast } from "@/lib/releases";
@@ -7,7 +8,7 @@ type Ctx = { params: Promise<{ id: string }> };
 
 // Start emailing a release to the people who use its app (audience "all": everyone with an
 // account; onlyNew: skip people who already got it).
-// The admin page then asks /api/admin/broadcasts/[id] for one batch after another.
+// The server then sends it in steps (lib/broadcastRunner.ts); the admin page only watches.
 export async function POST(req: NextRequest, { params }: Ctx) {
   const session = await getAdminSession(req);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -17,6 +18,8 @@ export async function POST(req: NextRequest, { params }: Ctx) {
   if (body?.confirm !== true) return NextResponse.json({ error: "Confirm the broadcast first." }, { status: 400 });
   try {
     const broadcastId = await startBroadcast(id, body.onlyNew === true, body.audience === "all" ? "all" : "app", session.user.email);
+    // sent on the server from here on, whether or not the page stays open
+    after(() => kickBroadcast(req.nextUrl.origin, broadcastId));
     return NextResponse.json({ broadcastId });
   } catch (err) {
     return NextResponse.json({ error: (err as Error).message || "Couldn't start the broadcast." }, { status: 400 });

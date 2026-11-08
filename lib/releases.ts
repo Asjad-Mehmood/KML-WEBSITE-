@@ -560,12 +560,41 @@ async function refreshCounts(id: string) {
  * when the mail server says to stop (daily limit, sign-in problem).
  */
 export async function sendNextBatch(id: string, budgetMs = 40_000, batch = 25) {
+  return (await sendBatch(id, budgetMs, batch)).broadcast;
+}
+
+/** One step of a broadcast run on the server (lib/broadcastRunner.ts): bigger batches, and whether it sent anything */
+export async function sendStep(id: string) {
+  return sendBatch(id, 45_000, 200);
+}
+
+/** A broadcast still sending whose last email went out (or was claimed) over 90 s ago: its run stopped */
+export async function stalledBroadcasts(): Promise<string[]> {
+  await ensureReleaseTables();
+  const rows = await prisma.$queryRawUnsafe<{ id: string }[]>(
+    `SELECT b."id" FROM "release_broadcasts" b
+     WHERE b."status" = 'sending' AND b."createdAt" < now() - interval '60 seconds'
+       AND NOT EXISTS (
+         SELECT 1 FROM "release_recipients" r
+         WHERE r."broadcastId" = b."id" AND (r."claimedAt" > now() - interval '90 seconds' OR r."sentAt" > now() - interval '90 seconds'))`
+  );
+  return rows.map((r) => r.id);
+}
+
+/** The broadcast with its counts, without sending */
+export async function broadcastStatus(id: string) {
+  await ensureReleaseTables();
+  return refreshCounts(id);
+}
+
+async function sendBatch(id: string, budgetMs: number, batch: number) {
   await ensureReleaseTables();
   const b = await prisma.releaseBroadcast.findUnique({ where: { id }, include: { release: true } });
   if (!b) throw new Error("That broadcast no longer exists.");
-  if (b.status !== "sending") return b;
+  if (b.status !== "sending") return { broadcast: b, claimed: 0 };
   if (!isMailConfigured()) {
-    return prisma.releaseBroadcast.update({ where: { id }, data: { status: "paused", lastError: "Email isn't set up (SMTP_HOST, SMTP_USER, SMTP_PASS)." } });
+    const broadcast = await prisma.releaseBroadcast.update({ where: { id }, data: { status: "paused", lastError: "Email isn't set up (SMTP_HOST, SMTP_USER, SMTP_PASS)." } });
+    return { broadcast, claimed: 0 };
   }
 
   // claim a batch; a claim older than 10 minutes was left by a request that died
@@ -623,7 +652,7 @@ export async function sendNextBatch(id: string, budgetMs = 40_000, batch = 25) {
   }
 
   if (stopWith) await prisma.releaseBroadcast.update({ where: { id }, data: { status: "paused", lastError: stopWith } });
-  return refreshCounts(id);
+  return { broadcast: await refreshCounts(id), claimed: claimed.length };
 }
 
 export async function pauseBroadcast(id: string) {
