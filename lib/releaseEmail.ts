@@ -54,7 +54,12 @@ interface UpdateGuide {
    * A new program: its first release in Admin → Releases is emailed as an introduction (what it
    * is, and how to start) instead of an update, since nobody has it yet
    */
-  intro?: { pitch: string; start: string[] };
+  intro?: {
+    pitch: string;
+    start: string[];
+    /** The introduction's own top: the program's icon (a PNG on this site), a headline in two parts, and a tile for each thing it brings */
+    hero: { icon: string; headline: string; accent: string; sub: string; tiles: [string, string][] };
+  };
 }
 
 const UPDATE_GUIDES: Record<string, UpdateGuide> = {
@@ -121,6 +126,19 @@ const UPDATE_GUIDES: Record<string, UpdateGuide> = {
         "Sign in with your free Excel to KML account, the same one you use on the website.",
         "Press Install on the tools you want. From then on each one updates itself.",
       ],
+      hero: {
+        icon: "/toolkit/toolkit-icon.png",
+        headline: "Every survey tool. One download.",
+        accent: "Always up to date.",
+        sub: "One free Windows program installs all five of our tools with a click each and keeps every one of them up to date by itself.",
+        tiles: [
+          ["Excel to KML", "Coordinates to Google Earth"],
+          ["RoadPro", "Roads in AutoCAD"],
+          ["Traverse & Level", "Adjust and report"],
+          ["Folder Manager", "Project folders"],
+          ["Slope Calculator", "Slopes and levels"],
+        ],
+      },
     },
   },
   "folder-manager": {
@@ -181,6 +199,35 @@ const longDate = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", mo
 // colours and fonts, inline because email apps drop <style>
 export const C = { blue: "#0071e3", ink: "#0f172a", body: "#334155", muted: "#64748b", faint: "#94a3b8", line: "#e2e8f0", page: "#f1f5f9", tint: "#f0f7ff" };
 export const FONT = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
+
+// A new program's top: navy and gold like the Survey Toolkit, its icon, the headline, the download
+// button and a tile for each tool. Tables, inline styles and a plain navy behind the gradient, for
+// email apps; the tiles are inline blocks so they wrap on a phone.
+const NAVY = "#071a44";
+const GOLD = "#ffd21f";
+function introHero(h: NonNullable<UpdateGuide["intro"]>["hero"], r: ReleaseForEmail, url: string, label: string) {
+  const tile = ([name, text]: [string, string]) =>
+    `<div style="display:inline-block;width:80px;height:82px;margin:0 4px 4px 0;padding:9px 8px;border-radius:12px;background:#10275c;border:1px solid #23428a;vertical-align:top;overflow:hidden">
+<div style="width:6px;height:6px;border-radius:3px;background:${GOLD}"></div>
+<div style="margin-top:7px;font-size:12px;line-height:1.25;font-weight:700;color:#ffffff">${esc(name)}</div>
+<div style="margin-top:3px;font-size:10.5px;line-height:1.3;color:#a9bbe8">${esc(text)}</div>
+</div>`;
+  return `<tr><td bgcolor="${NAVY}" style="background:${NAVY};background-image:radial-gradient(120% 90% at 100% 0%,#1e4fd8 0%,${NAVY} 62%);border-radius:16px 16px 0 0;padding:28px 24px 22px">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+<td valign="middle"><img src="${SITE_URL}${h.icon}" width="48" height="48" alt="" style="display:block;border:0;border-radius:12px"></td>
+<td valign="middle" style="padding-left:12px">
+<div style="font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:${GOLD}">${esc(r.appName)}</div>
+<div style="margin-top:3px;font-size:12.5px;font-weight:600;color:#a9bbe8">New &middot; Free &middot; Version ${esc(r.version)}</div>
+</td>
+</tr></table>
+<h1 style="margin:22px 0 0;font-size:30px;line-height:1.15;font-weight:800;letter-spacing:-.01em;color:#ffffff">${esc(h.headline)}<br><span style="color:${GOLD}">${esc(h.accent)}</span></h1>
+<p style="margin:12px 0 0;font-size:15px;line-height:1.55;color:#c9d6f7">${esc(h.sub)}</p>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:20px 0 22px"><tr>
+<td bgcolor="${GOLD}" style="border-radius:10px"><a href="${esc(url)}" style="display:inline-block;padding:13px 24px;font-family:${FONT};font-size:15px;font-weight:800;color:${NAVY};text-decoration:none;border-radius:10px">${esc(label)} &rarr;</a></td>
+</tr></table>
+<div style="font-size:0;line-height:0">${h.tiles.map(tile).join("")}</div>
+</td></tr>`;
+}
 
 export function releaseEmail(r: ReleaseForEmail, to: { name: string; email: string }) {
   const first = (to.name || "").trim().split(/\s+/)[0] || "there";
@@ -302,15 +349,15 @@ ${details
 
 <tr><td bgcolor="#ffffff" style="border-radius:16px;border:1px solid ${C.line};overflow:hidden">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-<tr><td bgcolor="${C.blue}" style="background:${C.blue};background-image:linear-gradient(135deg,#0071e3,#2563eb 55%,#4f46e5);border-radius:16px 16px 0 0;padding:30px 32px 28px">
+${intro ? introHero(intro.hero, r, url, label) : `<tr><td bgcolor="${C.blue}" style="background:${C.blue};background-image:linear-gradient(135deg,#0071e3,#2563eb 55%,#4f46e5);border-radius:16px 16px 0 0;padding:30px 32px 28px">
 <div style="display:inline-block;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.18);font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#ffffff">${badge}</div>
 <div style="margin-top:14px;font-size:14px;font-weight:600;color:#dbeafe">${esc(r.appName)} ${esc(r.version)}</div>
 <h1 style="margin:6px 0 0;font-size:25px;line-height:1.3;font-weight:800;color:#ffffff">${esc(subject)}</h1>
-</td></tr>
+</td></tr>`}
 
 <tr><td style="padding:28px 32px 8px">
 ${p(`Hi ${esc(first)},`)}
-${p(esc(lead), "margin-bottom:0")}
+${p(esc(intro ? `We've put all five of our tools into one free Windows program. Here's what it does, and how to start in a minute.` : lead), "margin-bottom:0")}
 ${detailRow}
 ${whatsNew}
 
