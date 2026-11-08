@@ -99,6 +99,10 @@ export default function RootLayout({
 
         {/* Ties the site to the official Facebook Page (needs property=, which Metadata can't set) */}
         <meta property="fb:pages" content={FACEBOOK_PAGE_ID} />
+
+        {/* Drop-down lists that open inside the Survey Toolkit's window; does nothing in a browser */}
+        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
+        <script src="/toolkit-selects.js" />
       </head>
       <body className="min-h-screen bg-white text-[#1d1d1f] selection:bg-[#0071e3]/20 selection:text-[#0071e3]">
         <AuthProvider>
