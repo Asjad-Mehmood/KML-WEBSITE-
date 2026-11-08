@@ -29,6 +29,14 @@ export interface ReleaseApp {
 
 export const normVersion = (v: string) => String(v || "").trim().replace(/^v(?=\d)/i, "");
 
+/** The products published as GitHub releases: Admin → Releases can import them */
+const GITHUB_REPOS: Record<string, string> = {
+  traverse: "Asjad-Mehmood/Traiverse",
+  slope: "Asjad-Mehmood/Slope-calculator-",
+  "folder-manager": "Asjad-Mehmood/Project-manager",
+  toolkit: "Asjad-Mehmood/Survey-Toolkit",
+};
+
 export const RELEASE_APPS: ReleaseApp[] = [
   { id: "excel-to-kml", name: SITE_NAME, href: "/download", current: normVersion(LATEST_VERSION), github: "Asjad-Mehmood/kml-convertor" },
   ...PRODUCTS.map((p) => ({
@@ -36,7 +44,7 @@ export const RELEASE_APPS: ReleaseApp[] = [
     name: p.name,
     href: p.href,
     current: normVersion(p.version),
-    ...(p.id === "traverse" ? { github: "Asjad-Mehmood/Traiverse" } : p.id === "slope" ? { github: "Asjad-Mehmood/Slope-calculator-" } : {}),
+    ...(GITHUB_REPOS[p.id] ? { github: GITHUB_REPOS[p.id] } : {}),
   })),
 ];
 export const appById = (id: string) => RELEASE_APPS.find((a) => a.id === id);
@@ -754,11 +762,20 @@ export async function importFromGitHub(appId: string) {
     cache: "no-store",
   });
   if (!res.ok) throw new Error(`GitHub answered ${res.status}. Try again in a minute.`);
-  const list = (await res.json()) as { tag_name: string; name: string | null; body: string | null; published_at: string; draft: boolean; prerelease: boolean }[];
+  const list = (await res.json()) as {
+    tag_name: string;
+    name: string | null;
+    body: string | null;
+    published_at: string;
+    draft: boolean;
+    prerelease: boolean;
+    assets?: unknown[];
+  }[];
   let added = 0;
   let filled = 0;
   for (const g of list) {
-    if (g.draft || g.prerelease) continue;
+    // drafts, betas, and releases made by mistake with no files (Project-manager's v2.3.9)
+    if (g.draft || g.prerelease || !g.assets?.length) continue;
     const version = normVersion(g.tag_name);
     if (!version) continue;
     const notes = notesFromMarkdown(g.body || "").join("\n");
