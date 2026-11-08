@@ -17,6 +17,8 @@ export const dynamic = "force-dynamic";
 function withSiteSession(html: string, token: string, user: unknown, features: { traverse: boolean } = { traverse: true }): string {
   const json = (v: unknown) => JSON.stringify(v).replace(/</g, "\\u003c");
   const tag =
+    // drop-down lists that open inside the Survey Toolkit's window (public/toolkit-selects.js)
+    '<script src="/toolkit-selects.js"></script>' +
     // admin switches for the app's sections (Admin → Settings → App features)
     "<script>window.BM2KML_FEATURES=" + json(features) + ";</script>" +
     "<script>try{" +
