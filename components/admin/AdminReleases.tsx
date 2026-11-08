@@ -10,6 +10,7 @@ import {
   Mail,
   Megaphone,
   Pause,
+  PartyPopper,
   Pencil,
   Play,
   Plus,
@@ -58,6 +59,8 @@ interface Release {
   /** Still to get it: the app's users, and everyone with an account */
   notYet: number;
   notYetAll: number;
+  /** A new program's first release: emailed as its introduction */
+  introduces?: boolean;
 }
 interface Data {
   /** users: people who downloaded or used the app with their account */
@@ -65,6 +68,8 @@ interface Data {
     app: App;
     users: number;
     releases: Release[];
+    /** A new program (the Survey Toolkit): its introduction email, and the release that carries it once made */
+    intro: { title: string; releaseId: string | null } | null;
     /** reviewed: reviews of the app; toAsk: its users who haven't reviewed it; notAskedYet: those never asked */
     review: { reviewed: number; toAsk: number; notAskedYet: number; broadcasts: Broadcast[] };
   }[];
@@ -227,7 +232,20 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
     setBusy(null);
     if (!r.ok) return toast.current(await errorOf(r), "error");
     const { added, filled } = await r.json();
-    toast.current(added || filled ? `${added} added, ${filled} filled in from GitHub` : "Nothing new on GitHub");
+    toast.current(
+      added || filled
+        ? `${added} added, ${filled} filled in from GitHub`
+        : "Nothing new on GitHub: betas and releases without files are left out"
+    );
+    load();
+  };
+
+  const createIntro = async (app: App) => {
+    setBusy(`intro-${app.id}`);
+    const r = await adminFetch("/api/admin/releases/intro", json({ app: app.id }));
+    setBusy(null);
+    if (!r.ok) return toast.current(await errorOf(r), "error");
+    toast.current("Introduction email ready: preview it, send a test, then email everyone");
     load();
   };
 
@@ -391,7 +409,7 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
         })}
       </div>
 
-      {[shown].map(({ app, users, releases, review }) => (
+      {[shown].map(({ app, users, releases, review, intro }) => (
         <section key={app.id} role="tabpanel" className="rounded-2xl border border-slate-800 bg-slate-900/40">
           <header className="flex flex-wrap items-center gap-3 px-5 py-4 border-b border-slate-800">
             <div className="mr-auto">
@@ -419,6 +437,68 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
               <Plus className="w-3.5 h-3.5" /> Add release
             </button>
           </header>
+
+          {/* A new program: introduce it to everyone */}
+          {intro && (() => {
+            const rel = releases.find((r) => r.id === intro.releaseId) ?? null;
+            const sent = rel?.broadcasts.some((b) => b.sent > 0) ?? false;
+            const open = rel?.broadcasts.find((b) => b.status !== "done");
+            return (
+              <div className="px-5 py-4 border-b border-slate-800 bg-gradient-to-r from-amber-400/[0.08] to-blue-500/[0.06]">
+                <div className="flex flex-wrap items-start gap-3">
+                  <div className="mr-auto max-w-xl">
+                    <p className="flex items-center gap-2 text-sm font-bold text-white">
+                      <PartyPopper className="w-4 h-4 text-amber-300" /> Introduce {app.name} to everyone
+                      {sent && <span className="px-2 py-0.5 rounded-md bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[11px]">Sent</span>}
+                    </p>
+                    <p className="mt-0.5 text-xs text-slate-400">
+                      A one-time email to everyone with an account: what {app.name} is, what it does and how to start, with a Download button. Later
+                      releases send the usual update email.
+                    </p>
+                    {rel ? (
+                      <p className="mt-1 text-[12px] text-slate-300">
+                        &ldquo;{rel.title}&rdquo; · version {rel.version}
+                        {!sent && <> · <span className="text-slate-400">{rel.notYetAll} to send to</span></>}
+                      </p>
+                    ) : (
+                      <p className="mt-1 text-[12px] text-slate-300">&ldquo;{intro.title}&rdquo;</p>
+                    )}
+                    {!data.mail.configured && (
+                      <p className="mt-1 text-[12px] text-amber-300">Email isn&apos;t set up yet (Settings → System health), so it can&apos;t be sent.</p>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {!rel ? (
+                      <button onClick={() => createIntro(app)} disabled={busy === `intro-${app.id}`} className={`${btn} bg-amber-400 hover:bg-amber-300 text-slate-950`}>
+                        {busy === `intro-${app.id}` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />} Create the introduction email
+                      </button>
+                    ) : (
+                      <>
+                        <button onClick={() => showPreview(rel)} disabled={busy === `preview-${rel.id}`} className={`${btn} bg-slate-800 hover:bg-slate-700 text-slate-200`}>
+                          <Eye className="w-3.5 h-3.5" /> Preview
+                        </button>
+                        <button onClick={() => sendTest(rel)} disabled={!data.mail.configured || busy === `test-${rel.id}`} className={`${btn} bg-slate-800 hover:bg-slate-700 text-slate-200`}>
+                          {busy === `test-${rel.id}` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Mail className="w-3.5 h-3.5" />} Send test to me
+                        </button>
+                        <button onClick={() => setEditing({ isNew: false, release: rel })} className={`${btn} bg-slate-800 hover:bg-slate-700 text-slate-200`}>
+                          <Pencil className="w-3.5 h-3.5" /> Edit
+                        </button>
+                        {!open && (
+                          <button
+                            onClick={() => setConfirming({ release: rel, who: "all" })}
+                            disabled={!data.mail.configured || !!running || rel.notYetAll === 0}
+                            className={`${btn} bg-amber-400 hover:bg-amber-300 text-slate-950`}
+                          >
+                            <Send className="w-3.5 h-3.5" /> {sent ? "Send to the rest" : "Email everyone"} ({rel.notYetAll})
+                          </button>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Ask the app's users for a review */}
           <div className="px-5 py-4 border-b border-slate-800 bg-amber-500/[0.04]">
@@ -470,6 +550,7 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
                     <div className="flex flex-wrap items-center gap-2 text-xs">
                       <span className="px-2 py-0.5 rounded-md bg-blue-500/15 border border-blue-500/30 text-blue-200 font-bold">{app.name} {rel.version}</span>
                       {rel.version === app.current && <span className="px-2 py-0.5 rounded-md bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-semibold">Latest</span>}
+                      {rel.introduces && <span className="px-2 py-0.5 rounded-md bg-amber-400/15 border border-amber-400/30 text-amber-200 font-semibold">Introduction email</span>}
                       <span className="text-slate-500">{day(rel.releasedAt)}</span>
                       {!rel.broadcasts.length && <span className="ml-auto text-slate-500">Not sent yet</span>}
                     </div>

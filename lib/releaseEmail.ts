@@ -55,6 +55,9 @@ interface UpdateGuide {
    * is, and how to start) instead of an update, since nobody has it yet
    */
   intro?: {
+    /** What Admin → Releases → "Create the introduction email" fills in */
+    title: string;
+    notes: string[];
     pitch: string;
     start: string[];
     /** The introduction's own top: the program's icon (a PNG on this site), a headline in two parts, and a tile for each thing it brings */
@@ -119,6 +122,13 @@ const UPDATE_GUIDES: Record<string, UpdateGuide> = {
     newUser: "New to the Survey Toolkit? Download it once, sign in with your free account and install any tool with one click.",
     more: { label: "What it does", href: "/toolkit" },
     intro: {
+      title: "Meet the Survey Toolkit: every survey tool in one download",
+      notes: [
+        "Five tools, one download: Excel to KML, RoadPro, Traverse & Level, Project Folder Manager and Slope Calculator",
+        "Always up to date: each tool updates itself in the background",
+        "Project Folder Manager inside: it runs right in the Toolkit's window",
+        "Web apps side by side: already signed in, with your saved files",
+      ],
       pitch:
         "Meet the Survey Toolkit: one free Windows program that installs Excel to KML, RoadPro, Traverse & Level, Project Folder Manager and Slope Calculator with one click each, then keeps every one of them up to date by itself.",
       start: [
@@ -153,6 +163,12 @@ const UPDATE_GUIDES: Record<string, UpdateGuide> = {
     more: { label: "Install guide", href: "/project-folder-manager#install" },
   },
 };
+
+/** A new program's introduction email (its first release), or null when the app has none */
+export function introductionOf(appId: string): { title: string; notes: string } | null {
+  const i = UPDATE_GUIDES[appId]?.intro;
+  return i ? { title: i.title, notes: i.notes.join("\n") } : null;
+}
 
 const FALLBACK_GUIDE: UpdateGuide = {
   platform: "",

@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { ensureVerifyTables } from "@/lib/emailVerify";
 import { mailFrom, mailGapMs, mailReplyTo, mailTransport, isMailConfigured, sendsFromFreeMailbox } from "@/lib/mailer";
-import { releaseEmail, type ReleaseForEmail } from "@/lib/releaseEmail";
+import { introductionOf, releaseEmail, type ReleaseForEmail } from "@/lib/releaseEmail";
 import { reviewRequestEmail } from "@/lib/reviewEmail";
 import { PRODUCTS } from "@/lib/products";
 import { LATEST_VERSION, SITE_NAME } from "@/lib/site";
@@ -275,6 +275,31 @@ export async function createRelease(d: ReleaseInput) {
   return prisma.productRelease.create({ data: { ...d, releasedAt: new Date(d.releasedAt) } });
 }
 
+/**
+ * Admin → Releases → "Create the introduction email": a new program's first release, with the
+ * title and notes of its introduction (lib/releaseEmail.ts), at the version on the site today.
+ * Returns the one there already when the app has releases.
+ */
+export async function createIntroduction(appId: string) {
+  await ensureReleaseTables();
+  const app = appById(appId);
+  const intro = introductionOf(appId);
+  if (!app || !intro) throw new Error("This app has no introduction email.");
+  const first = await prisma.productRelease.findFirst({ where: { app: app.id }, orderBy: { releasedAt: "asc" } });
+  if (first) return first;
+  return prisma.productRelease.create({
+    data: {
+      app: app.id,
+      version: normVersion(app.current) || "1.0",
+      releasedAt: new Date(new Date().toISOString().slice(0, 10)),
+      title: intro.title,
+      notes: intro.notes,
+      link: app.href,
+      linkLabel: "",
+    },
+  });
+}
+
 export async function updateRelease(id: string, d: ReleaseInput) {
   await ensureReleaseTables();
   const clash = await prisma.productRelease.findUnique({ where: { app_version: { app: d.app, version: d.version } } });
@@ -422,8 +447,12 @@ export async function listReleases() {
       const own = releases
         .filter((r) => r.app === app.id)
         .sort((x, y) => compareVersions(y.version, x.version) || y.releasedAt.getTime() - x.releasedAt.getTime());
+      // a new program's first release is emailed as its introduction
+      const intro = introductionOf(app.id);
+      const first = own.reduce<(typeof own)[number] | null>((a, r) => (!a || r.releasedAt < a.releasedAt ? r : a), null);
       return {
         app,
+        intro: intro ? { title: intro.title, releaseId: first?.id ?? null } : null,
         // people who downloaded or used this app
         users: await count(appSql, NEVER_EMAIL),
         // asking them for a review: who could be asked, and the requests sent before
@@ -434,6 +463,7 @@ export async function listReleases() {
         releases: await Promise.all(
           own.map(async (r) => ({
             ...r,
+            introduces: !!intro && r.id === first?.id,
             // still to get this release: among the app's users, and among everyone
             notYet: await count(`${appSql}${alreadySentSql}`, NEVER_EMAIL, r.id),
             notYetAll: await count(`${eligibleSql}${alreadySentSql}`, NEVER_EMAIL, r.id),
