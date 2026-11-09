@@ -237,21 +237,31 @@ function introLetter(r: ReleaseForEmail, intro: NonNullable<UpdateGuide["intro"]
     "--",
     `You're getting this because you have an account on ${host}. To stop these emails: ${unsub}`,
   ].join("\n");
+  // Light styling only: text colour, weight and one thin line. No background blocks, buttons or
+  // pictures, which is what puts an email under Promotions.
   const para = (t: string) => `<p style="margin:0 0 14px">${t}</p>`;
+  const BLUE = "#0b63ce";
+  // the tool names in the first paragraph in bold
+  const bold = (t: string) =>
+    esc(t).replace(/(Excel to KML|RoadPro|Traverse &amp; Level|Project Folder Manager|Slope Calculator|the Survey Toolkit)/g, '<b style="color:#111111">$1</b>');
   const html = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(subject)}</title></head>
-<body style="margin:0;padding:16px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:#222222">
-<div style="max-width:580px">
+<body style="margin:0;padding:20px 16px;font-family:'Segoe UI',Roboto,Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#2b2b2b">
+<div style="max-width:560px">
+<p style="margin:0 0 18px;font-size:13px;font-weight:700;letter-spacing:.04em;color:${BLUE}">${esc(SITE_NAME)}</p>
 ${para(esc(hi))}
-${intro.letter.map((l) => para(esc(l))).join("\n")}
-${para("To start:")}
-<ol style="margin:0 0 14px;padding-left:22px">
-${intro.start.map((s) => `<li style="margin:0 0 6px">${esc(s)}</li>`).join("\n")}
-</ol>
-${para(`<a href="${esc(url)}">${esc(url)}</a>`)}
+${intro.letter.map((l, i) => para(i === 0 ? bold(l) : esc(l))).join("\n")}
+<p style="margin:20px 0 8px;font-weight:700;color:#111111">To start</p>
+${intro.start
+  .map(
+    (s, i) =>
+      `<p style="margin:0 0 8px;padding-left:26px;text-indent:-26px"><span style="display:inline-block;width:26px;text-indent:0;font-weight:700;color:${BLUE}">${i + 1}.</span>${esc(s)}</p>`
+  )
+  .join("\n")}
+<p style="margin:16px 0 18px"><a href="${esc(url)}" style="color:${BLUE};font-weight:700;text-decoration:underline">${esc(url.replace(/^https:\/\//, ""))}</a></p>
 ${para("If anything doesn't work on your PC, reply to this email and tell us what you see. We read every reply.")}
-${para(`Thanks,<br>The ${esc(SITE_NAME)} team`)}
-<p style="margin:24px 0 0;font-size:12px;color:#777777">You're getting this because you have an account on ${esc(host)}. <a href="${esc(unsub)}" style="color:#777777">Stop these emails</a></p>
+${para(`Thanks,<br><b style="color:#111111">The ${esc(SITE_NAME)} team</b>`)}
+<p style="margin:26px 0 0;padding-top:12px;border-top:1px solid #e3e3e3;font-size:12px;line-height:1.5;color:#808080">You're getting this because you have an account on ${esc(host)}. <a href="${esc(unsub)}" style="color:#808080">Stop these emails</a></p>
 </div>
 </body></html>`;
   return {
