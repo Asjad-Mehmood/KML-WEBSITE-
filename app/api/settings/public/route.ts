@@ -28,6 +28,8 @@ export async function GET() {
         traverseEnabled: x.traverseEnabled,
         signupPrompt: x.signupPrompt,
         reviewPrompt: x.reviewPrompt,
+        // the home page is the Survey Toolkit's (Admin → Settings), as app/page.tsx decides
+        toolkitHome: x.homeHero === "toolkit" && Boolean(x.toolkitPublic),
       },
       {
         headers: {

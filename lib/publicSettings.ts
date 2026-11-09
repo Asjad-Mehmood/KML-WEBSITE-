@@ -22,6 +22,8 @@ export interface PublicSettings {
   signupPrompt?: boolean;
   /** Ask for a review after a download */
   reviewPrompt?: boolean;
+  /** The home page is the Survey Toolkit's: the menu bar's Download gets the Toolkit */
+  toolkitHome?: boolean;
 }
 
 let pending: Promise<PublicSettings | null> | null = null;
