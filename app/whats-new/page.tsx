@@ -11,6 +11,7 @@ import { ROADPRO_RELEASED, ROADPRO_VERSION } from "@/lib/roadpro";
 import { TRAVERSE_RELEASED, TRAVERSE_VERSION } from "@/lib/traverse";
 import { SLOPE_RELEASED, SLOPE_VERSION } from "@/lib/slope";
 import { PFM_RELEASED, PFM_VERSION } from "@/lib/folderManager";
+import { PRODUCTS } from "@/lib/products";
 
 const TITLE = "What's New";
 const DESCRIPTION = "What changed in each version of Excel to KML, and the release notes of RoadPro, Traverse & Level, Slope Calculator, Project Folder Manager and Survey Toolkit.";
@@ -21,7 +22,7 @@ const OTHERS: { name: string; version: string | null; released: string | null; h
   { name: "Traverse & Level", version: TRAVERSE_VERSION, released: TRAVERSE_RELEASED, href: "/whats-new/traverse", label: "Release notes" },
   { name: "Slope Calculator", version: SLOPE_VERSION, released: SLOPE_RELEASED, href: "/whats-new/slope", label: "Release notes" },
   { name: "Project Folder Manager", version: PFM_VERSION, released: PFM_RELEASED, href: "/whats-new/folder-manager", label: "Release notes" },
-  { name: "Survey Toolkit", version: null, released: null, href: "/whats-new/survey-toolkit", label: "Release notes" },
+  { name: "Survey Toolkit", version: PRODUCTS.find((x) => x.id === "toolkit")?.version ?? null, released: null, href: "/whats-new/survey-toolkit", label: "Release notes" },
 ];
 const day = (iso: string) => new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 

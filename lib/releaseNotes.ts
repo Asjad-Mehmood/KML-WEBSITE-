@@ -66,7 +66,7 @@ export function withoutGithub(md: string): string {
     .trim();
 }
 
-/** The program's releases, newest first; null when GitHub can't be read just now */
+/** The program's releases, newest first; null when GitHub can't be read while the site is built */
 export async function releaseNotesOf(app: NotesApp): Promise<ReleaseNote[] | null> {
   const url = `https://api.github.com/repos/${app.repo}/releases?per_page=15`;
   const read = async (headers: Record<string, string>) => {
@@ -76,11 +76,12 @@ export async function releaseNotesOf(app: NotesApp): Promise<ReleaseNote[] | nul
   try {
     const token = ghToken();
     const list = (token ? await read({ ...GH_HEADERS, Authorization: `Bearer ${token}` }) : null) ?? (await read(GH_HEADERS));
-    if (!Array.isArray(list)) return null;
+    if (!Array.isArray(list)) return failed();
     return list
-      .filter((r) => !r.draft && r.tag_name)
+      // only real version tags (v1.0.4, 2.1.1): a mistyped one such as "v.1.1.0" is left out
+      .filter((r) => !r.draft && /^v?\d+\.\d+(\.\d+)?$/i.test(r.tag_name || ""))
       .map((r) => {
-        const version = String(r.tag_name).replace(/^v\.?/i, "");
+        const version = String(r.tag_name).replace(/^v/i, "");
         return {
           version,
           title: withoutGithub(r.name || "") || `${app.name} ${version}`,
@@ -89,7 +90,17 @@ export async function releaseNotesOf(app: NotesApp): Promise<ReleaseNote[] | nul
           body: withoutGithub(r.body || ""),
         };
       });
-  } catch {
-    return null;
+  } catch (err) {
+    if (err instanceof NotesUnavailable) throw err;
+    return failed();
   }
+}
+
+class NotesUnavailable extends Error {}
+
+/** While the site is built, a page without notes says so. Once it's live, failing instead keeps
+ *  the last good copy of the page until GitHub answers again. */
+function failed(): null {
+  if (process.env.NEXT_PHASE === "phase-production-build") return null;
+  throw new NotesUnavailable("GitHub's release list can't be read just now");
 }
