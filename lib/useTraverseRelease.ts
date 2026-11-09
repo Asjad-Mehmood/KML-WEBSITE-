@@ -22,7 +22,7 @@ const FALLBACK: TraverseRelease = {
   versionTag: "",
   downloadUrl: `${TRAVERSE_RELEASES}/latest/download/${TRAVERSE_INSTALLER}`,
   fileName: TRAVERSE_INSTALLER,
-  releaseNotesUrl: `${TRAVERSE_RELEASES}/latest`,
+  releaseNotesUrl: "/whats-new/traverse",
   fileSizeText: "",
   releaseDateText: "",
   sha256Hash: "",
@@ -54,7 +54,7 @@ export function useTraverseRelease(): TraverseRelease {
           versionTag: data.tag_name || "",
           downloadUrl: exe.browser_download_url,
           fileName: exe.name || TRAVERSE_INSTALLER,
-          releaseNotesUrl: data.html_url || FALLBACK.releaseNotesUrl,
+          releaseNotesUrl: FALLBACK.releaseNotesUrl,
           fileSizeText: mb,
           releaseDateText: data.published_at
             ? `Released ${new Date(data.published_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`

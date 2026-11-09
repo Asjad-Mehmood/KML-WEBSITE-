@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Clock, Download } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import { SLOPE_FILES, SLOPE_INSTALLER, SLOPE_RELEASES, SLOPE_RELEASES_API, SLOPE_VERSION } from "@/lib/slope";
+import { SLOPE_FILES, SLOPE_INSTALLER, SLOPE_RELEASES_API, SLOPE_VERSION } from "@/lib/slope";
 
 export interface SlopeRelease {
   /** "checking" until GitHub answers; "none" when the latest release has no installer yet */
@@ -20,7 +20,7 @@ const FALLBACK: SlopeRelease = {
   state: "checking",
   versionTag: "",
   downloadUrl: SLOPE_FILES.setup.href,
-  releaseNotesUrl: `${SLOPE_RELEASES}/latest`,
+  releaseNotesUrl: "/whats-new/slope",
   fileSizeText: "",
   releaseDateText: "",
   sha256Hash: "",
@@ -43,7 +43,7 @@ async function ask(): Promise<SlopeRelease> {
       state: "ready",
       versionTag: data.tag_name || "",
       downloadUrl: exe.browser_download_url,
-      releaseNotesUrl: data.html_url || FALLBACK.releaseNotesUrl,
+      releaseNotesUrl: FALLBACK.releaseNotesUrl,
       fileSizeText: exe.size ? (exe.size / (1024 * 1024)).toFixed(1) + " MB" : "",
       releaseDateText: data.published_at
         ? `Released ${new Date(data.published_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`

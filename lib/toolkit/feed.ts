@@ -11,6 +11,7 @@ import crypto from "crypto";
 import { unstable_cache } from "next/cache";
 import { SITE_URL } from "@/lib/site";
 import { TOOLKIT_TOOLS, type InstallerTool, type ToolkitTool, type ZipTool } from "@/lib/toolkit/tools";
+import { notesPathOf } from "@/lib/releaseNotes";
 
 export const TOOLKIT_FEED_SCHEMA = 1;
 
@@ -47,9 +48,11 @@ const GH_HEADERS: Record<string, string> = { Accept: "application/vnd.github+jso
 const ghToken = () => (process.env.APP_SOURCE_TOKEN || process.env.GITHUB_TOKEN || "").trim();
 const isSha = (s: unknown): s is string => typeof s === "string" && /^[0-9a-f]{64}$/.test(s);
 const abs = (path: string) => new URL(path, SITE_URL).toString();
+// "What's new" opens the program's release notes on this website, never its GitHub page
+const notesOf = (t: ToolkitTool) => abs(notesPathOf(t.id) ?? t.page);
 
 type GhAsset = { name?: string; size?: number; browser_download_url?: string; digest?: string };
-type GhRelease = { tag_name?: string; html_url?: string; published_at?: string; assets?: GhAsset[] };
+type GhRelease = { tag_name?: string; published_at?: string; assets?: GhAsset[] };
 
 async function getJson<T>(url: string, headers: Record<string, string>): Promise<T | null> {
   const res = await fetch(url, { headers, cache: "no-store", redirect: "follow", signal: AbortSignal.timeout(10_000) });
@@ -116,7 +119,7 @@ async function installerTool(t: ToolkitTool, s: InstallerTool): Promise<FeedTool
         ...base(t),
         version: v,
         released: null,
-        notes: `https://github.com/${s.repo}/releases/tag/v${v}`,
+        notes: notesOf(t),
         download: { url: `https://github.com/${s.repo}/releases/download/v${v}/${s.installer}`, file: s.installer, size: null, sha256: manifest.sha256 },
         install: installOf(s, v),
         problems: [],
@@ -141,7 +144,7 @@ async function installerTool(t: ToolkitTool, s: InstallerTool): Promise<FeedTool
     ...base(t),
     version,
     released: rel.published_at || null,
-    notes: rel.html_url || null,
+    notes: notesOf(t),
     download,
     install: installOf(s, version),
     problems,
