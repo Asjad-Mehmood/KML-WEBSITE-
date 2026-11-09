@@ -19,7 +19,8 @@ export default function WelcomeClient(props: { next: string; firstName: string; 
       const res = await fetch("/api/user/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ organization: organization.trim(), occupation }),
+        // empty boxes are left as they are
+        body: JSON.stringify({ organization: organization.trim(), occupation: occupation.trim() }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Couldn't save. Please try again.");
@@ -34,16 +35,15 @@ export default function WelcomeClient(props: { next: string; firstName: string; 
   return (
     <AuthShell
       title={`Welcome${props.firstName ? `, ${props.firstName}` : ""}!`}
-      subtitle={`Your account (${props.email}) is ready. Two quick details to finish setting it up.`}
+      subtitle={`Your account (${props.email}) is ready. Two optional details: type your own, or skip.`}
     >
       <form onSubmit={submit} className="space-y-4">
         <div>
           <label htmlFor={`${id}-org`} className="block text-xs font-bold text-slate-700 mb-1.5">
-            Organisation / company
+            Organisation / company <span className="font-normal text-slate-400">(optional)</span>
           </label>
           <input
             id={`${id}-org`}
-            required
             maxLength={120}
             autoComplete="organization"
             placeholder="e.g. Apex Geomatics, or Independent"
@@ -54,15 +54,14 @@ export default function WelcomeClient(props: { next: string; firstName: string; 
         </div>
         <div>
           <label htmlFor={`${id}-occ`} className="block text-xs font-bold text-slate-700 mb-1.5">
-            Occupation / designation
+            Occupation / designation <span className="font-normal text-slate-400">(optional)</span>
           </label>
           <input
             id={`${id}-occ`}
-            required
             list={`${id}-occ-list`}
             maxLength={OCCUPATION_MAX}
             autoComplete="organization-title"
-            placeholder="e.g. Land Surveyor"
+            placeholder="Type yours or pick one"
             value={occupation}
             onChange={(e) => setOccupation(e.target.value)}
             className={inputClass}
@@ -81,6 +80,9 @@ export default function WelcomeClient(props: { next: string; firstName: string; 
         <button type="submit" disabled={saving} className={buttonClass}>
           {saving ? "Saving…" : "Finish and continue"}
         </button>
+        <a href={props.next} className="block text-center text-[13px] font-semibold text-slate-500 hover:text-slate-700 hover:underline">
+          Skip for now
+        </a>
       </form>
     </AuthShell>
   );

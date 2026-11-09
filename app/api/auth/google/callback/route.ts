@@ -36,8 +36,8 @@ export async function GET(req: NextRequest) {
     // Admin accounts sign in with their password only
     if (user && db.isAdmin(user)) return fail("google-admin", next);
 
-    // A new account (or one that never finished) is asked for its organisation
-    // and occupation before going on
+    // A new account is offered (once) to add its organisation and occupation; both are
+    // optional and can be skipped
     let needsProfile = false;
     if (!user) {
       if (!extra.allowSignups) return fail("signups-closed", next);
@@ -47,7 +47,6 @@ export async function GET(req: NextRequest) {
       user = await db.createUser({ name: profile.name, email: profile.email, ipAddress: geo.ip, location: geo.location });
     }
 
-    else if (user.role === "Surveyor" && (user.organization || "Independent Surveyor") === "Independent Surveyor") needsProfile = true;
 
     // Google has confirmed the address
     await markVerified(user.id, "google").catch((e) => console.error("Couldn't note the confirmed email:", e));

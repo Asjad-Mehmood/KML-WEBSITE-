@@ -8946,9 +8946,9 @@
             <input type="text" id="regOrg" placeholder="Geomatics Engineering Ltd">
           </div>
           <div class="auth-form-group">
-            <label for="regRole">Occupation</label>
+            <label for="regRole">Occupation (Optional)</label>
             <input type="text" id="regRole" list="regRoleList" maxlength="60" autocomplete="organization-title"
-              placeholder="e.g. Land Surveyor">
+              placeholder="Type yours or pick one">
             <datalist id="regRoleList">
               <option value="Land Surveyor"></option>
               <option value="Cadastral Surveyor"></option>
@@ -19073,11 +19073,6 @@ PC-01,229045.640,392414.010"></textarea>
 
           if (!name || !email || !password) {
             showAlert("Name, email, and password are required.");
-            return;
-          }
-          if (!role) {
-            showAlert("Please type your occupation, for example Land Surveyor.");
-            document.getElementById("regRole").focus();
             return;
           }
           if (password.length < 6) {

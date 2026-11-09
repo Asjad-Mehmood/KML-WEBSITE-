@@ -68,12 +68,12 @@ export async function PATCH(req: NextRequest) {
     // Occupation / designation (stored as the account's role). Never used to
     // grant or change admin rights.
     if (occupation !== undefined && !db.isAdmin(user)) {
+      // optional: left empty, the account keeps the one it has
       const o = cleanOccupation(occupation);
-      if (!o) return NextResponse.json({ error: "Please enter your occupation." }, { status: 400, headers: CORS_HEADERS });
-      if (isAdminRole(o)) {
+      if (o && isAdminRole(o)) {
         return NextResponse.json({ error: 'Please describe your occupation without the word "admin".' }, { status: 400, headers: CORS_HEADERS });
       }
-      updates.role = o;
+      if (o) updates.role = o;
     }
     if (password !== undefined) {
       // A new password needs the current one, so a borrowed or stolen

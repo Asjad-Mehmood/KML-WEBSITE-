@@ -348,7 +348,7 @@ export default function SlopeManualPage() {
         <H2 id="help">13. Questions and fixes</H2>
         <dl className="space-y-4">
           {[
-            ["Windows says it protected my PC", "The program isn't code-signed yet. Choose More info, then Run anyway. It comes from github.com/Asjad-Mehmood/Slope-calculator- and the product page shows its SHA-256."],
+            ["Windows says it protected my PC", "The program isn't code-signed yet. Choose More info, then Run anyway. Download it only from exceltokml.com; the product page shows its SHA-256."],
             ["The email code didn't arrive", "Look in Spam or Junk, then press Send a new code. Codes are valid for a short time; the newest one counts."],
             ["The app says it can't reach exceltokml.com", "You are offline or the connection is blocked. The calculator, reports and tools keep working once you have signed in; saving waits and is sent later."],
             ["I want my calculations on another device", "Save them under Saved, then sign in with the same account on the other device and open them."],

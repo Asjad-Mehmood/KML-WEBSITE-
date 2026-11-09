@@ -104,8 +104,8 @@ export default function AuthModal() {
 
             {authModalMode === "register" && (
               <div className="grid grid-cols-2 gap-3">
-                <input type="text" placeholder="Organization" value={organization} onChange={e => setOrganization(e.target.value)} className={inputCls} />
-                <input type="text" placeholder="Occupation" aria-label="Occupation" required list="auth-occupations"
+                <input type="text" placeholder="Company (optional)" aria-label="Company (optional)" value={organization} onChange={e => setOrganization(e.target.value)} className={inputCls} />
+                <input type="text" placeholder="Occupation (optional)" aria-label="Occupation (optional)" list="auth-occupations"
                   maxLength={OCCUPATION_MAX} autoComplete="organization-title" value={role}
                   onChange={e => setRole(e.target.value)} className={inputCls} />
                 <datalist id="auth-occupations">
