@@ -192,7 +192,7 @@ export default function RegisterPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label htmlFor={orgId} className="block text-xs font-bold text-slate-700 mb-1.5">
-                Company / Agency
+                Company / Agency <span className="font-normal text-slate-400">(optional)</span>
               </label>
               <input
                 id={orgId}
@@ -206,16 +206,15 @@ export default function RegisterPage() {
 
             <div>
               <label htmlFor={roleId} className="block text-xs font-bold text-slate-700 mb-1.5">
-                Occupation
+                Occupation <span className="font-normal text-slate-400">(optional)</span>
               </label>
               <input
                 id={roleId}
                 type="text"
-                required
                 list={`${roleId}-list`}
                 maxLength={OCCUPATION_MAX}
                 autoComplete="organization-title"
-                placeholder="e.g. Land Surveyor"
+                placeholder="Type yours or pick one"
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
                 className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
