@@ -1,5 +1,6 @@
 "use client";
 
+import { usePublicSettings } from "@/lib/publicSettings";
 import { PRODUCTS, badgeLabel } from "@/lib/products";
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
@@ -41,8 +42,15 @@ const NAV_LINKS: { label: string; href: string; id?: string; path?: string; wide
 // our other software (lib/products.ts): one "Products" menu, so the bar fits however many there are
 const PRODUCT_LINKS = PRODUCTS;
 
+// Download in the bar: with the Survey Toolkit's home page (Admin → Settings) it gets the Toolkit;
+// with the Excel to KML layouts it goes to that program's download
+const TOOLKIT_DOWNLOAD = "/api/toolkit/download";
+const downloadCls =
+  "bg-[#0071e3] text-white px-4 lg:px-5 py-2 rounded-full text-sm font-bold shadow-md shadow-[#0071e3]/20 hover:shadow-lg hover:shadow-[#0071e3]/30 hover:-translate-y-0.5 transition-all flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2";
+
 export default function Navbar({ onDownloadClick }: { onDownloadClick: () => void }) {
   const { user, logout } = useAuth();
+  const toolkitHome = usePublicSettings()?.toolkitHome === true;
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -263,13 +271,18 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
               </Link>
             )}
 
-            <button
-              onClick={onDownloadClick}
-              className="bg-[#0071e3] text-white px-4 lg:px-5 py-2 rounded-full text-sm font-bold shadow-md shadow-[#0071e3]/20 hover:shadow-lg hover:shadow-[#0071e3]/30 hover:-translate-y-0.5 transition-all flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-            >
-              <Download className="w-4 h-4" />
-              <span>Download</span>
-            </button>
+            {toolkitHome ? (
+              // the Survey Toolkit's installer, the same as its page's Download button (signs in first when needed)
+              <a href={TOOLKIT_DOWNLOAD} title="Download the Survey Toolkit for Windows" className={downloadCls}>
+                <Download className="w-4 h-4" />
+                <span>Download</span>
+              </a>
+            ) : (
+              <button onClick={onDownloadClick} className={downloadCls}>
+                <Download className="w-4 h-4" />
+                <span>Download</span>
+              </button>
+            )}
 
             {/* Mobile Menu Toggle */}
             <button
