@@ -1,7 +1,8 @@
 // The release announcement emailed from Admin → Releases, and the signed link in it
 // that unsubscribes the reader from release emails. Uses the site's SMTP settings.
 import crypto from "crypto";
-import { SHOW_ANDROID, SITE_NAME, SITE_URL, SUPPORT_EMAIL } from "@/lib/site";
+import { SHOW_ANDROID, SITE_URL } from "@/lib/site";
+import { letterEmail, type LetterBlock } from "@/lib/letterEmail";
 import { TRAVERSE_APP } from "@/lib/traverse";
 import { SLOPE_APP } from "@/lib/slope";
 
@@ -205,242 +206,77 @@ export const absoluteLink = (link: string) => (/^https:\/\//.test(link) ? link :
 
 const longDate = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 
-// colours and fonts, inline because email apps drop <style>
-export const C = { blue: "#0071e3", ink: "#0f172a", body: "#334155", muted: "#64748b", faint: "#94a3b8", line: "#e2e8f0", page: "#f1f5f9", tint: "#f0f7ff" };
-export const FONT = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
-
-// A new program's introduction: a short letter, laid out like an email a person types (no
-// pictures, colours, buttons, hidden preview text or tables), with a single link. Gmail's tabs
-// sort designed, image-heavy mail with buttons into Promotions.
-function introLetter(r: ReleaseForEmail, intro: NonNullable<UpdateGuide["intro"]>, to: { name: string; email: string }) {
-  const first = (to.name || "").trim().split(/\s+/)[0] || "";
-  const url = absoluteLink(r.link);
-  const unsub = unsubscribePage(to.email);
-  const host = SITE_URL.replace(/^https?:\/\//, "");
-  const title = r.title.trim();
-  const subject = !title || (intro.oldTitles || []).includes(title) ? intro.title : title;
-  const hi = first ? `Hi ${first},` : "Hi,";
-  const text = [
-    hi,
-    "",
-    ...intro.letter.flatMap((l) => [l, ""]),
-    "To start:",
-    ...intro.start.map((s, i) => `${i + 1}. ${s}`),
-    "",
-    url,
-    "",
-    "If anything doesn't work on your PC, reply to this email and tell us what you see. We read every reply.",
-    "",
-    "Thanks,",
-    `The ${SITE_NAME} team`,
-    "",
-    "--",
-    `You're getting this because you have an account on ${host}. To stop these emails: ${unsub}`,
-  ].join("\n");
-  // Light styling only: text colour, weight and one thin line. No background blocks, buttons or
-  // pictures, which is what puts an email under Promotions.
-  const para = (t: string) => `<p style="margin:0 0 14px">${t}</p>`;
-  const BLUE = "#0b63ce";
-  // the tool names in the first paragraph in bold
-  const bold = (t: string) =>
-    esc(t).replace(/(Excel to KML|RoadPro|Traverse &amp; Level|Project Folder Manager|Slope Calculator|the Survey Toolkit)/g, '<b style="color:#111111">$1</b>');
-  const html = `<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(subject)}</title></head>
-<body style="margin:0;padding:20px 16px;font-family:'Segoe UI',Roboto,Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#2b2b2b">
-<div style="max-width:560px">
-<p style="margin:0 0 18px;font-size:13px;font-weight:700;letter-spacing:.04em;color:${BLUE}">${esc(SITE_NAME)}</p>
-${para(esc(hi))}
-${intro.letter.map((l, i) => para(i === 0 ? bold(l) : esc(l))).join("\n")}
-<p style="margin:20px 0 8px;font-weight:700;color:#111111">To start</p>
-${intro.start
-  .map(
-    (s, i) =>
-      `<p style="margin:0 0 8px;padding-left:26px;text-indent:-26px"><span style="display:inline-block;width:26px;text-indent:0;font-weight:700;color:${BLUE}">${i + 1}.</span>${esc(s)}</p>`
-  )
-  .join("\n")}
-<p style="margin:16px 0 18px"><a href="${esc(url)}" style="color:${BLUE};font-weight:700;text-decoration:underline">${esc(url.replace(/^https:\/\//, ""))}</a></p>
-${para("If anything doesn't work on your PC, reply to this email and tell us what you see. We read every reply.")}
-${para(`Thanks,<br><b style="color:#111111">The ${esc(SITE_NAME)} team</b>`)}
-<p style="margin:26px 0 0;padding-top:12px;border-top:1px solid #e3e3e3;font-size:12px;line-height:1.5;color:#808080">You're getting this because you have an account on ${esc(host)}. <a href="${esc(unsub)}" style="color:#808080">Stop these emails</a></p>
-</div>
-</body></html>`;
-  return {
-    subject,
-    text,
-    html,
-    // RFC 8058 one-click unsubscribe, which Gmail asks of anyone emailing many people
-    list: { unsubscribe: { url: unsubscribeEndpoint(to.email), comment: "Stop release emails" } },
-    headers: { "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" },
-  };
-}
+// A new program's first release introduces it (what it is, how to start); every later one is an
+// update (what changed, how to get it). Both are short letters (lib/letterEmail.ts), so Gmail
+// keeps them out of Promotions: the designed versions, with a banner, pictures and a button,
+// landed there.
+const footerOf = (host: string) => `You're getting this because you have an account on ${host}. We email when there's a new version or a new program, nothing else.`;
+const listHeaders = (email: string) => ({
+  // RFC 8058 one-click unsubscribe, which Gmail asks of anyone emailing many people
+  list: { unsubscribe: { url: unsubscribeEndpoint(email), comment: "Stop release emails" } },
+  headers: { "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" },
+});
 
 export function releaseEmail(r: ReleaseForEmail, to: { name: string; email: string }) {
-  const first = (to.name || "").trim().split(/\s+/)[0] || "there";
-  const items = noteItems(r.notes);
+  const first = (to.name || "").trim().split(/\s+/)[0] || "";
   const guide = UPDATE_GUIDES[r.appId] || FALLBACK_GUIDE;
-  // a new program's first release introduces it; every later one is an update
   const intro = r.introduces && !r.newerVersion ? guide.intro : undefined;
-  if (intro) return introLetter(r, intro, to);
   const url = absoluteLink(r.link);
-  const label =
-    r.linkLabel.trim() || (r.newerVersion ? `Get ${r.appName} ${r.newerVersion}` : `Download ${r.appName} ${r.version}`);
-  // the second link, unless it is the button's own page
-  const more = guide.more.href && absoluteLink(guide.more.href) !== url ? { label: guide.more.label, url: absoluteLink(guide.more.href) } : null;
-  const unsub = unsubscribePage(to.email);
-  const subject = r.title.trim() || `${r.appName} ${r.version} is out`;
-  const released = longDate(r.releasedAt);
   const host = SITE_URL.replace(/^https?:\/\//, "");
+  const title = r.title.trim();
+  const footer = footerOf(host);
+  const footerLink = { label: "Stop these emails", url: unsubscribePage(to.email) };
+  const reply: LetterBlock = { p: "If anything doesn't work on your PC, reply to this email and tell us what you see. We read every reply." };
+
+  if (intro) {
+    // a release still carrying an earlier subject of this introduction gets today's
+    const subject = !title || (intro.oldTitles || []).includes(title) ? intro.title : title;
+    return {
+      ...letterEmail({
+        subject,
+        title: `The ${r.appName} is ready`,
+        first,
+        blocks: [
+          ...intro.letter.map((l, i): LetterBlock => (i === 0 ? { p: l, bold: PRODUCT_NAMES } : { p: l })),
+          { heading: "Start in three steps" },
+          { steps: intro.start },
+          { button: url, label: `Get the ${r.appName}` },
+          reply,
+        ],
+        footer,
+        footerLink,
+      }),
+      ...listHeaders(to.email),
+    };
+  }
+
+  const items = noteItems(r.notes);
+  const released = longDate(r.releasedAt);
   const lead = r.newerVersion
-      ? `Here's a look back at ${r.appName} ${r.version}, released on ${released}. The newest version is now ${r.newerVersion}, and updating gets you everything below plus what came after.`
-      : `${r.appName} ${r.version} is now available. Here's what's new, and how to get it.`;
-  const updateHead = guide.automatic ? `Already using ${r.appName}? It updates itself` : `Already using ${r.appName}? Update in a minute`;
-  const stepList = guide.steps;
-  const newUser = guide.newUser;
-  const notesHead = `What's new in ${r.version}`;
-  const badge = r.newerVersion ? "Release notes" : "New version";
-  const preheader = items.length ? `${items.map((i) => i.head || i.text).slice(0, 3).join(" · ")}` : lead;
-  const details = [
-    ["Version", r.version],
-    ["Released", released],
-    ...(guide.platform ? [["Works on", guide.platform]] : []),
-    ["Price", "Free"],
-  ];
-
-  // ---------- plain text ----------
-  const text = [
-    `${r.appName.toUpperCase()} ${r.version}`,
-    subject,
-    "",
-    `Hi ${first},`,
-    "",
-    lead,
-    ...(items.length ? ["", notesHead.toUpperCase(), ...items.map((i) => `- ${i.head ? `${i.head}: ` : ""}${i.text}`)] : []),
-    "",
-    updateHead.toUpperCase(),
-    ...stepList.map((s, i) => `${i + 1}. ${s}`),
-    ...(newUser ? ["", newUser] : []),
-    "",
-    `${label}: ${url}`,
-    ...(more ? [`${more.label}: ${more.url}`] : []),
-    "",
-    details.map(([k, v]) => `${k}: ${v}`).join(" | "),
-    "",
-    `Questions, or something not working? Reply to this email or write to ${SUPPORT_EMAIL}. We read every message.`,
-    "",
-    "Thanks for using our software,",
-    `The ${SITE_NAME} team`,
-    SITE_URL,
-    "",
-    "---",
-    `You're getting this because you have an account on ${host}. We email when there's a new version or a new program, nothing else.`,
-    `Stop release emails: ${unsub}`,
-  ].join("\n");
-
-  // ---------- HTML ----------
-  const p = (html: string, extra = "") => `<p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:${C.body};${extra}">${html}</p>`;
-  const h2 = (t: string) => `<h2 style="margin:28px 0 12px;font-size:13px;line-height:1.4;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:${C.muted}">${esc(t)}</h2>`;
-
-  const whatsNew = items.length
-    ? `${h2(notesHead)}
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-${items
-  .map(
-    (i) => `<tr>
-<td width="28" valign="top" style="padding:2px 0 12px"><div style="width:20px;height:20px;border-radius:10px;background:${C.tint};color:${C.blue};font-size:12px;font-weight:700;line-height:20px;text-align:center">&#10003;</div></td>
-<td valign="top" style="padding:0 0 12px;font-size:14.5px;line-height:1.6;color:${C.body}">${i.head ? `<b style="color:${C.ink}">${esc(i.head)}</b><br>` : ""}${esc(i.text)}</td>
-</tr>`
-  )
-  .join("\n")}
-</table>`
-    : "";
-
-  const steps = stepList
-    .map(
-      (s, i) => `<tr>
-<td width="30" valign="top" style="padding:0 0 10px"><div style="width:22px;height:22px;border-radius:11px;background:${C.blue};color:#ffffff;font-size:12px;font-weight:700;line-height:22px;text-align:center">${i + 1}</div></td>
-<td valign="top" style="padding:1px 0 10px;font-size:14.5px;line-height:1.55;color:${C.body}">${esc(s)}</td>
-</tr>`
-    )
-    .join("\n");
-
-  const button = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:26px 0 6px"><tr>
-<td bgcolor="${C.blue}" style="border-radius:10px"><a href="${esc(url)}" style="display:inline-block;padding:14px 26px;font-family:${FONT};font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:10px">${esc(label)} &rarr;</a></td>
-</tr></table>
-${more ? `<p style="margin:10px 0 0;font-size:14px;line-height:1.5"><a href="${esc(more.url)}" style="color:${C.blue};text-decoration:none;font-weight:600">${esc(more.label)}</a></p>` : ""}`;
-
-  const detailRow = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:22px 0 0;border-top:1px solid ${C.line};border-bottom:1px solid ${C.line}"><tr>
-${details
-  .map(
-    ([k, v]) =>
-      `<td valign="top" style="padding:12px 8px 12px 0"><div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:${C.faint}">${esc(k)}</div><div style="margin-top:3px;font-size:13.5px;font-weight:600;color:${C.ink}">${esc(v)}</div></td>`
-  )
-  .join("\n")}
-</tr></table>`;
-
-  const html = `<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light"><title>${esc(subject)}</title></head>
-<body style="margin:0;padding:0;background:${C.page};font-family:${FONT};color:${C.ink};-webkit-text-size-adjust:100%">
-<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:${C.page}">${esc(preheader)}</div>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="${C.page}"><tr><td align="center" style="padding:28px 12px 36px">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px">
-
-<tr><td style="padding:0 4px 16px">
-<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
-<td valign="middle"><img src="${SITE_URL}/assets/icon-192.png" width="34" height="34" alt="" style="display:block;border:0;border-radius:8px"></td>
-<td valign="middle" style="padding-left:10px;font-size:16px;font-weight:700;color:${C.ink}">${esc(SITE_NAME)}</td>
-</tr></table>
-</td></tr>
-
-<tr><td bgcolor="#ffffff" style="border-radius:16px;border:1px solid ${C.line};overflow:hidden">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-<tr><td bgcolor="${C.blue}" style="background:${C.blue};background-image:linear-gradient(135deg,#0071e3,#2563eb 55%,#4f46e5);border-radius:16px 16px 0 0;padding:30px 32px 28px">
-<div style="display:inline-block;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.18);font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#ffffff">${badge}</div>
-<div style="margin-top:14px;font-size:14px;font-weight:600;color:#dbeafe">${esc(r.appName)} ${esc(r.version)}</div>
-<h1 style="margin:6px 0 0;font-size:25px;line-height:1.3;font-weight:800;color:#ffffff">${esc(subject)}</h1>
-</td></tr>
-
-<tr><td style="padding:28px 32px 8px">
-${p(`Hi ${esc(first)},`)}
-${p(esc(lead), "margin-bottom:0")}
-${detailRow}
-${whatsNew}
-
-${h2(updateHead)}
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="${C.tint}" style="border-radius:12px"><tr><td style="padding:18px 18px 8px">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-${steps}
-</table>
-</td></tr></table>
-${newUser ? `<p style="margin:14px 0 0;font-size:14px;line-height:1.55;color:${C.muted}">${esc(newUser)}</p>` : ""}
-
-${button}
-</td></tr>
-
-<tr><td style="padding:22px 32px 30px">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-top:1px solid ${C.line}"><tr><td style="padding-top:20px">
-${p(`<b style="color:${C.ink}">Questions, or something not working?</b><br>Reply to this email or write to <a href="mailto:${SUPPORT_EMAIL}" style="color:${C.blue};text-decoration:none">${SUPPORT_EMAIL}</a>. We read every message.`)}
-${p(`Thanks for using our software,<br><b style="color:${C.ink}">The ${esc(SITE_NAME)} team</b>`, "margin:0")}
-</td></tr></table>
-</td></tr>
-</table>
-</td></tr>
-
-<tr><td align="center" style="padding:22px 20px 0;font-size:12px;line-height:1.6;color:${C.faint}">
-<a href="${SITE_URL}" style="color:${C.muted};text-decoration:none;font-weight:600">${esc(host)}</a><br>
-You're getting this because you have an account on ${esc(host)}. We email when there's a new version or a new program, nothing else.<br>
-<a href="${esc(unsub)}" style="color:${C.muted};text-decoration:underline">Stop release emails</a>
-</td></tr>
-
-</table>
-</td></tr></table>
-</body></html>`;
-
+    ? `Here's a look back at ${r.appName} ${r.version}, released on ${released}. The newest version is now ${r.newerVersion}, and updating gets you everything below plus what came after.`
+    : "Here's what changed, and how to get it.";
+  const blocks: LetterBlock[] = [{ p: lead }];
+  if (items.length) {
+    blocks.push({ heading: `What changed in ${r.version}` }, { bullets: items.map((i) => (i.head ? `${i.head}: ${i.text}` : i.text)) });
+  }
+  blocks.push(
+    { heading: guide.automatic ? "Already using it? It updates itself" : "Already using it? To update" },
+    { steps: guide.steps }
+  );
+  if (guide.newUser) blocks.push({ p: guide.newUser });
+  blocks.push({ button: url, label: r.linkLabel.trim() || (r.newerVersion ? `Get ${r.appName} ${r.newerVersion}` : `Get ${r.appName} ${r.version}`) }, reply);
   return {
-    subject,
-    text,
-    html,
-    // RFC 8058 one-click unsubscribe: Gmail and Outlook show their own "Unsubscribe" button
-    list: { unsubscribe: { url: unsubscribeEndpoint(to.email), comment: "Stop release emails" } },
-    headers: { "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" },
+    ...letterEmail({
+      subject: title || `${r.appName} ${r.version}`,
+      title: r.newerVersion ? `${r.appName} ${r.version}` : `${r.appName} ${r.version} is ready`,
+      first,
+      blocks,
+      footer,
+      footerLink,
+    }),
+    ...listHeaders(to.email),
   };
 }
+
+/** The programs' names, in bold where a letter lists them */
+const PRODUCT_NAMES = ["Excel to KML", "RoadPro", "Traverse & Level", "Project Folder Manager", "Slope Calculator", "the Survey Toolkit"];

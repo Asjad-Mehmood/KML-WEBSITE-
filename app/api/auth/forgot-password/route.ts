@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { isMailConfigured, sendMail } from "@/lib/mailer";
 import { createResetToken } from "@/lib/passwordReset";
+import { letterEmail } from "@/lib/letterEmail";
 
 // Same reply whether or not the email has an account, so this can't be used to find accounts
 const GENERIC_REPLY = {
@@ -27,14 +28,17 @@ export async function POST(req: NextRequest) {
       const link = `${base}/reset-password?token=${encodeURIComponent(createResetToken(user))}`;
       await sendMail({
         to: user.email,
-        subject: "Reset your Excel to KML password",
-        text: `Hi ${user.name},\n\nUse this link to choose a new password (valid for 1 hour):\n${link}\n\nIf you didn't ask for this, you can ignore this email — your password won't change.`,
-        html: `<div style="font-family:system-ui,sans-serif;font-size:15px;color:#0f172a;line-height:1.5">
-<p>Hi ${user.name.replace(/[<>&"]/g, "")},</p>
-<p>Use the button below to choose a new password. The link is valid for 1 hour.</p>
-<p><a href="${link}" style="display:inline-block;padding:10px 18px;border-radius:8px;background:#0071e3;color:#fff;text-decoration:none;font-weight:600">Reset password</a></p>
-<p style="color:#64748b;font-size:13px">If you didn't ask for this, ignore this email — your password won't change.</p>
-</div>`,
+        ...letterEmail({
+          subject: "Reset your Excel to KML password",
+          title: "Reset your password",
+          first: (user.name || "").trim().split(/\s+/)[0] || "",
+          blocks: [
+            { p: "Use this link to choose a new password. It works for one hour, once:" },
+            { button: link, label: "Choose a new password" },
+            { p: "If you didn't ask for this, ignore this email: your password stays as it is." },
+          ],
+          footer: "You're getting this because someone asked to reset the password of your account.",
+        }),
       });
     }
   } catch (err) {

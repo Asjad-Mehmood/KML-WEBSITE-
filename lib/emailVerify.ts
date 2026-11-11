@@ -10,11 +10,12 @@
 // stored only as HMAC hashes. A code works for 24 hours, once, and dies after 5 wrong tries.
 // The tables are created on first use (production deploys don't run migrations).
 import crypto from "crypto";
+import { letterEmail } from "@/lib/letterEmail";
 import { prisma } from "@/lib/prisma";
 import { isMailConfigured, sendMail } from "@/lib/mailer";
 import { getExtraSettings } from "@/lib/siteSettings";
 import { isAdminUser } from "@/lib/adminRole";
-import { SITE_NAME, SITE_URL, SUPPORT_EMAIL } from "@/lib/site";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { maskEmail } from "@/lib/adminOtp";
 
 const VALID_HOURS = 24;
@@ -140,45 +141,23 @@ export async function isUnconfirmedNewAccount(userId: string): Promise<boolean> 
 
 export class TooManyVerifyCodes extends Error {}
 
-const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
 function verifyEmail(name: string, code: string, link: string) {
-  const first = (name || "").trim().split(/\s+/)[0] || "there";
-  const subject = `${code} is your ${SITE_NAME} confirmation code`;
-  const text = [
-    `Hi ${first},`,
-    "",
-    `Your ${SITE_NAME} confirmation code is ${code}`,
-    "",
-    "Type it where you created your account. It works for 24 hours.",
-    "",
-    "Signed up in the Windows or Android app? Open this link instead, then sign in again in the app:",
-    link,
-    "",
-    `If you didn't create an account on ${SITE_URL.replace(/^https?:\/\//, "")}, ignore this email: nothing happens without the code.`,
-    "",
-    `The ${SITE_NAME} team`,
-  ].join("\n");
-  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(subject)}</title></head>
-<body style="margin:0;padding:24px 12px;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#0f172a">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td align="center">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:480px;background:#ffffff;border:1px solid #e2e8f0;border-radius:16px">
-<tr><td style="padding:28px 28px 8px">
-<p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#0071e3">${esc(SITE_NAME)}</p>
-<h1 style="margin:0 0 14px;font-size:22px;line-height:1.3">Confirm your email</h1>
-<p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#334155">Hi ${esc(first)}, type this code where you created your account:</p>
-<p style="margin:0 0 16px;padding:16px;border-radius:12px;background:#f1f5f9;text-align:center;font-size:34px;letter-spacing:8px;font-weight:800;font-family:Menlo,Consolas,monospace">${code}</p>
-<p style="margin:0 0 18px;font-size:14px;line-height:1.6;color:#64748b">It works for 24 hours.</p>
-<p style="margin:0 0 10px;font-size:14px;line-height:1.6;color:#334155">Signed up in the Windows or Android app? Press the button, then sign in again in the app.</p>
-<p style="margin:0 0 22px"><a href="${esc(link)}" style="display:inline-block;padding:12px 20px;border-radius:10px;background:#0071e3;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none">Confirm my email</a></p>
-</td></tr>
-<tr><td style="padding:16px 28px 24px;border-top:1px solid #e2e8f0;font-size:12.5px;line-height:1.6;color:#64748b">
-If you didn't create an account, ignore this email: nothing happens without the code. Questions? Write to ${esc(SUPPORT_EMAIL)}.
-</td></tr>
-</table>
-</td></tr></table>
-</body></html>`;
-  return { subject, text, html };
+  // a short letter (lib/letterEmail.ts) with the code in the subject, as the admin code that
+  // Gmail puts under Primary
+  return letterEmail({
+    subject: `${code} is your ${SITE_NAME} confirmation code`,
+    title: "Confirm your email",
+    first: (name || "").trim().split(/\s+/)[0] || "",
+    blocks: [
+      { p: "Type this code where you created your account. It works for 24 hours:" },
+      { code },
+      { p: "Signed up in the Windows or Android app? Open this link instead, then sign in again in the app:" },
+      { button: link, label: "Confirm my email" },
+      { p: `If you didn't create an account on ${SITE_URL.replace(/^https?:\/\//, "")}, ignore this email: nothing happens without the code.` },
+    ],
+    footer: `You're getting this because this address was used to create an account on ${SITE_URL.replace(/^https?:\/\//, "")}.`,
+  });
 }
 
 /**
