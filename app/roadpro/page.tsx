@@ -38,6 +38,7 @@ import {
   ROADPRO_GUIDE_PAGES,
   ROADPRO_WHATS_NEW,
   ROADPRO_INSTALL,
+  ROADPRO_ZIP_INSTALL,
   ROADPRO_KEYS,
   ROADPRO_LAYERS,
   ROADPRO_RELEASED,
@@ -76,7 +77,7 @@ const structuredData = {
       operatingSystem: "Windows (AutoCAD, Civil 3D or Map 3D 2013 or newer)",
       softwareVersion: ROADPRO_VERSION,
       datePublished: ROADPRO_RELEASED,
-      downloadUrl: `${SITE_URL}${ROADPRO_FILES.plugin.href}`,
+      downloadUrl: ROADPRO_FILES.setup.href,
       url: `${SITE_URL}/roadpro`,
       image: `${SITE_URL}/roadpro/roadpro-3-network.webp`,
       offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
@@ -164,7 +165,7 @@ export default function RoadProPage() {
               </a>
             </div>
             <p className="mt-3 text-[12.5px] text-slate-500">
-              {ROADPRO_FILES.plugin.detail} · Full AutoCAD 2013 or newer (not LT) · Free account needed
+              RoadPro Setup, 8.2 MB, updates itself · Full AutoCAD 2013 or newer (not LT) · Free account needed
             </p>
           </div>
           <figure className="rounded-2xl border border-slate-200 bg-slate-900 p-1.5 shadow-[0_16px_40px_rgba(15,23,42,0.18)]">
@@ -353,7 +354,7 @@ export default function RoadProPage() {
         {/* Install */}
         <section id="install" aria-labelledby="install-h" className="scroll-mt-28 mt-20 grid grid-cols-1 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] gap-8">
           <div>
-            <SectionHead id="install-h" eyebrow="Install" title="Install once, loads by itself" text="Unzip RoadPro.zip, then in AutoCAD:" Icon={Download} />
+            <SectionHead id="install-h" eyebrow="Install" title="Install once, loads by itself" text="Run the setup, then in AutoCAD:" Icon={Download} />
             <ol className="mt-6 space-y-4">
               {ROADPRO_INSTALL.map((s, i) => (
                 <li key={s.title} className="flex gap-4">
@@ -365,6 +366,7 @@ export default function RoadProPage() {
                 </li>
               ))}
             </ol>
+            <p className="mt-5 text-[13.5px] text-slate-500 leading-relaxed">{ROADPRO_ZIP_INSTALL}</p>
           </div>
           <aside className="rounded-2xl bg-amber-50 border border-amber-200/80 p-5 self-start">
             <h3 className="flex items-center gap-2 font-bold text-amber-900">
@@ -504,12 +506,24 @@ export default function RoadProPage() {
         {/* Downloads */}
         <section id="download" aria-labelledby="download-h" className="scroll-mt-28 mt-20 rounded-3xl border border-slate-200 bg-gradient-to-b from-blue-50/70 to-white p-6 sm:p-10">
           <SectionHead id="download-h" eyebrow="Download" title={`Get RoadPro ${ROADPRO_VERSION}`} text="Free. Sign in or create a free account, then the download starts." Icon={Download} />
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="rounded-2xl border border-blue-200 bg-white p-5 flex flex-col">
               <Package className="w-6 h-6 text-[#0071e3]" aria-hidden />
+              <h3 className="mt-2 font-bold text-slate-900">
+                {ROADPRO_FILES.setup.label} <span className="ml-1 text-[11px] font-bold uppercase tracking-wide text-[#0071e3]">Recommended</span>
+              </h3>
+              <p className="text-[13.5px] text-slate-500 flex-1">{ROADPRO_FILES.setup.detail}</p>
+              <RoadProDownload className="mt-4 inline-flex justify-center items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-sm font-semibold cursor-pointer" label="Download setup" />
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 flex flex-col">
+              <Package className="w-6 h-6 text-slate-500" aria-hidden />
               <h3 className="mt-2 font-bold text-slate-900">{ROADPRO_FILES.plugin.label}</h3>
               <p className="text-[13.5px] text-slate-500 flex-1">{ROADPRO_FILES.plugin.detail}</p>
-              <RoadProDownload className="mt-4 inline-flex justify-center items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-sm font-semibold cursor-pointer" label="Download plugin" />
+              <RoadProDownload
+                file="plugin"
+                className="mt-4 inline-flex justify-center items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50 cursor-pointer"
+                label="Download zip"
+              />
             </div>
             {/* The guide: PDF to read in the browser, PowerPoint to edit or present */}
             <div className="rounded-2xl border border-slate-200 bg-white p-5 flex flex-col">

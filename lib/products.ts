@@ -93,7 +93,7 @@ export const PRODUCTS: Product[] = [
     version: ROADPRO_VERSION,
     tagline: "A complete road in AutoCAD from one command",
     description:
-      "Draw the centre line and RoadPro adds the edges, turning radius, barricades, cones or kerb stone, signs, road markings, chainage, cross section and an Excel report, and joins new roads with junctions and turning lanes. New in 3.5: roundabouts, the Saudi junction standard, concrete pavement and live update when you edit the centre line. Free plugin for AutoCAD, Civil 3D and Map 3D.",
+      "Draw the centre line and RoadPro adds the edges, turning radius, barricades, cones or kerb stone, signs, road markings, chainage, cross section and an Excel report, and joins new roads with junctions and turning lanes. New in 3.6: clean junction tie-ins, roundabouts placed on a road, professional cross sections, and RoadPro Setup that keeps itself up to date. Free plugin for AutoCAD, Civil 3D and Map 3D.",
     href: "/roadpro",
     demoHref: "/roadpro#demo",
     image: {
