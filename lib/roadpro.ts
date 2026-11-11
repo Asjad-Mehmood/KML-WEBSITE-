@@ -1,4 +1,4 @@
-// RoadPro: the AutoCAD road builder plugin. Content from the RoadPro v3.5
+// RoadPro: the AutoCAD road builder plugin. Content from the RoadPro v3.6
 // user guide, notes and shortcut sheet (all downloadable from /roadpro).
 
 export const ROADPRO_VERSION = "3.6.1";
@@ -60,21 +60,22 @@ export const ROADPRO_COMMANDS: { short: string; full: string; text: string }[] =
   { short: "RDX", full: "ROADXSEC", text: "Cross sections: typical, at one chainage, or every interval" },
   { short: "RDW", full: "ROADWIDEN", text: "Lane widening: an extra lane between two chainages that comes back, with straight or curve tapers. Each side can have its own chainages and radius. Barricades, cones and kerb stone move to the new edge" },
   { short: "RDT", full: "ROADTAPER", text: "Road taper: wider (+) or narrower (−) between two chainages; the new width continues to the road end. Each side can have its own chainages and radius. Barricades, cones and kerb stone move to the new edge" },
-  { short: "RDJ", full: "ROADJUNCTION", text: "Junction / tie-in: join a new road with kerb-return radius, opened edge, corner surface, corner treatment (barricades, traffic cones or kerb stone, or the same as the main road), STOP / GIVE WAY and turning-area markings. Optional auxiliary lane (long approach taper, storage, short departure taper) and a kerbed or painted splitter island. New in 3.5: the Saudi Arabia standard (SHC 301 / MOMRA) fills the corner radius, auxiliary lane, tapers, storage and island from the road class and design vehicle, sight triangles are drawn, sidewalks and drains wrap round the corners, and the junction type can be a roundabout" },
-  { short: "RDRB", full: "ROADROUNDABOUT", text: "New in 3.5. A roundabout on a road: pick a point or chainage, choose one of twelve FHWA 2000 / NCHRP 672 designs (inscribed radius, circulatory width, apron, entry and exit radii, splitter islands, lanes and speed, all editable) and draw or select the side roads" },
-  { short: "RDPV", full: "ROADPAVEMENT", text: "New in 3.5. Asphalt or concrete JPCP / JRCP pavement for a built road: joints on plan, layers, dowels, tie bars and mesh in the section, volumes and steel in the report" },
+  { short: "RDJ", full: "ROADJUNCTION", text: "Junction / tie-in: join a new road with kerb-return radius, opened edge, corner surface, corner treatment (barricades, traffic cones or kerb stone, or the same as the main road), STOP / GIVE WAY and turning-area markings. Optional auxiliary lane (long approach taper, storage, short departure taper) and a kerbed or painted splitter island. The Saudi Arabia standard (SHC 301 / MOMRA) fills the corner radius, auxiliary lane, tapers, storage and island from the road class and design vehicle, sight triangles are drawn, sidewalks and drains wrap round the corners, and the junction type can be a roundabout" },
+  { short: "RDRB", full: "ROADROUNDABOUT", text: "A roundabout on a road: pick a point or chainage, choose one of twelve FHWA 2000 / NCHRP 672 designs (inscribed radius, circulatory width, apron, entry and exit radii, splitter islands, lanes and speed, all editable) and draw or select the side roads" },
+  { short: "RDPV", full: "ROADPAVEMENT", text: "Asphalt or concrete JPCP / JRCP pavement for a built road: joints on plan, layers, dowels, tie bars and mesh in the section, volumes and steel in the report" },
   { short: "RDM", full: "ROADMARK", text: "Road markings: yellow L4 edge lines, white L1 lane / centre line with its pattern set by speed, L2 / L2A at bends, gaps at junctions, broken L5 beside auxiliary lanes. Draw again to refresh, or remove" },
   { short: "RDL", full: "ROADLINE", text: "A single run of barricades, traffic cones or kerb stone along any line, polyline, arc, spline, circle or ellipse: on the line, left, right or both sides, between two distances along it, with a quantity label. No road needed" },
   { short: "RDC", full: "ROADCORRIDOR", text: "Lanes, median, sidewalks, walkways, drains and utility corridors of a road: single or dual carriageway, lanes by hand (left and right can differ) or automatic, with lane lines and arrows" },
   { short: "RDU", full: "ROADUPDATE", text: "Redraw a road's corridor and markings after edits" },
   { short: "RDER", full: "ROADEDITRADIUS", text: "Change a curve radius after the road is built: the curve is re-fitted between the same straights and the road rebuilt with its own settings, widenings, tapers, junctions and roundabouts included" },
   { short: "RDB", full: "ROADREBUILD", text: "Rebuild the road after editing its centre line by hand, replaying its widenings, tapers, junctions and roundabouts" },
-  { short: "RDLIVE", full: "ROADLIVE", text: "New in 3.5. Live update on or off (on by default): edit a centre line with grips, MOVE, ROTATE, STRETCH or PEDIT and the road rebuilds when the command ends. One U undoes it" },
+  { short: "RDLIVE", full: "ROADLIVE", text: "Live update on or off (on by default): edit a centre line with grips, MOVE, ROTATE, STRETCH or PEDIT and the road rebuilds when the command ends. One U undoes it" },
   { short: "RDLX", full: "ROADLANDXML", text: "Export the centre line as a LandXML 1.2 alignment for Civil 3D (Insert → LandXML)" },
   { short: "RDLXI", full: "ROADLANDXMLIN", text: "Import LandXML alignments as polylines, ready for RDP" },
-  { short: "RDINSTALL", full: "ROADPROINSTALL", text: "New in 3.5. Install RoadPro permanently again (it does this by itself the first time it is loaded)" },
-  { short: "RDUNINSTALL", full: "ROADPROUNINSTALL", text: "New in 3.5. Take RoadPro out of the Startup Suite. Drawings are not changed" },
-  { short: "RDHELP", full: "ROADHELP", text: "New in 3.5. List every command" },
+  { short: "RDINSTALL", full: "ROADPROINSTALL", text: "Install RoadPro permanently again (it does this by itself the first time it is loaded)" },
+  { short: "RDUNINSTALL", full: "ROADPROUNINSTALL", text: "Take RoadPro out of the Startup Suite. Drawings are not changed" },
+  { short: "RDHELP", full: "ROADHELP", text: "List every command" },
+  { short: "RDHUB", full: "ROADPROHUB", text: "New in 3.6.1. Open RoadPro Hub: check for and install updates, repair, the user guide and the shortcut keys" },
   { short: "—", full: "ROADPRORESET", text: "Restore all settings to the defaults (no shortcut on purpose, so you can't reset by accident)" },
 ];
 
@@ -199,15 +200,15 @@ export const ROADPRO_STANDARDS_NOTE =
 // guide" on /roadpro (rendered from the PDF at 1280 × 720 into
 // ROADPRO_GUIDE_DIR/page-NN.webp; a new folder per version, so no cached
 // image of an older guide is shown)
-export const ROADPRO_GUIDE_PAGE_COUNT = 44;
-export const ROADPRO_GUIDE_DIR = "/roadpro/guide-v35";
+export const ROADPRO_GUIDE_PAGE_COUNT = 52;
+export const ROADPRO_GUIDE_DIR = "/roadpro/guide-v36";
 export const ROADPRO_GUIDE_PAGES: { page: number; title: string; text: string }[] = [
-  { page: 1, title: "RoadPro user manual", text: "Every command and every setting, step by step from start to finish." },
-  { page: 2, title: "What's new in 3.5", text: "Five big additions; everything from 3.4 works the same way." },
-  { page: 34, title: "Roundabouts", text: "New: urban double lane with spiral marking, single lane and mini roundabouts." },
-  { page: 27, title: "Saudi Arabia standard", text: "New: corner radius, auxiliary lane, island and sight distance by road class." },
-  { page: 28, title: "The corridor wraps round the corners", text: "New: sidewalks, walkways and drains follow the kerb returns." },
-  { page: 36, title: "Live update", text: "New: edit the centre line and the whole road follows." },
-  { page: 19, title: "Concrete on plan and in section", text: "New: joint layout, dowels, tie bars and mesh." },
-  { page: 42, title: "Command reference", text: "Every shortcut on one page, with the new 3.5 commands marked." },
+  { page: 1, title: "RoadPro user guide", text: "Every command and every setting, step by step from start to finish." },
+  { page: 2, title: "What's new in 3.6", text: "Every point of the error report fixed, plus 3-way and 4-way roundabouts." },
+  { page: 45, title: "Junction tie-in", text: "New: one clean mouth, with nothing running into the main road." },
+  { page: 46, title: "Roundabout on a road", text: "New: the road is cut at the ring and the side roads start at the fillets." },
+  { page: 47, title: "3-way and 4-way roundabouts", text: "New: the side road legs are drawn for you." },
+  { page: 49, title: "Move a centre line", text: "New: junctions and roundabouts follow the road." },
+  { page: 50, title: "Cross section to the corridor limit", text: "New: named dimensions and a level table." },
+  { page: 42, title: "Command reference", text: "Every shortcut on one page." },
 ];

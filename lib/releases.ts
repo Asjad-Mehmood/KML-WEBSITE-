@@ -132,6 +132,29 @@ export function ensureReleaseTables(): Promise<void> {
 const SEED: { app: string; version: string; releasedAt: string; title: string; notes: string[] }[] = [
   {
     app: "roadpro",
+    version: "3.6.1",
+    releasedAt: "2026-11-11",
+    title: "RoadPro 3.6.1: RoadPro Setup and automatic updates",
+    notes: [
+      "RoadPro Setup: one installer for RoadPro Hub and the AutoCAD plugin, with no administrator rights; it replaces any older RoadPro by itself",
+      "Automatic updates: RoadPro Hub checks for a new version when you open it and once a day, then downloads, checks (size and SHA-256) and installs it in one click; the previous version can be restored",
+      "AutoCAD tells you at start-up when an update is waiting; the new command RDHUB opens RoadPro Hub for updates, repair, the user guide and the shortcut keys",
+    ],
+  },
+  {
+    app: "roadpro",
+    version: "3.6",
+    releasedAt: "2026-11-10",
+    title: "RoadPro 3.6: clean junctions, roundabouts on a road and professional cross sections",
+    notes: [
+      "Clean junction tie-in (RDJ): the side road starts where the kerb returns end, with one mouth surface joined to the main road, and shoulders, barricades and edge lines cut to fit, also on skewed junctions",
+      "Roundabouts on a road (RDRB): 2-way, 3-way and 4-way, with side roads drawn, picked or added automatically; the main road is cut at the ring and full marking is drawn on every approach",
+      "Edits follow: after a grip edit the curve is refitted at its radius and the barricades and corridor follow; moving a centre line carries its junctions and roundabouts with it",
+      "Professional cross sections (RDX): drawn to the corridor limit, with named component dimensions, carriageway and corridor widths, and an offset and finished level table",
+    ],
+  },
+  {
+    app: "roadpro",
     version: "3.5",
     releasedAt: "2026-11-03",
     title: "RoadPro 3.5: roundabouts, Saudi junctions, concrete pavement and live update",
@@ -226,11 +249,21 @@ const SEED: { app: string; version: string; releasedAt: string; title: string; n
   },
 ];
 
+// An empty table gets every release in SEED; afterwards, only the ones newer than an app's newest
+// saved release are added (a version added to SEED later), so an old one deleted in Admin stays deleted
 async function seedIfEmpty() {
-  if ((await prisma.productRelease.count()) > 0) return;
+  const empty = (await prisma.productRelease.count()) === 0;
+  const newest = new Map<string, string>();
   for (const s of SEED) {
     const app = appById(s.app);
     if (!app) continue;
+    if (!empty) {
+      if (!newest.has(s.app)) {
+        const saved = await prisma.productRelease.findMany({ where: { app: s.app }, select: { version: true } });
+        newest.set(s.app, saved.reduce((m, r) => (compareVersions(r.version, m) > 0 ? r.version : m), "0"));
+      }
+      if (compareVersions(s.version, newest.get(s.app)!) <= 0) continue;
+    }
     await prisma.productRelease.upsert({
       where: { app_version: { app: s.app, version: s.version } },
       update: {},
