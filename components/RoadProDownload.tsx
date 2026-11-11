@@ -5,10 +5,19 @@ import { useAuth } from "../context/AuthContext";
 import { ROADPRO_FILES, ROADPRO_VERSION } from "@/lib/roadpro";
 
 // "Download RoadPro": the same sign-in gate as the Windows app (Admin →
-// Settings → Sign-in to download), then the download is recorded and starts
-export default function RoadProDownload({ className, label = "Download RoadPro" }: { className?: string; label?: string }) {
+// Settings → Sign-in to download), then the download is recorded and starts.
+// RoadPro Setup (Hub and plugin, with automatic updates) unless the plugin zip is asked for.
+export default function RoadProDownload({
+  className,
+  label = "Download RoadPro",
+  file = "setup",
+}: {
+  className?: string;
+  label?: string;
+  file?: "setup" | "plugin";
+}) {
   const { requireAuth, trackDownload } = useAuth();
-  const { href, name } = ROADPRO_FILES.plugin;
+  const { href, name } = ROADPRO_FILES[file];
 
   const start = () => {
     trackDownload("roadpro", name, `v${ROADPRO_VERSION}`);

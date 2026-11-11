@@ -1,13 +1,20 @@
 // RoadPro: the AutoCAD road builder plugin. Content from the RoadPro v3.5
 // user guide, notes and shortcut sheet (all downloadable from /roadpro).
 
-export const ROADPRO_VERSION = "3.5";
-export const ROADPRO_RELEASED = "2026-11-03";
+export const ROADPRO_VERSION = "3.6.1";
+export const ROADPRO_RELEASED = "2026-11-11";
+
+// RoadPro Setup: installs RoadPro Hub and the plugin, then keeps them up to date (from 3.6.1).
+// Built by the Road-pro repository's release workflow. The release's own address, not
+// /releases/latest/…: GitHub's "latest" skips a release marked pre-release.
+export const ROADPRO_REPO = "Asjad-Mehmood/Road-pro";
+export const ROADPRO_SETUP_URL = `https://github.com/${ROADPRO_REPO}/releases/download/v${ROADPRO_VERSION}/RoadPro_Setup.exe`;
 
 export const ROADPRO_FILES = {
-  plugin: { href: "/roadpro/RoadPro.zip", name: "RoadPro.zip", label: "RoadPro plugin", detail: "RoadPro.lsp, the RP_PAVER hatch pattern and install notes in a zip, 116 KB" },
-  guidePdf: { href: "/roadpro/RoadPro_User_Guide.pdf", name: "RoadPro_User_Guide.pdf", label: "User guide", detail: "PDF, 44 pages, 4.1 MB" },
-  guide: { href: "/roadpro/RoadPro_User_Guide.pptx", name: "RoadPro_User_Guide.pptx", label: "User guide", detail: "PowerPoint, 44 slides, 5.1 MB" },
+  setup: { href: ROADPRO_SETUP_URL, name: "RoadPro_Setup.exe", label: "RoadPro Setup", detail: "Installs RoadPro Hub and the AutoCAD plugin, and keeps them up to date. Windows, 8.2 MB" },
+  plugin: { href: "/roadpro/RoadPro.zip", name: "RoadPro.zip", label: "Plugin only (zip)", detail: "RoadPro.lsp, the RP_PAVER hatch pattern and install notes, to load with APPLOAD. No automatic updates. 124 KB" },
+  guidePdf: { href: "/roadpro/RoadPro_User_Guide.pdf", name: "RoadPro_User_Guide.pdf", label: "User guide", detail: "PDF, 52 pages, 6.0 MB (version 3.6)" },
+  guide: { href: "/roadpro/RoadPro_User_Guide.pptx", name: "RoadPro_User_Guide.pptx", label: "User guide", detail: "PowerPoint of the 3.5 guide, 44 slides, 5.1 MB" },
   shortcuts: { href: "/roadpro/RoadPro_Shortcuts.xlsx", name: "RoadPro_Shortcuts.xlsx", label: "Shortcut keys", detail: "Excel sheet, 11 KB" },
   video: { href: "/roadpro/roadpro-demo.mp4", poster: "/roadpro/demo-cover.webp", duration: "PT2M58S" },
   // a one-minute tour of the user manual, with sound
@@ -29,11 +36,15 @@ export const ROADPRO_FEATURES: { title: string; text: string }[] = [
 ];
 
 export const ROADPRO_INSTALL: { title: string; text: string }[] = [
-  { title: "APPLOAD", text: "Type APPLOAD in the AutoCAD command line (once only)." },
-  { title: "Load", text: "Select RoadPro.lsp, click Load, then Close." },
-  { title: "Installs itself", text: "RoadPro copies itself to %APPDATA%\\RoadPro and joins the Startup Suite, so it loads in every drawing from now on. Civil 3D: once in each profile you use." },
+  { title: "Run RoadPro_Setup.exe", text: "No administrator rights needed. It installs RoadPro Hub and the AutoCAD plugin, and replaces any older RoadPro by itself." },
+  { title: "Start AutoCAD", text: "RoadPro loads in every drawing. If an update is waiting, AutoCAD says so at start-up; RDHUB opens RoadPro Hub." },
   { title: "RDP", text: "Type RDP to open the RoadPro dialog. RDHELP lists every command; MENUBAR = 1 shows the RoadPro menu." },
+  { title: "Updates", text: "RoadPro Hub checks for a new version when you open it and once a day: one click downloads, checks and installs it, and keeps the previous version." },
 ];
+
+/** Without the setup: the plugin zip, loaded once with APPLOAD (no automatic updates) */
+export const ROADPRO_ZIP_INSTALL =
+  "Plugin only: unzip RoadPro.zip, type APPLOAD in AutoCAD, load RoadPro.lsp once and close. It copies itself to %APPDATA%\\RoadPro and joins the Startup Suite. Civil 3D: once in each profile you use.";
 
 export const ROADPRO_REQUIREMENTS = [
   "Full AutoCAD, Civil 3D or Map 3D 2013 or newer (AutoCAD LT is not supported)",
@@ -168,17 +179,17 @@ export const ROADPRO_FIXES: { q: string; a: string }[] = [
 
 // What changed in this version, shown near the top of /roadpro
 export const ROADPRO_WHATS_NEW: { title: string; text: string }[] = [
-  { title: "Roundabouts", text: "Twelve designs from FHWA 2000 and NCHRP 672, mini to multilane with spiral marking: kerb, circulatory roadway, apron, islands, crossings, signs, chevrons and setting-out. RDRB, or Roundabout as the junction type in RDJ." },
-  { title: "Saudi junction standard", text: "RDJ fills the corner radius, auxiliary lane, tapers, storage and island from the road class and design vehicle (SHC 301 / MOMRA, AASHTO based), and draws the sight triangles." },
-  { title: "Live update", text: "Grip-edit, move, rotate or stretch a centre line and the road, corridor, markings, widenings, tapers, junctions and roundabouts rebuild by themselves. Side roads follow the main road. One U undoes it." },
-  { title: "Corridor round the corners", text: "Sidewalks, walkways and drains follow the kerb returns at junctions and roundabouts, hatched, with no gaps; the branch utility corridor joins the main one." },
-  { title: "Concrete pavement", text: "Asphalt or concrete JPCP / JRCP with dowels, tie bars and mesh: joints on plan, layers in section, volumes and steel in the report (RDPV)." },
-  { title: "Installs itself", text: "Load RoadPro.lsp with APPLOAD once: it copies itself to AppData and joins the Startup Suite. RDHELP lists every command, and there's a RoadPro menu (MENUBAR = 1)." },
+  { title: "Automatic updates", text: "RoadPro Setup installs RoadPro Hub, which checks for a new RoadPro when you open it and once a day: one click downloads it, checks its size and SHA-256 and installs it, plugin included. The previous version is kept." },
+  { title: "RDHUB", text: "A new command opens RoadPro Hub from AutoCAD: updates, repair, the user guide and shortcut keys. AutoCAD also says at start-up when an update is waiting." },
+  { title: "Clean junction tie-in", text: "RDJ: the side road starts where the kerb returns end, with one mouth surface joined to the main road, no overlaps or black wedges, also on skewed junctions and with an auxiliary lane and island." },
+  { title: "Roundabouts on a road", text: "RDRB: 2-way, T left, T right or 4-way, side roads drawn, picked or automatic, the main road cut cleanly at the ring and full marking on every approach." },
+  { title: "Edits follow", text: "After a grip edit the bend is refitted tangent at its radius, so barricades, edges and corridor follow; moving a centre line keeps junction and roundabout side roads attached." },
+  { title: "Professional cross sections", text: "RDX draws to the corridor limit with three dimension rows (components, roadside and carriageway, total width) and a table of offsets and finished levels." },
 ];
 
 // Shown under "New in": moving up from the last version, and how 3.5 was tested
 export const ROADPRO_UPGRADE_NOTE =
-  "Upgrading? Load the new RoadPro.lsp with APPLOAD once: it installs itself and replaces the old file. Your settings are kept and roads drawn with 3.4 keep working; rebuild them once (RDB) to get live update and the replay of widenings, junctions and roundabouts. Version 3.5 hasn't yet been run inside AutoCAD by its developer, so try it on a copy of a drawing first. The Saudi junction values, roundabout sizes and concrete quantities are typical values for the design engineer to check against the project standard.";
+  "Upgrading? Run RoadPro Setup: it replaces the older RoadPro by itself and from then on updates RoadPro for you. With the plugin zip, load the new RoadPro.lsp with APPLOAD once. Your settings are kept and roads drawn with earlier versions keep working. Version 3.6 passed a full regression of 3.5 plus 34 new drawing checks. The Saudi junction values, roundabout sizes and concrete quantities are typical values for the design engineer to check against the project standard.";
 
 // Where the sign and marking values come from, shown under "New in"
 export const ROADPRO_STANDARDS_NOTE =
