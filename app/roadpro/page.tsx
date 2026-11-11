@@ -199,7 +199,7 @@ export default function RoadProPage() {
           </p>
           <p className="mt-2 text-[13.5px] text-slate-600 leading-relaxed">{ROADPRO_UPGRADE_NOTE}</p>
           <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-5">
-            {[34, 36].map((n) => {
+            {[45, 50].map((n) => {
               const g = ROADPRO_GUIDE_PAGES.find((x) => x.page === n)!;
               return (
                 <figure key={n}>
