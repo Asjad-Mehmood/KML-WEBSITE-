@@ -147,12 +147,13 @@ function verifyEmail(name: string, code: string, link: string) {
   // Gmail puts under Primary
   return letterEmail({
     subject: `${code} is your ${SITE_NAME} confirmation code`,
+    title: "Confirm your email",
     first: (name || "").trim().split(/\s+/)[0] || "",
     blocks: [
       { p: "Type this code where you created your account. It works for 24 hours:" },
       { code },
       { p: "Signed up in the Windows or Android app? Open this link instead, then sign in again in the app:" },
-      { link, label: "Confirm my email" },
+      { button: link, label: "Confirm my email" },
       { p: `If you didn't create an account on ${SITE_URL.replace(/^https?:\/\//, "")}, ignore this email: nothing happens without the code.` },
     ],
     footer: `You're getting this because this address was used to create an account on ${SITE_URL.replace(/^https?:\/\//, "")}.`,

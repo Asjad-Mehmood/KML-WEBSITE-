@@ -234,12 +234,13 @@ export function releaseEmail(r: ReleaseForEmail, to: { name: string; email: stri
     return {
       ...letterEmail({
         subject,
+        title: `The ${r.appName} is ready`,
         first,
         blocks: [
           ...intro.letter.map((l, i): LetterBlock => (i === 0 ? { p: l, bold: PRODUCT_NAMES } : { p: l })),
-          { heading: "To start" },
+          { heading: "Start in three steps" },
           { steps: intro.start },
-          { link: url },
+          { button: url, label: `Get the ${r.appName}` },
           reply,
         ],
         footer,
@@ -253,19 +254,26 @@ export function releaseEmail(r: ReleaseForEmail, to: { name: string; email: stri
   const released = longDate(r.releasedAt);
   const lead = r.newerVersion
     ? `Here's a look back at ${r.appName} ${r.version}, released on ${released}. The newest version is now ${r.newerVersion}, and updating gets you everything below plus what came after.`
-    : `${r.appName} ${r.version} is ready. Here's what changed, and how to get it.`;
+    : "Here's what changed, and how to get it.";
   const blocks: LetterBlock[] = [{ p: lead }];
   if (items.length) {
     blocks.push({ heading: `What changed in ${r.version}` }, { bullets: items.map((i) => (i.head ? `${i.head}: ${i.text}` : i.text)) });
   }
   blocks.push(
-    { heading: guide.automatic ? `Already using ${r.appName}? It updates itself` : `Already using ${r.appName}? To update` },
+    { heading: guide.automatic ? "Already using it? It updates itself" : "Already using it? To update" },
     { steps: guide.steps }
   );
   if (guide.newUser) blocks.push({ p: guide.newUser });
-  blocks.push({ link: url }, reply);
+  blocks.push({ button: url, label: r.linkLabel.trim() || (r.newerVersion ? `Get ${r.appName} ${r.newerVersion}` : `Get ${r.appName} ${r.version}`) }, reply);
   return {
-    ...letterEmail({ subject: title || `${r.appName} ${r.version}`, first, blocks, footer, footerLink }),
+    ...letterEmail({
+      subject: title || `${r.appName} ${r.version}`,
+      title: r.newerVersion ? `${r.appName} ${r.version}` : `${r.appName} ${r.version} is ready`,
+      first,
+      blocks,
+      footer,
+      footerLink,
+    }),
     ...listHeaders(to.email),
   };
 }

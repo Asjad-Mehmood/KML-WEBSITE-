@@ -19,11 +19,12 @@ export function reviewRequestEmail(r: ReviewAsk, to: { name: string; email: stri
   return {
     ...letterEmail({
       subject: `How is ${r.appName} working for you?`,
+      title: `How is ${r.appName} working for you?`,
       first,
       blocks: [
         { p: `You downloaded or used ${r.appName} with your ${host} account. Would you tell us how it's going?`, bold: [r.appName] },
         { p: "A rating from one to five stars takes ten seconds, and a sentence or two helps even more. It helps other surveyors and engineers decide, and it tells us what to make better." },
-        { link: reviewLink(r.product) },
+        { button: reviewLink(r.product), label: `Rate ${r.appName}` },
         { p: "Something not working? Reply to this email instead: we'd rather fix it than read about it in a review." },
       ],
       signOff: "Thank you,",

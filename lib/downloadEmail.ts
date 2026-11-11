@@ -10,6 +10,7 @@ export function downloadThanksEmail(name: string, version: string, fileName: str
   const first = (name || "").trim().split(/\s+/)[0] || "";
   return letterEmail({
     subject: "Your Excel to KML download",
+    title: "Getting started with Excel to KML",
     first,
     blocks: [
       { p: `Thanks for downloading Excel to KML${version ? ` ${version}` : ""}. A few notes to get started:`, bold: ["Excel to KML"] },
@@ -20,8 +21,8 @@ export function downloadThanksEmail(name: string, version: string, fileName: str
           'Open the program and press "Try the sample" to see a finished job in a minute.',
         ],
       },
-      { p: "The tutorial shows the four steps from your sheet to Google Earth, with pictures:" },
-      { link: `${SITE_URL}/tutorial` },
+      { p: "The tutorial shows the four steps from your sheet to Google Earth, with pictures." },
+      { button: `${SITE_URL}/tutorial`, label: "Open the tutorial" },
       { p: "Questions or ideas? Reply to this email." },
     ],
     footer: "You're getting this one-time email because you downloaded the program with your account.",
