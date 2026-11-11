@@ -35,7 +35,11 @@ const GITHUB_REPOS: Record<string, string> = {
   slope: "Asjad-Mehmood/Slope-calculator-",
   "folder-manager": "Asjad-Mehmood/Project-manager",
   toolkit: "Asjad-Mehmood/Survey-Toolkit",
+  roadpro: "Asjad-Mehmood/Road-pro",
 };
+
+/** Tags below this are not real releases of the app (Road-pro has a stray v0.1.1) */
+const GITHUB_MIN_VERSION: Record<string, string> = { roadpro: "3.6" };
 
 export const RELEASE_APPS: ReleaseApp[] = [
   { id: "excel-to-kml", name: SITE_NAME, href: "/download", current: normVersion(LATEST_VERSION), github: "Asjad-Mehmood/kml-convertor" },
@@ -874,10 +878,13 @@ export async function importFromGitHub(appId: string) {
   let added = 0;
   let filled = 0;
   for (const g of list) {
-    // drafts, betas, and releases made by mistake with no files (Project-manager's v2.3.9)
-    if (g.draft || g.prerelease || !g.assets?.length) continue;
+    // drafts and releases made by mistake with no files (Project-manager's v2.3.9)
+    if (g.draft || !g.assets?.length) continue;
     const version = normVersion(g.tag_name);
-    if (!version) continue;
+    if (!/^\d+(\.\d+){1,3}$/.test(version)) continue;
+    if (GITHUB_MIN_VERSION[app.id] && compareVersions(version, GITHUB_MIN_VERSION[app.id]) < 0) continue;
+    // a beta, unless this site already offers that version (RoadPro 3.6.1 is marked pre-release on GitHub)
+    if (g.prerelease && compareVersions(version, app.current) > 0) continue;
     const notes = notesFromMarkdown(g.body || "").join("\n");
     const existing = await prisma.productRelease.findUnique({ where: { app_version: { app: app.id, version } } });
     if (existing) {
