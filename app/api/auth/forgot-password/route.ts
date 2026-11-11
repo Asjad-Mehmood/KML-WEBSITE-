@@ -30,10 +30,11 @@ export async function POST(req: NextRequest) {
         to: user.email,
         ...letterEmail({
           subject: "Reset your Excel to KML password",
+          title: "Reset your password",
           first: (user.name || "").trim().split(/\s+/)[0] || "",
           blocks: [
             { p: "Use this link to choose a new password. It works for one hour, once:" },
-            { link, label: "Choose a new password" },
+            { button: link, label: "Choose a new password" },
             { p: "If you didn't ask for this, ignore this email: your password stays as it is." },
           ],
           footer: "You're getting this because someone asked to reset the password of your account.",
