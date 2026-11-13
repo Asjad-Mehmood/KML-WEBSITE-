@@ -64,6 +64,7 @@ export const ADMIN_ACTIONS: Record<string, string> = {
   "cleanup.run": "Ran the cleanup",
   "data.delete": "Deleted a record",
   "data.clear": "Cleared records",
+  "data.export": "Exported kept files as CSV",
   "traverse.access": "Changed Traverse & Level access",
   "admin.trusted-browsers": "Removed trusted browsers",
 };
