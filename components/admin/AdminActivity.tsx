@@ -138,14 +138,24 @@ export default function AdminActivity({
   onToast,
   onOpenAccount,
   onClearAll,
+  app: appProp,
+  onAppChange,
+  onCounts,
 }: {
   adminFetch: Fetcher;
   onToast: (m: string, t?: "success" | "error") => void;
   onOpenAccount: (userId: string) => void;
   /** clears what people did in the apps (not downloads or the Toolkit's records); asks first */
   onClearAll?: () => Promise<void>;
+  /** the app shown, when the menu chooses it (Activity → an app); "" for all */
+  app?: string;
+  onAppChange?: (app: string) => void;
+  /** how many lines each app has, for the menu */
+  onCounts?: (apps: Record<string, number>) => void;
 }) {
-  const [app, setApp] = useState("");
+  const [ownApp, setOwnApp] = useState("");
+  const app = appProp ?? ownApp;
+  const setApp = (a: string) => (onAppChange ? onAppChange(a) : setOwnApp(a));
   const [action, setAction] = useState("");
   const [person, setPerson] = useState<{ id: string; label: string } | null>(null);
   const [q, setQ] = useState("");
@@ -162,9 +172,11 @@ export default function AdminActivity({
   const [live, setLive] = useState(false);
   const fetcher = useRef(adminFetch);
   const toast = useRef(onToast);
+  const countsRef = useRef(onCounts);
   useEffect(() => {
     fetcher.current = adminFetch;
     toast.current = onToast;
+    countsRef.current = onCounts;
   });
 
   // typing waits a moment before it searches
@@ -205,7 +217,10 @@ export default function AdminActivity({
         if (!r.ok) throw new Error(j.error || "Couldn't read the activity.");
         setRows((old) => (more ? [...old, ...j.rows] : j.rows));
         setNext(j.next);
-        if (j.facets) setFacets(j.facets);
+        if (j.facets) {
+          setFacets(j.facets);
+          countsRef.current?.(j.facets.apps);
+        }
       } catch (e) {
         toast.current(e instanceof Error ? e.message : "Couldn't read the activity.", "error");
       } finally {

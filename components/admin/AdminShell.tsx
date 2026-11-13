@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowUpRight, LogOut, Menu, Moon, RefreshCw, Shield, Sun, X, type LucideIcon } from "lucide-react";
+import { ArrowUpRight, ChevronRight, LogOut, Menu, Moon, RefreshCw, Shield, Sun, X, type LucideIcon } from "lucide-react";
 import "@/app/admin/admin-theme.css";
 
 export interface AdminSection {
@@ -14,6 +14,8 @@ export interface AdminSection {
   /** a number beside the menu item: a total, or something waiting (shown highlighted) */
   count?: number;
   attention?: boolean;
+  /** smaller items under it in the menu (Activity → each app); chosen as "<section id>:<sub id>" */
+  sub?: { id: string; label: string; count?: number }[];
 }
 
 export interface AdminGroup {
@@ -56,6 +58,7 @@ export default function AdminShell({
   refreshing,
   updatedAt,
   headerExtra,
+  activeSub,
   children,
 }: {
   groups: AdminGroup[];
@@ -68,9 +71,13 @@ export default function AdminShell({
   updatedAt: number | null;
   /** more buttons in the header, before the theme switch (the search) */
   headerExtra?: React.ReactNode;
+  /** the sub-item shown now under the active section ("" for the section itself) */
+  activeSub?: string;
   children: React.ReactNode;
 }) {
   const [drawer, setDrawer] = useState(false);
+  // sections whose sub-items are open in the menu (the active one always is)
+  const [opened, setOpened] = useState<Set<string>>(new Set());
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 15_000);
@@ -110,8 +117,26 @@ export default function AdminShell({
           <ul className="space-y-0.5">
             {g.sections.map((s) => {
               const on = s.id === active;
+              const showSub = !!s.sub?.length && (on || opened.has(s.id));
               return (
-                <li key={s.id}>
+                <li key={s.id} className="relative">
+                  {!!s.sub?.length && !on && (
+                    <button
+                      onClick={() =>
+                        setOpened((o) => {
+                          const n = new Set(o);
+                          if (n.has(s.id)) n.delete(s.id);
+                          else n.add(s.id);
+                          return n;
+                        })
+                      }
+                      aria-label={showSub ? `Hide ${s.label}'s parts` : `Show ${s.label}'s parts`}
+                      aria-expanded={showSub}
+                      className="absolute left-0 top-2 p-0.5 rounded text-slate-500 hover:text-slate-200 cursor-pointer z-10"
+                    >
+                      <ChevronRight className={`w-3 h-3 transition-transform ${showSub ? "rotate-90" : ""}`} aria-hidden />
+                    </button>
+                  )}
                   <button
                     onClick={() => {
                       onSelect(s.id);
@@ -134,6 +159,30 @@ export default function AdminShell({
                       </span>
                     )}
                   </button>
+                  {showSub && (
+                    <ul className="mt-0.5 mb-1 ml-[22px] pl-3 border-l border-[var(--adm-line)] space-y-0.5">
+                      {s.sub!.map((x) => {
+                        const subOn = on && activeSub === x.id;
+                        return (
+                          <li key={x.id}>
+                            <button
+                              onClick={() => {
+                                onSelect(`${s.id}:${x.id}`);
+                                setDrawer(false);
+                              }}
+                              aria-current={subOn ? "page" : undefined}
+                              className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-[12.5px] font-semibold cursor-pointer ${
+                                subOn ? "bg-blue-500/15 text-white" : "text-slate-400 hover:text-slate-100 hover:bg-[var(--adm-hover)]"
+                              }`}
+                            >
+                              <span className="flex-1 text-left truncate">{x.label}</span>
+                              {x.count !== undefined && x.count > 0 && <span className="text-[10.5px] font-bold tabular-nums text-slate-500">{x.count.toLocaleString()}</span>}
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
                 </li>
               );
             })}

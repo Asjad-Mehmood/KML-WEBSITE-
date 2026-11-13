@@ -11,7 +11,7 @@ import AdminSlope from "../../components/admin/AdminSlope";
 import AdminToolkit from "@/components/admin/AdminToolkit";
 import AdminLog from "@/components/admin/AdminLog";
 import AdminTrends from "@/components/admin/AdminTrends";
-import AdminActivity from "@/components/admin/AdminActivity";
+import AdminActivity, { APPS as ACTIVITY_APPS } from "@/components/admin/AdminActivity";
 import AdminSearch, { SearchButton } from "@/components/admin/AdminSearch";
 import AdminFiles from "../../components/admin/AdminFiles";
 import AdminShell, { type AdminGroup } from "../../components/admin/AdminShell";
@@ -227,6 +227,15 @@ export default function AdminClient() {
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   // Ctrl+K (⌘K) or "/" opens the search (components/admin/AdminSearch.tsx)
   const [searchOpen, setSearchOpen] = useState(false);
+  // Activity → an app, from the menu or the page's own chips (components/admin/AdminActivity.tsx)
+  const [activityApp, setActivityApp] = useState("");
+  const [activityCounts, setActivityCounts] = useState<Record<string, number>>({});
+  // a menu item: a section, or "<section>:<part>" for a part of it
+  const selectSection = (id: string) => {
+    const [tab, part] = id.split(":");
+    if (tab === "activities") setActivityApp(part ?? "");
+    setActiveTab(tab as typeof activeTab);
+  };
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const typing = e.target instanceof HTMLElement && (e.target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(e.target.tagName));
@@ -681,7 +690,16 @@ export default function AdminClient() {
       label: "People",
       sections: [
         { id: "users", label: "Surveyors", icon: Users, text: "Every account: who they are, where from, what they downloaded and whether their email is confirmed", count: users.length },
-        { id: "activities", label: "Activity", icon: Activity, text: "Everything across the apps and tools: what people do, downloads, sign-ins and the Toolkit", count: Math.max(activitiesTotal, allActivities.length) },
+        {
+          id: "activities",
+          label: "Activity",
+          icon: Activity,
+          text: activityApp
+            ? `Everything in ${ACTIVITY_APPS.find((a) => a.id === activityApp)?.name ?? activityApp}: what people do, downloads and sign-ins`
+            : "Everything across the apps and tools: what people do, downloads, sign-ins and the Toolkit",
+          count: Math.max(activitiesTotal, allActivities.length),
+          sub: ACTIVITY_APPS.map((a) => ({ id: a.id, label: a.name, count: activityCounts[a.id] })),
+        },
         { id: "downloads", label: "Downloads", icon: Download, text: "Every program download, by whom and from where", count: downloads.length },
       ],
     },
@@ -717,7 +735,8 @@ export default function AdminClient() {
       headerExtra={<SearchButton onOpen={() => setSearchOpen(true)} />}
       groups={groups}
       active={activeTab}
-      onSelect={(id) => setActiveTab(id as typeof activeTab)}
+      onSelect={selectSection}
+      activeSub={activeTab === "activities" ? activityApp : ""}
       admin={adminUser}
       onLogout={handleAdminLogout}
       onRefresh={refreshAll}
@@ -1332,6 +1351,9 @@ export default function AdminClient() {
         {/* ================================================================== */}
         {activeTab === "activities" && (
           <AdminActivity
+            app={activityApp}
+            onAppChange={setActivityApp}
+            onCounts={setActivityCounts}
             adminFetch={adminFetch}
             onToast={showToast}
             onClearAll={handleClearActivities}
@@ -1616,7 +1638,7 @@ export default function AdminClient() {
         onClose={() => setSearchOpen(false)}
         groups={groups}
         adminFetch={adminFetch}
-        onSection={(id) => setActiveTab(id as typeof activeTab)}
+        onSection={selectSection}
         onAccount={(id) => {
           setDetailUserId(id);
           setDetailModalOpen(true);
