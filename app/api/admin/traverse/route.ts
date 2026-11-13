@@ -5,11 +5,9 @@ import { prisma } from "@/lib/prisma";
 import { clientIp } from "@/lib/loginThrottle";
 import { adminGroups, adminJobsOf, adminRemove } from "@/lib/traverseJobs";
 import { blockedList, setBlocked } from "@/lib/traverseControls";
-import { traverseUsage } from "@/lib/traverseUsage";
 
 // Admin → Traverse & Level: the jobs saved in the Traverse & Level app (/traverse/app).
 // GET            → one row per surveyor, with the totals and who is blocked
-// GET ?usage=1   → how the app is used (opens, imports, exports, saves, files kept, recent activity)
 // GET ?userId=   → that surveyor's jobs, with what was saved, the result and who they are shared with
 // PATCH          → { userId, blocked } block or unblock one account
 // DELETE ?id=    → delete one job
@@ -19,7 +17,6 @@ export async function GET(req: NextRequest) {
   const params = new URL(req.url).searchParams;
   const userId = params.get("userId");
   try {
-    if (params.get("usage")) return NextResponse.json({ success: true, usage: await traverseUsage() });
     if (userId) return NextResponse.json({ success: true, jobs: await adminJobsOf(userId) });
     return NextResponse.json({ success: true, ...(await adminGroups()), blocked: await blockedList() });
   } catch (err: unknown) {

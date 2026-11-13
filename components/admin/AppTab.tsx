@@ -151,6 +151,7 @@ export default function AppTab({
   onOpenAccount,
   intro,
   children,
+  footer,
 }: {
   app: string;
   adminFetch: Fetcher;
@@ -159,8 +160,10 @@ export default function AppTab({
   onOpenAccount: (userId: string) => void;
   /** a line under the name: what the app is */
   intro?: string;
-  /** the app's own part, given the numbers and the period */
-  children?: (d: AppOverviewData, days: number) => ReactNode;
+  /** the app's own part, given the numbers, the period and a way to read them again */
+  children?: (d: AppOverviewData, days: number, reload: () => void) => ReactNode;
+  /** more of the app's own, at the end of the page */
+  footer?: (reload: () => void) => ReactNode;
 }) {
   const [days, setDays] = useState(30);
   const [data, setData] = useState<AppOverviewData | null>(null);
@@ -217,6 +220,10 @@ export default function AppTab({
   }
 
   const t = data.totals;
+  function again() {
+    setBusy(true);
+    setReload((x) => x + 1);
+  }
   const keptTotal = data.kept?.total ?? 0;
   const maxAction = Math.max(1, ...data.actions.map((a) => a.count));
   const maxPerson = Math.max(1, ...data.people.map((p) => p.count));
@@ -353,7 +360,7 @@ export default function AppTab({
         )}
       </Panel>
 
-      {children?.(data, days)}
+      {children?.(data, days, again)}
 
       <div className="grid lg:grid-cols-2 gap-4">
         {/* devices */}
@@ -636,6 +643,157 @@ export default function AppTab({
           <Monitor className="w-4 h-4" /> Some people or PCs are on an older version than v{data.app.latest}.
         </p>
       )}
+
+      {footer?.(again)}
     </div>
+  );
+}
+
+// ---------------------------------------------------------------- an app's settings
+
+export function Toggle({ on, busy, onClick, label }: { on: boolean; busy: boolean; onClick: () => void; label: string }) {
+  return (
+    <button
+      role="switch"
+      aria-checked={on}
+      aria-label={label}
+      disabled={busy}
+      onClick={onClick}
+      className={`relative shrink-0 w-11 h-6 rounded-full transition-colors cursor-pointer disabled:opacity-60 ${on ? "bg-blue-600" : "bg-slate-700"}`}
+    >
+      <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${on ? "translate-x-5" : ""}`} />
+    </button>
+  );
+}
+
+export type SettingField =
+  | { key: string; kind: "switch"; label: string; on: string; off: string }
+  | { key: string; kind: "number"; label: string; hint: string; min: number; max: number }
+  | { key: string; kind: "text"; label: string; hint: string; max: number; placeholder?: string };
+type SettingsMap = Record<string, unknown>;
+
+/**
+ * The switches and values of one app, saved to Admin → Settings (app/api/admin/settings) as they're
+ * changed: a switch at once, a number or text with its Save button. Each change goes in the Admin log.
+ */
+export function AppSettings({
+  adminFetch,
+  onToast,
+  onShow,
+  fields,
+  footer,
+  onSaved,
+}: {
+  adminFetch: Fetcher;
+  onToast: (m: string, t?: "success" | "error") => void;
+  onShow: (section: string) => void;
+  fields: SettingField[];
+  footer?: (s: SettingsMap) => ReactNode;
+  onSaved?: () => void;
+}) {
+  const [s, setS] = useState<SettingsMap | null>(null);
+  const [draft, setDraft] = useState<SettingsMap>({});
+  const [busy, setBusy] = useState<string | null>(null);
+  const fetcher = useRef(adminFetch);
+  useEffect(() => {
+    fetcher.current = adminFetch;
+  });
+  useEffect(() => {
+    fetcher
+      .current("/api/admin/settings", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((j) => j.success && setS(j.settings))
+      .catch(() => onToast("Couldn't load the settings", "error"));
+    // onToast only reports a failure; loading once is enough
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const save = async (f: SettingField, value: unknown) => {
+    setBusy(f.key);
+    try {
+      const r = await fetcher.current("/api/admin/settings", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ [f.key]: value }) });
+      const j = await r.json();
+      if (!r.ok || !j.success) throw new Error(j.error || "Couldn't save");
+      setS(j.settings);
+      setDraft((d) => {
+        const n = { ...d };
+        delete n[f.key];
+        return n;
+      });
+      onToast(f.kind === "switch" ? `${f.label}: ${value ? "on" : "off"}` : `${f.label} saved`);
+      onSaved?.();
+    } catch (e) {
+      onToast(e instanceof Error ? e.message : "Couldn't save", "error");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const input = "w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-base sm:text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500";
+  return (
+    <Panel
+      title="Settings"
+      action={
+        <button onClick={() => onShow("settings")} className="text-xs font-semibold text-blue-400 hover:underline cursor-pointer">
+          All settings
+        </button>
+      }
+    >
+      {!s ? (
+        <Empty>
+          <Loader2 className="inline w-4 h-4 animate-spin mr-2" /> Loading…
+        </Empty>
+      ) : (
+        <ul className="pb-2">
+          {fields.map((f) => {
+            if (f.kind === "switch") {
+              const on = Boolean(s[f.key]);
+              return (
+                <li key={f.key} className="px-5 py-3 border-t border-[var(--adm-line)] flex items-center justify-between gap-4">
+                  <span className="min-w-0">
+                    <span className="block text-[13px] font-semibold text-white">{f.label}</span>
+                    <span className="block text-xs text-slate-400">{on ? f.on : f.off}</span>
+                  </span>
+                  <Toggle on={on} busy={busy === f.key} onClick={() => save(f, !on)} label={f.label} />
+                </li>
+              );
+            }
+            const value = f.key in draft ? draft[f.key] : s[f.key];
+            const changed = f.key in draft && draft[f.key] !== s[f.key];
+            return (
+              <li key={f.key} className="px-5 py-3 border-t border-[var(--adm-line)]">
+                <label className="block text-[13px] font-semibold text-white" htmlFor={`set-${f.key}`}>
+                  {f.label}
+                </label>
+                <span className="block text-xs text-slate-400 mb-1.5">{f.hint}</span>
+                <span className="flex gap-2">
+                  <input
+                    id={`set-${f.key}`}
+                    type={f.kind === "number" ? "number" : "text"}
+                    min={f.kind === "number" ? f.min : undefined}
+                    max={f.kind === "number" ? f.max : undefined}
+                    maxLength={f.kind === "text" ? f.max : undefined}
+                    placeholder={f.kind === "text" ? f.placeholder : undefined}
+                    value={String(value ?? "")}
+                    onChange={(e) => setDraft((d) => ({ ...d, [f.key]: f.kind === "number" ? (e.target.value === "" ? "" : Number(e.target.value)) : e.target.value }))}
+                    className={`${input} ${f.kind === "number" ? "max-w-[160px]" : ""}`}
+                  />
+                  {changed && (
+                    <button
+                      onClick={() => save(f, draft[f.key])}
+                      disabled={busy === f.key}
+                      className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-xs font-bold text-white cursor-pointer disabled:opacity-60"
+                    >
+                      {busy === f.key && <Loader2 className="w-3.5 h-3.5 animate-spin" />} Save
+                    </button>
+                  )}
+                </span>
+              </li>
+            );
+          })}
+          {footer?.(s)}
+        </ul>
+      )}
+    </Panel>
   );
 }
