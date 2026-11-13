@@ -231,6 +231,7 @@ export async function listTesterRows(): Promise<TesterRow[]> {
 
 export interface DeviceRow {
   id: string;
+  userId: string;
   email: string | null;
   userName: string | null;
   name: string;
@@ -244,7 +245,7 @@ export interface DeviceRow {
 export async function listDevices(): Promise<DeviceRow[]> {
   await ensureToolkitTables();
   const rows = await prisma.$queryRawUnsafe<(Omit<DeviceRow, "tools"> & { tools: string })[]>(
-    `SELECT d."id", u."email", u."name" AS "userName", d."name", d."windows", d."toolkitVersion", d."tools",
+    `SELECT d."id", d."userId", u."email", u."name" AS "userName", d."name", d."windows", d."toolkitVersion", d."tools",
             d."firstSeen", d."lastSeen"
        FROM "toolkit_devices" d LEFT JOIN "users" u ON u."id" = d."userId"
       ORDER BY d."lastSeen" DESC LIMIT 500`
@@ -303,4 +304,124 @@ export async function eventCounts(days = 30): Promise<Record<string, { all: numb
     String(Math.max(1, Math.floor(days)))
   );
   return Object.fromEntries(rows.map((r) => [r.action, { all: Number(r.n), automatic: Number(r.auto) }]));
+}
+
+// ---------------------------------------------------------------- Admin → Survey Toolkit
+//
+// The main Admin's Survey Toolkit tab: each account that uses the Toolkit, day by day what the
+// Toolkits did, and each tool's installs, updates and failures.
+
+export interface ToolkitUserRow {
+  userId: string;
+  email: string | null;
+  name: string | null;
+  organization: string | null;
+  location: string | null;
+  pcs: number;
+  firstSeen: Date;
+  lastSeen: Date;
+  /** the Toolkit version on the PC seen last */
+  toolkitVersion: string;
+  events: number;
+  installs: number;
+  updates: number;
+  failures: number;
+  /** the last time this account downloaded the Toolkit from the website */
+  lastDownload: Date | null;
+}
+
+export async function listToolkitUsers(): Promise<ToolkitUserRow[]> {
+  await ensureToolkitTables();
+  const rows = await prisma.$queryRawUnsafe<
+    (Omit<ToolkitUserRow, "pcs" | "events" | "installs" | "updates" | "failures"> & {
+      pcs: bigint;
+      events: bigint;
+      installs: bigint;
+      updates: bigint;
+      failures: bigint;
+    })[]
+  >(
+    `SELECT d."userId", u."email", u."name", u."organization", u."location",
+            COUNT(*) AS "pcs", MIN(d."firstSeen") AS "firstSeen", MAX(d."lastSeen") AS "lastSeen",
+            (SELECT d2."toolkitVersion" FROM "toolkit_devices" d2 WHERE d2."userId" = d."userId" ORDER BY d2."lastSeen" DESC LIMIT 1) AS "toolkitVersion",
+            (SELECT COUNT(*) FROM "toolkit_events" e WHERE e."userId" = d."userId") AS "events",
+            (SELECT COUNT(*) FROM "toolkit_events" e WHERE e."userId" = d."userId" AND e."action" = 'installed') AS "installs",
+            (SELECT COUNT(*) FROM "toolkit_events" e WHERE e."userId" = d."userId" AND e."action" = 'updated') AS "updates",
+            (SELECT COUNT(*) FROM "toolkit_events" e WHERE e."userId" = d."userId" AND e."action" = 'failed') AS "failures",
+            (SELECT MAX(w."timestamp") FROM "downloads" w WHERE w."userId" = d."userId" AND w."assetType" = 'toolkit') AS "lastDownload"
+       FROM "toolkit_devices" d LEFT JOIN "users" u ON u."id" = d."userId"
+      GROUP BY d."userId", u."email", u."name", u."organization", u."location"
+      ORDER BY MAX(d."lastSeen") DESC LIMIT 1000`
+  );
+  return rows.map((r) => ({
+    ...r,
+    pcs: Number(r.pcs),
+    events: Number(r.events),
+    installs: Number(r.installs),
+    updates: Number(r.updates),
+    failures: Number(r.failures),
+  }));
+}
+
+export interface ToolkitDay {
+  day: string;
+  /** PCs whose Toolkit did something that day */
+  pcs: number;
+  installed: number;
+  updated: number;
+  uninstalled: number;
+  failed: number;
+  opened: number;
+}
+
+/** The last [days] days, one row per day that had any event */
+export async function dailyActivity(days = 30): Promise<ToolkitDay[]> {
+  await ensureToolkitTables();
+  const rows = await prisma.$queryRawUnsafe<{ day: Date; pcs: bigint; installed: bigint; updated: bigint; uninstalled: bigint; failed: bigint; opened: bigint }[]>(
+    `SELECT date_trunc('day', "createdAt") AS "day", COUNT(DISTINCT "deviceId") AS "pcs",
+            COUNT(*) FILTER (WHERE "action" = 'installed') AS "installed",
+            COUNT(*) FILTER (WHERE "action" = 'updated') AS "updated",
+            COUNT(*) FILTER (WHERE "action" = 'uninstalled') AS "uninstalled",
+            COUNT(*) FILTER (WHERE "action" = 'failed') AS "failed",
+            COUNT(*) FILTER (WHERE "action" = 'opened') AS "opened"
+       FROM "toolkit_events" WHERE "createdAt" > NOW() - ($1 || ' days')::interval
+      GROUP BY 1 ORDER BY 1`,
+    String(Math.max(1, Math.floor(days)))
+  );
+  return rows.map((r) => ({
+    day: r.day.toISOString().slice(0, 10),
+    pcs: Number(r.pcs),
+    installed: Number(r.installed),
+    updated: Number(r.updated),
+    uninstalled: Number(r.uninstalled),
+    failed: Number(r.failed),
+    opened: Number(r.opened),
+  }));
+}
+
+/** Per tool and action, all time and the last 30 days */
+export async function toolActionCounts(): Promise<Record<string, Record<string, { all: number; recent: number }>>> {
+  await ensureToolkitTables();
+  const rows = await prisma.$queryRawUnsafe<{ tool: string; action: string; n: bigint; recent: bigint }[]>(
+    `SELECT "tool", "action", COUNT(*) AS "n", COUNT(*) FILTER (WHERE "createdAt" > NOW() - interval '30 days') AS "recent"
+       FROM "toolkit_events" GROUP BY "tool", "action"`
+  );
+  const out: Record<string, Record<string, { all: number; recent: number }>> = {};
+  for (const r of rows) (out[r.tool] ??= {})[r.action] = { all: Number(r.n), recent: Number(r.recent) };
+  return out;
+}
+
+/** Every event of one PC, newest first (its whole kept history) */
+export async function deviceEvents(deviceId: string): Promise<EventRow[]> {
+  await ensureToolkitTables();
+  return prisma.$queryRawUnsafe<EventRow[]>(
+    `SELECT e."id"::text AS "id", e."deviceId", d."name" AS "deviceName", u."email", e."tool", e."action",
+            e."fromVersion", e."toVersion", e."message", e."createdAt"
+       FROM "toolkit_events" e
+       LEFT JOIN "toolkit_devices" d ON d."id" = e."deviceId"
+       LEFT JOIN "users" u ON u."id" = e."userId"
+      WHERE e."deviceId" = $1
+      ORDER BY e."createdAt" DESC, e."id" DESC LIMIT 1000`,
+    deviceId
+  );
 }
