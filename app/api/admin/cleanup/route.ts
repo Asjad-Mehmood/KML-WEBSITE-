@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { logAdmin } from "@/lib/adminLog";
 import { getAdminSession } from "@/lib/adminAuth";
 import { lastCleanup, retentionDays, runCleanup } from "@/lib/cleanup";
 
@@ -11,9 +12,12 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!(await getAdminSession(req))) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const admin = await getAdminSession(req);
+  if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
-    return NextResponse.json({ ok: true, result: await runCleanup("admin"), last: await lastCleanup() });
+    const result = await runCleanup("admin");
+    await logAdmin(admin.user, "cleanup.run", "Housekeeping", JSON.stringify(result).slice(0, 500), req);
+    return NextResponse.json({ ok: true, result, last: await lastCleanup() });
   } catch (err) {
     console.error("Clean-up failed:", err);
     return NextResponse.json({ error: "Clean-up failed. Please try again." }, { status: 500 });

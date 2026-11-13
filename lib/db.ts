@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import { AccountBlocked, isBlocked } from "@/lib/accountControls";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { jobBytes } from "@/lib/userJobs";
@@ -353,6 +354,8 @@ export const db = {
   // ─── Sessions ───────────────────────────────────────────────────────────
 
   async createSession(userId: string): Promise<SessionRecord> {
+    // a blocked account (Admin → Surveyors → Controls) gets no new session, whichever way it signs in
+    if (await isBlocked(userId)) throw new AccountBlocked();
     const token = crypto.randomBytes(32).toString("hex");
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
 

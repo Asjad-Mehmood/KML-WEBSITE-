@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { isMailConfigured, sendMail } from "@/lib/mailer";
-import { createResetToken } from "@/lib/passwordReset";
-import { letterEmail } from "@/lib/letterEmail";
+import { isMailConfigured } from "@/lib/mailer";
+import { sendPasswordResetEmail } from "@/lib/resetEmail";
 
 // Same reply whether or not the email has an account, so this can't be used to find accounts
 const GENERIC_REPLY = {
@@ -25,21 +24,7 @@ export async function POST(req: NextRequest) {
     if (user) {
       // Build the link from the configured site URL, not the request's Host header
       const base = (process.env.NEXT_PUBLIC_SITE_URL || req.nextUrl.origin).replace(/\/+$/, "");
-      const link = `${base}/reset-password?token=${encodeURIComponent(createResetToken(user))}`;
-      await sendMail({
-        to: user.email,
-        ...letterEmail({
-          subject: "Reset your Excel to KML password",
-          title: "Reset your password",
-          first: (user.name || "").trim().split(/\s+/)[0] || "",
-          blocks: [
-            { p: "Use this link to choose a new password. It works for one hour, once:" },
-            { button: link, label: "Choose a new password" },
-            { p: "If you didn't ask for this, ignore this email: your password stays as it is." },
-          ],
-          footer: "You're getting this because someone asked to reset the password of your account.",
-        }),
-      });
+      await sendPasswordResetEmail(user, base);
     }
   } catch (err) {
     // Log, but still answer generically

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { logAdmin } from "@/lib/adminLog";
 import { getAdminSession } from "@/lib/adminAuth";
 import { adminJobsOf, adminRemove, adminSummary } from "@/lib/slopeJobs";
 
@@ -32,6 +33,7 @@ export async function DELETE(req: NextRequest) {
   if (!/^[A-Za-z0-9-]{8,64}$/.test(id)) return NextResponse.json({ error: "Unknown calculation." }, { status: 400 });
   try {
     if (!(await adminRemove(id))) return NextResponse.json({ error: "Unknown calculation." }, { status: 404 });
+    await logAdmin(admin.user, "data.delete", `Slope calculation ${id}`, "", req);
     console.info("[admin slope] deleted", id, "by", admin.user.email);
     return NextResponse.json({ success: true });
   } catch (e) {

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { logAdmin } from "@/lib/adminLog";
 import { getAdminSession } from "@/lib/adminAuth";
 import { addTester, isEmail, listTesters, removeTester } from "@/lib/toolkit/store";
 
@@ -26,6 +27,7 @@ export async function POST(req: NextRequest) {
   try {
     await addTester(email, typeof b?.note === "string" ? b.note : "", admin.user.email);
     console.info("[toolkit testers] added", email.trim().toLowerCase(), "by", admin.user.email);
+    await logAdmin(admin.user, "toolkit.tester", email.trim().toLowerCase(), "Added", req);
     return NextResponse.json({ success: true });
   } catch (e) {
     console.error("[toolkit testers]", e);
@@ -41,6 +43,7 @@ export async function DELETE(req: NextRequest) {
   try {
     if (!(await removeTester(email))) return NextResponse.json({ error: "Not on the list." }, { status: 404 });
     console.info("[toolkit testers] removed", email.trim().toLowerCase(), "by", admin.user.email);
+    await logAdmin(admin.user, "toolkit.tester", email.trim().toLowerCase(), "Removed", req);
     return NextResponse.json({ success: true });
   } catch (e) {
     console.error("[toolkit testers]", e);

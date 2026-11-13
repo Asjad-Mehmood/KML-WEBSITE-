@@ -55,6 +55,7 @@ export default function AdminShell({
   onRefresh,
   refreshing,
   updatedAt,
+  headerExtra,
   children,
 }: {
   groups: AdminGroup[];
@@ -65,6 +66,8 @@ export default function AdminShell({
   onRefresh: () => void;
   refreshing: boolean;
   updatedAt: number | null;
+  /** more buttons in the header, before the theme switch (the search) */
+  headerExtra?: React.ReactNode;
   children: React.ReactNode;
 }) {
   const [drawer, setDrawer] = useState(false);
@@ -213,6 +216,7 @@ export default function AdminShell({
                 Updated {ago(updatedAt, now)}
               </span>
             )}
+            {headerExtra}
             <button
               onClick={flipTheme}
               className="p-2 rounded-lg bg-[var(--adm-hover)] hover:bg-[var(--adm-hover-strong)] border border-[var(--adm-line)] text-slate-200 cursor-pointer"

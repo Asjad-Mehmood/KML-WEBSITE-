@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { logAdmin } from "@/lib/adminLog";
 import { getAdminSession } from "@/lib/adminAuth";
 import { db } from "@/lib/db";
 
@@ -42,6 +43,7 @@ export async function DELETE(req: NextRequest) {
 
   await db.clearActivities(userId);
 
+  await logAdmin(admin.user, "account.clear-activity", userId ? `Account ${userId}` : "Every account", "", req);
   return NextResponse.json({
     success: true,
     message: userId ? "User activities cleared" : "All activities cleared",

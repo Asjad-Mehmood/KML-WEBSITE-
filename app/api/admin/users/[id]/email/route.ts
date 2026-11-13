@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { logAdmin } from "@/lib/adminLog";
 import { getAdminSession } from "@/lib/adminAuth";
 import { db } from "@/lib/db";
 import { TooManyVerifyCodes, emailStatus, markUnverified, markVerified, sendVerification } from "@/lib/emailVerify";
@@ -23,6 +24,7 @@ export async function POST(req: NextRequest, { params }: Ctx) {
       if ((await emailStatus(user.id))?.verifiedAt) return NextResponse.json({ error: "This email is already confirmed." }, { status: 409 });
       await sendVerification(user);
     } else return NextResponse.json({ error: "Unknown action." }, { status: 400 });
+    await logAdmin(admin.user, "account.email", `${user.name} <${user.email}>`, `Email confirmation: ${String(action)}`, req);
     return NextResponse.json({ success: true, emailStatus: await emailStatus(user.id) });
   } catch (err) {
     if (err instanceof TooManyVerifyCodes) return NextResponse.json({ error: "Several codes went out in the last 15 minutes. Try again later." }, { status: 429 });

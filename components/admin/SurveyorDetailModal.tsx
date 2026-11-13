@@ -1,5 +1,6 @@
 "use client";
 
+import AccountControls from "@/components/admin/AccountControls";
 import React, { useState, useEffect } from "react";
 import {
   X,
@@ -29,6 +30,7 @@ import {
   Search,
   Eye as EyeIcon,
   Briefcase,
+  ShieldAlert,
 } from "lucide-react";
 import FileViewer, { type ViewerFile } from "@/components/FileViewer";
 import { TraverseUserJobs } from "@/components/admin/AdminTraverse";
@@ -179,7 +181,7 @@ export default function SurveyorDetailModal({
 }: SurveyorDetailModalProps) {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<UserDetailResponse | null>(null);
-  const [activeTab, setActiveTab] = useState<"overview" | "files" | "points" | "jobs" | "traverse" | "activities" | "downloads" | "settings">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "files" | "points" | "jobs" | "traverse" | "activities" | "downloads" | "settings" | "controls">("overview");
 
   // Files filter & search
   const [fileFilter, setFileFilter] = useState<"all" | "import" | "export">("all");
@@ -462,6 +464,7 @@ export default function SurveyorDetailModal({
             { id: "activities", label: "Activity", icon: HardDrive, count: activities.length },
             { id: "downloads", label: "Downloads", icon: Download, count: downloads.length },
             { id: "settings", label: "Profile & role", icon: User },
+            { id: "controls", label: "Controls", icon: ShieldAlert },
           ].map((tab) => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
@@ -1222,6 +1225,17 @@ export default function SurveyorDetailModal({
               {/* ========================================================= */}
               {/* TAB 5: ACCESS & RESTRICTION CONTROLS */}
               {/* ========================================================= */}
+              {activeTab === "controls" && user && (
+                <AccountControls
+                  userId={user.id}
+                  email={user.email}
+                  adminFetch={adminFetch}
+                  onToast={onToast}
+                  onChanged={() => onUserUpdated?.()}
+                  allData={data}
+                />
+              )}
+
               {activeTab === "settings" && (
                 <form onSubmit={handleSaveUserPermissions} className="space-y-6 max-w-2xl mx-auto">
                   {programs.length > 0 && (

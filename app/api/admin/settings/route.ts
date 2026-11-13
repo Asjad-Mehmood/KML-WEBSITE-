@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { logAdmin } from "@/lib/adminLog";
 import { revalidatePath } from "next/cache";
 import { getAdminSession } from "@/lib/adminAuth";
 import { db, type AppSettings } from "@/lib/db";
@@ -112,6 +113,13 @@ export async function PUT(req: NextRequest) {
           },
         })
         .catch((e) => console.error("Couldn't log the settings change:", e));
+      await logAdmin(
+        admin.user,
+        "settings.update",
+        changed.map((k) => LABELS[k]).join(", "),
+        changed.map((k) => `${LABELS[k]}: ${show(before[k])} → ${show(clean[k])}`).join("\n"),
+        req
+      );
     }
 
     return NextResponse.json({

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { logAdmin } from "@/lib/adminLog";
 import { getAdminSession } from "@/lib/adminAuth";
 import { db } from "@/lib/db";
 import { listJobs } from "@/lib/userJobs";
@@ -107,6 +108,7 @@ export async function PUT(
       }
     }
 
+    await logAdmin(admin.user, "account.update", `${updated.name} <${updated.email}>`, before ? describeAccountChanges(before, updated, typeof body.password === "string" && body.password.trim() !== "").details : "", req);
     return NextResponse.json({
       success: true,
       user: db.sanitizeUser(updated),
@@ -129,7 +131,9 @@ export async function DELETE(
 
   try {
     const { id } = await params;
+    const gone = await db.findUserById(id);
     await db.deleteUser(id);
+    await logAdmin(admin.user, "account.delete", gone ? `${gone.name} <${gone.email}>` : id, "", req);
     return NextResponse.json({ success: true, message: "User deleted successfully" });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Failed to delete user";

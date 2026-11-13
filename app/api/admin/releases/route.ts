@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse, after } from "next/server";
+import { logAdmin } from "@/lib/adminLog";
 import { kickStalled } from "@/lib/broadcastRunner";
 import { getAdminSession } from "@/lib/adminAuth";
 import { checkRelease, createRelease, listReleases } from "@/lib/releases";
@@ -18,11 +19,14 @@ export async function GET(req: NextRequest) {
 
 // Add a release
 export async function POST(req: NextRequest) {
-  if (!(await getAdminSession(req))) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const admin = await getAdminSession(req);
+  if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const c = checkRelease(await req.json().catch(() => ({})));
   if (!c.ok) return NextResponse.json({ error: c.error }, { status: 400 });
   try {
-    return NextResponse.json({ release: await createRelease(c.data) });
+    const release = await createRelease(c.data);
+    await logAdmin(admin.user, "release.save", `${release.app} ${release.version}`, "Added", req);
+    return NextResponse.json({ release });
   } catch (err) {
     return NextResponse.json({ error: (err as Error).message || "Couldn't add the release." }, { status: 400 });
   }
