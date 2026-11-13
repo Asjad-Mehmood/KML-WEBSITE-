@@ -53,6 +53,11 @@ const ASSET_APP = `CASE
   WHEN d."assetType" = 'folder_manager' THEN 'folder-manager'
   ELSE d."assetType" END`;
 
+/** The whole feed as one SQL query (for lib/appOverview.ts) */
+export function feedSql(): string {
+  return unionSql();
+}
+
 function unionSql(): string {
   return `
     SELECT a."id", 'activity' AS "source",
@@ -103,6 +108,10 @@ function where(f: FeedFilter, params: unknown[]): string {
     if (!Number.isNaN(at.getTime()) && id) w.push(`("at", "id") < (${p(at)}, ${p(id)})`);
   }
   return w.length ? `WHERE ${w.join(" AND ")}` : "";
+}
+
+export async function feedReady() {
+  await ready();
 }
 
 async function ready() {

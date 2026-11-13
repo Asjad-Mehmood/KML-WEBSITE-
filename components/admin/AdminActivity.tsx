@@ -51,7 +51,7 @@ export const APPS: { id: string; name: string; tone: string }[] = [
 const appOf = (id: string) => APPS.find((a) => a.id === id) ?? { id, name: id, tone: "bg-slate-500/15 text-slate-300 border-slate-500/30" };
 
 /** Plain words for each action */
-const ACTION: Record<string, string> = {
+export const ACTION: Record<string, string> = {
   conversion: "Converted",
   export: "Exported",
   file_upload: "Opened a file",
@@ -84,7 +84,7 @@ const ACTION: Record<string, string> = {
   toolkit_failed: "Failed",
   toolkit_opened: "Opened",
 };
-const actionName = (a: string) => ACTION[a] ?? a.replace(/[_-]+/g, " ").replace(/^\w/, (c) => c.toUpperCase());
+export const actionName = (a: string) => ACTION[a] ?? a.replace(/[_-]+/g, " ").replace(/^\w/, (c) => c.toUpperCase());
 const isError = (r: Row) => ["error", "failed"].includes(r.status);
 
 const RANGES = [

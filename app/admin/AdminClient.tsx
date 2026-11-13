@@ -9,6 +9,7 @@ import AdminPoints from "../../components/admin/AdminPoints";
 import AdminTraverse from "../../components/admin/AdminTraverse";
 import AdminSlope from "../../components/admin/AdminSlope";
 import AdminToolkit from "@/components/admin/AdminToolkit";
+import AdminExcelToKml from "@/components/admin/AdminExcelToKml";
 import AdminLog from "@/components/admin/AdminLog";
 import AdminTrends from "@/components/admin/AdminTrends";
 import AdminActivity, { APPS as ACTIVITY_APPS } from "@/components/admin/AdminActivity";
@@ -199,7 +200,7 @@ const ASSET_NAME: Record<string, string> = {
   toolkit: "Survey Toolkit (Windows)",
 };
 
-const ADMIN_TABS = ["overview", "users", "activities", "downloads", "files", "conversions", "traverse", "slope", "toolkit", "releases", "reviews", "messages", "settings", "log"] as const;
+const ADMIN_TABS = ["overview", "users", "activities", "downloads", "files", "conversions", "excel", "traverse", "slope", "toolkit", "releases", "reviews", "messages", "settings", "log"] as const;
 type AdminTab = (typeof ADMIN_TABS)[number];
 function tabFromAddress(): AdminTab {
   const id = typeof window === "undefined" ? "" : window.location.hash.slice(1);
@@ -721,6 +722,12 @@ export default function AdminClient() {
           sub: FILE_APPS.map((a) => ({ id: a.id, label: a.name, count: fileCounts[a.id] })),
         },
         { id: "conversions", label: "Points", icon: Globe, text: "The converted points in saved files", count: conversionsTotal },
+      ],
+    },
+    {
+      label: "Apps",
+      sections: [
+        { id: "excel", label: "Excel to KML", icon: FileSpreadsheet, text: "Everything about Excel to KML: downloads, people, versions, points, grids, problems and its settings" },
         { id: "traverse", label: "Traverse & Level", icon: Compass, text: "Jobs, usage and the switches for Traverse & Level", count: stats?.traverse?.jobs },
         { id: "slope", label: "Slope Calculator", icon: TrendingUp, text: "Calculations surveyors keep in their accounts from Slope Calculator", count: stats?.slope?.jobs },
         { id: "toolkit", label: "Survey Toolkit", icon: LayoutGrid, text: "Who downloaded and uses the Toolkit, their PCs, the tools on them and everything the Toolkit did" },
@@ -1522,6 +1529,17 @@ export default function AdminClient() {
         {activeTab === "conversions" && <AdminPoints adminFetch={adminFetch} onToast={showToast} />}
         {activeTab === "traverse" && <AdminTraverse adminFetch={adminFetch} onToast={showToast} />}
         {activeTab === "slope" && <AdminSlope adminFetch={adminFetch} onToast={showToast} />}
+        {activeTab === "excel" && (
+          <AdminExcelToKml
+            adminFetch={adminFetch}
+            onToast={showToast}
+            onShow={selectSection}
+            onOpenAccount={(id) => {
+              setDetailUserId(id);
+              setDetailModalOpen(true);
+            }}
+          />
+        )}
         {activeTab === "toolkit" && <AdminToolkit adminFetch={adminFetch} onToast={showToast} />}
         {activeTab === "log" && <AdminLog adminFetch={adminFetch} onToast={showToast} />}
 
