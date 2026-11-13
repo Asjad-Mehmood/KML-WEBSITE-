@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
+import { logEvent } from "@/lib/activityEvents";
 import { isBlocked } from "@/lib/accountControls";
 import { db } from "@/lib/db";
 import { GOOGLE_COOKIE, isGoogleConfigured, profileFromCode } from "@/lib/googleAuth";
@@ -55,6 +56,8 @@ export async function GET(req: NextRequest) {
     await markVerified(user.id, "google").catch((e) => console.error("Couldn't note the confirmed email:", e));
     await db.touchUserLogin(user.id);
     const session = await db.createSession(user.id);
+    const signedIn = user;
+    after(() => logEvent(req, signedIn, needsProfile ? "sign_up" : "sign_in", needsProfile ? "Made an account with Google" : "Signed in (Google)"));
     const dest = needsProfile ? `/welcome?next=${encodeURIComponent(next)}` : next;
     const res = NextResponse.redirect(new URL(dest, req.url));
     res.cookies.set("surveyor_auth_token", session.token, {

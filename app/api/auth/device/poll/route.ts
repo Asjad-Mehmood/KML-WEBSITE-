@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     if (r.state !== "approved") return NextResponse.json({ success: true, state: r.state }, { headers: { "Cache-Control": "no-store" } });
     const user = await db.findUserById(r.userId);
     if (!user) return NextResponse.json({ success: true, state: "expired" });
-    return await signedInResponse(user);
+    return await signedInResponse(user, req, "code from an app");
   } catch (e) {
     console.error("[device link] poll", e);
     return NextResponse.json({ error: "Couldn't check the code. Trying again…" }, { status: 500 });

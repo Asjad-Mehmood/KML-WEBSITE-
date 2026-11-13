@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    return await signedInResponse(user);
+    return await signedInResponse(user, req, "password");
   } catch (err: unknown) {
     // Details go to the server log only: database errors can name hosts and settings
     console.error("Sign-in failed:", err);

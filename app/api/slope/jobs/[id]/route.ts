@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
+import { logEvent } from "@/lib/activityEvents";
 import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
 import { MAX_SLOPE_JOBS, MAX_SLOPE_JOB_BYTES, countOwn, ownerOf, remove, upsert } from "@/lib/slopeJobs";
 
@@ -6,6 +7,9 @@ type Ctx = { params: Promise<{ id: string }> };
 const ID = /^[A-Za-z0-9-]{8,64}$/;
 
 // PUT { name, data, summary, updated_at }: keep a calculation (new or changed). Only its owner can change it.
+// when each calculation was last noted in the activity log (per server instance)
+const lastLogged = new Map<string, number>();
+
 export async function PUT(req: NextRequest, ctx: Ctx) {
   const s = await sessionForToken(tokenFromRequest(req));
   if (!s?.user) return NextResponse.json({ error: "Sign in to save calculations to your account." }, { status: 401 });
@@ -29,6 +33,13 @@ export async function PUT(req: NextRequest, ctx: Ctx) {
       return NextResponse.json({ error: `You can keep up to ${MAX_SLOPE_JOBS} calculations. Delete some old ones first.` }, { status: 409 });
     }
     await upsert(s.user.id, id, { name, data, summary, updated });
+    // the app saves as you work: a new calculation is noted, a change at most every 10 minutes
+    const key = `${s.user.id}|${id}`;
+    if (!owner || Date.now() - (lastLogged.get(key) ?? 0) > 10 * 60_000) {
+      lastLogged.set(key, Date.now());
+      const who = s.user;
+      after(() => logEvent(req, who, owner ? "slope_update" : "slope_new", `${owner ? "Changed" : "Saved"} the calculation "${name}"`, { details: summary, tags: { app: "slope" } }));
+    }
     return NextResponse.json({ success: true });
   } catch (e) {
     console.error("[slope jobs] save", e);
@@ -44,6 +55,8 @@ export async function DELETE(req: NextRequest, ctx: Ctx) {
   if (!ID.test(id)) return NextResponse.json({ error: "Not a valid calculation." }, { status: 400 });
   try {
     await remove(s.user.id, id);
+    const who = s.user;
+    after(() => logEvent(req, who, "slope_delete", "Deleted a saved calculation", { tags: { app: "slope" } }));
     return NextResponse.json({ success: true });
   } catch (e) {
     console.error("[slope jobs] delete", e);
