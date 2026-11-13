@@ -715,9 +715,9 @@ export default function AdminClient() {
           label: "Files",
           icon: Files,
           text: filesApp
-            ? `Files people opened and saved in ${FILE_APPS.find((a) => a.id === filesApp)?.name ?? filesApp}`
-            : "Files people imported into and exported from the apps",
-          count: stats?.totalFilesStored,
+            ? `Everything people keep from ${FILE_APPS.find((a) => a.id === filesApp)?.name ?? filesApp}: files, jobs and calculations`
+            : "Files, jobs and calculations people keep in their accounts, app by app",
+          count: Object.keys(fileCounts).length ? Object.values(fileCounts).reduce((s, n) => s + n, 0) : stats?.totalFilesStored,
           sub: FILE_APPS.map((a) => ({ id: a.id, label: a.name, count: fileCounts[a.id] })),
         },
         { id: "conversions", label: "Points", icon: Globe, text: "The converted points in saved files", count: conversionsTotal },
@@ -1510,7 +1510,8 @@ export default function AdminClient() {
             onCounts={setFileCounts}
             adminFetch={adminFetch}
             onToast={showToast}
-            onView={(f) => setViewing({ fileName: f.fileName, url: f.downloadUrl, size: f.size })}
+            onView={(f) => setViewing(f)}
+            onApp={(id) => selectSection(`files:${id}`)}
             onOpenUser={(id) => {
               setDetailUserId(id);
               setDetailModalOpen(true);

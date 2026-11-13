@@ -111,7 +111,6 @@ export const FILE_APP_PLATFORMS: Record<string, FilePlatform[]> = {
   "excel-to-kml": ["windows_app", "web_app"],
   traverse: ["traverse_app"],
 };
-const FILE_APP_OF: Record<FilePlatform, string> = { windows_app: "excel-to-kml", web_app: "excel-to-kml", traverse_app: "traverse" };
 
 export interface UserFileRecord {
   id: string;
@@ -1273,17 +1272,6 @@ export const db = {
       })
       .sort((a, b) => (b.lastAt ?? "").localeCompare(a.lastAt ?? ""));
     return { groups, total: agg._count._all, bytes: agg._sum.fileSize ?? 0 };
-  },
-
-  /** How many files each app has kept, for the menu under Files */
-  async fileCountsByApp(): Promise<Record<string, number>> {
-    const rows = await prisma.userFile.groupBy({ by: ["platform"], _count: { _all: true } });
-    const out: Record<string, number> = {};
-    for (const r of rows) {
-      const app = FILE_APP_OF[asPlatform(r.platform)];
-      out[app] = (out[app] ?? 0) + r._count._all;
-    }
-    return out;
   },
 
   async searchAllFiles(opts: { q?: string; direction?: string; platform?: string; userId?: string; app?: string; skip?: number; take?: number }) {
