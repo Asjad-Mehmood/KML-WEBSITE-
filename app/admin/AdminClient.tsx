@@ -8,6 +8,7 @@ import SettingsPanel from "../../components/admin/SettingsPanel";
 import AdminPoints from "../../components/admin/AdminPoints";
 import AdminTraverse from "../../components/admin/AdminTraverse";
 import AdminSlope from "../../components/admin/AdminSlope";
+import AdminToolkit from "@/components/admin/AdminToolkit";
 import AdminFiles from "../../components/admin/AdminFiles";
 import AdminShell, { type AdminGroup } from "../../components/admin/AdminShell";
 import {
@@ -38,6 +39,7 @@ import {
   Star,
   Megaphone,
   TrendingUp,
+  LayoutGrid,
 } from "lucide-react";
 import SurveyorDetailModal from "@/components/admin/SurveyorDetailModal";
 import FileViewer, { type ViewerFile } from "@/components/FileViewer";
@@ -188,9 +190,10 @@ const ASSET_NAME: Record<string, string> = {
   traverse_sample: "Traverse & Level sample file",
   folder_manager: "Project Folder Manager (Windows)",
   slope: "Slope Calculator (Windows)",
+  toolkit: "Survey Toolkit (Windows)",
 };
 
-const ADMIN_TABS = ["overview", "users", "activities", "downloads", "files", "conversions", "traverse", "slope", "releases", "reviews", "messages", "settings"] as const;
+const ADMIN_TABS = ["overview", "users", "activities", "downloads", "files", "conversions", "traverse", "slope", "toolkit", "releases", "reviews", "messages", "settings"] as const;
 type AdminTab = (typeof ADMIN_TABS)[number];
 function tabFromAddress(): AdminTab {
   const id = typeof window === "undefined" ? "" : window.location.hash.slice(1);
@@ -670,6 +673,7 @@ export default function AdminClient() {
         { id: "conversions", label: "Points", icon: Globe, text: "The converted points in saved files", count: conversionsTotal },
         { id: "traverse", label: "Traverse & Level", icon: Compass, text: "Jobs, usage and the switches for Traverse & Level", count: stats?.traverse?.jobs },
         { id: "slope", label: "Slope Calculator", icon: TrendingUp, text: "Calculations surveyors keep in their accounts from Slope Calculator", count: stats?.slope?.jobs },
+        { id: "toolkit", label: "Survey Toolkit", icon: LayoutGrid, text: "Who downloaded and uses the Toolkit, their PCs, the tools on them and everything the Toolkit did" },
       ],
     },
     {
@@ -1487,7 +1491,7 @@ export default function AdminClient() {
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="flex items-center gap-2">
-                {["all", "windows_installer", "roadpro", "traverse", "folder_manager", "slope", "sample_csv", "test_kml"].map((type) => (
+                {["all", "windows_installer", "roadpro", "traverse", "folder_manager", "slope", "toolkit", "sample_csv", "test_kml"].map((type) => (
                   <button
                     key={type}
                     onClick={() => setDownloadFilter(type)}
@@ -1624,6 +1628,7 @@ export default function AdminClient() {
         {activeTab === "conversions" && <AdminPoints adminFetch={adminFetch} onToast={showToast} />}
         {activeTab === "traverse" && <AdminTraverse adminFetch={adminFetch} onToast={showToast} />}
         {activeTab === "slope" && <AdminSlope adminFetch={adminFetch} onToast={showToast} />}
+        {activeTab === "toolkit" && <AdminToolkit adminFetch={adminFetch} onToast={showToast} />}
 
         {/* ================================================================== */}
         {/* TAB 6: SETTINGS & RELEASE MANAGEMENT */}
