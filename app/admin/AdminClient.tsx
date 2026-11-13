@@ -481,7 +481,7 @@ export default function AdminClient() {
   const loadActivities = async () => {
     setActivitiesLoading(true);
     try {
-      const res = await adminFetch("/api/admin/activities?limit=200");
+      const res = await adminFetch("/api/admin/activities?limit=20");
       if (res.ok) {
         const data = await res.json();
         setAllActivities(data.activities || []);
@@ -1351,8 +1351,8 @@ export default function AdminClient() {
         {/* ================================================================== */}
         {activeTab === "activities" && (
           <AdminActivity
+            key={activityApp}
             app={activityApp}
-            onAppChange={setActivityApp}
             onCounts={setActivityCounts}
             adminFetch={adminFetch}
             onToast={showToast}

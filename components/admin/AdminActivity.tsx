@@ -139,7 +139,6 @@ export default function AdminActivity({
   onOpenAccount,
   onClearAll,
   app: appProp,
-  onAppChange,
   onCounts,
 }: {
   adminFetch: Fetcher;
@@ -149,13 +148,11 @@ export default function AdminActivity({
   onClearAll?: () => Promise<void>;
   /** the app shown, when the menu chooses it (Activity → an app); "" for all */
   app?: string;
-  onAppChange?: (app: string) => void;
   /** how many lines each app has, for the menu */
   onCounts?: (apps: Record<string, number>) => void;
 }) {
-  const [ownApp, setOwnApp] = useState("");
-  const app = appProp ?? ownApp;
-  const setApp = (a: string) => (onAppChange ? onAppChange(a) : setOwnApp(a));
+  // the app comes from the menu (Activity → an app); "" is every app
+  const app = appProp ?? "";
   const [action, setAction] = useState("");
   const [person, setPerson] = useState<{ id: string; label: string } | null>(null);
   const [q, setQ] = useState("");
@@ -202,9 +199,15 @@ export default function AdminActivity({
     return p;
   }, [app, action, person, term, errorsOnly, range, from, to]);
 
+  const loadingMore = useRef(false);
   const load = useCallback(
     async (more: string | null) => {
+      if (more) {
+        if (loadingMore.current) return;
+        loadingMore.current = true;
+      }
       const p = new URLSearchParams(params);
+      p.set("limit", "50");
       // a preset period counts back from today, worked out when the list is read
       const days = Number(p.get("days"));
       p.delete("days");
@@ -225,10 +228,23 @@ export default function AdminActivity({
         toast.current(e instanceof Error ? e.message : "Couldn't read the activity.", "error");
       } finally {
         setBusy(false);
+        if (more) loadingMore.current = false;
       }
     },
     [params]
   );
+
+  // older lines load by themselves when the end of the list comes into view
+  const sentinel = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = sentinel.current;
+    if (!el || !next) return;
+    const io = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) void load(next);
+    }, { rootMargin: "400px" });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [next, load]);
 
   useEffect(() => {
     void load(null);
@@ -291,18 +307,6 @@ export default function AdminActivity({
 
   return (
     <div className="space-y-4">
-      {/* apps */}
-      <div className="flex flex-wrap gap-2">
-        <button onClick={() => (setBusy(true), setApp(""), setAction(""))} className={chip(!app)}>
-          All apps <span className="opacity-70 tabular-nums">{facets ? Object.values(facets.apps).reduce((a, b) => a + b, 0).toLocaleString() : ""}</span>
-        </button>
-        {APPS.map((a) => (
-          <button key={a.id} onClick={() => (setBusy(true), setApp(a.id), setAction(""))} className={chip(app === a.id)}>
-            {a.name} <span className="opacity-70 tabular-nums">{(facets?.apps[a.id] ?? 0).toLocaleString()}</span>
-          </button>
-        ))}
-      </div>
-
       {/* filters */}
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative flex-1 min-w-[200px] max-w-md">
@@ -372,7 +376,7 @@ export default function AdminActivity({
         </div>
       </div>
       <p className="text-xs text-slate-500">
-        {facets ? `${facets.total.toLocaleString()} lines match` : ""} · RoadPro and Project Folder Manager don&apos;t report what they do yet: their downloads show here,
+        {facets ? `${facets.total.toLocaleString()} lines match${app ? ` in ${appOf(app).name}` : ""}, 50 at a time as you scroll` : ""} · RoadPro and Project Folder Manager don&apos;t report what they do yet: their downloads show here,
         and the Toolkit&apos;s installs and updates of them.
       </p>
 
@@ -491,12 +495,11 @@ export default function AdminActivity({
           })}
         </ul>
         {next && (
-          <div className="p-3 border-t border-[var(--adm-line)] flex justify-center">
-            <button onClick={() => (setBusy(true), void load(next))} className={chip(false)}>
-              {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null} Show older
-            </button>
+          <div ref={sentinel} className="p-4 border-t border-[var(--adm-line)] flex justify-center items-center gap-2 text-xs text-slate-500">
+            <Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading older lines…
           </div>
         )}
+        {!next && rows.length > 0 && <p className="p-4 border-t border-[var(--adm-line)] text-center text-xs text-slate-500">That&apos;s everything.</p>}
       </div>
     </div>
   );
