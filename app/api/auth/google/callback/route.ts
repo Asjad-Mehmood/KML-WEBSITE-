@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isBlocked } from "@/lib/accountControls";
 import { db } from "@/lib/db";
 import { GOOGLE_COOKIE, isGoogleConfigured, profileFromCode } from "@/lib/googleAuth";
 import { safeNextPath } from "@/lib/authRedirect";
@@ -47,6 +48,8 @@ export async function GET(req: NextRequest) {
       user = await db.createUser({ name: profile.name, email: profile.email, ipAddress: geo.ip, location: geo.location });
     }
 
+
+    if (await isBlocked(user.id)) return fail("blocked", next);
 
     // Google has confirmed the address
     await markVerified(user.id, "google").catch((e) => console.error("Couldn't note the confirmed email:", e));

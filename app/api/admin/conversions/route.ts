@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { logAdmin } from "@/lib/adminLog";
 import { getAdminSession } from "@/lib/adminAuth";
 import { db } from "@/lib/db";
 import { prisma } from "@/lib/prisma";
@@ -65,5 +66,6 @@ export async function DELETE(req: NextRequest) {
   }
 
   await db.clearConversions();
+  await logAdmin(admin.user, "data.clear", "Converted points log", "Cleared all", req);
   return NextResponse.json({ success: true, message: "Conversion log cleared" });
 }

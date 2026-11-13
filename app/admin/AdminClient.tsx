@@ -9,6 +9,9 @@ import AdminPoints from "../../components/admin/AdminPoints";
 import AdminTraverse from "../../components/admin/AdminTraverse";
 import AdminSlope from "../../components/admin/AdminSlope";
 import AdminToolkit from "@/components/admin/AdminToolkit";
+import AdminLog from "@/components/admin/AdminLog";
+import AdminTrends from "@/components/admin/AdminTrends";
+import AdminSearch, { SearchButton } from "@/components/admin/AdminSearch";
 import AdminFiles from "../../components/admin/AdminFiles";
 import AdminShell, { type AdminGroup } from "../../components/admin/AdminShell";
 import {
@@ -40,6 +43,7 @@ import {
   Megaphone,
   TrendingUp,
   LayoutGrid,
+  ScrollText,
 } from "lucide-react";
 import SurveyorDetailModal from "@/components/admin/SurveyorDetailModal";
 import FileViewer, { type ViewerFile } from "@/components/FileViewer";
@@ -60,6 +64,7 @@ interface UserItem {
   customMaxPoints?: number;
   /** confirmed, waiting (signed up but never confirmed: maybe a fake address) or older (before confirmation started) */
   emailState?: "confirmed" | "waiting" | "older";
+  blocked?: boolean;
 }
 
 interface DownloadItem {
@@ -193,7 +198,7 @@ const ASSET_NAME: Record<string, string> = {
   toolkit: "Survey Toolkit (Windows)",
 };
 
-const ADMIN_TABS = ["overview", "users", "activities", "downloads", "files", "conversions", "traverse", "slope", "toolkit", "releases", "reviews", "messages", "settings"] as const;
+const ADMIN_TABS = ["overview", "users", "activities", "downloads", "files", "conversions", "traverse", "slope", "toolkit", "releases", "reviews", "messages", "settings", "log"] as const;
 type AdminTab = (typeof ADMIN_TABS)[number];
 function tabFromAddress(): AdminTab {
   const id = typeof window === "undefined" ? "" : window.location.hash.slice(1);
@@ -219,6 +224,19 @@ export default function AdminClient() {
   // Individual person detail modal state
   const [detailUserId, setDetailUserId] = useState<string | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
+  // Ctrl+K (⌘K) or "/" opens the search (components/admin/AdminSearch.tsx)
+  const [searchOpen, setSearchOpen] = useState(false);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const typing = e.target instanceof HTMLElement && (e.target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(e.target.tagName));
+      if ((e.key.toLowerCase() === "k" && (e.ctrlKey || e.metaKey)) || (e.key === "/" && !typing)) {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   // Login form state
 
@@ -686,12 +704,16 @@ export default function AdminClient() {
     },
     {
       label: "System",
-      sections: [{ id: "settings", label: "Settings", icon: Settings, text: "Sign-ups, email confirmation, the home page, announcements and maintenance" }],
+      sections: [
+        { id: "settings", label: "Settings", icon: Settings, text: "Sign-ups, email confirmation, the home page, announcements and maintenance" },
+        { id: "log", label: "Admin log", icon: ScrollText, text: "Every change made in Admin: who, what and when" },
+      ],
     },
   ];
 
   return (
     <AdminShell
+      headerExtra={<SearchButton onOpen={() => setSearchOpen(true)} />}
       groups={groups}
       active={activeTab}
       onSelect={(id) => setActiveTab(id as typeof activeTab)}
@@ -723,6 +745,8 @@ export default function AdminClient() {
         {/* ================================================================== */}
         {activeTab === "overview" && (
           <div className="space-y-8">
+            <AdminTrends adminFetch={adminFetch} onShow={(tab) => setActiveTab(tab as typeof activeTab)} />
+            <h2 className="text-[13px] font-bold uppercase tracking-wider text-slate-500 -mb-4">All time</h2>
             {/* Stat Cards (5 metrics) */}
             <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
               <div className="p-4 sm:p-5 rounded-2xl bg-[var(--adm-card)] border border-[var(--adm-line)] flex flex-col justify-between min-w-0 last:col-span-2 lg:last:col-span-1">
@@ -1208,6 +1232,11 @@ export default function AdminClient() {
                                       Admin
                                     </span>
                                   )}
+                                  {u.blocked && (
+                                    <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase bg-red-500/20 text-red-300 border border-red-500/40" title="Can't sign in (Controls)">
+                                      Blocked
+                                    </span>
+                                  )}
                                 </button>
                                 <div className="text-xs text-slate-400 truncate max-w-[240px]">{u.email}</div>
                                 {u.emailState === "confirmed" && (
@@ -1629,6 +1658,7 @@ export default function AdminClient() {
         {activeTab === "traverse" && <AdminTraverse adminFetch={adminFetch} onToast={showToast} />}
         {activeTab === "slope" && <AdminSlope adminFetch={adminFetch} onToast={showToast} />}
         {activeTab === "toolkit" && <AdminToolkit adminFetch={adminFetch} onToast={showToast} />}
+        {activeTab === "log" && <AdminLog adminFetch={adminFetch} onToast={showToast} />}
 
         {/* ================================================================== */}
         {/* TAB 6: SETTINGS & RELEASE MANAGEMENT */}
@@ -1755,6 +1785,17 @@ export default function AdminClient() {
 
       {/* Individual Person Details & Telemetry Deep-Dive Modal */}
       <FileViewer file={viewing} onClose={() => setViewing(null)} />
+      <AdminSearch
+        open={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        groups={groups}
+        adminFetch={adminFetch}
+        onSection={(id) => setActiveTab(id as typeof activeTab)}
+        onAccount={(id) => {
+          setDetailUserId(id);
+          setDetailModalOpen(true);
+        }}
+      />
       <SurveyorDetailModal
         userId={detailUserId}
         isOpen={detailModalOpen}

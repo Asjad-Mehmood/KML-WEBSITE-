@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse, after } from "next/server";
+import { logAdmin } from "@/lib/adminLog";
 import { getAdminSession } from "@/lib/adminAuth";
 import { kickBroadcast, kickStalled } from "@/lib/broadcastRunner";
 import { broadcastStatus, cancelBroadcast, failedRecipients, pauseBroadcast, resumeBroadcast, sendNextBatch } from "@/lib/releases";
@@ -18,7 +19,8 @@ export async function GET(req: NextRequest, { params }: Ctx) {
 
 // action: watch (the counts) | send (the next batch) | pause | resume | cancel
 export async function POST(req: NextRequest, { params }: Ctx) {
-  if (!(await getAdminSession(req))) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const admin = await getAdminSession(req);
+  if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
   const { action } = await req.json().catch(() => ({}));
   try {
@@ -33,6 +35,7 @@ export async function POST(req: NextRequest, { params }: Ctx) {
       : action === "send" ? await sendNextBatch(id)
       : null;
     if (!b) return NextResponse.json({ error: "Unknown action" }, { status: 400 });
+    if (action === "pause" || action === "resume" || action === "cancel") await logAdmin(admin.user, "release.send", `Email run ${id}`, ({ pause: "Paused", resume: "Resumed", cancel: "Cancelled" } as Record<string, string>)[action], req);
     return NextResponse.json({ broadcast: b });
   } catch (err) {
     console.error("Releases: broadcast action failed", action, err);

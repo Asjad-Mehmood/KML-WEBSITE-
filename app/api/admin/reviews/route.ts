@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { logAdmin } from "@/lib/adminLog";
 import { getAdminSession } from "@/lib/adminAuth";
 import { adminReviews, deleteReview, setReviewStatus } from "@/lib/reviews";
 
@@ -24,7 +25,8 @@ export async function PATCH(req: NextRequest) {
   if (typeof body.id !== "string" || !["pending", "published", "hidden"].includes(body.status)) {
     return NextResponse.json({ error: "Which review, and publish, hide or pending?" }, { status: 400 });
   }
-  if (!(await setReviewStatus(body.id, body.status))) return NextResponse.json({ error: "Unknown review." }, { status: 404 });
+    if (!(await setReviewStatus(body.id, body.status))) return NextResponse.json({ error: "Unknown review." }, { status: 404 });
+  await logAdmin(admin.user, "review.moderate", `Review ${body.id}`, `Set to ${body.status}`, req);
   return NextResponse.json({ success: true });
 }
 
@@ -33,5 +35,6 @@ export async function DELETE(req: NextRequest) {
   if (!admin) return NextResponse.json({ error: "Unauthorized: Admin privileges required" }, { status: 401 });
   const id = req.nextUrl.searchParams.get("id") || "";
   if (!(await deleteReview(id))) return NextResponse.json({ error: "Unknown review." }, { status: 404 });
+  await logAdmin(admin.user, "review.moderate", `Review ${id}`, "Deleted", req);
   return NextResponse.json({ success: true });
 }

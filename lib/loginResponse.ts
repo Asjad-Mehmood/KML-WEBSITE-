@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { db, type UserRecord } from "@/lib/db";
+import { BLOCKED_MESSAGE, isBlocked } from "@/lib/accountControls";
 
 /** Start a session for a user whose identity is already proven: cookies plus the signed-in reply. */
 export async function signedInResponse(user: UserRecord) {
+  if (await isBlocked(user.id)) return NextResponse.json({ error: BLOCKED_MESSAGE, blocked: true }, { status: 403 });
   await db.touchUserLogin(user.id);
   const session = await db.createSession(user.id);
 

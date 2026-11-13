@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse, after } from "next/server";
+import { logAdmin } from "@/lib/adminLog";
 import { kickBroadcast } from "@/lib/broadcastRunner";
 import { getAdminSession } from "@/lib/adminAuth";
 import { isMailConfigured } from "@/lib/mailer";
@@ -16,6 +17,7 @@ export async function POST(req: NextRequest) {
   try {
     const broadcastId = await startReviewRequest(String(body.app || ""), body.onlyNew === true, session.user.email);
     after(() => kickBroadcast(req.nextUrl.origin, broadcastId));
+    await logAdmin(session.user, "account.email", `Review request: ${String(body.app || "")}`, body.onlyNew === true ? "Only people not asked yet" : "Everyone who used it", req);
     return NextResponse.json({ broadcastId });
   } catch (err) {
     return NextResponse.json({ error: (err as Error).message || "Couldn't start sending." }, { status: 400 });

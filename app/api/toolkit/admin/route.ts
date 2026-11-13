@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { logAdmin } from "@/lib/adminLog";
 import { getAdminSession } from "@/lib/adminAuth";
 import { toolkitDownloads } from "@/lib/toolkit/downloads";
 import { toolkitFeed } from "@/lib/toolkit/feed";
@@ -95,6 +96,7 @@ export async function DELETE(req: NextRequest) {
   try {
     if (!(await removeDevice(id))) return NextResponse.json({ error: "No such PC." }, { status: 404 });
     console.info("[toolkit admin] removed PC", id, "by", admin.user.email);
+    await logAdmin(admin.user, "toolkit.device", `PC ${id}`, "Forgotten", req);
     return NextResponse.json({ success: true });
   } catch (e) {
     console.error("[toolkit admin]", e);

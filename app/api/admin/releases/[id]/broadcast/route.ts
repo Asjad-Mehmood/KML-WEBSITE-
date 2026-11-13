@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse, after } from "next/server";
+import { logAdmin } from "@/lib/adminLog";
 import { kickBroadcast } from "@/lib/broadcastRunner";
 import { getAdminSession } from "@/lib/adminAuth";
 import { isMailConfigured } from "@/lib/mailer";
@@ -20,6 +21,7 @@ export async function POST(req: NextRequest, { params }: Ctx) {
     const broadcastId = await startBroadcast(id, body.onlyNew === true, body.audience === "all" ? "all" : "app", session.user.email);
     // sent on the server from here on, whether or not the page stays open
     after(() => kickBroadcast(req.nextUrl.origin, broadcastId));
+    await logAdmin(session.user, "release.send", `Release ${id}`, `To ${body.audience === "all" ? "everyone" : "app users"}${body.onlyNew === true ? ", only people not emailed yet" : ""}`, req);
     return NextResponse.json({ broadcastId });
   } catch (err) {
     return NextResponse.json({ error: (err as Error).message || "Couldn't start the broadcast." }, { status: 400 });

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { logAdmin } from "@/lib/adminLog";
 import { getAdminSession } from "@/lib/adminAuth";
 import { db } from "@/lib/db";
 
@@ -55,5 +56,6 @@ export async function DELETE(req: NextRequest) {
   }
 
   await db.deleteUserFile(fileId);
+  await logAdmin(admin.user, "file.delete", `File ${fileId}`, "", req);
   return NextResponse.json({ success: true, message: "File removed from vault" });
 }

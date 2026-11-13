@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { logAdmin } from "@/lib/adminLog";
 import { getAdminSession } from "@/lib/adminAuth";
 import { prisma } from "@/lib/prisma";
 import { clientIp } from "@/lib/loginThrottle";
@@ -50,6 +51,7 @@ export async function PATCH(req: NextRequest) {
       },
     })
     .catch(() => {});
+  await logAdmin(admin.user, "traverse.access", user.email, body.blocked ? "Blocked from Traverse & Level" : "Allowed Traverse & Level again", req);
   return NextResponse.json({ success: true, blocked: list });
 }
 
@@ -60,5 +62,6 @@ export async function DELETE(req: NextRequest) {
   if (!/^[A-Za-z0-9-]{8,64}$/.test(id)) return NextResponse.json({ error: "Unknown job." }, { status: 400 });
   const gone = await adminRemove(id);
   if (!gone) return NextResponse.json({ error: "Unknown job." }, { status: 404 });
+  await logAdmin(admin.user, "data.delete", `Traverse & Level job ${id}`, "", req);
   return NextResponse.json({ success: true });
 }

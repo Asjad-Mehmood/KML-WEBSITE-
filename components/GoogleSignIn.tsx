@@ -9,6 +9,7 @@ export const GOOGLE_ERRORS: Record<string, string> = {
   "google-unavailable": "Google sign-in isn't available right now. Please use your email.",
   "google-admin": "Administrator accounts sign in with email and password.",
   "signups-closed": "New sign-ups are paused for now. If you already have an account, sign in with its email.",
+  blocked: "This account is blocked. Contact us if you think this is a mistake.",
 };
 
 function GoogleLogo() {

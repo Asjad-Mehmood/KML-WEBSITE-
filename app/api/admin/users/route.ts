@@ -3,6 +3,8 @@ import { getAdminSession } from "@/lib/adminAuth";
 import { db } from "@/lib/db";
 import { getClientIp, getIpGeoLocation } from "@/lib/geo";
 import { emailStatuses, markVerified, type EmailStatus } from "@/lib/emailVerify";
+import { blockedIds } from "@/lib/accountControls";
+import { logAdmin } from "@/lib/adminLog";
 
 export async function GET(req: NextRequest) {
   const admin = await getAdminSession(req);
@@ -15,9 +17,10 @@ export async function GET(req: NextRequest) {
   const users = await db.getAllUsers(query);
   // confirmed, waiting (signed up, never confirmed) or older (made before confirmation started)
   const statuses = await emailStatuses(users.map((u) => u.id)).catch(() => new Map<string, EmailStatus>());
+  const blocked = await blockedIds().catch(() => new Set<string>());
   const withEmail = users.map((u) => {
     const s = statuses.get(u.id);
-    return { ...u, emailState: s?.verifiedAt ? "confirmed" : s?.required ? "waiting" : "older" };
+    return { ...u, emailState: s?.verifiedAt ? "confirmed" : s?.required ? "waiting" : "older", blocked: blocked.has(u.id) };
   });
 
   return NextResponse.json({ success: true, users: withEmail });
@@ -57,6 +60,7 @@ export async function POST(req: NextRequest) {
 
     // an account an admin makes doesn't wait for a confirmation code
     await markVerified(newUser.id, "admin").catch(() => {});
+    await logAdmin(admin.user, "account.create", `${newUser.name} <${newUser.email}>`, `Role: ${newUser.role || ""}`, req);
 
     return NextResponse.json({
       success: true,

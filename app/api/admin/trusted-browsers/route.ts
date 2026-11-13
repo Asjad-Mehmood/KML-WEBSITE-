@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { logAdmin } from "@/lib/adminLog";
 import { getAdminSession } from "@/lib/adminAuth";
 import { listTrustedBrowsers, otpAvailable, otpEnabled, revokeTrustedBrowsers } from "@/lib/adminOtp";
 
@@ -22,5 +23,6 @@ export async function DELETE(req: NextRequest) {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const id = req.nextUrl.searchParams.get("id") || undefined;
   const removed = await revokeTrustedBrowsers(session.user.id, id);
+  await logAdmin(session.user, "admin.trusted-browsers", id ? `Trusted browser ${id}` : "All trusted browsers", `${removed} removed`, req);
   return NextResponse.json({ ok: true, removed, browsers: await listTrustedBrowsers(session.user.id, req) });
 }
