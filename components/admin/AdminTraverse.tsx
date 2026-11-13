@@ -1,8 +1,8 @@
 "use client";
 
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
-import { Ban, ChevronDown, ChevronRight, Eye, FileJson, FileSpreadsheet, Loader2, RefreshCw, Search, Trash2, Users } from "lucide-react";
-import TraverseUsage from "./TraverseUsage";
+import { Ban, CheckCircle2, ChevronDown, ChevronRight, Eye, FileJson, FileSpreadsheet, Loader2, RefreshCw, Search, Trash2, Users } from "lucide-react";
+import AppTab, { AppSettings, BarRow, Empty, Panel, Stat, type SettingField } from "@/components/admin/AppTab";
 // The Traverse & Level app's own calculation engine, so the admin sees the same results as the surveyor
 import { computeLevel, computeTraverse, fmt, ratioText } from "@/traverse-app/src/core.js";
 
@@ -136,9 +136,9 @@ function jobsCsv(jobs: Job[]): string {
   return "﻿" + lines.join("\r\n");
 }
 
-// Admin → Traverse & Level: the jobs saved in the Traverse & Level app, one row per surveyor;
+// Admin → Traverse & Level → Jobs: the jobs saved in the Traverse & Level app, one row per surveyor;
 // open a surveyor to see their jobs, view any job's points and adjusted results, export or delete
-export default function AdminTraverse({ adminFetch, onToast }: { adminFetch: Fetcher; onToast: (m: string, t?: "success" | "error") => void }) {
+function TraverseJobs({ adminFetch, onToast, onChanged }: { adminFetch: Fetcher; onToast: (m: string, t?: "success" | "error") => void; onChanged?: () => void }) {
   const [groups, setGroups] = useState<Group[]>([]);
   const [totals, setTotals] = useState<Totals | null>(null);
   const [loading, setLoading] = useState(true);
@@ -146,7 +146,6 @@ export default function AdminTraverse({ adminFetch, onToast }: { adminFetch: Fet
   const [open, setOpen] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [blocked, setBlocked] = useState<string[]>([]);
-  const [usageKey, setUsageKey] = useState(0);
   const toast = useRef(onToast);
   useEffect(() => {
     toast.current = onToast;
@@ -206,7 +205,7 @@ export default function AdminTraverse({ adminFetch, onToast }: { adminFetch: Fet
       const d = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(d.error || "Couldn't change access");
       setBlocked(d.blocked || []);
-      setUsageKey((k) => k + 1);
+      onChanged?.();
       toast.current(block ? `${label(g)} is blocked from Traverse & Level` : `${label(g)} can use Traverse & Level again`);
     } catch (e) {
       toast.current((e as Error).message, "error");
@@ -220,7 +219,6 @@ export default function AdminTraverse({ adminFetch, onToast }: { adminFetch: Fet
 
   return (
     <div className="space-y-5">
-      <TraverseUsage key={usageKey} adminFetch={adminFetch} onToast={onToast} onUnblocked={loadGroups} />
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pt-2 border-t border-slate-800">
         <div>
           <h3 className="text-base font-bold text-white">Traverse &amp; Level jobs</h3>
@@ -525,5 +523,181 @@ export function TraverseUserJobs({
         </tbody>
       </table>
     </div>
+  );
+}
+
+// ---------------------------------------------------------------- the tab
+
+interface TraverseExtras {
+  jobs: { total: number; fresh: number; saved: number; traverses: number; levels: number; accepted: number; rejected: number; open: number; incomplete: number };
+  shares: { total: number; fresh: number; jobs: number; people: number; owners: number };
+  formats: { format: string; count: number }[];
+  openedFrom: { where: string; count: number }[];
+  blocked: { userId: string; email: string | null; name: string | null }[];
+}
+
+const TL_FIELDS: SettingField[] = [
+  {
+    key: "tlEnabled",
+    kind: "switch",
+    label: "Traverse & Level open",
+    on: "Signed-in people can use the app, save and share jobs.",
+    off: "Closed: people see the message below instead of their jobs; nothing can be saved or shared. Kept jobs stay.",
+  },
+  { key: "tlMessage", kind: "text", label: "Message while closed", hint: "Leave empty for the standard text.", max: 300, placeholder: "Traverse & Level is closed for now." },
+  {
+    key: "tlSharing",
+    kind: "switch",
+    label: "Sharing jobs",
+    on: "People can share a job with a colleague's email.",
+    off: "The Share button is hidden; jobs already shared stay shared.",
+  },
+  {
+    key: "tlKeepFiles",
+    kind: "switch",
+    label: "Keep copies of files",
+    on: "CSVs opened and PDFs, CSVs and KMLs exported are kept in the account and in Admin → Files.",
+    off: "Only the activity line is recorded; no copies are kept.",
+  },
+  { key: "tlMaxJobs", kind: "number", label: "Jobs per account", hint: "1 to 5000. Accounts over it keep their jobs but can't add new ones.", min: 1, max: 5000 },
+];
+
+const pct = (a: number, b: number) => (b ? `${Math.round((a / b) * 100)}%` : "—");
+
+function Blocked({ list, adminFetch, onToast, onDone }: { list: TraverseExtras["blocked"]; adminFetch: Fetcher; onToast: (m: string, t?: "success" | "error") => void; onDone: () => void }) {
+  const [busy, setBusy] = useState<string | null>(null);
+  const unblock = async (b: TraverseExtras["blocked"][number]) => {
+    setBusy(b.userId);
+    try {
+      const r = await adminFetch("/api/admin/traverse", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: b.userId, blocked: false }) });
+      if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || "Couldn't unblock");
+      onToast(`${b.email || "This account"} can use Traverse & Level again`);
+      onDone();
+    } catch (e) {
+      onToast((e as Error).message, "error");
+    } finally {
+      setBusy(null);
+    }
+  };
+  return (
+    <Panel title={`Blocked accounts (${list.length})`}>
+      {list.length ? (
+        <ul className="pb-2">
+          {list.map((b) => (
+            <li key={b.userId} className="px-5 py-2.5 border-t border-[var(--adm-line)] flex items-center justify-between gap-3">
+              <span className="min-w-0">
+                <span className="block text-[13px] text-white truncate">{b.email || b.name || "Deleted account"}</span>
+                {b.name && b.email && <span className="block text-[11px] text-slate-500">{b.name}</span>}
+              </span>
+              <button
+                onClick={() => unblock(b)}
+                disabled={busy === b.userId}
+                className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600/20 text-emerald-300 hover:bg-emerald-600/30 text-xs font-semibold cursor-pointer disabled:opacity-50"
+              >
+                {busy === b.userId && <Loader2 className="w-3.5 h-3.5 animate-spin" />} Unblock
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <Empty>No one is blocked. Block a single account from its row in Jobs below.</Empty>
+      )}
+    </Panel>
+  );
+}
+
+// Admin → Apps → Traverse & Level: the shared app tab (components/admin/AppTab.tsx) and its own part:
+// its jobs and their results, sharing, export formats, where it's opened, its switches, the blocked
+// accounts, and every surveyor's jobs to view, export or delete.
+export default function AdminTraverse({
+  adminFetch,
+  onToast,
+  onShow,
+  onOpenAccount,
+}: {
+  adminFetch: Fetcher;
+  onToast: (m: string, t?: "success" | "error") => void;
+  onShow: (section: string) => void;
+  onOpenAccount: (userId: string) => void;
+}) {
+  return (
+    <AppTab
+      app="traverse"
+      adminFetch={adminFetch}
+      onShow={onShow}
+      onOpenAccount={onOpenAccount}
+      intro="Adjusts traverses and reduces level runs, in the web app and the Windows program. Jobs are kept in the account and can be shared."
+      footer={(reload) => <TraverseJobs adminFetch={adminFetch} onToast={onToast} onChanged={reload} />}
+    >
+      {(d, days, reload) => {
+        const x = d.extras as TraverseExtras | null;
+        if (!x) return null;
+        const j = x.jobs;
+        const checked = j.accepted + j.rejected;
+        const word = days === 365 ? "year" : `${days} days`;
+        return (
+          <>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <Stat icon={FileJson} label="Jobs kept" value={j.total.toLocaleString()} sub={`${j.traverses.toLocaleString()} traverses · ${j.levels.toLocaleString()} level runs`} />
+              <Stat icon={RefreshCw} label={`Saved, ${word}`} value={j.saved.toLocaleString()} sub={`${j.fresh.toLocaleString()} new jobs`} />
+              <Stat
+                icon={CheckCircle2}
+                label="Accepted"
+                value={pct(j.accepted, checked)}
+                tone={j.rejected > j.accepted ? "text-amber-300" : "text-white"}
+                sub={`${j.accepted.toLocaleString()} accepted · ${j.rejected.toLocaleString()} rejected · ${(j.open + j.incomplete).toLocaleString()} not checked`}
+              />
+              <Stat icon={Users} label="Shared" value={x.shares.jobs.toLocaleString()} sub={`jobs, with ${x.shares.people.toLocaleString()} people · ${x.shares.fresh.toLocaleString()} new shares`} />
+            </div>
+            <div className="grid lg:grid-cols-3 gap-4">
+              <Panel title="Results">
+                {checked + j.open + j.incomplete ? (
+                  <ul className="pb-2">
+                    {(
+                      [
+                        ["Accepted", j.accepted, "bg-emerald-400"],
+                        ["Rejected", j.rejected, "bg-red-400"],
+                        ["Open, not checked", j.open, "bg-amber-400"],
+                        ["Incomplete", j.incomplete, "bg-slate-500"],
+                      ] as const
+                    ).map(([l, v, c]) => (
+                      <BarRow key={l} label={l} value={v} max={j.total} color={c} />
+                    ))}
+                  </ul>
+                ) : (
+                  <Empty>No jobs kept yet.</Empty>
+                )}
+              </Panel>
+              <Panel title={`Exports, ${word}`}>
+                {x.formats.length ? (
+                  <ul className="pb-2">
+                    {x.formats.map((f) => (
+                      <BarRow key={f.format} label={f.format} value={f.count} max={Math.max(...x.formats.map((y) => y.count))} color="bg-amber-400" />
+                    ))}
+                  </ul>
+                ) : (
+                  <Empty>No exports in this period.</Empty>
+                )}
+              </Panel>
+              <Panel title={`Opened from, ${word}`}>
+                {x.openedFrom.length ? (
+                  <ul className="pb-2">
+                    {x.openedFrom.map((f) => (
+                      <BarRow key={f.where} label={f.where} value={f.count} max={Math.max(...x.openedFrom.map((y) => y.count))} color="bg-violet-400" />
+                    ))}
+                  </ul>
+                ) : (
+                  <Empty>Not opened in this period.</Empty>
+                )}
+              </Panel>
+            </div>
+            <div className="grid lg:grid-cols-2 gap-4">
+              <AppSettings adminFetch={adminFetch} onToast={onToast} onShow={onShow} fields={TL_FIELDS} />
+              <Blocked list={x.blocked} adminFetch={adminFetch} onToast={onToast} onDone={reload} />
+            </div>
+          </>
+        );
+      }}
+    </AppTab>
   );
 }

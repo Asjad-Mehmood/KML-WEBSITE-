@@ -298,3 +298,80 @@ export async function excelToKmlExtras(days: number) {
     grids: grids.map((g) => ({ grid: g.grid, count: n(g.c), people: n(g.people) })),
   };
 }
+
+/** Traverse & Level's own part: its jobs and their results, sharing, exports, where it's opened, who is blocked */
+export async function traverseExtras(days: number) {
+  const { ensureTraverseTables } = await import("@/lib/traverseJobs");
+  const { blockedList } = await import("@/lib/traverseControls");
+  const from = new Date(Date.now() - days * 864e5);
+  await safe(ensureTraverseTables(), undefined, "traverse tables");
+  const [jobs, shares, formats, opened, blocked] = await Promise.all([
+    safe(
+      prisma.$queryRawUnsafe<{ kind: string; status: string | null; total: bigint; fresh: bigint; saved: bigint; owners: bigint }[]>(
+        `SELECT "kind", CASE WHEN "summary" LIKE '{%' THEN "summary"::jsonb->>'status' END status, COUNT(*) total,
+                COUNT(*) FILTER (WHERE "createdAt" >= $1) fresh, COUNT(*) FILTER (WHERE "updatedAt" >= $1) saved, COUNT(DISTINCT "ownerId") owners
+           FROM "traverse_jobs" GROUP BY 1, 2`,
+        from
+      ),
+      [],
+      "traverse jobs"
+    ),
+    safe(
+      prisma.$queryRawUnsafe<{ total: bigint; fresh: bigint; jobs: bigint; people: bigint; owners: bigint }[]>(
+        `SELECT COUNT(*) total, COUNT(*) FILTER (WHERE s."createdAt" >= $1) fresh, COUNT(DISTINCT s."jobId") jobs,
+                COUNT(DISTINCT s."email") people, COUNT(DISTINCT j."ownerId") owners
+           FROM "traverse_job_shares" s JOIN "traverse_jobs" j ON j."id" = s."jobId"`,
+        from
+      ),
+      [],
+      "traverse shares"
+    ),
+    safe(
+      prisma.$queryRawUnsafe<{ f: string | null; c: bigint }[]>(
+        `SELECT UPPER(COALESCE(NULLIF("exportFormat", ''), 'Other')) f, COUNT(*) c FROM "activities"
+          WHERE "action" = 'tl_export' AND "timestamp" >= $1 GROUP BY 1 ORDER BY 2 DESC`,
+        from
+      ),
+      [],
+      "traverse formats"
+    ),
+    safe(
+      prisma.$queryRawUnsafe<{ w: string | null; c: bigint }[]>(
+        `SELECT COALESCE(SUBSTRING("title" FROM '\\(([^)]+)\\)\\s*$'), 'Other') w, COUNT(*) c FROM "activities"
+          WHERE "action" = 'tl_open' AND "timestamp" >= $1 GROUP BY 1 ORDER BY 2 DESC`,
+        from
+      ),
+      [],
+      "traverse opened"
+    ),
+    safe(
+      (async () => {
+        const ids = await blockedList();
+        if (!ids.length) return [];
+        const us = await prisma.user.findMany({ where: { id: { in: ids } }, select: { id: true, email: true, name: true } });
+        return ids.map((id) => ({ userId: id, email: us.find((u) => u.id === id)?.email ?? null, name: us.find((u) => u.id === id)?.name ?? null }));
+      })(),
+      [] as { userId: string; email: string | null; name: string | null }[],
+      "traverse blocked"
+    ),
+  ]);
+  const sum = (f: (r: (typeof jobs)[number]) => boolean, k: "total" | "fresh" | "saved") => jobs.filter(f).reduce((s, r) => s + n(r[k]), 0);
+  const all = () => true;
+  return {
+    jobs: {
+      total: sum(all, "total"),
+      fresh: sum(all, "fresh"),
+      saved: sum(all, "saved"),
+      traverses: sum((r) => r.kind !== "level", "total"),
+      levels: sum((r) => r.kind === "level", "total"),
+      accepted: sum((r) => r.status === "accepted", "total"),
+      rejected: sum((r) => r.status === "rejected", "total"),
+      open: sum((r) => r.status === "open", "total"),
+      incomplete: sum((r) => !["accepted", "rejected", "open"].includes(r.status ?? ""), "total"),
+    },
+    shares: { total: n(shares[0]?.total), fresh: n(shares[0]?.fresh), jobs: n(shares[0]?.jobs), people: n(shares[0]?.people), owners: n(shares[0]?.owners) },
+    formats: formats.map((r) => ({ format: r.f || "Other", count: n(r.c) })),
+    openedFrom: opened.map((r) => ({ where: r.w || "Other", count: n(r.c) })),
+    blocked,
+  };
+}
