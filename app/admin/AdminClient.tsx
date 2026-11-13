@@ -13,7 +13,7 @@ import AdminLog from "@/components/admin/AdminLog";
 import AdminTrends from "@/components/admin/AdminTrends";
 import AdminActivity, { APPS as ACTIVITY_APPS } from "@/components/admin/AdminActivity";
 import AdminSearch, { SearchButton } from "@/components/admin/AdminSearch";
-import AdminFiles from "../../components/admin/AdminFiles";
+import AdminFiles, { FILE_APPS } from "../../components/admin/AdminFiles";
 import AdminShell, { type AdminGroup } from "../../components/admin/AdminShell";
 import {
   Users,
@@ -230,10 +230,14 @@ export default function AdminClient() {
   // Activity → an app, from the menu or the page's own chips (components/admin/AdminActivity.tsx)
   const [activityApp, setActivityApp] = useState("");
   const [activityCounts, setActivityCounts] = useState<Record<string, number>>({});
+  // Files → an app, from the menu (components/admin/AdminFiles.tsx)
+  const [filesApp, setFilesApp] = useState("");
+  const [fileCounts, setFileCounts] = useState<Record<string, number>>({});
   // a menu item: a section, or "<section>:<part>" for a part of it
   const selectSection = (id: string) => {
     const [tab, part] = id.split(":");
     if (tab === "activities") setActivityApp(part ?? "");
+    if (tab === "files") setFilesApp(part ?? "");
     setActiveTab(tab as typeof activeTab);
   };
   useEffect(() => {
@@ -706,7 +710,16 @@ export default function AdminClient() {
     {
       label: "Data",
       sections: [
-        { id: "files", label: "Files", icon: Files, text: "Files people imported into and exported from the apps", count: stats?.totalFilesStored },
+        {
+          id: "files",
+          label: "Files",
+          icon: Files,
+          text: filesApp
+            ? `Files people opened and saved in ${FILE_APPS.find((a) => a.id === filesApp)?.name ?? filesApp}`
+            : "Files people imported into and exported from the apps",
+          count: stats?.totalFilesStored,
+          sub: FILE_APPS.map((a) => ({ id: a.id, label: a.name, count: fileCounts[a.id] })),
+        },
         { id: "conversions", label: "Points", icon: Globe, text: "The converted points in saved files", count: conversionsTotal },
         { id: "traverse", label: "Traverse & Level", icon: Compass, text: "Jobs, usage and the switches for Traverse & Level", count: stats?.traverse?.jobs },
         { id: "slope", label: "Slope Calculator", icon: TrendingUp, text: "Calculations surveyors keep in their accounts from Slope Calculator", count: stats?.slope?.jobs },
@@ -736,7 +749,7 @@ export default function AdminClient() {
       groups={groups}
       active={activeTab}
       onSelect={selectSection}
-      activeSub={activeTab === "activities" ? activityApp : ""}
+      activeSub={activeTab === "activities" ? activityApp : activeTab === "files" ? filesApp : ""}
       admin={adminUser}
       onLogout={handleAdminLogout}
       onRefresh={refreshAll}
@@ -1492,6 +1505,9 @@ export default function AdminClient() {
         {/* ================================================================== */}
         {activeTab === "files" && (
           <AdminFiles
+            key={filesApp}
+            app={filesApp}
+            onCounts={setFileCounts}
             adminFetch={adminFetch}
             onToast={showToast}
             onView={(f) => setViewing({ fileName: f.fileName, url: f.downloadUrl, size: f.size })}

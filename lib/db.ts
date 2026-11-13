@@ -106,6 +106,12 @@ export interface AppSettings {
 /** Where a kept file came from: the Excel to KML Windows app, its web app, or Traverse & Level */
 export type FilePlatform = "windows_app" | "web_app" | "traverse_app";
 export const asPlatform = (p: unknown): FilePlatform => (p === "web_app" || p === "traverse_app" ? p : "windows_app");
+/** The apps that keep files in the account, and which platform values are theirs (Admin → Files) */
+export const FILE_APP_PLATFORMS: Record<string, FilePlatform[]> = {
+  "excel-to-kml": ["windows_app", "web_app"],
+  traverse: ["traverse_app"],
+};
+const FILE_APP_OF: Record<FilePlatform, string> = { windows_app: "excel-to-kml", web_app: "excel-to-kml", traverse_app: "traverse" };
 
 export interface UserFileRecord {
   id: string;
@@ -1197,9 +1203,12 @@ export const db = {
 
   /** Every account's files for the admin page: searched and paged here, without the contents. */
   /** The admin's file filter: search text, opened/saved, platform and (exactly) one person; "none" = no account */
-  fileWhere(opts: { q?: string; direction?: string; platform?: string; userId?: string }): Prisma.UserFileWhereInput {
+  fileWhere(opts: { q?: string; direction?: string; platform?: string; userId?: string; app?: string }): Prisma.UserFileWhereInput {
     const q = (opts.q || "").trim();
+    const apps = opts.app ? FILE_APP_PLATFORMS[opts.app] : undefined;
     return {
+      // a file saved before the app was noted counts as Excel to KML for Windows, as asPlatform reads it
+      ...(apps ? { AND: [{ OR: [{ platform: { in: apps } }, ...(apps.includes("windows_app") ? [{ platform: null }] : [])] }] } : {}),
       ...(opts.userId ? { userId: opts.userId === "none" ? null : opts.userId } : {}),
       ...(opts.direction === "import" || opts.direction === "export" ? { direction: opts.direction } : {}),
       ...(opts.platform === "web_app" || opts.platform === "windows_app" || opts.platform === "traverse_app" ? { platform: opts.platform } : {}),
@@ -1217,7 +1226,7 @@ export const db = {
   },
 
   /** One row per person for the admin Files tab: how many files, how big, opened vs saved, last one */
-  async groupFilesByUser(opts: { q?: string; direction?: string; platform?: string }) {
+  async groupFilesByUser(opts: { q?: string; direction?: string; platform?: string; app?: string }) {
     const where = this.fileWhere(opts);
     const [byUser, byDir, agg] = await Promise.all([
       prisma.userFile.groupBy({ by: ["userId"], where, _count: { _all: true }, _sum: { fileSize: true }, _max: { timestamp: true } }),
@@ -1266,7 +1275,18 @@ export const db = {
     return { groups, total: agg._count._all, bytes: agg._sum.fileSize ?? 0 };
   },
 
-  async searchAllFiles(opts: { q?: string; direction?: string; platform?: string; userId?: string; skip?: number; take?: number }) {
+  /** How many files each app has kept, for the menu under Files */
+  async fileCountsByApp(): Promise<Record<string, number>> {
+    const rows = await prisma.userFile.groupBy({ by: ["platform"], _count: { _all: true } });
+    const out: Record<string, number> = {};
+    for (const r of rows) {
+      const app = FILE_APP_OF[asPlatform(r.platform)];
+      out[app] = (out[app] ?? 0) + r._count._all;
+    }
+    return out;
+  },
+
+  async searchAllFiles(opts: { q?: string; direction?: string; platform?: string; userId?: string; app?: string; skip?: number; take?: number }) {
     const where = this.fileWhere(opts);
     const [total, rows, agg] = await Promise.all([
       prisma.userFile.count({ where }),

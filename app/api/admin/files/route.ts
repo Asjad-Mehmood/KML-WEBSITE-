@@ -4,7 +4,7 @@ import { getAdminSession } from "@/lib/adminAuth";
 import { db } from "@/lib/db";
 
 // GET: every account's files, newest first.
-// ?q= (file, surveyor or grid) &direction=import|export &platform=web_app|windows_app &userId= ("none": no account) &page= &size=
+// ?q= (file, surveyor or grid) &direction=import|export &app=excel-to-kml|traverse &platform=web_app|windows_app|traverse_app &userId= ("none": no account) &page= &size=
 export async function GET(req: NextRequest) {
   const admin = await getAdminSession(req);
   if (!admin) {
@@ -16,7 +16,13 @@ export async function GET(req: NextRequest) {
     q: (searchParams.get("q") || "").slice(0, 200),
     direction: searchParams.get("direction") || undefined,
     platform: searchParams.get("platform") || undefined,
+    app: searchParams.get("app") || undefined,
   };
+
+  // ?counts=1: how many files each app has kept, for the menu under Files
+  if (searchParams.get("counts") === "1") {
+    return NextResponse.json({ success: true, apps: await db.fileCountsByApp() });
+  }
 
   // ?group=user: one row per person (files, size, opened/saved, last file) for the Files tab
   if (searchParams.get("group") === "user") {
