@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     }
     const user = await db.findUserById(result.userId);
     if (!user) return NextResponse.json({ error: "That account no longer exists." }, { status: 404 });
-    return await signedInResponse(user);
+    return await signedInResponse(user, req, "email confirmed");
   } catch (err) {
     console.error("Email confirmation failed:", err);
     return NextResponse.json({ error: "Confirming is temporarily unavailable. Please try again in a few minutes." }, { status: 500 });

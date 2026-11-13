@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { ACTIVITY_APPS, appOfRequest, tagActivity } from "@/lib/activityTags";
 import { trackAppUse } from "@/lib/appUsage";
 import { db } from "@/lib/db";
 
@@ -72,6 +73,10 @@ export async function POST(req: NextRequest) {
       photosCount,
       durationMs,
       status,
+      app,
+      platform,
+      appVersion,
+      errorMessage,
     } = body;
 
     if (!action || !title) {
@@ -109,6 +114,16 @@ export async function POST(req: NextRequest) {
       status: status || "success",
       ipAddress,
       userAgent,
+    });
+
+    // which app and device it came from: the request says, or the app's own fields if it sends them
+    const seen = await appOfRequest(req);
+    const known = (v: unknown) => typeof v === "string" && (ACTIVITY_APPS as readonly string[]).includes(v);
+    await tagActivity(record.id, {
+      app: known(app) ? app : seen.app === "website" ? "excel-to-kml" : seen.app,
+      platform: typeof platform === "string" ? platform : seen.platform,
+      appVersion: typeof appVersion === "string" ? appVersion : seen.appVersion,
+      errorMessage: typeof errorMessage === "string" ? errorMessage : status === "error" && typeof details === "string" ? details.slice(0, 500) : null,
     });
 
     return NextResponse.json({ success: true, activity: record }, { headers: CORS_HEADERS });

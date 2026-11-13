@@ -11,6 +11,7 @@ import AdminSlope from "../../components/admin/AdminSlope";
 import AdminToolkit from "@/components/admin/AdminToolkit";
 import AdminLog from "@/components/admin/AdminLog";
 import AdminTrends from "@/components/admin/AdminTrends";
+import AdminActivity, { APPS as ACTIVITY_APPS } from "@/components/admin/AdminActivity";
 import AdminSearch, { SearchButton } from "@/components/admin/AdminSearch";
 import AdminFiles from "../../components/admin/AdminFiles";
 import AdminShell, { type AdminGroup } from "../../components/admin/AdminShell";
@@ -226,6 +227,15 @@ export default function AdminClient() {
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   // Ctrl+K (⌘K) or "/" opens the search (components/admin/AdminSearch.tsx)
   const [searchOpen, setSearchOpen] = useState(false);
+  // Activity → an app, from the menu or the page's own chips (components/admin/AdminActivity.tsx)
+  const [activityApp, setActivityApp] = useState("");
+  const [activityCounts, setActivityCounts] = useState<Record<string, number>>({});
+  // a menu item: a section, or "<section>:<part>" for a part of it
+  const selectSection = (id: string) => {
+    const [tab, part] = id.split(":");
+    if (tab === "activities") setActivityApp(part ?? "");
+    setActiveTab(tab as typeof activeTab);
+  };
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const typing = e.target instanceof HTMLElement && (e.target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(e.target.tagName));
@@ -471,7 +481,7 @@ export default function AdminClient() {
   const loadActivities = async () => {
     setActivitiesLoading(true);
     try {
-      const res = await adminFetch("/api/admin/activities?limit=200");
+      const res = await adminFetch("/api/admin/activities?limit=20");
       if (res.ok) {
         const data = await res.json();
         setAllActivities(data.activities || []);
@@ -680,7 +690,16 @@ export default function AdminClient() {
       label: "People",
       sections: [
         { id: "users", label: "Surveyors", icon: Users, text: "Every account: who they are, where from, what they downloaded and whether their email is confirmed", count: users.length },
-        { id: "activities", label: "Activity", icon: Activity, text: "What each account did in the apps: conversions, saves, opens and reports", count: Math.max(activitiesTotal, allActivities.length) },
+        {
+          id: "activities",
+          label: "Activity",
+          icon: Activity,
+          text: activityApp
+            ? `Everything in ${ACTIVITY_APPS.find((a) => a.id === activityApp)?.name ?? activityApp}: what people do, downloads and sign-ins`
+            : "Everything across the apps and tools: what people do, downloads, sign-ins and the Toolkit",
+          count: Math.max(activitiesTotal, allActivities.length),
+          sub: ACTIVITY_APPS.map((a) => ({ id: a.id, label: a.name, count: activityCounts[a.id] })),
+        },
         { id: "downloads", label: "Downloads", icon: Download, text: "Every program download, by whom and from where", count: downloads.length },
       ],
     },
@@ -716,7 +735,8 @@ export default function AdminClient() {
       headerExtra={<SearchButton onOpen={() => setSearchOpen(true)} />}
       groups={groups}
       active={activeTab}
-      onSelect={(id) => setActiveTab(id as typeof activeTab)}
+      onSelect={selectSection}
+      activeSub={activeTab === "activities" ? activityApp : ""}
       admin={adminUser}
       onLogout={handleAdminLogout}
       onRefresh={refreshAll}
@@ -1330,192 +1350,20 @@ export default function AdminClient() {
         {/* TAB 3: APP ACTIVITY & TELEMETRY (GLOBAL APPLICATION LOG) */}
         {/* ================================================================== */}
         {activeTab === "activities" && (
-          <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div className="flex flex-wrap items-center gap-2">
-                {[
-                  { id: "all", label: "All" },
-                  { id: "conversion", label: "Conversions" },
-                  { id: "export", label: "Exports" },
-                  { id: "file_upload", label: "File Uploads" },
-                  { id: "batch_process", label: "Batch Process" },
-                  { id: "photos_attached", label: "Photos Attached" },
-                  { id: "traverse", label: "Traverses" },
-                  { id: "levelling", label: "Level Runs" },
-                  { id: "traverse_level", label: "Traverse & Level app" },
-                ].map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => {
-                      setActivityFilter(item.id);
-                      setActPage(0);
-                    }}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      activityFilter === item.id
-                        ? "bg-blue-600 text-white"
-                        : "bg-slate-900 border border-slate-800 text-slate-400 hover:text-white"
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-
-              <div className="flex items-center gap-3 w-full sm:w-auto">
-                <div className="relative flex-1 sm:w-64">
-                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    placeholder="Search file, surveyor, CRS..."
-                    value={activitySearch}
-                    onChange={(e) => {
-                      setActivitySearch(e.target.value);
-                      setActPage(0);
-                    }}
-                    className="w-full pl-9 pr-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
-                  />
-                </div>
-
-                <button
-                  onClick={loadActivities}
-                  className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer"
-                  title="Refresh activity logs"
-                >
-                  <RefreshCw className={`w-4 h-4 ${activitiesLoading ? "animate-spin" : ""}`} />
-                </button>
-
-                <button
-                  onClick={handleClearActivities}
-                  className="px-3.5 py-2 rounded-xl bg-rose-600/20 text-rose-400 hover:bg-rose-600/30 text-xs font-bold transition-colors flex items-center gap-1.5 border border-rose-500/30 cursor-pointer"
-                >
-                  <Trash2 className="w-3.5 h-3.5" /> Clear All Logs
-                </button>
-              </div>
-            </div>
-
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-800/60 border-b border-slate-800 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                    <tr>
-                      <th className="px-4 py-3.5">When</th>
-                      <th className="px-4 py-3.5">Surveyor</th>
-                      <th className="px-4 py-3.5">Action</th>
-                      <th className="px-4 py-3.5">What</th>
-                      <th className="px-4 py-3.5 text-right">Points</th>
-                      <th className="px-4 py-3.5 hidden lg:table-cell">Grid</th>
-                      <th className="px-4 py-3.5">Format</th>
-                      <th className="px-4 py-3.5 hidden 2xl:table-cell">IP address</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800/60">
-                    {filteredActivities.length === 0 ? (
-                      <tr>
-                        <td colSpan={8} className="px-4 py-12 text-center text-slate-500">
-                          No activity matches
-                        </td>
-                      </tr>
-                    ) : (
-                      pagedActivities.map((act) => (
-                        <tr key={act.id} className="hover:bg-slate-800/30 transition-colors">
-                          <td className="px-4 py-3 text-slate-400 whitespace-nowrap">
-                            {new Date(act.timestamp).toLocaleString()}
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap">
-                            {act.userId ? (
-                              <button
-                                onClick={() => {
-                                  setDetailUserId(act.userId);
-                                  setDetailModalOpen(true);
-                                }}
-                                className="font-bold text-white hover:text-blue-400 transition-colors text-left flex items-center gap-1.5 cursor-pointer"
-                              >
-                                <span className="underline decoration-dotted">{act.userName || "Surveyor"}</span>
-                                <Eye className="w-3 h-3 text-blue-400" />
-                              </button>
-                            ) : (
-                              <span className="text-slate-400">{act.userName || act.userEmail || "Anonymous"}</span>
-                            )}
-                            <div className="text-[11px] text-slate-500 truncate max-w-[200px]">{act.userEmail || "—"}</div>
-                          </td>
-                          <td className="px-4 py-3">
-                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border whitespace-nowrap ${adminActionTag(act.action)}`}>
-                              {actionLabel(act.action)}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="font-semibold text-white max-w-[220px] truncate" title={act.title}>
-                              {act.title}
-                            </div>
-                            {(act.action === "settings_update" || act.action === "settings_changed") && act.details && (
-                              <div className="mt-0.5 text-[11px] text-slate-400 whitespace-pre-line break-words max-w-[280px]">{act.details}</div>
-                            )}
-                            {act.fileName && (
-                              <div className="text-[11px] text-slate-400 font-mono flex items-center gap-1 whitespace-nowrap">
-                                <span className="truncate max-w-[170px]">{act.fileName}</span>
-                                {act.fileSize && <span className="text-slate-500">({act.fileSize})</span>}
-                              </div>
-                            )}
-                          </td>
-                          <td className="px-4 py-3 text-right whitespace-nowrap">
-                            {act.pointsCount !== undefined && act.pointsCount !== null ? (
-                              <span className="font-mono font-bold text-cyan-400">
-                                {act.pointsCount.toLocaleString()} pts
-                              </span>
-                            ) : (
-                              <span className="text-slate-500">—</span>
-                            )}
-                          </td>
-                          <td className="px-4 py-3 hidden lg:table-cell">
-                            {act.crs ? (
-                              <span className="block max-w-[190px] truncate text-[11px] text-amber-300" title={act.crs}>
-                                {act.crs}
-                              </span>
-                            ) : (
-                              <span className="text-slate-500">—</span>
-                            )}
-                          </td>
-                          <td className="px-4 py-3">
-                            {act.exportFormat ? (
-                              <span className="font-bold text-emerald-400 uppercase text-[10px] bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
-                                {act.exportFormat}
-                              </span>
-                            ) : (
-                              <span className="text-slate-500">—</span>
-                            )}
-                          </td>
-                          <td className="px-4 py-3 font-mono text-slate-500 hidden 2xl:table-cell">
-                            {act.ipAddress || "—"}
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-              <Pager page={actPageNow} total={filteredActivities.length} size={ACT_PAGE} onPage={setActPage} noun="entries" />
-              {allActivities.length < activitiesTotal && (
-                <div className="mt-3 flex flex-wrap items-center justify-center gap-3 text-xs text-slate-400">
-                  <span>
-                    Showing the newest {allActivities.length.toLocaleString()} of {activitiesTotal.toLocaleString()} entries
-                    {activityFilter !== "all" || activitySearch ? "; the filter and search look through these" : ""}.
-                  </span>
-                  <button
-                    onClick={loadMoreActivities}
-                    disabled={activitiesLoading}
-                    className="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/60 hover:bg-slate-800 text-slate-200 font-semibold disabled:opacity-50 cursor-pointer"
-                  >
-                    {activitiesLoading ? "Loading…" : `Load ${Math.min(200, activitiesTotal - allActivities.length)} older`}
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
+          <AdminActivity
+            key={activityApp}
+            app={activityApp}
+            onCounts={setActivityCounts}
+            adminFetch={adminFetch}
+            onToast={showToast}
+            onClearAll={handleClearActivities}
+            onOpenAccount={(id) => {
+              setDetailUserId(id);
+              setDetailModalOpen(true);
+            }}
+          />
         )}
 
-        {/* ================================================================== */}
-        {/* TAB 4: DOWNLOAD AUDIT TRAIL */}
-        {/* ================================================================== */}
         {activeTab === "downloads" && (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -1790,7 +1638,7 @@ export default function AdminClient() {
         onClose={() => setSearchOpen(false)}
         groups={groups}
         adminFetch={adminFetch}
-        onSection={(id) => setActiveTab(id as typeof activeTab)}
+        onSection={selectSection}
         onAccount={(id) => {
           setDetailUserId(id);
           setDetailModalOpen(true);

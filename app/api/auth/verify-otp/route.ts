@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     const user = await db.findUserById(result.userId);
     if (!user || !db.isAdmin(user)) return NextResponse.json({ error: "Sign-in failed." }, { status: 401 });
 
-    const response = await signedInResponse(user);
+    const response = await signedInResponse(user, req, "password and email code");
     if (trust === true) {
       const token = await trustBrowser(user.id, req, ip);
       response.cookies.set(TRUST_COOKIE, token, {

@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
+import { logEvent } from "@/lib/activityEvents";
 import { db } from "@/lib/db";
 
 export async function POST(req: NextRequest) {
@@ -9,7 +10,9 @@ export async function POST(req: NextRequest) {
       req.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
 
     if (token) {
+      const s = await db.validateSession(token).catch(() => null);
       await db.destroySession(token);
+      if (s) after(() => logEvent(req, s.user, "sign_out", "Signed out"));
     }
 
     const response = NextResponse.json({ success: true });

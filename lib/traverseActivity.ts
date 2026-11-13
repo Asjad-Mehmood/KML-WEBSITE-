@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { db } from "@/lib/db";
+import { appOfRequest, tagActivity } from "@/lib/activityTags";
 
 type Action = Parameters<typeof db.recordActivity>[0]["action"];
 type Who = { id: string; email: string; name?: string | null };
@@ -16,7 +17,7 @@ export function logTraverseActivity(
   title: string,
   extra: { details?: string; status?: "success" | "warning" | "error" } = {}
 ) {
-  db.recordActivity({
+  void db.recordActivity({
     userId: user.id,
     userEmail: user.email,
     userName: user.name ?? null,
@@ -26,5 +27,10 @@ export function logTraverseActivity(
     status: extra.status ?? "success",
     ipAddress: req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || undefined,
     userAgent: req.headers.get("user-agent") || undefined,
-  }).catch(() => {});
+  })
+    .then(async (a) => {
+      const t = await appOfRequest(req);
+      await tagActivity(a.id, { ...t, app: "traverse", platform: t.app === "traverse" ? t.platform : "Web" });
+    })
+    .catch(() => {});
 }

@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
+import { logEvent } from "@/lib/activityEvents";
 import { db, isAdminRole } from "@/lib/db";
 import { cleanOccupation } from "@/lib/occupations";
 import { getClientIp, getIpGeoLocation } from "@/lib/geo";
@@ -102,6 +103,8 @@ export async function POST(req: NextRequest) {
 
     // Create session
     const session = await db.createSession(user.id);
+    const made = user;
+    after(() => logEvent(req, made, "sign_up", "Made an account"));
     const sanitized = db.sanitizeUser(user);
 
     const response = NextResponse.json({
