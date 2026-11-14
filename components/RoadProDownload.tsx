@@ -2,7 +2,7 @@
 
 import { Download } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import { ROADPRO_FILES, ROADPRO_VERSION } from "@/lib/roadpro";
+import { ROADPRO_FILES, ROADPRO_RELEASE, ROADPRO_VERSION } from "@/lib/roadpro";
 
 // "Download RoadPro": the same sign-in gate as the Windows app (Admin →
 // Settings → Sign-in to download), then the download is recorded and starts.
@@ -20,7 +20,8 @@ export default function RoadProDownload({
   const { href, name } = ROADPRO_FILES[file];
 
   const start = () => {
-    trackDownload("roadpro", name, `v${ROADPRO_VERSION}`);
+    // Setup is the release (Hub and plugin); the zip is the plugin alone
+    trackDownload("roadpro", name, `v${file === "setup" ? ROADPRO_RELEASE : ROADPRO_VERSION}`);
     const a = document.createElement("a");
     a.href = href;
     a.download = name;

@@ -41,6 +41,8 @@ import {
   ROADPRO_ZIP_INSTALL,
   ROADPRO_KEYS,
   ROADPRO_LAYERS,
+  ROADPRO_RELEASE,
+  ROADPRO_RELEASE_DATE,
   ROADPRO_RELEASED,
   ROADPRO_REPORT,
   ROADPRO_REQUIREMENTS,
@@ -75,8 +77,8 @@ const structuredData = {
       applicationCategory: "DesignApplication",
       applicationSubCategory: "AutoCAD plugin",
       operatingSystem: "Windows (AutoCAD, Civil 3D or Map 3D 2013 or newer)",
-      softwareVersion: ROADPRO_VERSION,
-      datePublished: ROADPRO_RELEASED,
+      softwareVersion: ROADPRO_RELEASE,
+      datePublished: ROADPRO_RELEASE_DATE,
       downloadUrl: ROADPRO_FILES.setup.href,
       url: `${SITE_URL}/roadpro`,
       image: `${SITE_URL}/roadpro/roadpro-3-network.webp`,
@@ -165,7 +167,7 @@ export default function RoadProPage() {
               </a>
             </div>
             <p className="mt-3 text-[12.5px] text-slate-500">
-              RoadPro Setup, 8.2 MB, updates itself · Full AutoCAD 2013 or newer (not LT) · Free account needed
+              RoadPro Setup, 8.6 MB, updates itself · Full AutoCAD 2013 or newer (not LT) · Free account needed
             </p>
           </div>
           <figure className="rounded-2xl border border-slate-200 bg-slate-900 p-1.5 shadow-[0_16px_40px_rgba(15,23,42,0.18)]">
@@ -505,7 +507,7 @@ export default function RoadProPage() {
 
         {/* Downloads */}
         <section id="download" aria-labelledby="download-h" className="scroll-mt-28 mt-20 rounded-3xl border border-slate-200 bg-gradient-to-b from-blue-50/70 to-white p-6 sm:p-10">
-          <SectionHead id="download-h" eyebrow="Download" title={`Get RoadPro ${ROADPRO_VERSION}`} text="Free. Sign in or create a free account, then the download starts." Icon={Download} />
+          <SectionHead id="download-h" eyebrow="Download" title={`Get RoadPro ${ROADPRO_RELEASE}`} text="Free. Sign in or create a free account, then the download starts." Icon={Download} />
           <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="rounded-2xl border border-blue-200 bg-white p-5 flex flex-col">
               <Package className="w-6 h-6 text-[#0071e3]" aria-hidden />

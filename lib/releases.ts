@@ -54,7 +54,7 @@ export const RELEASE_APPS: ReleaseApp[] = [
 export const appById = (id: string) => RELEASE_APPS.find((a) => a.id === id);
 
 // Accounts the site creates itself (lib/db.ts, scripts/set-password.mjs): not real mailboxes
-const NEVER_EMAIL = ["admin@exceltokml.com", "surveyor@geotech.com", "demo@surveyor.io", "surveyor.demo@geotech.com"];
+export const NEVER_EMAIL = ["admin@exceltokml.com", "surveyor@geotech.com", "demo@surveyor.io", "surveyor.demo@geotech.com"];
 
 // ---------- tables ----------
 let ready: Promise<void> | null = null;
@@ -359,7 +359,7 @@ function forEmail(r: ReleaseRow, introduces = false): ReleaseForEmail {
 }
 
 /** The app's first release in the list: for a new program (one with an introduction, lib/releaseEmail.ts) its email introduces it */
-async function forEmailOf(r: ReleaseRow): Promise<ReleaseForEmail> {
+export async function forEmailOf(r: ReleaseRow): Promise<ReleaseForEmail> {
   const earlier = await prisma.productRelease.count({ where: { app: r.app, releasedAt: { lt: r.releasedAt } } });
   return forEmail(r, earlier === 0);
 }
@@ -450,12 +450,12 @@ async function appUserSql(appId: string): Promise<string> {
 }
 
 /** The people a broadcast goes to ($1: never-email list) */
-async function recipientsSql(appId: string, who: Audience): Promise<string> {
+export async function recipientsSql(appId: string, who: Audience): Promise<string> {
   return who === "app" ? `${eligibleSql}\n    AND ${await appUserSql(appId)}` : eligibleSql;
 }
 
 // people who already have this release from an earlier broadcast ($2: release id)
-const alreadySentSql = `
+export const alreadySentSql = `
     AND NOT EXISTS (
       SELECT 1 FROM "release_recipients" r JOIN "release_broadcasts" b ON b."id" = r."broadcastId"
       WHERE b."releaseId" = $2 AND b."kind" = 'release' AND r."status" = 'sent' AND r."email" = lower(trim(u."email")))`;
@@ -850,8 +850,22 @@ export function notesFromMarkdown(md: string): string[] {
       .replace(/\s+/g, " ")
       .trim();
   const lines = String(md || "").replace(/\r/g, "").split("\n").map((l) => l.trim());
-  const skip = /full changelog|sha-?256|checksum|^<!--/i;
-  const bullets = lines.filter((l) => /^([-*+]|\d+\.)\s+/.test(l)).map((l) => clean(l.replace(/^([-*+]|\d+\.)\s+/, ""))).filter((l) => l && !skip.test(l));
+  // links to the changelog and checksum lines, not a mention of SHA-256 in a real item
+  const skip = /full changelog|^(sha-?256|checksums?)\b|\b[a-f0-9]{64}\b|^<!--/i;
+  // a bullet, with the lines it wraps onto (GitHub's notes often break a long item over lines)
+  const raw: string[] = [];
+  let inBullet = false;
+  for (const l of lines) {
+    if (/^([-*+]|\d+\.)\s+/.test(l)) {
+      raw.push(l.replace(/^([-*+]|\d+\.)\s+/, ""));
+      inBullet = true;
+    } else if (!l || l.startsWith("#") || l.startsWith("|") || l.startsWith("```")) {
+      inBullet = false;
+    } else if (inBullet && raw.length) {
+      raw[raw.length - 1] += ` ${l}`;
+    }
+  }
+  const bullets = raw.map(clean).filter((l) => l && !skip.test(l));
   const items = bullets.length ? bullets : lines.filter((l) => l && !l.startsWith("#") && !skip.test(l)).map(clean);
   return items.filter(Boolean).slice(0, 12).map((l) => l.slice(0, 300));
 }

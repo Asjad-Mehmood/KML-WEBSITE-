@@ -5,8 +5,8 @@
 
 export const TRAVERSE_NAME = "Professional Traverse & Level Adjustment Software";
 export const TRAVERSE_SHORT = "Traverse & Level";
-export const TRAVERSE_VERSION = "2.1";
-export const TRAVERSE_RELEASED = "2026-10-23";
+export const TRAVERSE_VERSION = "2.2.0";
+export const TRAVERSE_RELEASED = "2026-11-07";
 
 // The web app, served from public/traverse/app (built from traverse-app/)
 export const TRAVERSE_APP = "/traverse/app";

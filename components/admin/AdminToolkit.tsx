@@ -282,7 +282,16 @@ function EventTable({ events, tools, showPc = true }: { events: Event[]; tools: 
   );
 }
 
-export default function AdminToolkit({ adminFetch, onToast }: { adminFetch: Fetcher; onToast: (s: string) => void }) {
+export default function AdminToolkit({
+  adminFetch,
+  onToast,
+  embedded = false,
+}: {
+  adminFetch: Fetcher;
+  onToast: (s: string) => void;
+  /** under the app tab (Admin → Apps → Survey Toolkit), which already shows the totals */
+  embedded?: boolean;
+}) {
   const [data, setData] = useState<Data | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -324,7 +333,7 @@ export default function AdminToolkit({ adminFetch, onToast }: { adminFetch: Fetc
               section === s.id ? "bg-blue-600 text-white" : "bg-slate-900 border border-slate-800 text-slate-400 hover:text-white"
             }`}
           >
-            <s.icon className="w-3.5 h-3.5" /> {s.label}
+            <s.icon className="w-3.5 h-3.5" /> {embedded && s.id === "overview" ? "Tools on PCs" : s.label}
           </button>
         ))}
         <button onClick={load} disabled={loading} className={`${smallBtn} ml-auto bg-slate-900 border border-slate-800 text-slate-300 hover:text-white`}>
@@ -338,7 +347,7 @@ export default function AdminToolkit({ adminFetch, onToast }: { adminFetch: Fetc
           <Loader2 className="w-6 h-6 text-slate-500 animate-spin" />
         </div>
       )}
-      {data && section === "overview" && <Overview data={data} now={now} onShow={setSection} />}
+      {data && section === "overview" && <Overview data={data} now={now} onShow={setSection} embedded={embedded} />}
       {data && section === "accounts" && <Accounts data={data} now={now} />}
       {data && section === "pcs" && <Pcs data={data} now={now} adminFetch={adminFetch} onToast={onToast} onChanged={load} />}
       {data && section === "activity" && <ActivityLog data={data} />}
@@ -350,7 +359,7 @@ export default function AdminToolkit({ adminFetch, onToast }: { adminFetch: Fetc
 
 // ---------------------------------------------------------------- Overview
 
-function Overview({ data, now, onShow }: { data: Data; now: number; onShow: (s: Section) => void }) {
+function Overview({ data, now, onShow, embedded = false }: { data: Data; now: number; onShow: (s: Section) => void; embedded?: boolean }) {
   const active7 = data.devices.filter((d) => now - new Date(d.lastSeen).getTime() < 7 * DAY).length;
   const active30 = data.devices.filter((d) => now - new Date(d.lastSeen).getTime() < 30 * DAY).length;
   const c = (a: string) => data.counts[a] ?? { all: 0, automatic: 0 };
@@ -383,7 +392,7 @@ function Overview({ data, now, onShow }: { data: Data; now: number; onShow: (s: 
 
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className={`grid grid-cols-2 lg:grid-cols-4 gap-3 ${embedded ? "hidden" : ""}`}>
         <Stat label="Accounts using it" value={data.users.length} sub={`${data.devices.length} PCs in all`} />
         <Stat label="Active PCs" value={active7} sub={`last 7 days · ${active30} in 30 days`} />
         <Stat

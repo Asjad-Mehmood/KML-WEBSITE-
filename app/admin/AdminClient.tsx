@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import AdminMessages from "../../components/admin/AdminMessages";
-import AdminReviews from "../../components/admin/AdminReviews";
+import AdminSurveyors from "@/components/admin/AdminSurveyors";
+import AdminDownloads, { DOWNLOAD_TABS } from "@/components/admin/AdminDownloads";
+import AdminReviews, { REVIEW_APPS } from "../../components/admin/AdminReviews";
 import AdminReleases from "../../components/admin/AdminReleases";
 import SettingsPanel from "../../components/admin/SettingsPanel";
 import AdminPoints from "../../components/admin/AdminPoints";
@@ -11,6 +13,7 @@ import AdminSlope from "../../components/admin/AdminSlope";
 import AdminToolkit from "@/components/admin/AdminToolkit";
 import AdminExcelToKml from "@/components/admin/AdminExcelToKml";
 import AdminProgram from "@/components/admin/AdminProgram";
+import { AppSettings } from "@/components/admin/AppTab";
 import AdminLog from "@/components/admin/AdminLog";
 import AdminTrends from "@/components/admin/AdminTrends";
 import AdminActivity, { APPS as ACTIVITY_APPS } from "@/components/admin/AdminActivity";
@@ -22,10 +25,6 @@ import {
   Download,
   Activity,
   Settings,
-  Plus,
-  Trash2,
-  Edit3,
-  Search,
   RefreshCw,
   CheckCircle2,
   AlertTriangle,
@@ -35,7 +34,6 @@ import {
   Sparkles,
   Server,
   Compass,
-  Eye,
   BarChart3,
   HardDrive,
   Clock,
@@ -189,19 +187,15 @@ function Pager({
   );
 }
 
-const ASSET_NAME: Record<string, string> = {
-  windows_installer: "Windows installer",
-  sample_csv: "Sample CSV",
-  test_kml: "Test KML",
-  web_app: "Web app",
-  roadpro: "RoadPro (AutoCAD)",
-  traverse: "Traverse & Level (Windows)",
-  traverse_manual: "Traverse & Level manual",
-  traverse_sample: "Traverse & Level sample file",
-  folder_manager: "Project Folder Manager (Windows)",
-  slope: "Slope Calculator (Windows)",
-  toolkit: "Survey Toolkit (Windows)",
-};
+/** The apps under Releases in the menu (lib/releases.ts RELEASE_APPS, which the page can't import) */
+const RELEASE_TABS = [
+  { id: "excel-to-kml", name: "Excel to KML" },
+  { id: "traverse", name: "Traverse & Level" },
+  { id: "slope", name: "Slope Calculator" },
+  { id: "roadpro", name: "RoadPro" },
+  { id: "folder-manager", name: "Project Folder Manager" },
+  { id: "toolkit", name: "Survey Toolkit" },
+];
 
 const ADMIN_TABS = ["overview", "users", "activities", "downloads", "files", "conversions", "excel", "traverse", "slope", "roadpro", "pfm", "toolkit", "releases", "reviews", "messages", "settings", "log"] as const;
 type AdminTab = (typeof ADMIN_TABS)[number];
@@ -237,11 +231,25 @@ export default function AdminClient() {
   // Files → an app, from the menu (components/admin/AdminFiles.tsx)
   const [filesApp, setFilesApp] = useState("");
   const [fileCounts, setFileCounts] = useState<Record<string, number>>({});
+  // Releases → an app (components/admin/AdminReleases.tsx)
+  const [releasesApp, setReleasesApp] = useState("");
+  const [releaseCounts, setReleaseCounts] = useState<Record<string, number>>({});
+  // Reviews → a program
+  const [reviewsApp, setReviewsApp] = useState("");
+  const [reviewWaiting, setReviewWaiting] = useState<Record<string, number>>({});
+  // Downloads → a program
+  const [downloadsApp, setDownloadsApp] = useState("");
+  const [downloadCounts, setDownloadCounts] = useState<Record<string, number>>({});
+  // Surveyors: loads again after the add/edit window saves
+  const [usersReload, setUsersReload] = useState(0);
   // a menu item: a section, or "<section>:<part>" for a part of it
   const selectSection = (id: string) => {
     const [tab, part] = id.split(":");
     if (tab === "activities") setActivityApp(part ?? "");
     if (tab === "files") setFilesApp(part ?? "");
+    if (tab === "releases") setReleasesApp(part ?? "");
+    if (tab === "reviews") setReviewsApp(part ?? "");
+    if (tab === "downloads") setDownloadsApp(part ?? "");
     setActiveTab(tab as typeof activeTab);
   };
   useEffect(() => {
@@ -310,7 +318,6 @@ export default function AdminClient() {
 
   // Downloads state
   const [downloads, setDownloads] = useState<DownloadItem[]>([]);
-  const [downloadFilter, setDownloadFilter] = useState("all");
 
   // Conversions state
   const [conversions, setConversions] = useState<ConversionItem[]>([]);
@@ -578,53 +585,10 @@ export default function AdminClient() {
         customMaxPoints: "",
       });
       loadUsers(userSearch);
+      setUsersReload((x) => x + 1);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Error saving user";
       showToast(msg, "error");
-    }
-  };
-
-  const handleDeleteUser = async (id: string, name: string) => {
-    if (!confirm(`Are you sure you want to delete user "${name}"? This action cannot be undone.`)) {
-      return;
-    }
-    try {
-      const res = await adminFetch(`/api/admin/users/${id}`, { method: "DELETE" });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to delete user");
-      showToast("User deleted successfully");
-      loadUsers(userSearch);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Error deleting user";
-      showToast(msg, "error");
-    }
-  };
-
-  // Delete single download log
-  const handleDeleteDownload = async (id: string) => {
-    if (!confirm("Delete this download log entry?")) return;
-    try {
-      const res = await adminFetch(`/api/admin/downloads?id=${id}`, { method: "DELETE" });
-      if (res.ok) {
-        setDownloads((prev) => prev.filter((d) => d.id !== id));
-        showToast("Download log entry removed");
-      }
-    } catch {
-      showToast("Failed to remove log entry", "error");
-    }
-  };
-
-  // Clear all download logs
-  const handleClearDownloads = async () => {
-    if (!confirm("Are you sure you want to clear ALL download logs?")) return;
-    try {
-      const res = await adminFetch("/api/admin/downloads", { method: "DELETE" });
-      if (res.ok) {
-        setDownloads([]);
-        showToast("All download logs cleared");
-      }
-    } catch {
-      showToast("Failed to clear logs", "error");
     }
   };
 
@@ -665,9 +629,6 @@ export default function AdminClient() {
   // --------------------------------------------------------------------------
   // ADMIN DASHBOARD VIEW
   // --------------------------------------------------------------------------
-  const filteredDownloads =
-    downloadFilter === "all" ? downloads : downloads.filter((d) => d.assetType === downloadFilter);
-
   const filteredActivities = allActivities.filter((act) => {
     const matchesAction =
       activityFilter === "all" ||
@@ -697,7 +658,7 @@ export default function AdminClient() {
     {
       label: "People",
       sections: [
-        { id: "users", label: "Surveyors", icon: Users, text: "Every account: who they are, where from, what they downloaded and whether their email is confirmed", count: users.length },
+        { id: "users", label: "Surveyors", icon: Users, text: "Every account: who they are, where from, what they downloaded and whether their email is confirmed", count: stats?.totalUsers ?? users.length },
         {
           id: "activities",
           label: "Activity",
@@ -708,7 +669,16 @@ export default function AdminClient() {
           count: Math.max(activitiesTotal, allActivities.length),
           sub: ACTIVITY_APPS.map((a) => ({ id: a.id, label: a.name, count: activityCounts[a.id] })),
         },
-        { id: "downloads", label: "Downloads", icon: Download, text: "Every program download, by whom and from where", count: downloads.length },
+        {
+          id: "downloads",
+          label: "Downloads",
+          icon: Download,
+          text: downloadsApp
+            ? `Every download of ${DOWNLOAD_TABS.find((a) => a.id === downloadsApp)?.name ?? downloadsApp}: by whom, which version and from where`
+            : "Every program download: by whom, which version and from where",
+          count: stats?.totalDownloads ?? downloads.length,
+          sub: DOWNLOAD_TABS.map((a) => ({ id: a.id, label: a.name, count: downloadCounts[a.id] })),
+        },
       ],
     },
     {
@@ -735,14 +705,30 @@ export default function AdminClient() {
         { id: "slope", label: "Slope Calculator", icon: TrendingUp, text: "Everything about Slope Calculator: downloads, people, versions, calculations, how steep and how long, projects, problems, its settings and every calculation", count: stats?.slope?.jobs },
         { id: "roadpro", label: "RoadPro", icon: Route, text: "Everything about RoadPro: downloads, the PCs with it and their versions, Toolkit installs and failures, and its releases on GitHub" },
         { id: "pfm", label: "Project Folder Manager", icon: FolderTree, text: "Everything about Project Folder Manager: downloads, the PCs with it and their versions, Toolkit installs and failures, and its releases on GitHub" },
-        { id: "toolkit", label: "Survey Toolkit", icon: LayoutGrid, text: "Who downloaded and uses the Toolkit, their PCs, the tools on them and everything the Toolkit did" },
+        { id: "toolkit", label: "Survey Toolkit", icon: LayoutGrid, text: "Everything about the Survey Toolkit: downloads, people, every PC and its version, installs, updates and failures, GitHub, who may use it, and every account, PC and event" },
       ],
     },
     {
       label: "Engage",
       sections: [
-        { id: "releases", label: "Releases", icon: Megaphone, text: "New versions of each program, the emails about them and review requests" },
-        { id: "reviews", label: "Reviews", icon: Star, text: "Star ratings and comments waiting to be published", count: pendingReviews || undefined, attention: pendingReviews > 0 },
+        {
+          id: "releases",
+          label: "Releases",
+          icon: Megaphone,
+          text: releasesApp
+            ? `${RELEASE_TABS.find((a) => a.id === releasesApp)?.name ?? releasesApp}: its versions, the emails about them, review requests`
+            : "Every app's versions, every release, the emails sent and who stopped them",
+          sub: RELEASE_TABS.map((a) => ({ id: a.id, label: a.name, count: releaseCounts[a.id] })),
+        },
+        {
+          id: "reviews",
+          label: "Reviews",
+          icon: Star,
+          text: reviewsApp ? `${REVIEW_APPS.find((a) => a.id === reviewsApp)?.name ?? reviewsApp}: its reviews to publish or hide` : "Star ratings and comments: publish the good ones, hide the rest",
+          count: pendingReviews || undefined,
+          attention: pendingReviews > 0,
+          sub: REVIEW_APPS.map((a) => ({ id: a.id, label: a.name, count: reviewWaiting[a.id] || undefined })),
+        },
         { id: "messages", label: "Messages", icon: Inbox, text: "What people sent through the contact form", count: newMessages || undefined, attention: newMessages > 0 },
       ],
     },
@@ -761,7 +747,9 @@ export default function AdminClient() {
       groups={groups}
       active={activeTab}
       onSelect={selectSection}
-      activeSub={activeTab === "activities" ? activityApp : activeTab === "files" ? filesApp : ""}
+      activeSub={
+        activeTab === "activities" ? activityApp : activeTab === "files" ? filesApp : activeTab === "releases" ? releasesApp : activeTab === "reviews" ? reviewsApp : activeTab === "downloads" ? downloadsApp : ""
+      }
       admin={adminUser}
       onLogout={handleAdminLogout}
       onRefresh={refreshAll}
@@ -1182,193 +1170,35 @@ export default function AdminClient() {
         {/* TAB 2: USERS MANAGEMENT (WITH INDIVIDUAL PERSON DETAILS TRIGGER) */}
         {/* ================================================================== */}
         {activeTab === "users" && (
-          <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-              <div className="relative w-full sm:w-80">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  placeholder="Search by name, email, role..."
-                  value={userSearch}
-                  onChange={(e) => {
-                    setUserSearch(e.target.value);
-                    loadUsers(e.target.value);
-                  }}
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
-                />
-              </div>
-
-              <div className="flex items-center gap-3 w-full sm:w-auto">
-                <button
-                  onClick={() => loadUsers(userSearch)}
-                  className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer"
-                  title="Refresh users"
-                >
-                  <RefreshCw className={`w-4 h-4 ${usersLoading ? "animate-spin" : ""}`} />
-                </button>
-                <button
-                  onClick={() => {
-                    setEditingUser(null);
-                    setUserForm({
-                      name: "",
-                      email: "",
-                      organization: "",
-                      role: "Surveyor",
-                      password: "",
-                      hasFullAccess: false,
-                      customMaxPoints: "",
-                    });
-                    setUserModalOpen(true);
-                  }}
-                  className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-bold transition-all shadow-lg shadow-blue-600/30 flex items-center gap-2 cursor-pointer"
-                >
-                  <Plus className="w-4 h-4" /> Add Surveyor
-                </button>
-              </div>
-            </div>
-
-            {/* Users Table */}
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-slate-800/60 border-b border-slate-800 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                    <tr>
-                      <th className="px-4 py-3.5">Surveyor</th>
-                      <th className="px-4 py-3.5">Organization</th>
-                      <th className="px-4 py-3.5 hidden xl:table-cell">Signed up from</th>
-                      <th className="px-4 py-3.5 text-right">Downloads</th>
-                      <th className="px-4 py-3.5 hidden md:table-cell">Joined</th>
-                      <th className="px-4 py-3.5 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800/60">
-                    {users.length === 0 ? (
-                      <tr>
-                        <td colSpan={6} className="px-4 py-12 text-center text-slate-500">
-                          No users found matching query
-                        </td>
-                      </tr>
-                    ) : (
-                      users.map((u) => (
-                        <tr key={u.id} className="hover:bg-slate-800/30 transition-colors">
-                          <td className="px-4 py-3">
-                            <div className="flex items-center gap-3 min-w-[200px]">
-                              <button
-                                onClick={() => {
-                                  setDetailUserId(u.id);
-                                  setDetailModalOpen(true);
-                                }}
-                                className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center font-bold text-xs text-white shadow-md hover:scale-105 transition-transform cursor-pointer shrink-0"
-                                title="Open this surveyor"
-                              >
-                                {u.name.charAt(0)}
-                              </button>
-                              <div className="min-w-0">
-                                <button
-                                  onClick={() => {
-                                    setDetailUserId(u.id);
-                                    setDetailModalOpen(true);
-                                  }}
-                                  className="font-bold text-white hover:text-blue-400 flex items-center gap-2 transition-colors text-left cursor-pointer"
-                                >
-                                  <span>{u.name}</span>
-                                  {u.role === "ADMIN" && (
-                                    <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase bg-rose-500/20 text-rose-400 border border-rose-500/30">
-                                      Admin
-                                    </span>
-                                  )}
-                                  {u.blocked && (
-                                    <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase bg-red-500/20 text-red-300 border border-red-500/40" title="Can't sign in (Controls)">
-                                      Blocked
-                                    </span>
-                                  )}
-                                </button>
-                                <div className="text-xs text-slate-400 truncate max-w-[240px]">{u.email}</div>
-                                {u.emailState === "confirmed" && (
-                                  <span className="mt-0.5 inline-block text-[10px] font-bold text-emerald-400" title="The email address is confirmed">✓ Email confirmed</span>
-                                )}
-                                {u.emailState === "waiting" && (
-                                  <span className="mt-0.5 inline-block text-[10px] font-bold text-amber-400" title="Signed up but never entered the code or opened the link: the address may be fake">Not confirmed yet</span>
-                                )}
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 text-xs">
-                            <div className="text-slate-200 max-w-[200px] truncate" title={u.organization || ""}>
-                              {u.organization || "—"}
-                            </div>
-                            <div className="text-slate-500 max-w-[200px] truncate">{u.role}</div>
-                          </td>
-                          <td className="px-4 py-3 hidden xl:table-cell">
-                            {(() => {
-                              const loc = formatLocationDisplay(u.location);
-                              return (
-                                <div className="flex flex-col gap-0.5 whitespace-nowrap">
-                                  <div className="flex items-center gap-1.5 text-xs text-slate-200">
-                                    <span className="shrink-0">{loc.flag}</span>
-                                    <span className="truncate max-w-[160px]">{loc.text}</span>
-                                  </div>
-                                  <span className="font-mono text-[11px] text-slate-500">{u.ipAddress || "—"}</span>
-                                </div>
-                              );
-                            })()}
-                          </td>
-                          <td className="px-4 py-3 font-bold text-blue-400 text-right">{u.downloadCount}</td>
-                          <td className="px-4 py-3 text-xs text-slate-400 whitespace-nowrap hidden md:table-cell">
-                            {new Date(u.createdAt).toLocaleDateString()}
-                          </td>
-                          <td className="px-4 py-3 text-right">
-                            <div className="inline-flex items-center gap-1.5 whitespace-nowrap">
-                              {/* Deep-dive individual person details */}
-                              <button
-                                onClick={() => {
-                                  setDetailUserId(u.id);
-                                  setDetailModalOpen(true);
-                                }}
-                                className="p-2 rounded-lg bg-blue-600/15 hover:bg-blue-600/25 text-blue-400 hover:text-blue-300 transition-colors border border-blue-500/20 cursor-pointer"
-                                title="Open this surveyor's files, points and activity"
-                              >
-                                <Eye className="w-3.5 h-3.5" />
-                              </button>
-
-                              <button
-                                onClick={() => {
-                                  setEditingUser(u);
-                                  setUserForm({
-                                    name: u.name,
-                                    email: u.email,
-                                    organization: u.organization || "",
-                                    role: u.role || "Surveyor",
-                                    password: "",
-                                    hasFullAccess: Boolean(u.hasFullAccess),
-                                    customMaxPoints: u.customMaxPoints ? String(u.customMaxPoints) : "",
-                                  });
-                                  setUserModalOpen(true);
-                                }}
-                                className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
-                                title="Edit user"
-                              >
-                                <Edit3 className="w-3.5 h-3.5" />
-                              </button>
-                              {u.email !== "admin@exceltokml.com" && (
-                                <button
-                                  onClick={() => handleDeleteUser(u.id, u.name)}
-                                  className="p-2 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 transition-colors cursor-pointer"
-                                  title="Delete user"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
+          <AdminSurveyors
+            adminFetch={adminFetch}
+            onToast={showToast}
+            reloadKey={usersReload}
+            place={formatLocationDisplay}
+            me={adminUser?.id ?? ""}
+            onOpenAccount={(id) => {
+              setDetailUserId(id);
+              setDetailModalOpen(true);
+            }}
+            onAdd={() => {
+              setEditingUser(null);
+              setUserForm({ name: "", email: "", organization: "", role: "Surveyor", password: "", hasFullAccess: false, customMaxPoints: "" });
+              setUserModalOpen(true);
+            }}
+            onEdit={(u) => {
+              setEditingUser(u as unknown as UserItem);
+              setUserForm({
+                name: u.name,
+                email: u.email,
+                organization: u.organization || "",
+                role: u.role || "Surveyor",
+                password: "",
+                hasFullAccess: Boolean(u.hasFullAccess),
+                customMaxPoints: u.customMaxPoints ? String(u.customMaxPoints) : "",
+              });
+              setUserModalOpen(true);
+            }}
+          />
         )}
 
         {/* ================================================================== */}
@@ -1390,126 +1220,18 @@ export default function AdminClient() {
         )}
 
         {activeTab === "downloads" && (
-          <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div className="flex items-center gap-2">
-                {["all", "windows_installer", "roadpro", "traverse", "folder_manager", "slope", "toolkit", "sample_csv", "test_kml"].map((type) => (
-                  <button
-                    key={type}
-                    onClick={() => setDownloadFilter(type)}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      downloadFilter === type
-                        ? "bg-blue-600 text-white"
-                        : "bg-slate-900 border border-slate-800 text-slate-400 hover:text-white"
-                    }`}
-                  >
-                    {type === "all" ? "All Assets" : type.replace("_", " ").toUpperCase()}
-                  </button>
-                ))}
-              </div>
-
-              <div className="flex items-center gap-3">
-                <a
-                  href="/api/admin/downloads?format=csv"
-                  className="px-4 py-2 rounded-xl bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/30 text-xs font-bold transition-colors flex items-center gap-2 border border-emerald-500/30"
-                >
-                  <FileSpreadsheet className="w-4 h-4" /> Export CSV
-                </a>
-                <button
-                  onClick={handleClearDownloads}
-                  className="px-4 py-2 rounded-xl bg-rose-600/20 text-rose-400 hover:bg-rose-600/30 text-xs font-bold transition-colors flex items-center gap-2 border border-rose-500/30 cursor-pointer"
-                >
-                  <Trash2 className="w-4 h-4" /> Clear All Logs
-                </button>
-              </div>
-            </div>
-
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-slate-800/60 border-b border-slate-800 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                    <tr>
-                      <th className="px-6 py-4">Timestamp</th>
-                      <th className="px-6 py-4">Surveyor</th>
-                      <th className="px-6 py-4">Asset Type</th>
-                      <th className="px-6 py-4">Download IP &amp; Origin</th>
-                      <th className="px-6 py-4">File Name</th>
-                      <th className="px-6 py-4">Version</th>
-                      <th className="px-6 py-4 text-right">Delete</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800/60">
-                    {filteredDownloads.length === 0 ? (
-                      <tr>
-                        <td colSpan={7} className="px-6 py-12 text-center text-slate-500">
-                          No download records logged yet
-                        </td>
-                      </tr>
-                    ) : (
-                      filteredDownloads.map((dl) => (
-                        <tr key={dl.id} className="hover:bg-slate-800/30 transition-colors">
-                          <td className="px-6 py-4 text-xs text-slate-400">
-                            {new Date(dl.timestamp).toLocaleString()}
-                          </td>
-                          <td className="px-6 py-4">
-                            {dl.userId ? (
-                              <button
-                                onClick={() => {
-                                  setDetailUserId(dl.userId);
-                                  setDetailModalOpen(true);
-                                }}
-                                className="font-bold text-white hover:text-blue-400 text-xs text-left flex items-center gap-1 cursor-pointer"
-                              >
-                                <span>{dl.userName || dl.userEmail || "Verified Surveyor"}</span>
-                                <Eye className="w-3 h-3 text-blue-400" />
-                              </button>
-                            ) : (
-                              <div className="font-bold text-white text-xs">{dl.userName || "Verified Surveyor"}</div>
-                            )}
-                            <div className="text-[11px] text-slate-500">{dl.userEmail || "anonymous"}</div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <span className="px-2 py-0.5 rounded text-[11px] font-bold uppercase bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                              {ASSET_NAME[dl.assetType] || dl.assetType}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4">
-                            {(() => {
-                              const loc = formatLocationDisplay(dl.location);
-                              return (
-                                <div className="flex flex-col gap-1">
-                                  <div className="flex items-center gap-1.5 text-xs text-white font-medium">
-                                    <span className="text-sm shrink-0">{loc.flag}</span>
-                                    <span className="truncate max-w-[180px]">{loc.text}</span>
-                                  </div>
-                                  <div>
-                                    <span className="font-mono text-[11px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                                      {dl.ipAddress || "127.0.0.1"}
-                                    </span>
-                                  </div>
-                                </div>
-                              );
-                            })()}
-                          </td>
-                          <td className="px-6 py-4 text-xs font-mono text-slate-300">{dl.fileName}</td>
-                          <td className="px-6 py-4 text-xs font-mono text-slate-400">{dl.version}</td>
-                          <td className="px-6 py-4 text-right">
-                            <button
-                              onClick={() => handleDeleteDownload(dl.id)}
-                              className="p-1.5 rounded-lg text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
-                              title="Delete log"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
+          <AdminDownloads
+            key={downloadsApp}
+            app={downloadsApp}
+            adminFetch={adminFetch}
+            onToast={showToast}
+            onCounts={setDownloadCounts}
+            place={formatLocationDisplay}
+            onOpenAccount={(id) => {
+              setDetailUserId(id);
+              setDetailModalOpen(true);
+            }}
+          />
         )}
 
         {/* ================================================================== */}
@@ -1578,15 +1300,77 @@ export default function AdminClient() {
             }}
           />
         )}
-        {activeTab === "toolkit" && <AdminToolkit adminFetch={adminFetch} onToast={showToast} />}
+        {activeTab === "toolkit" && (
+          <AdminProgram
+            app="toolkit"
+            adminFetch={adminFetch}
+            onToast={showToast}
+            onShow={selectSection}
+            onOpenAccount={(id) => {
+              setDetailUserId(id);
+              setDetailModalOpen(true);
+            }}
+            extra={
+              <div className="grid lg:grid-cols-2 gap-4">
+                <AppSettings
+                  adminFetch={adminFetch}
+                  onToast={showToast}
+                  onShow={selectSection}
+                  fields={[
+                    {
+                      key: "toolkitPublic",
+                      kind: "switch",
+                      label: "Open to everyone",
+                      on: "Everyone with an account can download and use the Survey Toolkit.",
+                      off: "Only the testers in Access (below) can download and use it.",
+                    },
+                  ]}
+                />
+              </div>
+            }
+            footer={() => (
+              <section className="pt-4 border-t border-[var(--adm-line)] space-y-3">
+                <h2 className="text-lg font-extrabold text-white">In detail</h2>
+                <AdminToolkit adminFetch={adminFetch} onToast={showToast} embedded />
+              </section>
+            )}
+          />
+        )}
         {activeTab === "log" && <AdminLog adminFetch={adminFetch} onToast={showToast} />}
 
         {/* ================================================================== */}
         {/* TAB 6: SETTINGS & RELEASE MANAGEMENT */}
         {/* ================================================================== */}
-        {activeTab === "releases" && <AdminReleases adminFetch={adminFetch} onToast={showToast} />}
+        {activeTab === "releases" && (
+          <AdminReleases
+            key={releasesApp}
+            app={releasesApp}
+            adminFetch={adminFetch}
+            onToast={showToast}
+            onShow={selectSection}
+            onCounts={setReleaseCounts}
+            onOpenAccount={(id) => {
+              setDetailUserId(id);
+              setDetailModalOpen(true);
+            }}
+          />
+        )}
 
-        {activeTab === "reviews" && <AdminReviews adminFetch={adminFetch} onToast={showToast} onCounts={setPendingReviews} />}
+        {activeTab === "reviews" && (
+          <AdminReviews
+            key={reviewsApp}
+            app={reviewsApp}
+            adminFetch={adminFetch}
+            onToast={showToast}
+            onCounts={setPendingReviews}
+            onPerApp={setReviewWaiting}
+            onShow={selectSection}
+            onOpenAccount={(id) => {
+              setDetailUserId(id);
+              setDetailModalOpen(true);
+            }}
+          />
+        )}
 
         {activeTab === "messages" && (
           <AdminMessages adminFetch={adminFetch} onToast={showToast} onCounts={setNewMessages} />

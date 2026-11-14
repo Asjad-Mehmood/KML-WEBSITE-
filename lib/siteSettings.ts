@@ -40,6 +40,8 @@ export interface ExtraSettings {
   signupPrompt: boolean;
   /** Ask for a review after someone downloads one of our programs */
   reviewPrompt: boolean;
+  /** Publish a new or changed review without waiting for the admin when it has at least this many stars (0: never). A comment with a link or an email address always waits. */
+  reviewAutoPublish: number;
   /** The home page: "new" (every program: hero tabs, a section for each, all downloads), "classic" (the earlier one, about Excel to KML) or "toolkit" (the Survey Toolkit hub, as on /toolkit) */
   homeHero: HomeHero;
   /** Admin two-factor sign-in: a browser new to admin must also enter a 6-digit code emailed to the admin (needs email set up) */
@@ -73,6 +75,7 @@ export const EXTRA_DEFAULTS: ExtraSettings = {
   tlBlocked: "",
   signupPrompt: true,
   reviewPrompt: true,
+  reviewAutoPublish: 0,
   homeHero: "new",
   adminTwoFactor: true,
   toolkitPublic: true,

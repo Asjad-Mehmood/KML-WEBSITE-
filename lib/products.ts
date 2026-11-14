@@ -2,7 +2,7 @@
 // promotes them reads this list: the home page hero tabs, the menu, the
 // footer and the sitemap. To add a tool, add an entry here and
 // give it a page at its href.
-import { ROADPRO_VERSION } from "@/lib/roadpro";
+import { ROADPRO_RELEASE } from "@/lib/roadpro";
 import { TRAVERSE_FILES, TRAVERSE_SHORT, TRAVERSE_VERSION } from "@/lib/traverse";
 import { PFM_FILES, PFM_NAME, PFM_VERSION } from "@/lib/folderManager";
 import { SLOPE_APP, SLOPE_FILES, SLOPE_NAME, SLOPE_PAGE, SLOPE_VERSION } from "@/lib/slope";
@@ -43,7 +43,7 @@ export const PRODUCTS: Product[] = [
     id: "toolkit",
     name: "Survey Toolkit",
     platform: "Windows",
-    version: "1.0.5",
+    version: "1.0.6",
     tagline: "Every survey tool in one download, always up to date",
     description:
       "One free Windows program installs Excel to KML, RoadPro, Traverse & Level, Project Folder Manager and Slope Calculator with a click each, then keeps every one of them up to date by itself. The web apps open side by side, already signed in.",
@@ -90,7 +90,7 @@ export const PRODUCTS: Product[] = [
     id: "roadpro",
     name: "RoadPro",
     platform: "AutoCAD plugin",
-    version: ROADPRO_VERSION,
+    version: ROADPRO_RELEASE,
     tagline: "A complete road in AutoCAD from one command",
     description:
       "Draw the centre line and RoadPro adds the edges, turning radius, barricades, cones or kerb stone, signs, road markings, chainage, cross section and an Excel report, and joins new roads with junctions and turning lanes. New in 3.6: clean junction tie-ins, roundabouts placed on a road, professional cross sections, and RoadPro Setup that keeps itself up to date. Free plugin for AutoCAD, Civil 3D and Map 3D.",

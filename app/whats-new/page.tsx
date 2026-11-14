@@ -7,7 +7,7 @@ import ReleaseList from "./ReleaseList";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { openGraphFor } from "@/lib/site";
-import { ROADPRO_RELEASED, ROADPRO_VERSION } from "@/lib/roadpro";
+import { ROADPRO_RELEASE, ROADPRO_RELEASE_DATE } from "@/lib/roadpro";
 import { TRAVERSE_RELEASED, TRAVERSE_VERSION } from "@/lib/traverse";
 import { SLOPE_RELEASED, SLOPE_VERSION } from "@/lib/slope";
 import { PFM_RELEASED, PFM_VERSION } from "@/lib/folderManager";
@@ -18,7 +18,7 @@ const DESCRIPTION = "What changed in each version of Excel to KML, and the relea
 
 // The other programs' latest versions, with where their changes are listed
 const OTHERS: { name: string; version: string | null; released: string | null; href: string; label: string }[] = [
-  { name: "RoadPro", version: ROADPRO_VERSION, released: ROADPRO_RELEASED, href: "/roadpro#new", label: "New in this version" },
+  { name: "RoadPro", version: ROADPRO_RELEASE, released: ROADPRO_RELEASE_DATE, href: "/roadpro#new", label: "New in this version" },
   { name: "Traverse & Level", version: TRAVERSE_VERSION, released: TRAVERSE_RELEASED, href: "/whats-new/traverse", label: "Release notes" },
   { name: "Slope Calculator", version: SLOPE_VERSION, released: SLOPE_RELEASED, href: "/whats-new/slope", label: "Release notes" },
   { name: "Project Folder Manager", version: PFM_VERSION, released: PFM_RELEASED, href: "/whats-new/folder-manager", label: "Release notes" },
