@@ -57,6 +57,8 @@ export const ADMIN_ACTIONS: Record<string, string> = {
   "release.save": "Saved a release",
   "release.delete": "Deleted a release",
   "release.send": "Sent a release email",
+  "release.retry": "Sent a release email again to the people it failed for",
+  "release.optin": "Let someone get release emails again",
   "review.moderate": "Published or hid a review",
   "message.update": "Changed a message",
   "toolkit.tester": "Changed the Toolkit testers",

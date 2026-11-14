@@ -204,6 +204,16 @@ const ASSET_NAME: Record<string, string> = {
   toolkit: "Survey Toolkit (Windows)",
 };
 
+/** The apps under Releases in the menu (lib/releases.ts RELEASE_APPS, which the page can't import) */
+const RELEASE_TABS = [
+  { id: "excel-to-kml", name: "Excel to KML" },
+  { id: "traverse", name: "Traverse & Level" },
+  { id: "slope", name: "Slope Calculator" },
+  { id: "roadpro", name: "RoadPro" },
+  { id: "folder-manager", name: "Project Folder Manager" },
+  { id: "toolkit", name: "Survey Toolkit" },
+];
+
 const ADMIN_TABS = ["overview", "users", "activities", "downloads", "files", "conversions", "excel", "traverse", "slope", "roadpro", "pfm", "toolkit", "releases", "reviews", "messages", "settings", "log"] as const;
 type AdminTab = (typeof ADMIN_TABS)[number];
 function tabFromAddress(): AdminTab {
@@ -238,11 +248,15 @@ export default function AdminClient() {
   // Files → an app, from the menu (components/admin/AdminFiles.tsx)
   const [filesApp, setFilesApp] = useState("");
   const [fileCounts, setFileCounts] = useState<Record<string, number>>({});
+  // Releases → an app (components/admin/AdminReleases.tsx)
+  const [releasesApp, setReleasesApp] = useState("");
+  const [releaseCounts, setReleaseCounts] = useState<Record<string, number>>({});
   // a menu item: a section, or "<section>:<part>" for a part of it
   const selectSection = (id: string) => {
     const [tab, part] = id.split(":");
     if (tab === "activities") setActivityApp(part ?? "");
     if (tab === "files") setFilesApp(part ?? "");
+    if (tab === "releases") setReleasesApp(part ?? "");
     setActiveTab(tab as typeof activeTab);
   };
   useEffect(() => {
@@ -742,7 +756,15 @@ export default function AdminClient() {
     {
       label: "Engage",
       sections: [
-        { id: "releases", label: "Releases", icon: Megaphone, text: "New versions of each program, the emails about them and review requests" },
+        {
+          id: "releases",
+          label: "Releases",
+          icon: Megaphone,
+          text: releasesApp
+            ? `${RELEASE_TABS.find((a) => a.id === releasesApp)?.name ?? releasesApp}: its versions, the emails about them, review requests`
+            : "Every app's versions, every release, the emails sent and who stopped them",
+          sub: RELEASE_TABS.map((a) => ({ id: a.id, label: a.name, count: releaseCounts[a.id] })),
+        },
         { id: "reviews", label: "Reviews", icon: Star, text: "Star ratings and comments waiting to be published", count: pendingReviews || undefined, attention: pendingReviews > 0 },
         { id: "messages", label: "Messages", icon: Inbox, text: "What people sent through the contact form", count: newMessages || undefined, attention: newMessages > 0 },
       ],
@@ -762,7 +784,7 @@ export default function AdminClient() {
       groups={groups}
       active={activeTab}
       onSelect={selectSection}
-      activeSub={activeTab === "activities" ? activityApp : activeTab === "files" ? filesApp : ""}
+      activeSub={activeTab === "activities" ? activityApp : activeTab === "files" ? filesApp : activeTab === "releases" ? releasesApp : ""}
       admin={adminUser}
       onLogout={handleAdminLogout}
       onRefresh={refreshAll}
@@ -1620,7 +1642,20 @@ export default function AdminClient() {
         {/* ================================================================== */}
         {/* TAB 6: SETTINGS & RELEASE MANAGEMENT */}
         {/* ================================================================== */}
-        {activeTab === "releases" && <AdminReleases adminFetch={adminFetch} onToast={showToast} />}
+        {activeTab === "releases" && (
+          <AdminReleases
+            key={releasesApp}
+            app={releasesApp}
+            adminFetch={adminFetch}
+            onToast={showToast}
+            onShow={selectSection}
+            onCounts={setReleaseCounts}
+            onOpenAccount={(id) => {
+              setDetailUserId(id);
+              setDetailModalOpen(true);
+            }}
+          />
+        )}
 
         {activeTab === "reviews" && <AdminReviews adminFetch={adminFetch} onToast={showToast} onCounts={setPendingReviews} />}
 

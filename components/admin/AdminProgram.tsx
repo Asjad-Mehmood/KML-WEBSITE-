@@ -88,7 +88,7 @@ function GitHubPanel({ app, x, adminFetch, onToast, onShow, onDone }: { app: str
     <Panel
       title="Releases on GitHub"
       action={
-        <button onClick={() => onShow("releases")} className="text-xs font-semibold text-blue-400 hover:underline cursor-pointer">
+        <button onClick={() => onShow(`releases:${app}`)} className="text-xs font-semibold text-blue-400 hover:underline cursor-pointer">
           Releases
         </button>
       }
