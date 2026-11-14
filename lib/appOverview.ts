@@ -375,3 +375,65 @@ export async function traverseExtras(days: number) {
     blocked,
   };
 }
+
+/** Slope Calculator's own part: the calculations kept, how steep and how long, and the projects they're for */
+export async function slopeExtras(days: number) {
+  const { ensureSlopeTables } = await import("@/lib/slopeJobs");
+  const from = new Date(Date.now() - days * 864e5);
+  await safe(ensureSlopeTables(), undefined, "slope tables");
+  // summary is the app's own: { percent, rise, length, start, end, stations }; data.plate.project names the project
+  const num = (k: string) => `CASE WHEN "summary" LIKE '{%' AND ("summary"::jsonb->>'${k}') ~ '^-?[0-9.]+(e-?[0-9]+)?$' THEN ("summary"::jsonb->>'${k}')::float END`;
+  const [tot, grades, projects] = await Promise.all([
+    safe(
+      prisma.$queryRawUnsafe<
+        { total: bigint; fresh: bigint; saved: bigint; people: bigint; freshPeople: bigint; rising: bigint; falling: bigint; flat: bigint; length: number | null; avgLength: number | null; avgStations: number | null; bytes: bigint | null }[]
+      >(
+        `SELECT COUNT(*) total, COUNT(*) FILTER (WHERE "createdAt" >= $1) fresh, COUNT(*) FILTER (WHERE "updatedAt" >= $1) saved,
+                COUNT(DISTINCT "ownerId") people, COUNT(DISTINCT "ownerId") FILTER (WHERE "updatedAt" >= $1) "freshPeople",
+                COUNT(*) FILTER (WHERE p > 0) rising, COUNT(*) FILTER (WHERE p < 0) falling, COUNT(*) FILTER (WHERE p = 0) flat,
+                SUM(l) length, AVG(l) "avgLength", AVG(st) "avgStations", SUM("size") bytes
+           FROM (SELECT *, ${num("percent")} p, ${num("length")} l, ${num("stations")} st FROM "slope_jobs") s`,
+        from
+      ),
+      [],
+      "slope totals"
+    ),
+    safe(
+      prisma.$queryRawUnsafe<{ band: number; c: bigint }[]>(
+        `SELECT CASE WHEN a < 0.5 THEN 0 WHEN a < 1 THEN 1 WHEN a < 2 THEN 2 WHEN a < 4 THEN 3 WHEN a < 8 THEN 4 ELSE 5 END band, COUNT(*) c
+           FROM (SELECT ABS(${num("percent")}) a FROM "slope_jobs") s WHERE a IS NOT NULL GROUP BY 1 ORDER BY 1`
+      ),
+      [],
+      "slope grades"
+    ),
+    safe(
+      prisma.$queryRawUnsafe<{ project: string; c: bigint; people: bigint; last: Date }[]>(
+        `SELECT TRIM(("data"::jsonb #>> '{plate,project}')) project, COUNT(*) c, COUNT(DISTINCT "ownerId") people, MAX("updatedAt") "last"
+           FROM "slope_jobs" WHERE "data" LIKE '{%' AND COALESCE(TRIM(("data"::jsonb #>> '{plate,project}')), '') <> ''
+          GROUP BY 1 ORDER BY 2 DESC, 4 DESC LIMIT 10`
+      ),
+      [],
+      "slope projects"
+    ),
+  ]);
+  const t = tot[0];
+  const BANDS = ["under 0.5%", "0.5–1%", "1–2%", "2–4%", "4–8%", "8% or more"];
+  return {
+    calcs: {
+      total: n(t?.total),
+      fresh: n(t?.fresh),
+      saved: n(t?.saved),
+      people: n(t?.people),
+      activePeople: n(t?.freshPeople),
+      rising: n(t?.rising),
+      falling: n(t?.falling),
+      flat: n(t?.flat),
+      length: t?.length ?? 0,
+      avgLength: t?.avgLength ?? 0,
+      avgStations: t?.avgStations ?? 0,
+      bytes: n(t?.bytes),
+    },
+    grades: BANDS.map((label, i) => ({ label, count: n(grades.find((g) => Number(g.band) === i)?.c) })),
+    projects: projects.map((p) => ({ project: p.project, count: n(p.c), people: n(p.people), last: p.last })),
+  };
+}

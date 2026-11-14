@@ -46,6 +46,10 @@ export interface ExtraSettings {
   adminTwoFactor: boolean;
   /** Survey Toolkit open to everyone with an account (on), or only to the testers in Admin → Toolkit (off) */
   toolkitPublic: boolean;
+  /** Slope Calculator keeps calculations in accounts (Windows program and web app). Off: nothing new is saved; kept ones stay */
+  slopeKeepJobs: boolean;
+  /** Calculations one account may keep in Slope Calculator */
+  slopeMaxJobs: number;
 }
 
 export type HomeHero = "new" | "classic" | "toolkit";
@@ -72,6 +76,8 @@ export const EXTRA_DEFAULTS: ExtraSettings = {
   homeHero: "new",
   adminTwoFactor: true,
   toolkitPublic: true,
+  slopeKeepJobs: true,
+  slopeMaxJobs: 500,
 };
 
 let ready: Promise<void> | null = null;

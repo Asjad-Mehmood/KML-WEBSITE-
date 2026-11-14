@@ -45,6 +45,8 @@ const LABELS: Record<keyof AllSettings, string> = {
   homeHero: "Home page",
   adminTwoFactor: "Admin two-factor sign-in",
   toolkitPublic: "Survey Toolkit open to everyone",
+  slopeKeepJobs: "Slope Calculator keeps calculations",
+  slopeMaxJobs: "Slope Calculator calculations per account",
 };
 
 async function allSettings(): Promise<AllSettings> {
@@ -171,7 +173,7 @@ function cleanSettings(body: Record<string, unknown>): Partial<AllSettings> | { 
     "requireAuthForDownload", "maintenanceMode", "announcementActive", "allowSignups", "googleSignInEnabled",
     "verifyEmails", "verifyOldAccounts",
     "traverseEnabled", "tlEnabled", "tlSharing", "tlKeepFiles", "signupPrompt", "reviewPrompt", "adminTwoFactor",
-    "toolkitPublic",
+    "toolkitPublic", "slopeKeepJobs",
   ];
   for (const k of bools) if (typeof body[k] === "boolean") out[k] = body[k] as boolean;
   const texts: [string, number][] = [
@@ -187,6 +189,11 @@ function cleanSettings(body: Record<string, unknown>): Partial<AllSettings> | { 
     const n = Number(body.tlMaxJobs);
     if (!Number.isInteger(n) || n < 1 || n > 5000) return { error: "Jobs per account must be a whole number from 1 to 5000." };
     out.tlMaxJobs = n;
+  }
+  if (body.slopeMaxJobs !== undefined) {
+    const n = Number(body.slopeMaxJobs);
+    if (!Number.isInteger(n) || n < 1 || n > 5000) return { error: "Calculations per account must be a whole number from 1 to 5000." };
+    out.slopeMaxJobs = n;
   }
   if (body.homeHero !== undefined) {
     if (!HOME_HEROES.includes(body.homeHero as (typeof HOME_HEROES)[number])) return { error: "Unknown home page." };

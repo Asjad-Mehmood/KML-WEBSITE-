@@ -94,8 +94,8 @@ export function Delta({ p, bad = false }: { p: Pair; bad?: boolean }) {
 export function Stat({ icon: Icon, label, value, sub, tone = "text-white" }: { icon: LucideIcon; label: string; value: string; sub?: ReactNode; tone?: string }) {
   return (
     <div className={`${card} p-4 min-w-0`}>
-      <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-500">
-        <Icon className="w-3.5 h-3.5 shrink-0" aria-hidden /> <span className="truncate">{label}</span>
+      <p className="flex items-start gap-1.5 text-[11px] leading-tight font-bold uppercase tracking-wider text-slate-500">
+        <Icon className="w-3.5 h-3.5 shrink-0" aria-hidden /> <span className="min-w-0 break-words">{label}</span>
       </p>
       <p className={`mt-1 text-2xl font-extrabold tabular-nums ${tone}`}>{value}</p>
       {sub && <div className="mt-0.5 text-[11.5px] text-slate-400">{sub}</div>}
@@ -106,8 +106,8 @@ export function Stat({ icon: Icon, label, value, sub, tone = "text-white" }: { i
 export function Panel({ title, action, children }: { title: string; action?: ReactNode; children: ReactNode }) {
   return (
     <section className={`${card} min-w-0`}>
-      <div className="flex items-center justify-between gap-2 px-5 pt-4 pb-3">
-        <h3 className="text-[15px] font-bold text-white">{title}</h3>
+      <div className="flex flex-wrap items-center justify-between gap-2 px-5 pt-4 pb-3">
+        <h3 className="text-[15px] font-bold text-white whitespace-nowrap">{title}</h3>
         {action}
       </div>
       {children}

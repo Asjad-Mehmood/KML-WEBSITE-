@@ -729,7 +729,7 @@ export default function AdminClient() {
       sections: [
         { id: "excel", label: "Excel to KML", icon: FileSpreadsheet, text: "Everything about Excel to KML: downloads, people, versions, points, grids, problems and its settings" },
         { id: "traverse", label: "Traverse & Level", icon: Compass, text: "Everything about Traverse & Level: downloads, people, versions, jobs and results, sharing, problems, its settings and every job", count: stats?.traverse?.jobs },
-        { id: "slope", label: "Slope Calculator", icon: TrendingUp, text: "Calculations surveyors keep in their accounts from Slope Calculator", count: stats?.slope?.jobs },
+        { id: "slope", label: "Slope Calculator", icon: TrendingUp, text: "Everything about Slope Calculator: downloads, people, versions, calculations, how steep and how long, projects, problems, its settings and every calculation", count: stats?.slope?.jobs },
         { id: "toolkit", label: "Survey Toolkit", icon: LayoutGrid, text: "Who downloaded and uses the Toolkit, their PCs, the tools on them and everything the Toolkit did" },
       ],
     },
@@ -1538,7 +1538,17 @@ export default function AdminClient() {
             }}
           />
         )}
-        {activeTab === "slope" && <AdminSlope adminFetch={adminFetch} onToast={showToast} />}
+        {activeTab === "slope" && (
+          <AdminSlope
+            adminFetch={adminFetch}
+            onToast={showToast}
+            onShow={selectSection}
+            onOpenAccount={(id) => {
+              setDetailUserId(id);
+              setDetailModalOpen(true);
+            }}
+          />
+        )}
         {activeTab === "excel" && (
           <AdminExcelToKml
             adminFetch={adminFetch}
