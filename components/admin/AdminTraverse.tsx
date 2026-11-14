@@ -692,7 +692,7 @@ export default function AdminTraverse({
               </Panel>
             </div>
             <div className="grid lg:grid-cols-2 gap-4">
-              <AppSettings adminFetch={adminFetch} onToast={onToast} onShow={onShow} fields={TL_FIELDS} />
+              <AppSettings adminFetch={adminFetch} onToast={onToast} onShow={onShow} fields={TL_FIELDS} part="traverse" />
               <Blocked list={x.blocked} adminFetch={adminFetch} onToast={onToast} onDone={reload} />
             </div>
           </>

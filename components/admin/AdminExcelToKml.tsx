@@ -93,6 +93,7 @@ export default function AdminExcelToKml({
                 onToast={onToast}
                 onShow={onShow}
                 fields={FIELDS}
+                part="features"
                 footer={(st) => {
                   const v = String(st.appVersion ?? "");
                   return (

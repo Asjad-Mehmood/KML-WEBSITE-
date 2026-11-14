@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -61,7 +61,8 @@ type AdminFetch = (url: string, options?: RequestInit) => Promise<Response>;
 
 const toDraft = (s: AllSettings): Draft => ({ ...s });
 
-const SECTIONS = [
+/** The parts of Settings: one menu item each under Settings in the sidebar */
+export const SETTINGS_SECTIONS = [
   ["status", "Status"],
   ["access", "Access"],
   ["notices", "Notices"],
@@ -74,6 +75,8 @@ const SECTIONS = [
   ["system", "System"],
   ["history", "History"],
 ] as const;
+// the part chosen in the menu; "" shows every part
+const Only = createContext("");
 
 const DEFAULT_TL_CLOSED = "Traverse & Level is closed for maintenance. Your jobs are safe; please try again later.";
 
@@ -85,8 +88,11 @@ export default function SettingsPanel({
   adminFetch,
   onToast,
   onSaved,
+  part = "",
 }: {
   adminFetch: AdminFetch;
+  /** one part of Settings (SETTINGS_SECTIONS), from the menu; "" for all of them */
+  part?: string;
   onToast: (message: string, type?: "success" | "error") => void;
   onSaved?: (s: AllSettings) => void;
 }) {
@@ -182,25 +188,11 @@ export default function SettingsPanel({
 
   return (
     <div className="max-w-4xl mx-auto w-full pb-28">
-      {/* Section links */}
-      <nav aria-label="Settings sections" className="sticky top-0 z-20 -mx-1 mb-6 px-1 py-2 bg-slate-950/90 backdrop-blur">
-        <div className="flex gap-1.5 overflow-x-auto">
-          {SECTIONS.map(([id, label]) => (
-            <a
-              key={id}
-              href={`#settings-${id}`}
-              className="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold text-slate-300 bg-slate-900 border border-slate-800 hover:border-blue-500/50 hover:text-white"
-            >
-              {label}
-            </a>
-          ))}
-        </div>
-      </nav>
-
+      <Only.Provider value={part}>
       <div className="space-y-6">
         {/* Status at a glance (what is live now, not the unsaved draft) */}
         <Section id="status" icon={CheckCircle2} title="Live now" text="What visitors see right now, from the saved settings.">
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <Pill label="Web app" value={saved.maintenanceMode ? "Maintenance" : "Running"} warn={saved.maintenanceMode} />
             <Pill label="Traverse & Level" value={saved.tlEnabled ? "Open" : "Closed"} warn={!saved.tlEnabled} />
             <Pill label="Traverse adjust" value={saved.traverseEnabled ? "Shown" : "Hidden"} warn={!saved.traverseEnabled} />
@@ -534,6 +526,7 @@ export default function SettingsPanel({
           )}
         </Section>
       </div>
+      </Only.Provider>
 
       {/* Save bar: only while something has changed */}
       {dirty && (
@@ -582,6 +575,8 @@ function Section({
   text: string;
   children: React.ReactNode;
 }) {
+  const only = useContext(Only);
+  if (only && only !== id) return null;
   return (
     <section id={`settings-${id}`} className="scroll-mt-16 rounded-3xl border border-slate-800 bg-slate-900 p-5 sm:p-6">
       <div className="flex items-start gap-3 mb-5">
