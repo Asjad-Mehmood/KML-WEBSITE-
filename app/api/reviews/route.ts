@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { getExtraSettings } from "@/lib/siteSettings";
 import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
 import { REVIEW_PRODUCTS, isReviewProduct, publishedReviews, publishedReviewsAll, saveReview } from "@/lib/reviews";
 
@@ -34,7 +35,9 @@ export async function POST(req: NextRequest) {
   const comment = typeof body.comment === "string" ? body.comment.trim().slice(0, 1000) : "";
   const version = typeof body.version === "string" ? body.version.trim().slice(0, 30) : "";
   try {
-    await saveReview(s.user.id, product, rating, comment, version);
+    // Admin → Reviews can publish good reviews by themselves
+    const auto = (await getExtraSettings().catch(() => null))?.reviewAutoPublish ?? 0;
+    await saveReview(s.user.id, product, rating, comment, version, auto);
     db.recordActivity({
       userId: s.user.id,
       userEmail: s.user.email,

@@ -42,6 +42,7 @@ const LABELS: Record<keyof AllSettings, string> = {
   tlBlocked: "Traverse & Level blocked accounts",
   signupPrompt: "Sign-up invitation",
   reviewPrompt: "Review after download",
+  reviewAutoPublish: "Publish reviews by themselves",
   homeHero: "Home page",
   adminTwoFactor: "Admin two-factor sign-in",
   toolkitPublic: "Survey Toolkit open to everyone",
@@ -189,6 +190,11 @@ function cleanSettings(body: Record<string, unknown>): Partial<AllSettings> | { 
     const n = Number(body.tlMaxJobs);
     if (!Number.isInteger(n) || n < 1 || n > 5000) return { error: "Jobs per account must be a whole number from 1 to 5000." };
     out.tlMaxJobs = n;
+  }
+  if (body.reviewAutoPublish !== undefined) {
+    const n = Number(body.reviewAutoPublish);
+    if (![0, 3, 4, 5].includes(n)) return { error: "Publish by themselves: off, or 3, 4 or 5 stars and up." };
+    out.reviewAutoPublish = n;
   }
   if (body.slopeMaxJobs !== undefined) {
     const n = Number(body.slopeMaxJobs);
