@@ -16,32 +16,6 @@ function currentTheme() { const t = document.documentElement.getAttribute('data-
 function setTheme(t) { document.documentElement.setAttribute('data-theme', t); storage.set('sx.theme', t); themeLabel(); }
 function themeLabel() { const dark = currentTheme() === 'dark'; $('#theme-btn').setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode'); $('meta[name="theme-color"]').setAttribute('content', dark ? '#0a1424' : '#0b1a2e'); }
 
-// ---------------------------------------------------------------- clock + calendar
-let calMonth = null;
-function tickClock() {
-  const d = new Date();
-  $('#clock-time').textContent = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  $('#clock-date').textContent = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
-}
-function drawCalendar() {
-  const now = new Date(), y = calMonth.getFullYear(), m = calMonth.getMonth();
-  $('#cal-title').textContent = calMonth.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
-  const first = new Date(y, m, 1), startDow = (first.getDay() + 6) % 7, days = new Date(y, m + 1, 0).getDate(), prevDays = new Date(y, m, 0).getDate();
-  let h = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map(d => `<span class="dow">${d}</span>`).join('');
-  for (let i = 0; i < 42; i++) {
-    const n = i - startDow + 1, inMonth = n >= 1 && n <= days, day = inMonth ? n : n < 1 ? prevDays + n : n - days;
-    const isToday = inMonth && y === now.getFullYear() && m === now.getMonth() && n === now.getDate();
-    const dow = i % 7, weekend = dow === 4 || dow === 5;   // Friday and Saturday
-    h += `<span class="d${inMonth ? '' : ' o'}${isToday ? ' t' : ''}${weekend && inMonth && !isToday ? ' w' : ''}">${day}</span>`;
-  }
-  $('#cal-grid').innerHTML = h;
-}
-function toggleCalendar(open) {
-  const c = $('#calendar'); const show = open ?? c.hidden;
-  if (show) { calMonth = new Date(); calMonth.setDate(1); drawCalendar(); }
-  c.hidden = !show; $('#clock-btn').setAttribute('aria-expanded', String(show));
-}
-
 // ---------------------------------------------------------------- routing
 const PRIVATE = ['dashboard', 'traverse', 'level', 'simulator'];
 // Opened as an installed app (the Windows program adds ?app=1; an installed web app runs
@@ -73,7 +47,7 @@ function route() {
   renderRecent(); navOpen(false);
   document.title = { login: 'Log in · Traverse & Level', register: 'Register · Traverse & Level', dashboard: 'Dashboard · Traverse & Level', tools: (r === 'level' ? 'Levelling' : 'Traverse') + ' · Traverse & Level', simulator: 'Simulator · Traverse & Level' }[view] || 'Traverse & Level';
   window.scrollTo(0, 0);
-  ['#calendar', '#user-menu'].forEach(s => ($(s).hidden = true));
+  $('#user-menu').hidden = true;
 }
 /** Record what the user did in the website's activity log (signed in only; queued while offline). */
 const logActivity = entry => { if (user) remote.log(entry); };
@@ -349,14 +323,9 @@ function netState() {
 function bind() {
   window.addEventListener('hashchange', route);
   $('#theme-btn').addEventListener('click', () => setTheme(currentTheme() === 'dark' ? 'light' : 'dark'));
-  $('#clock-btn').addEventListener('click', e => { e.stopPropagation(); toggleCalendar(); });
-  $('#cal-prev').addEventListener('click', e => { e.stopPropagation(); calMonth.setMonth(calMonth.getMonth() - 1); drawCalendar(); });
-  $('#cal-next').addEventListener('click', e => { e.stopPropagation(); calMonth.setMonth(calMonth.getMonth() + 1); drawCalendar(); });
-  $('#cal-today').addEventListener('click', e => { e.stopPropagation(); calMonth = new Date(); calMonth.setDate(1); drawCalendar(); });
-  $('#calendar').addEventListener('click', e => e.stopPropagation());
   $('#avatar-btn').addEventListener('click', e => { e.stopPropagation(); const m = $('#user-menu'); m.hidden = !m.hidden; $('#avatar-btn').setAttribute('aria-expanded', String(!m.hidden)); });
-  document.addEventListener('click', () => { toggleCalendar(false); $('#user-menu').hidden = true; });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') { toggleCalendar(false); $('#user-menu').hidden = true; $('#share-modal').hidden = true; navOpen(false); } });
+  document.addEventListener('click', () => { $('#user-menu').hidden = true; });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { $('#user-menu').hidden = true; $('#share-modal').hidden = true; navOpen(false); } });
   $('#logout-btn').addEventListener('click', logout);
   $('#closed-retry').addEventListener('click', async () => { await applyAllow(); if (allow.enabled) { location.hash = '#/' + home(); route(); toast('Traverse & Level is open again.'); } else toast('Still closed.'); });
   $('#login-form').addEventListener('submit', onLogin);
@@ -411,7 +380,7 @@ function bind() {
 }
 
 async function start() {
-  bind(); themeLabel(); tickClock(); setInterval(tickClock, 1000);
+  bind(); themeLabel();
 
   $('#demo-banner').hidden = remote.kind !== 'demo';
   if (remote.kind !== 'demo') {
