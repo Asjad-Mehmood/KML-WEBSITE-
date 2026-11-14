@@ -13,6 +13,8 @@ export interface FeedRow {
   id: string;
   source: "activity" | "download" | "toolkit";
   app: string;
+  /** for a Survey Toolkit line, the app it installed, updated or opened */
+  tool: string | null;
   platform: string | null;
   version: string | null;
   userId: string | null;
@@ -65,12 +67,12 @@ function unionSql(): string {
            a."platform", a."appVersion" AS "version", a."userId", COALESCE(u."email", a."userEmail") AS "email", COALESCE(u."name", a."userName") AS "name",
            a."action", a."title", a."details", a."fileName", a."fileSize", a."pointsCount" AS "points",
            COALESCE(a."status", 'success') AS "status", a."errorMessage" AS "error", a."durationMs", a."ipAddress" AS "ip",
-           NULL::text AS "place", a."userAgent" AS "device", a."timestamp" AS "at"
+           NULL::text AS "place", a."userAgent" AS "device", a."timestamp" AS "at", NULL::text AS "tool"
       FROM "activities" a LEFT JOIN "users" u ON u."id" = a."userId"
     UNION ALL
     SELECT d."id", 'download', ${ASSET_APP}, 'Web', d."version", d."userId", d."userEmail", d."userName",
            'download', CONCAT('Downloaded ', d."fileName"), NULL, d."fileName", NULL, NULL,
-           'success', NULL, NULL, d."ipAddress", d."location", d."userAgent", d."timestamp"
+           'success', NULL, NULL, d."ipAddress", d."location", d."userAgent", d."timestamp", NULL
       FROM "downloads" d
     UNION ALL
     SELECT 'tk_' || e."id"::text, 'toolkit', 'toolkit', 'Windows', e."toVersion", e."userId", u."email", u."name",
@@ -82,7 +84,7 @@ function unionSql(): string {
                   CASE WHEN e."message" LIKE 'automatic%' THEN ' (automatic)' ELSE '' END),
            e."message", NULL, NULL, NULL,
            CASE WHEN e."action" = 'failed' THEN 'error' ELSE 'success' END,
-           CASE WHEN e."action" = 'failed' THEN e."message" ELSE NULL END, NULL, NULL, NULL, d."name", e."createdAt"
+           CASE WHEN e."action" = 'failed' THEN e."message" ELSE NULL END, NULL, NULL, NULL, d."name", e."createdAt", e."tool"
       FROM "toolkit_events" e LEFT JOIN "users" u ON u."id" = e."userId" LEFT JOIN "toolkit_devices" d ON d."id" = e."deviceId"`;
 }
 
@@ -92,7 +94,11 @@ function where(f: FeedFilter, params: unknown[]): string {
     params.push(v);
     return `$${params.length}`;
   };
-  if (f.app) w.push(`"app" = ${p(f.app)}`);
+  // an app's lines, and the Survey Toolkit's lines about it (installed, updated, failed …)
+  if (f.app) {
+    const a = p(f.app);
+    w.push(`("app" = ${a} OR "tool" = ${a})`);
+  }
   if (f.action) w.push(`"action" = ${p(f.action)}`);
   if (f.userId) w.push(`"userId" = ${p(f.userId)}`);
   if (f.errorsOnly) w.push(`"status" IN ('error','failed','warning')`);
@@ -137,8 +143,11 @@ export async function activityFeed(f: FeedFilter): Promise<{ rows: FeedRow[]; ne
 export async function activityFacets(f: FeedFilter): Promise<{ apps: Record<string, number>; actions: Record<string, number>; errors: number; total: number }> {
   await ready();
   const p1: unknown[] = [];
+  // each app's own lines, plus the Toolkit's lines about it (those also stay under the Toolkit)
   const apps = await prisma.$queryRawUnsafe<{ app: string; n: bigint }[]>(
-    `SELECT "app", COUNT(*) n FROM (${unionSql()}) x ${where({ ...f, app: undefined, action: undefined, before: undefined }, p1)} GROUP BY 1`,
+    `SELECT k app, COUNT(*) n FROM (SELECT "app" k, x.* FROM (${unionSql()}) x
+       UNION ALL SELECT "tool" k, x.* FROM (${unionSql()}) x WHERE "tool" IS NOT NULL AND "tool" <> "app") y
+       ${where({ ...f, app: undefined, action: undefined, before: undefined }, p1)} GROUP BY 1`,
     ...p1
   );
   const p2: unknown[] = [];

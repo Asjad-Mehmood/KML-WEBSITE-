@@ -10,6 +10,7 @@ import AdminTraverse from "../../components/admin/AdminTraverse";
 import AdminSlope from "../../components/admin/AdminSlope";
 import AdminToolkit from "@/components/admin/AdminToolkit";
 import AdminExcelToKml from "@/components/admin/AdminExcelToKml";
+import AdminProgram from "@/components/admin/AdminProgram";
 import AdminLog from "@/components/admin/AdminLog";
 import AdminTrends from "@/components/admin/AdminTrends";
 import AdminActivity, { APPS as ACTIVITY_APPS } from "@/components/admin/AdminActivity";
@@ -45,6 +46,8 @@ import {
   Megaphone,
   TrendingUp,
   LayoutGrid,
+  Route,
+  FolderTree,
   ScrollText,
 } from "lucide-react";
 import SurveyorDetailModal from "@/components/admin/SurveyorDetailModal";
@@ -200,7 +203,7 @@ const ASSET_NAME: Record<string, string> = {
   toolkit: "Survey Toolkit (Windows)",
 };
 
-const ADMIN_TABS = ["overview", "users", "activities", "downloads", "files", "conversions", "excel", "traverse", "slope", "toolkit", "releases", "reviews", "messages", "settings", "log"] as const;
+const ADMIN_TABS = ["overview", "users", "activities", "downloads", "files", "conversions", "excel", "traverse", "slope", "roadpro", "pfm", "toolkit", "releases", "reviews", "messages", "settings", "log"] as const;
 type AdminTab = (typeof ADMIN_TABS)[number];
 function tabFromAddress(): AdminTab {
   const id = typeof window === "undefined" ? "" : window.location.hash.slice(1);
@@ -730,6 +733,8 @@ export default function AdminClient() {
         { id: "excel", label: "Excel to KML", icon: FileSpreadsheet, text: "Everything about Excel to KML: downloads, people, versions, points, grids, problems and its settings" },
         { id: "traverse", label: "Traverse & Level", icon: Compass, text: "Everything about Traverse & Level: downloads, people, versions, jobs and results, sharing, problems, its settings and every job", count: stats?.traverse?.jobs },
         { id: "slope", label: "Slope Calculator", icon: TrendingUp, text: "Everything about Slope Calculator: downloads, people, versions, calculations, how steep and how long, projects, problems, its settings and every calculation", count: stats?.slope?.jobs },
+        { id: "roadpro", label: "RoadPro", icon: Route, text: "Everything about RoadPro: downloads, the PCs with it and their versions, Toolkit installs and failures, and its releases on GitHub" },
+        { id: "pfm", label: "Project Folder Manager", icon: FolderTree, text: "Everything about Project Folder Manager: downloads, the PCs with it and their versions, Toolkit installs and failures, and its releases on GitHub" },
         { id: "toolkit", label: "Survey Toolkit", icon: LayoutGrid, text: "Who downloaded and uses the Toolkit, their PCs, the tools on them and everything the Toolkit did" },
       ],
     },
@@ -1551,6 +1556,19 @@ export default function AdminClient() {
         )}
         {activeTab === "excel" && (
           <AdminExcelToKml
+            adminFetch={adminFetch}
+            onToast={showToast}
+            onShow={selectSection}
+            onOpenAccount={(id) => {
+              setDetailUserId(id);
+              setDetailModalOpen(true);
+            }}
+          />
+        )}
+        {(activeTab === "roadpro" || activeTab === "pfm") && (
+          <AdminProgram
+            key={activeTab}
+            app={activeTab === "roadpro" ? "roadpro" : "folder-manager"}
             adminFetch={adminFetch}
             onToast={showToast}
             onShow={selectSection}

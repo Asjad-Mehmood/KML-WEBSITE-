@@ -115,7 +115,7 @@ export async function appOverview(id: string, days: number) {
                   COUNT(DISTINCT "userId") FILTER (WHERE "at" >= $2) pcur, COUNT(DISTINCT "userId") FILTER (WHERE "at" < $2) pprev,
                   COUNT(*) FILTER (WHERE "at" >= $2 AND "status" IN ('error','failed','warning')) ecur,
                   COUNT(*) FILTER (WHERE "at" < $2 AND "status" IN ('error','failed','warning')) eprev
-             FROM ${feed} WHERE "app" = $1 AND "at" >= $3`,
+             FROM ${feed} WHERE ("app" = $1 OR "tool" = $1) AND "at" >= $3`,
           id,
           from,
           prevFrom
@@ -125,7 +125,7 @@ export async function appOverview(id: string, days: number) {
       ),
       safe(
         prisma.$queryRawUnsafe<{ t: Date; c: bigint; p: bigint }[]>(
-          `SELECT date_trunc('${bucket}', "at") t, COUNT(*) c, COUNT(DISTINCT "userId") p FROM ${feed} WHERE "app" = $1 AND "at" >= $2 GROUP BY 1`,
+          `SELECT date_trunc('${bucket}', "at") t, COUNT(*) c, COUNT(DISTINCT "userId") p FROM ${feed} WHERE ("app" = $1 OR "tool" = $1) AND "at" >= $2 GROUP BY 1`,
           id,
           from
         ),
@@ -135,7 +135,7 @@ export async function appOverview(id: string, days: number) {
       safe(
         prisma.$queryRawUnsafe<{ action: string; c: bigint; e: bigint; last: Date }[]>(
           `SELECT "action", COUNT(*) c, COUNT(*) FILTER (WHERE "status" IN ('error','failed','warning')) e, MAX("at") "last"
-             FROM ${feed} WHERE "app" = $1 AND "at" >= $2 GROUP BY 1 ORDER BY 2 DESC LIMIT 20`,
+             FROM ${feed} WHERE ("app" = $1 OR "tool" = $1) AND "at" >= $2 GROUP BY 1 ORDER BY 2 DESC LIMIT 20`,
           id,
           from
         ),
@@ -145,7 +145,7 @@ export async function appOverview(id: string, days: number) {
       safe(
         prisma.$queryRawUnsafe<{ userId: string; email: string | null; name: string | null; c: bigint; last: Date }[]>(
           `SELECT "userId", MAX("email") email, MAX("name") "name", COUNT(*) c, MAX("at") "last"
-             FROM ${feed} WHERE "app" = $1 AND "at" >= $2 AND "userId" IS NOT NULL GROUP BY 1 ORDER BY 4 DESC, 5 DESC LIMIT 10`,
+             FROM ${feed} WHERE ("app" = $1 OR "tool" = $1) AND "at" >= $2 AND "userId" IS NOT NULL GROUP BY 1 ORDER BY 4 DESC, 5 DESC LIMIT 10`,
           id,
           from
         ),
@@ -155,7 +155,7 @@ export async function appOverview(id: string, days: number) {
       safe(
         prisma.$queryRawUnsafe<{ id: string; title: string; error: string | null; email: string | null; userId: string | null; version: string | null; platform: string | null; at: Date }[]>(
           `SELECT "id", "title", "error", "email", "userId", "version", "platform", "at" FROM ${feed}
-            WHERE "app" = $1 AND "at" >= $2 AND "status" IN ('error','failed','warning') ORDER BY "at" DESC LIMIT 8`,
+            WHERE ("app" = $1 OR "tool" = $1) AND "at" >= $2 AND "status" IN ('error','failed','warning') ORDER BY "at" DESC LIMIT 8`,
           id,
           from
         ),
@@ -435,5 +435,113 @@ export async function slopeExtras(days: number) {
     },
     grades: BANDS.map((label, i) => ({ label, count: n(grades.find((g) => Number(g.band) === i)?.c) })),
     projects: projects.map((p) => ({ project: p.project, count: n(p.c), people: n(p.people), last: p.last })),
+  };
+}
+
+/**
+ * A Windows program that doesn't report to the site by itself (RoadPro, Project Folder Manager):
+ * what the Survey Toolkit sees of it on each PC, who downloads it, where the download comes from,
+ * and its newest release on GitHub against the site's.
+ */
+export async function programExtras(id: string, days: number) {
+  const from = new Date(Date.now() - days * 864e5);
+  const release = RELEASE_APPS.find((a) => a.id === id);
+  const latest = release?.current ?? "";
+  await safe(ensureToolkitTables(), undefined, "toolkit tables");
+  const [pcs, allPcs, events, failures, downloaders, newest, github] = await Promise.all([
+    safe(
+      prisma.$queryRawUnsafe<{ id: string; name: string; v: string | null; userId: string; email: string | null; userName: string | null; lastSeen: Date; toolkitVersion: string }[]>(
+        `SELECT d."id", d."name", (d."tools"::jsonb ->> $1) v, d."userId", u."email", u."name" "userName", d."lastSeen", d."toolkitVersion"
+           FROM "toolkit_devices" d LEFT JOIN "users" u ON u."id" = d."userId"
+          WHERE d."tools" LIKE '{%' AND (d."tools"::jsonb ? $1) ORDER BY d."lastSeen" DESC LIMIT 200`,
+        id
+      ),
+      [],
+      "program PCs"
+    ),
+    safe(prisma.$queryRawUnsafe<{ c: bigint }[]>(`SELECT COUNT(*) c FROM "toolkit_devices"`), [], "toolkit PCs"),
+    safe(
+      prisma.$queryRawUnsafe<{ action: string; cur: bigint; prev: bigint }[]>(
+        `SELECT "action", COUNT(*) FILTER (WHERE "createdAt" >= $2) cur, COUNT(*) FILTER (WHERE "createdAt" < $2) prev
+           FROM "toolkit_events" WHERE "tool" = $1 AND "createdAt" >= $3 GROUP BY 1`,
+        id,
+        from,
+        new Date(Date.now() - 2 * days * 864e5)
+      ),
+      [],
+      "program events"
+    ),
+    safe(
+      prisma.$queryRawUnsafe<{ id: bigint; message: string; fromVersion: string; toVersion: string; at: Date; pc: string | null; userId: string; email: string | null }[]>(
+        `SELECT e."id", e."message", e."fromVersion", e."toVersion", e."createdAt" "at", d."name" pc, e."userId", u."email"
+           FROM "toolkit_events" e LEFT JOIN "toolkit_devices" d ON d."id" = e."deviceId" LEFT JOIN "users" u ON u."id" = e."userId"
+          WHERE e."tool" = $1 AND e."action" = 'failed' AND e."createdAt" >= $2 ORDER BY e."createdAt" DESC LIMIT 8`,
+        id,
+        from
+      ),
+      [],
+      "program failures"
+    ),
+    // who downloaded it in the period: signed in or not, and for the first time or again
+    safe(
+      prisma.$queryRawUnsafe<{ signedIn: bigint; anonymous: bigint; first: bigint; again: bigint }[]>(
+        `WITH d AS (SELECT * FROM "downloads" WHERE "assetType" IN (${inList(appDef(id)?.assets ?? [id])}))
+         SELECT COUNT(*) FILTER (WHERE "userId" IS NOT NULL AND "timestamp" >= $1) "signedIn",
+                COUNT(*) FILTER (WHERE "userId" IS NULL AND "timestamp" >= $1) anonymous,
+                COUNT(DISTINCT "userId") FILTER (WHERE "timestamp" >= $1 AND "userId" IS NOT NULL
+                  AND NOT EXISTS (SELECT 1 FROM d o WHERE o."userId" = d."userId" AND o."timestamp" < $1)) first,
+                COUNT(DISTINCT "userId") FILTER (WHERE "timestamp" >= $1 AND "userId" IS NOT NULL
+                  AND EXISTS (SELECT 1 FROM d o WHERE o."userId" = d."userId" AND o."timestamp" < $1)) again
+           FROM d`,
+        from
+      ),
+      [],
+      "program downloaders"
+    ),
+    safe(
+      (async () => {
+        await ensureReleaseTables();
+        return prisma.productRelease.findFirst({ where: { app: id }, orderBy: { releasedAt: "desc" }, select: { version: true, releasedAt: true } });
+      })(),
+      null,
+      "program newest release"
+    ),
+    // GitHub's newest published release (kept for 15 minutes, so the page never waits on GitHub for long)
+    release?.github
+      ? safe(
+          (async () => {
+            const r = await fetch(`https://api.github.com/repos/${release.github}/releases?per_page=10`, {
+              headers: { Accept: "application/vnd.github+json", "User-Agent": "exceltokml.com" },
+              next: { revalidate: 900 },
+              signal: AbortSignal.timeout(4000),
+            });
+            if (!r.ok) return null;
+            const list = (await r.json()) as { tag_name: string; published_at: string; html_url: string; draft: boolean; prerelease: boolean; assets?: unknown[] }[];
+            const g = list.find((x) => !x.draft && x.assets?.length);
+            return g ? { version: normVersion(g.tag_name), at: g.published_at, url: g.html_url, prerelease: g.prerelease } : null;
+          })(),
+          null,
+          "github"
+        )
+      : Promise.resolve(null),
+  ]);
+  const ev = (a: string) => events.find((e) => e.action === a);
+  const status = (v: string | null) => (!v || !latest ? "unknown" : compareVersions(normVersion(v), latest) >= 0 ? "current" : "behind");
+  const list = pcs.map((p) => ({ id: p.id, name: p.name, version: p.v ? normVersion(p.v) : "", status: status(p.v), userId: p.userId, email: p.email, userName: p.userName, lastSeen: p.lastSeen, toolkitVersion: p.toolkitVersion }));
+  const d = downloaders[0];
+  return {
+    latest,
+    toolkit: {
+      pcs: list,
+      withIt: list.length,
+      allPcs: n(allPcs[0]?.c),
+      current: list.filter((p) => p.status === "current").length,
+      behind: list.filter((p) => p.status === "behind").length,
+      events: Object.fromEntries(["installed", "updated", "uninstalled", "failed", "opened"].map((a) => [a, { cur: n(ev(a)?.cur), prev: n(ev(a)?.prev) }])) as Record<string, Pair>,
+      failures: failures.map((f) => ({ id: String(f.id), message: f.message, fromVersion: f.fromVersion, toVersion: f.toVersion, at: f.at, pc: f.pc, userId: f.userId, email: f.email })),
+    },
+    downloads: { signedIn: n(d?.signedIn), anonymous: n(d?.anonymous), first: n(d?.first), again: n(d?.again) },
+    newestRelease: newest ? { version: newest.version, at: newest.releasedAt } : null,
+    github,
   };
 }
