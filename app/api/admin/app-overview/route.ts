@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
   const days = [7, 30, 90, 365].includes(Number(sp.get("days"))) ? Number(sp.get("days")) : 30;
   const app = sp.get("app") || "";
   try {
-    const [overview, extras] = await Promise.all([appOverview(app, days), app === "excel-to-kml" ? excelToKmlExtras(days) : app === "traverse" ? traverseExtras(days) : app === "slope" ? slopeExtras(days) : app === "roadpro" || app === "folder-manager" ? programExtras(app, days) : Promise.resolve(null)]);
+    const [overview, extras] = await Promise.all([appOverview(app, days), app === "excel-to-kml" ? excelToKmlExtras(days) : app === "traverse" ? traverseExtras(days) : app === "slope" ? slopeExtras(days) : app === "roadpro" || app === "folder-manager" || app === "toolkit" ? programExtras(app, days) : Promise.resolve(null)]);
     if (!overview) return NextResponse.json({ error: "Unknown app" }, { status: 404 });
     return NextResponse.json({ success: true, ...overview, extras });
   } catch (err) {

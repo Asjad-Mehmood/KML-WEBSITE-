@@ -11,6 +11,7 @@ import AdminSlope from "../../components/admin/AdminSlope";
 import AdminToolkit from "@/components/admin/AdminToolkit";
 import AdminExcelToKml from "@/components/admin/AdminExcelToKml";
 import AdminProgram from "@/components/admin/AdminProgram";
+import { AppSettings } from "@/components/admin/AppTab";
 import AdminLog from "@/components/admin/AdminLog";
 import AdminTrends from "@/components/admin/AdminTrends";
 import AdminActivity, { APPS as ACTIVITY_APPS } from "@/components/admin/AdminActivity";
@@ -735,7 +736,7 @@ export default function AdminClient() {
         { id: "slope", label: "Slope Calculator", icon: TrendingUp, text: "Everything about Slope Calculator: downloads, people, versions, calculations, how steep and how long, projects, problems, its settings and every calculation", count: stats?.slope?.jobs },
         { id: "roadpro", label: "RoadPro", icon: Route, text: "Everything about RoadPro: downloads, the PCs with it and their versions, Toolkit installs and failures, and its releases on GitHub" },
         { id: "pfm", label: "Project Folder Manager", icon: FolderTree, text: "Everything about Project Folder Manager: downloads, the PCs with it and their versions, Toolkit installs and failures, and its releases on GitHub" },
-        { id: "toolkit", label: "Survey Toolkit", icon: LayoutGrid, text: "Who downloaded and uses the Toolkit, their PCs, the tools on them and everything the Toolkit did" },
+        { id: "toolkit", label: "Survey Toolkit", icon: LayoutGrid, text: "Everything about the Survey Toolkit: downloads, people, every PC and its version, installs, updates and failures, GitHub, who may use it, and every account, PC and event" },
       ],
     },
     {
@@ -1578,7 +1579,42 @@ export default function AdminClient() {
             }}
           />
         )}
-        {activeTab === "toolkit" && <AdminToolkit adminFetch={adminFetch} onToast={showToast} />}
+        {activeTab === "toolkit" && (
+          <AdminProgram
+            app="toolkit"
+            adminFetch={adminFetch}
+            onToast={showToast}
+            onShow={selectSection}
+            onOpenAccount={(id) => {
+              setDetailUserId(id);
+              setDetailModalOpen(true);
+            }}
+            extra={
+              <div className="grid lg:grid-cols-2 gap-4">
+                <AppSettings
+                  adminFetch={adminFetch}
+                  onToast={showToast}
+                  onShow={selectSection}
+                  fields={[
+                    {
+                      key: "toolkitPublic",
+                      kind: "switch",
+                      label: "Open to everyone",
+                      on: "Everyone with an account can download and use the Survey Toolkit.",
+                      off: "Only the testers in Access (below) can download and use it.",
+                    },
+                  ]}
+                />
+              </div>
+            }
+            footer={() => (
+              <section className="pt-4 border-t border-[var(--adm-line)] space-y-3">
+                <h2 className="text-lg font-extrabold text-white">In detail</h2>
+                <AdminToolkit adminFetch={adminFetch} onToast={showToast} embedded />
+              </section>
+            )}
+          />
+        )}
         {activeTab === "log" && <AdminLog adminFetch={adminFetch} onToast={showToast} />}
 
         {/* ================================================================== */}

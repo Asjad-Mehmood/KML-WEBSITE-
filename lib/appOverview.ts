@@ -34,6 +34,24 @@ export const APP_DEFS: AppDef[] = [
 ];
 export const appDef = (id: string) => APP_DEFS.find((a) => a.id === id);
 
+/**
+ * The newest version of an app: the newer of the one the site offers and the one its releases on
+ * GitHub give the Survey Toolkit (lib/toolkit/feed.ts). For the Toolkit itself, the newest
+ * installer on GitHub, which its download always is (lib/toolkit/downloads.ts).
+ */
+async function latestOf(id: string, offered: string): Promise<string> {
+  let found = "";
+  if (id === "toolkit") {
+    const { toolkitDownloads } = await import("@/lib/toolkit/downloads");
+    found = (await safe(toolkitDownloads(), null, "toolkit latest"))?.latest?.version ?? "";
+  } else {
+    const { toolkitFeed } = await import("@/lib/toolkit/feed");
+    found = (await safe(toolkitFeed(), null, "toolkit feed"))?.tools.find((t) => t.id === id)?.version ?? "";
+  }
+  const v = found ? normVersion(found) : "";
+  return v && /^\d/.test(v) && (!offered || compareVersions(v, offered) > 0) ? v : offered;
+}
+
 export interface Pair {
   cur: number;
   prev: number;
@@ -234,7 +252,7 @@ export async function appOverview(id: string, days: number) {
     if (c) countries.set(c, (countries.get(c) ?? 0) + 1);
   }
 
-  const latest = release?.current ?? "";
+  const latest = await latestOf(id, release?.current ?? "");
   const rank = (v: string | null) => (!v ? "unknown" : !latest ? "unknown" : compareVersions(normVersion(v), latest) >= 0 ? "current" : "behind");
 
   return {
@@ -446,14 +464,18 @@ export async function slopeExtras(days: number) {
 export async function programExtras(id: string, days: number) {
   const from = new Date(Date.now() - days * 864e5);
   const release = RELEASE_APPS.find((a) => a.id === id);
-  const latest = release?.current ?? "";
+  const latest = await latestOf(id, release?.current ?? "");
   await safe(ensureToolkitTables(), undefined, "toolkit tables");
   const [pcs, allPcs, events, failures, downloaders, newest, github] = await Promise.all([
     safe(
       prisma.$queryRawUnsafe<{ id: string; name: string; v: string | null; userId: string; email: string | null; userName: string | null; lastSeen: Date; toolkitVersion: string }[]>(
-        `SELECT d."id", d."name", (d."tools"::jsonb ->> $1) v, d."userId", u."email", u."name" "userName", d."lastSeen", d."toolkitVersion"
-           FROM "toolkit_devices" d LEFT JOIN "users" u ON u."id" = d."userId"
-          WHERE d."tools" LIKE '{%' AND (d."tools"::jsonb ? $1) ORDER BY d."lastSeen" DESC LIMIT 200`,
+        // the Toolkit itself: every PC, at its own version; another program: the PCs it's on
+        id === "toolkit"
+          ? `SELECT d."id", d."name", NULLIF(d."toolkitVersion", '') v, d."userId", u."email", u."name" "userName", d."lastSeen", d."toolkitVersion"
+               FROM "toolkit_devices" d LEFT JOIN "users" u ON u."id" = d."userId" WHERE $1 = 'toolkit' ORDER BY d."lastSeen" DESC LIMIT 200`
+          : `SELECT d."id", d."name", (d."tools"::jsonb ->> $1) v, d."userId", u."email", u."name" "userName", d."lastSeen", d."toolkitVersion"
+               FROM "toolkit_devices" d LEFT JOIN "users" u ON u."id" = d."userId"
+              WHERE d."tools" LIKE '{%' AND (d."tools"::jsonb ? $1) ORDER BY d."lastSeen" DESC LIMIT 200`,
         id
       ),
       [],
