@@ -1,7 +1,8 @@
 "use client";
 
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
-import { ChevronDown, ChevronRight, Eye, FileJson, FileSpreadsheet, Loader2, RefreshCw, Search, Trash2 } from "lucide-react";
+import { Calculator, ChevronDown, ChevronRight, Eye, FileJson, FileSpreadsheet, Loader2, Ruler, RefreshCw, Search, Trash2, TrendingDown, TrendingUp } from "lucide-react";
+import AppTab, { AppSettings, BarRow, Empty, Panel, Stat, ago, type SettingField } from "@/components/admin/AppTab";
 
 interface Person {
   userId: string;
@@ -112,7 +113,7 @@ async function fetchCalcs(adminFetch: Fetcher, userId: string): Promise<Calc[] |
 
 // Admin → Slope Calculator: the calculations surveyors keep in their accounts, one row per
 // surveyor; open one to see their calculations, the inputs and project plate, export or delete
-export default function AdminSlope({ adminFetch, onToast }: { adminFetch: Fetcher; onToast: (m: string, t?: "success" | "error") => void }) {
+function SlopeCalcs({ adminFetch, onToast, onChanged }: { adminFetch: Fetcher; onToast: (m: string, t?: "success" | "error") => void; onChanged?: () => void }) {
   const [people, setPeople] = useState<Person[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("");
@@ -166,9 +167,9 @@ export default function AdminSlope({ adminFetch, onToast }: { adminFetch: Fetche
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pt-2">
         <div>
-          <h3 className="text-base font-bold text-white">Slope Calculator</h3>
+          <h3 className="text-base font-bold text-white">Calculations</h3>
           <p className="text-xs text-slate-400">
             {loading
               ? "Calculations saved in the Slope Calculator app."
@@ -243,7 +244,12 @@ export default function AdminSlope({ adminFetch, onToast }: { adminFetch: Fetche
               </div>
               {isOpen && (
                 <div className="border-t border-slate-800">
-                  <SlopeUserCalcs adminFetch={adminFetch} person={p} who={label(p)} onToast={onToast} onChanged={load} />
+                  <SlopeUserCalcs adminFetch={adminFetch} person={p} who={label(p)} onToast={onToast}
+                    onChanged={() => {
+                      load();
+                      onChanged?.();
+                    }}
+                  />
                 </div>
               )}
             </li>
@@ -412,5 +418,141 @@ function Pairs({ title, rows, mono }: { title: string; rows: string[][]; mono?: 
         </dl>
       )}
     </div>
+  );
+}
+
+// ---------------------------------------------------------------- the tab
+
+interface SlopeExtras {
+  calcs: {
+    total: number;
+    fresh: number;
+    saved: number;
+    people: number;
+    activePeople: number;
+    rising: number;
+    falling: number;
+    flat: number;
+    length: number;
+    avgLength: number;
+    avgStations: number;
+    bytes: number;
+  };
+  grades: { label: string; count: number }[];
+  projects: { project: string; count: number; people: number; last: string }[];
+}
+
+const SLOPE_FIELDS: SettingField[] = [
+  {
+    key: "slopeKeepJobs",
+    kind: "switch",
+    label: "Keep calculations in accounts",
+    on: "Calculations made in the Windows program and the web app are kept in the account, on every device.",
+    off: "Nothing new is kept in accounts; calculations stay on each device. Kept ones stay.",
+  },
+  { key: "slopeMaxJobs", kind: "number", label: "Calculations per account", hint: "1 to 5000. Accounts over it keep theirs but can't add new ones.", min: 1, max: 5000 },
+];
+
+const km = (m: number) => (m >= 1000 ? `${(m / 1000).toLocaleString(undefined, { maximumFractionDigits: 1 })} km` : `${Math.round(m).toLocaleString()} m`);
+
+// Admin → Apps → Slope Calculator: the shared app tab (components/admin/AppTab.tsx) and its own part:
+// the calculations kept, how steep and how long they are, the projects they're for, its settings,
+// and every surveyor's calculations to view, export or delete.
+export default function AdminSlope({
+  adminFetch,
+  onToast,
+  onShow,
+  onOpenAccount,
+}: {
+  adminFetch: Fetcher;
+  onToast: (m: string, t?: "success" | "error") => void;
+  onShow: (section: string) => void;
+  onOpenAccount: (userId: string) => void;
+}) {
+  return (
+    <AppTab
+      app="slope"
+      adminFetch={adminFetch}
+      onShow={onShow}
+      onOpenAccount={onOpenAccount}
+      intro="Works out slopes, chainages and levels between two points, in the Windows program and the web app. Calculations can be kept in the account."
+      footer={(reload) => <SlopeCalcs adminFetch={adminFetch} onToast={onToast} onChanged={reload} />}
+    >
+      {(d, days) => {
+        const x = d.extras as SlopeExtras | null;
+        if (!x) return null;
+        const c = x.calcs;
+        const word = days === 365 ? "year" : `${days} days`;
+        const dir = c.rising + c.falling + c.flat;
+        return (
+          <>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <Stat icon={Calculator} label="Calculations kept" value={c.total.toLocaleString()} sub={`by ${c.people.toLocaleString()} ${c.people === 1 ? "surveyor" : "surveyors"}`} />
+              <Stat icon={RefreshCw} label={`Saved, ${word}`} value={c.saved.toLocaleString()} sub={`${c.fresh.toLocaleString()} new · ${c.activePeople.toLocaleString()} people`} />
+              <Stat icon={Ruler} label="Length worked out" value={km(c.length)} sub={c.total ? `${km(c.avgLength)} on average · ${Math.round(c.avgStations).toLocaleString()} stations` : "—"} />
+              <Stat
+                icon={c.falling > c.rising ? TrendingDown : TrendingUp}
+                label="Rising / falling"
+                value={`${c.rising.toLocaleString()} / ${c.falling.toLocaleString()}`}
+                sub={dir ? `${c.flat.toLocaleString()} level` : "No slopes worked out yet"}
+              />
+            </div>
+            <div className="grid lg:grid-cols-2 gap-4">
+              <Panel title="How steep">
+                {x.grades.some((g) => g.count) ? (
+                  <ul className="pb-2">
+                    {x.grades.map((g) => (
+                      <BarRow key={g.label} label={g.label} value={g.count} max={Math.max(...x.grades.map((y) => y.count))} color="bg-amber-400" right={<span className="text-[11px] text-slate-500">calculations</span>} />
+                    ))}
+                  </ul>
+                ) : (
+                  <Empty>No slopes worked out yet.</Empty>
+                )}
+              </Panel>
+              <Panel title="Projects">
+                {x.projects.length ? (
+                  <ul className="pb-2">
+                    {x.projects.map((p) => (
+                      <BarRow
+                        key={p.project}
+                        label={p.project}
+                        sub={`${p.people.toLocaleString()} ${p.people === 1 ? "person" : "people"} · last ${ago(p.last)}`}
+                        value={p.count}
+                        max={Math.max(...x.projects.map((y) => y.count))}
+                        color="bg-violet-400"
+                      />
+                    ))}
+                  </ul>
+                ) : (
+                  <Empty>No calculation names a project on its plate yet.</Empty>
+                )}
+              </Panel>
+            </div>
+            <div className="grid lg:grid-cols-2 gap-4">
+              <AppSettings adminFetch={adminFetch} onToast={onToast} onShow={onShow} fields={SLOPE_FIELDS} />
+              <Panel title="People keeping calculations">
+                <div className="px-5 pb-5 grid grid-cols-2 gap-3">
+                  <div className="rounded-xl bg-[var(--adm-hover)] border border-[var(--adm-line)] p-3">
+                    <p className="text-xl font-extrabold tabular-nums text-white">{c.people.toLocaleString()}</p>
+                    <p className="text-xs text-slate-400">surveyors with calculations</p>
+                  </div>
+                  <div className="rounded-xl bg-[var(--adm-hover)] border border-[var(--adm-line)] p-3">
+                    <p className="text-xl font-extrabold tabular-nums text-white">{c.people ? (c.total / c.people).toFixed(1) : "0"}</p>
+                    <p className="text-xs text-slate-400">calculations each, on average</p>
+                  </div>
+                  <p className="col-span-2 text-xs text-slate-400">
+                    Each surveyor&apos;s calculations are listed below, with the inputs and the project plate.{" "}
+                    <button onClick={() => onShow("files:slope")} className="text-blue-400 hover:underline cursor-pointer">
+                      Open them in Files
+                    </button>{" "}
+                    to search, sort or delete many at once.
+                  </p>
+                </div>
+              </Panel>
+            </div>
+          </>
+        );
+      }}
+    </AppTab>
   );
 }

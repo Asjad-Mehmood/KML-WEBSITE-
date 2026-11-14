@@ -1,7 +1,8 @@
 import { after, NextRequest, NextResponse } from "next/server";
 import { logEvent } from "@/lib/activityEvents";
 import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
-import { MAX_SLOPE_JOBS, MAX_SLOPE_JOB_BYTES, countOwn, ownerOf, remove, upsert } from "@/lib/slopeJobs";
+import { MAX_SLOPE_JOB_BYTES, countOwn, ownerOf, remove, upsert } from "@/lib/slopeJobs";
+import { getExtraSettings } from "@/lib/siteSettings";
 
 type Ctx = { params: Promise<{ id: string }> };
 const ID = /^[A-Za-z0-9-]{8,64}$/;
@@ -15,6 +16,12 @@ export async function PUT(req: NextRequest, ctx: Ctx) {
   if (!s?.user) return NextResponse.json({ error: "Sign in to save calculations to your account." }, { status: 401 });
   const { id } = await ctx.params;
   if (!ID.test(id)) return NextResponse.json({ error: "Not a valid calculation." }, { status: 400 });
+  // Admin → Apps → Slope Calculator: keeping calculations can be switched off, and capped per account
+  const rules = await getExtraSettings().catch(() => null);
+  if (rules && !rules.slopeKeepJobs) {
+    return NextResponse.json({ error: "Keeping calculations in accounts is switched off for now. Your calculation is still on this device." }, { status: 403 });
+  }
+  const maxJobs = rules?.slopeMaxJobs ?? 500;
   const body = await req.json().catch(() => null);
   const name = typeof body?.name === "string" ? body.name.trim().slice(0, 200) : "";
   if (!name || !body?.data || typeof body.data !== "object") {
@@ -29,8 +36,8 @@ export async function PUT(req: NextRequest, ctx: Ctx) {
   try {
     const owner = await ownerOf(id);
     if (owner && owner !== s.user.id) return NextResponse.json({ error: "This calculation belongs to someone else." }, { status: 403 });
-    if (!owner && (await countOwn(s.user.id)) >= MAX_SLOPE_JOBS) {
-      return NextResponse.json({ error: `You can keep up to ${MAX_SLOPE_JOBS} calculations. Delete some old ones first.` }, { status: 409 });
+    if (!owner && (await countOwn(s.user.id)) >= maxJobs) {
+      return NextResponse.json({ error: `You can keep up to ${maxJobs} calculations. Delete some old ones first.` }, { status: 409 });
     }
     await upsert(s.user.id, id, { name, data, summary, updated });
     // the app saves as you work: a new calculation is noted, a change at most every 10 minutes
