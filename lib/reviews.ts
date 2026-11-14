@@ -49,15 +49,25 @@ function ensure(): Promise<void> {
   return ready;
 }
 
-/** Write or change the account's review of a program; it waits for the admin again. */
-export async function saveReview(userId: string, product: ReviewProduct, rating: number, comment: string, version: string) {
+/** A comment that must wait for the admin whatever its stars: a link, a web address or an email address */
+export const needsALook = (comment: string) =>
+  /https?:\/\/|www\.|\b[\w.-]+\.(com|net|org|io|co|info|xyz|ru|cn)\b|[\w.+-]+@[\w-]+\.[\w.]+/i.test(comment);
+
+/**
+ * Write or change the account's review of a program. It waits for the admin again, unless Admin →
+ * Reviews publishes reviews with this many stars by themselves (autoPublish) and the comment has no
+ * link or address. Returns the status it was saved with.
+ */
+export async function saveReview(userId: string, product: ReviewProduct, rating: number, comment: string, version: string, autoPublish = 0): Promise<ReviewStatus> {
   await ensure();
+  const status: ReviewStatus = autoPublish > 0 && rating >= autoPublish && !needsALook(comment) ? "published" : "pending";
   await prisma.$executeRawUnsafe(
     `INSERT INTO "reviews" ("id","userId","product","rating","comment","version","status","updatedAt")
-     VALUES ($1,$2,$3,$4,$5,$6,'pending',CURRENT_TIMESTAMP)
-     ON CONFLICT ("userId","product") DO UPDATE SET "rating"=$4,"comment"=$5,"version"=$6,"status"='pending',"updatedAt"=CURRENT_TIMESTAMP`,
-    crypto.randomUUID(), userId, product, rating, comment, version
+     VALUES ($1,$2,$3,$4,$5,$6,$7,CURRENT_TIMESTAMP)
+     ON CONFLICT ("userId","product") DO UPDATE SET "rating"=$4,"comment"=$5,"version"=$6,"status"=$7,"updatedAt"=CURRENT_TIMESTAMP`,
+    crypto.randomUUID(), userId, product, rating, comment, version, status
   );
+  return status;
 }
 
 /**
@@ -152,25 +162,74 @@ export type AdminReview = {
   version: string; status: ReviewStatus; createdAt: string; updatedAt: string;
 };
 
-export async function adminReviews(status?: string, product?: string) {
+export type ReviewFilter = { status?: string; product?: string; q?: string; stars?: number; withComment?: boolean; sort?: string };
+
+export async function adminReviews(f: ReviewFilter = {}) {
   await ensure();
   const where: string[] = [];
   const args: unknown[] = [];
-  if (status === "pending" || status === "published" || status === "hidden") { args.push(status); where.push(`r."status" = $${args.length}`); }
-  if (isReviewProduct(product)) { args.push(product); where.push(`r."product" = $${args.length}`); }
-  const rows = await prisma.$queryRawUnsafe<(Omit<AdminReview, "createdAt" | "updatedAt"> & { createdAt: Date; updatedAt: Date })[]>(
-    `SELECT r."id", r."userId", u."email", u."name", r."product", r."rating", r."comment", r."version", r."status", r."createdAt", r."updatedAt"
-     FROM "reviews" r LEFT JOIN "users" u ON u."id" = r."userId"
-     ${where.length ? `WHERE ${where.join(" AND ")}` : ""} ORDER BY r."updatedAt" DESC LIMIT 500`,
-    ...args
-  );
-  const summary = await prisma.$queryRawUnsafe<{ product: string; status: string; n: bigint; avg: number }[]>(
-    `SELECT "product", "status", COUNT(*) AS n, AVG("rating")::float AS avg FROM "reviews" GROUP BY "product", "status"`
-  );
-  return {
-    reviews: rows.map((r) => ({ ...r, createdAt: new Date(r.createdAt).toISOString(), updatedAt: new Date(r.updatedAt).toISOString() })),
-    summary: summary.map((s) => ({ product: s.product, status: s.status, count: Number(s.n), average: Math.round(s.avg * 10) / 10 })),
+  const p = (v: unknown) => {
+    args.push(v);
+    return `$${args.length}`;
   };
+  if (f.status === "pending" || f.status === "published" || f.status === "hidden") where.push(`r."status" = ${p(f.status)}`);
+  if (isReviewProduct(f.product)) where.push(`r."product" = ${p(f.product)}`);
+  if (f.stars && f.stars >= 1 && f.stars <= 5) where.push(`r."rating" = ${p(f.stars)}`);
+  if (f.withComment) where.push(`r."comment" <> ''`);
+  if (f.q) {
+    const like = p(`%${f.q.replace(/[%_\\]/g, (c) => "\\" + c)}%`);
+    where.push(`(r."comment" ILIKE ${like} OR u."email" ILIKE ${like} OR u."name" ILIKE ${like} OR r."version" ILIKE ${like})`);
+  }
+  const orders: Record<string, string> = {
+    oldest: `r."updatedAt" ASC`,
+    lowest: `r."rating" ASC, r."updatedAt" DESC`,
+    highest: `r."rating" DESC, r."updatedAt" DESC`,
+    newest: `r."updatedAt" DESC`,
+  };
+  const order = orders[f.sort ?? "newest"] ?? orders.newest;
+  const since = new Date(Date.now() - 30 * 864e5);
+  const [rows, summary, spread, recent] = await Promise.all([
+    prisma.$queryRawUnsafe<(Omit<AdminReview, "createdAt" | "updatedAt"> & { createdAt: Date; updatedAt: Date })[]>(
+      `SELECT r."id", r."userId", u."email", u."name", r."product", r."rating", r."comment", r."version", r."status", r."createdAt", r."updatedAt"
+       FROM "reviews" r LEFT JOIN "users" u ON u."id" = r."userId"
+       ${where.length ? `WHERE ${where.join(" AND ")}` : ""} ORDER BY ${order} LIMIT 500`,
+      ...args
+    ),
+    prisma.$queryRawUnsafe<{ product: string; status: string; n: bigint; avg: number }[]>(
+      `SELECT "product", "status", COUNT(*) AS n, AVG("rating")::float AS avg FROM "reviews" GROUP BY "product", "status"`
+    ),
+    // how many of each star, per program
+    prisma.$queryRawUnsafe<{ product: string; rating: number; n: bigint }[]>(`SELECT "product", "rating", COUNT(*) AS n FROM "reviews" GROUP BY 1, 2`),
+    // the last 30 days against everything before
+    prisma.$queryRawUnsafe<{ product: string; recent: number | null; before: number | null; n: bigint }[]>(
+      `SELECT "product", (AVG("rating") FILTER (WHERE "updatedAt" >= $1))::float recent, (AVG("rating") FILTER (WHERE "updatedAt" < $1))::float before,
+              COUNT(*) FILTER (WHERE "updatedAt" >= $1) n FROM "reviews" GROUP BY 1`,
+      since
+    ),
+  ]);
+  const round = (v: number | null) => (v == null ? null : Math.round(v * 10) / 10);
+  return {
+    reviews: rows.map((r) => ({
+      ...r,
+      createdAt: new Date(r.createdAt).toISOString(),
+      updatedAt: new Date(r.updatedAt).toISOString(),
+      needsALook: needsALook(r.comment),
+    })),
+    summary: summary.map((s) => ({ product: s.product, status: s.status, count: Number(s.n), average: Math.round(s.avg * 10) / 10 })),
+    spread: spread.map((s) => ({ product: s.product, rating: Number(s.rating), count: Number(s.n) })),
+    trend: recent.map((t) => ({ product: t.product, recent: round(t.recent), before: round(t.before), recentCount: Number(t.n) })),
+  };
+}
+
+/** Publish, hide or send back many reviews at once; returns how many changed */
+export async function setReviewsStatus(ids: string[], status: ReviewStatus) {
+  await ensure();
+  return prisma.$executeRawUnsafe(`UPDATE "reviews" SET "status" = $2 WHERE "id" = ANY($1::text[])`, ids, status);
+}
+
+export async function deleteReviews(ids: string[]) {
+  await ensure();
+  return prisma.$executeRawUnsafe(`DELETE FROM "reviews" WHERE "id" = ANY($1::text[])`, ids);
 }
 
 export async function setReviewStatus(id: string, status: ReviewStatus) {
