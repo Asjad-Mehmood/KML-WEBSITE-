@@ -532,4 +532,6 @@ export function initTools(user, c) {
   fillInfo(); fillTraverse(); fillLevel(); computeT(); computeL();
 }
 export function refreshJobStates() { if (S) { jobStatus('t'); jobStatus('l'); } }
+/** The job open in a tool ('traverse' or 'level'): its saved id, name, and whether it has unsaved changes. */
+export function openJobInfo(tab) { if (!S) return null; const o = tab === 'level' ? S.level : S.trav; return { id: o.jobId, name: o.jobName, dirty: !!o.dirty, example: !!o.example }; }
 export function recompute(tab) { if (!S) return; tab === 'level' ? computeL() : computeT(); }

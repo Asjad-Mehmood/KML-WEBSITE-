@@ -91,11 +91,38 @@ body:not(.authed) .user-only, body.authed .guest-only { display: none !important
 .menu a, .menu button { text-align: left; padding: 8px 10px; border-radius: 8px; border: 0; background: none; color: var(--ink); text-decoration: none; cursor: pointer; }
 .menu a:hover, .menu button:hover { background: var(--surface-2); }
 
-.appnav { display: flex; gap: 4px; align-items: center; padding: 8px 20px 0; max-width: 1440px; margin: 0 auto; overflow-x: auto; }
-.appnav a { padding: 8px 16px; border-radius: 999px; text-decoration: none; color: var(--muted); font-weight: 600; white-space: nowrap; }
-.appnav a[aria-current="page"] { background: var(--navy); color: var(--hero-gold); }
-.appnav .net { margin-left: auto; font-size: 12.5px; color: var(--muted); white-space: nowrap; }
-.appnav .net.off { color: var(--amber); font-weight: 600; }
+.menu a small { display: block; font-size: 12px; color: var(--muted); font-weight: 400; }
+.top-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.nav-toggle { display: none; }
+.nav-toggle svg { fill: none; stroke: var(--ink); stroke-width: 1.8; stroke-linecap: round; }
+
+/* ---------------- sidebar: the tools, your recent jobs, the connection ---------------- */
+body.authed .shell { display: grid; grid-template-columns: 236px minmax(0, 1fr); align-items: start; }
+.shell-main { min-width: 0; }
+.sidebar { position: sticky; top: var(--top-h, 61px); height: calc(100vh - var(--top-h, 61px)); display: flex; flex-direction: column; gap: 22px; padding: 18px 12px 14px;
+  border-right: 1px solid var(--line); background: color-mix(in srgb, var(--surface) 72%, var(--bg)); overflow-y: auto; }
+.side-nav { display: flex; flex-direction: column; gap: 4px; }
+.side-nav a { display: flex; align-items: center; gap: 11px; padding: 10px 14px; border-radius: 10px; text-decoration: none; color: var(--muted); font-weight: 600; }
+.side-nav a svg { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.side-nav a:hover { background: var(--surface-2); color: var(--ink); }
+.side-nav a[aria-current="page"] { background: var(--navy); color: var(--hero-gold); }
+.side-recent h3 { margin: 0 0 8px; padding: 0 8px; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); font-weight: 600; }
+.recent-list { display: flex; flex-direction: column; gap: 2px; }
+.recent { display: flex; align-items: center; gap: 9px; width: 100%; padding: 7px 8px; border: 0; border-radius: 8px; background: none; color: var(--ink); text-align: left; cursor: pointer; }
+.recent:hover { background: var(--surface-2); }
+.recent.on { background: var(--gold-soft); }
+.recent svg { width: 16px; height: 16px; flex: none; fill: none; stroke: var(--gold); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.recent span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13.5px; }
+.recent i { width: 8px; height: 8px; border-radius: 50%; flex: none; background: var(--muted); opacity: .5; }
+.recent i.accepted { background: var(--good); opacity: 1; } .recent i.rejected { background: var(--bad); opacity: 1; } .recent i.open { background: var(--amber); opacity: 1; }
+.recent-empty { margin: 0; padding: 0 8px; font-size: 12.5px; color: var(--muted); }
+.side-all { display: block; margin-top: 6px; padding: 7px 8px; border-radius: 8px; font-size: 13.5px; font-weight: 600; color: var(--accent); text-decoration: none; }
+.side-all:hover { background: var(--surface-2); }
+.side-all[aria-current="page"] { background: var(--navy); color: var(--hero-gold); }
+.side-foot { margin-top: auto; padding: 0 8px; }
+.side-foot .net { font-size: 12.5px; color: var(--muted); }
+.side-foot .net.off { color: var(--amber); font-weight: 600; }
+.nav-backdrop { position: fixed; inset: 0; z-index: 44; background: rgba(5, 12, 22, .45); }
 .demo-banner { max-width: 1440px; margin: 10px auto 0; padding: 10px 16px; border: 1px dashed var(--amber); background: var(--amber-soft); color: var(--ink); border-radius: 10px; font-size: 13.5px; width: calc(100% - 40px); }
 
 /* ---------------- buttons & inputs ---------------- */
@@ -453,6 +480,11 @@ input.num.tiny { width: 64px; padding: 6px 8px; }
   .f-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .preview { grid-template-columns: minmax(0, 1fr); }
   .sim-layout { grid-template-columns: minmax(0, 1fr); } .sim-ctrl { position: static; }
+  /* the sidebar slides in from the left */
+  body.authed .shell { display: block; }
+  .nav-toggle { display: grid; }
+  .sidebar { position: fixed; top: 0; left: 0; bottom: 0; height: auto; width: min(290px, 84vw); z-index: 45; background: var(--surface); box-shadow: var(--shadow); transform: translateX(-105%); visibility: hidden; transition: transform .2s ease, visibility .2s; }
+  body.nav-open .sidebar { transform: none; visibility: visible; }
   .top { grid-template-columns: auto 1fr auto; } .clock { justify-self: center; }
   .brand-text small { display: none; }
 }
@@ -461,9 +493,7 @@ input.num.tiny { width: 64px; padding: 6px 8px; }
   .clock { grid-column: 1 / -1; grid-row: 2; }
   .brand-text b { font-size: 17px; }
   .top-right .btn { padding: 7px 11px; font-size: 13.5px; }
-  #dash-link { display: none; }
   .wrap { padding-inline: 16px; }
-  .appnav { padding-inline: 16px; }
   .hero-inner, .hero-rule, .features, .how, .preview { padding-inline: 16px; }
   .f-grid, .steps { grid-template-columns: minmax(0, 1fr); }
   .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -483,7 +513,7 @@ input.num.tiny { width: 64px; padding: 6px 8px; }
   .gold-flash { animation: goldOnce .8s ease-out 1 both !important; }
   @keyframes goldOnce { 0% { opacity: .7; } 100% { opacity: 0; } }
 }
-@media (prefers-reduced-motion: no-preference) { .btn, .appnav a, .seg button, .filters button { transition: background .15s, color .15s, filter .15s; } }
+@media (prefers-reduced-motion: no-preference) { .btn, .side-nav a, .seg button, .filters button { transition: background .15s, color .15s, filter .15s; } }
 
 /* admin controls: sharing switched off, app closed */
 body.no-share [data-act="share"] { display: none !important; }
