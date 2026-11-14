@@ -41,7 +41,7 @@ export const OG_IMAGE = {
  * installed copies update from here.
  */
 /** The newest release, shown until the live release details load. */
-export const LATEST_VERSION = "v4.2.1";
+export const LATEST_VERSION = "v4.4.4";
 
 export const GITHUB_REPO_URL = "https://github.com/Asjad-Mehmood/kml-convertor";
 

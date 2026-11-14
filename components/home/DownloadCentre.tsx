@@ -5,7 +5,7 @@ import { ArrowRight, Compass, Download, FileSpreadsheet, FileText, FolderTree, I
 import RoadProDownload from "../RoadProDownload";
 import TraverseDownload from "../TraverseDownload";
 import FolderManagerDownload from "../FolderManagerDownload";
-import { ROADPRO_FILES, ROADPRO_VERSION } from "@/lib/roadpro";
+import { ROADPRO_FILES, ROADPRO_RELEASE } from "@/lib/roadpro";
 import { TRAVERSE_FILES, TRAVERSE_VERSION } from "@/lib/traverse";
 import { PFM_VERSION } from "@/lib/folderManager";
 import { useTraverseRelease } from "@/lib/useTraverseRelease";
@@ -140,7 +140,7 @@ export default function DownloadCentre({
           <Card
             Icon={Route}
             name="RoadPro"
-            version={`v${ROADPRO_VERSION}`}
+            version={`v${ROADPRO_RELEASE}`}
             file="AutoCAD plugin · ZIP, 83 KB"
             needs="AutoCAD, Civil 3D or Map 3D 2013 or newer."
             href="/roadpro"
