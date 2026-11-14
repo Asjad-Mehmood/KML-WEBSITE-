@@ -7,6 +7,7 @@ import { countOwn } from "@/lib/traverseJobs";
 import { describeAccountChanges } from "@/lib/accountChanges";
 import { programVersionsFor } from "@/lib/appUsage";
 import { emailStatus } from "@/lib/emailVerify";
+import { downloadsOf, personExtras } from "@/lib/personProfile";
 
 export async function GET(
   req: NextRequest,
@@ -25,37 +26,33 @@ export async function GET(
     }
 
     const sanitized = db.sanitizeUser(user);
-    const stats = await db.getUserStats(user.id);
-    const activities = await db.getUserActivities(user.id, 150);
-
-    // Filter downloads for this specific user
-    const allDownloads = await db.getAllDownloads();
-    const downloads = allDownloads.filter(
-      (d) =>
-        (d.userId && d.userId === user.id) ||
-        (d.userEmail && d.userEmail.toLowerCase() === user.email.toLowerCase())
-    );
-
-    // Stored files imported or exported by this user
-    const userFiles = await db.getUserFiles(user.id, 150);
+    // Every part at once; one that fails comes back empty and is named in `failed`
+    const failed: string[] = [];
+    const safe = <T,>(name: string, run: () => Promise<T>, empty: T) =>
+      run().catch((e) => {
+        console.error(`[person] ${name}:`, e instanceof Error ? e.message : e);
+        failed.push(name);
+        return empty;
+      });
+    const downloads = await safe("downloads", () => downloadsOf(user.id, user.email), []);
+    const [stats, activities, userFiles, points, jobs, traverseJobs, programs, email, extras] = await Promise.all([
+      safe("stats", () => db.getUserStats(user.id), null),
+      safe("activity", () => db.getUserActivities(user.id, 300), []),
+      safe("files", () => db.getUserFiles(user.id, 300), []),
+      safe("points", () => db.getUserConversions(user.id, { limit: 2000 }), { total: 0, conversions: [] }),
+      safe("jobs", () => listJobs(user.id), []),
+      safe("traverse", () => countOwn(user.id), 0),
+      // which version of each program they have, and where they last opened it
+      safe("programs", () => programVersionsFor(user.id, downloads as never), []),
+      safe("email", () => emailStatus(user.id), null),
+      personExtras(user),
+    ]);
+    // stored files without their contents; they download on their own
     const files = userFiles.map((f) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { contentBase64, storedFilePath, ...rest } = f;
-      return {
-        ...rest,
-        downloadUrl: `/api/user/files/${f.id}`,
-      };
+      return { ...rest, downloadUrl: `/api/user/files/${f.id}` };
     });
-
-    // Converted points of the files this user saved
-    const points = await db.getUserConversions(user.id, { limit: 2000 });
-
-    // Jobs kept from the app (names and sizes; the contents download separately)
-    const jobs = await listJobs(user.id).catch(() => []);
-    const traverseJobs = await countOwn(user.id).catch(() => 0);
-
-    // Which version of each program they have, and where they last opened it
-    const programs = await programVersionsFor(user.id, downloads).catch(() => []);
 
     return NextResponse.json({
       success: true,
@@ -68,7 +65,10 @@ export async function GET(
       jobs,
       traverseJobs,
       programs,
-      emailStatus: await emailStatus(user.id).catch(() => null),
+      emailStatus: email,
+      ...extras,
+      failed: [...failed, ...extras.failed],
+      loadedAt: new Date().toISOString(),
     });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Failed to retrieve user details";
