@@ -682,6 +682,7 @@ export function AppSettings({
   onShow,
   fields,
   footer,
+  part,
   onSaved,
 }: {
   adminFetch: Fetcher;
@@ -689,6 +690,8 @@ export function AppSettings({
   onShow: (section: string) => void;
   fields: SettingField[];
   footer?: (s: SettingsMap) => ReactNode;
+  /** the part of Admin → Settings that has the rest of this app's settings */
+  part?: string;
   onSaved?: () => void;
 }) {
   const [s, setS] = useState<SettingsMap | null>(null);
@@ -734,7 +737,7 @@ export function AppSettings({
     <Panel
       title="Settings"
       action={
-        <button onClick={() => onShow("settings")} className="text-xs font-semibold text-blue-400 hover:underline cursor-pointer">
+        <button onClick={() => onShow(part ? `settings:${part}` : "settings")} className="text-xs font-semibold text-blue-400 hover:underline cursor-pointer">
           All settings
         </button>
       }
