@@ -259,7 +259,7 @@ export default function AppTab({
                 <FolderOpen className="w-3.5 h-3.5" /> Files
               </button>
             )}
-            <button onClick={() => onShow("releases")} className={linkBtn}>
+            <button onClick={() => onShow(`releases:${data.app.id}`)} className={linkBtn}>
               <Megaphone className="w-3.5 h-3.5" /> Releases
             </button>
             {data.app.href && (
@@ -613,7 +613,7 @@ export default function AppTab({
         <Panel
           title="Releases"
           action={
-            <button onClick={() => onShow("releases")} className="text-xs font-semibold text-blue-400 hover:underline cursor-pointer">
+            <button onClick={() => onShow(`releases:${data.app.id}`)} className="text-xs font-semibold text-blue-400 hover:underline cursor-pointer">
               Manage
             </button>
           }

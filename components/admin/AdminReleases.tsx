@@ -6,6 +6,9 @@ import {
   CheckCircle2,
   Download,
   Eye,
+  GitBranch,
+  Link2,
+  Search,
   Loader2,
   Mail,
   Megaphone,
@@ -22,6 +25,7 @@ import {
   Users,
   X,
 } from "lucide-react";
+import { EmailHistory, NoteLines, OptOuts, Recipients, ReleaseTimeline, VersionBoard } from "@/components/admin/ReleaseTools";
 
 interface App {
   id: string;
@@ -87,7 +91,26 @@ const btn = "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs fon
 const input = "w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500";
 
 // Admin → Releases: each app's versions, and emailing one to the people who use that app.
-export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fetch; onToast: (message: string, type?: "success" | "error") => void }) {
+// Admin → Releases (the menu has a part per app): with no app, every app's versions, every
+// release, the emails sent and who stopped them (components/admin/ReleaseTools.tsx); with an app,
+// its releases, review requests and introduction.
+export default function AdminReleases({
+  adminFetch,
+  onToast,
+  app: appId = "",
+  onShow = () => {},
+  onOpenAccount = () => {},
+  onCounts,
+}: {
+  adminFetch: Fetch;
+  onToast: (message: string, type?: "success" | "error") => void;
+  /** "" every app, or one app's releases */
+  app?: string;
+  onShow?: (section: string) => void;
+  onOpenAccount?: (userId: string) => void;
+  /** releases per app, for the menu */
+  onCounts?: (c: Record<string, number>) => void;
+}) {
   const [data, setData] = useState<Data | null>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<{ release: Partial<Release> & { app: string }; isNew: boolean } | null>(null);
@@ -97,10 +120,14 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
   const [running, setRunning] = useState<string | null>(null); // broadcast id being sent from this page
   const [busy, setBusy] = useState<string | null>(null);
   const [failed, setFailed] = useState<{ id: string; list: { email: string; error: string | null }[] } | null>(null);
-  const [tab, setTab] = useState<string | null>(null); // the app whose versions are shown
+  const [historyKey, setHistoryKey] = useState(0);
+  const [q, setQ] = useState("");
+  const [filter, setFilter] = useState<"all" | "unsent" | "nonotes">("all");
   const toast = useRef(onToast);
+  const counts = useRef(onCounts);
   useEffect(() => {
     toast.current = onToast;
+    counts.current = onCounts;
   });
   const stopRef = useRef(false);
 
@@ -109,7 +136,9 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
       adminFetch("/api/admin/releases")
         .then(async (r) => {
           if (!r.ok) throw new Error(await errorOf(r));
-          setData((await r.json()) as Data);
+          const d = (await r.json()) as Data;
+          setData(d);
+          counts.current?.(Object.fromEntries(d.groups.map((g) => [g.app.id, g.releases.length])));
         })
         .catch((e) => toast.current((e as Error).message, "error"))
         .finally(() => setLoading(false)),
@@ -158,6 +187,7 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
         toast.current((e as Error).message, "error");
       } finally {
         setRunning(null);
+        setHistoryKey((k) => k + 1);
         load();
       }
     },
@@ -250,6 +280,19 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
     load();
   };
 
+  // a new email to only the people this one failed for
+  const retryFailed = async (broadcastId: string) => {
+    setBusy(`retry-${broadcastId}`);
+    const r = await adminFetch("/api/admin/releases/tools", json({ action: "retry", broadcastId }));
+    setBusy(null);
+    if (!r.ok) return toast.current(await errorOf(r), "error");
+    setFailed(null);
+    const { broadcastId: id } = await r.json();
+    toast.current("Sending again to the people it failed for");
+    await load();
+    run(id);
+  };
+
   const showFailed = async (b: Broadcast) => {
     const r = await adminFetch(`/api/admin/broadcasts/${b.id}`);
     if (!r.ok) return toast.current(await errorOf(r), "error");
@@ -319,7 +362,24 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
     );
   }
   if (!data) return null;
-  const shown = data.groups.find((g) => g.app.id === tab) || data.groups[0];
+  const shown = appId ? data.groups.find((g) => g.app.id === appId) ?? null : null;
+  const allReleases = data.groups.flatMap((g) =>
+    g.releases.map((r) => ({
+      id: r.id,
+      app: g.app.id,
+      appName: g.app.name,
+      version: r.version,
+      releasedAt: r.releasedAt,
+      title: r.title,
+      notes: r.notes,
+      sent: r.broadcasts.reduce((n, b) => n + b.sent, 0),
+      sending: r.broadcasts.some((b) => b.status !== "done"),
+    }))
+  );
+  const editById = (id: string) => {
+    const rel = data.groups.flatMap((g) => g.releases).find((r) => r.id === id);
+    if (rel) setEditing({ isNew: false, release: rel });
+  };
 
   return (
     <div className="space-y-6">
@@ -368,7 +428,7 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
           <p className="mt-1.5 text-sm text-white">
             <b className="text-lg">{data.audience.everyone}</b> {data.audience.everyone === 1 ? "person" : "people"} with an account
           </p>
-          <p className="mt-0.5 text-xs text-slate-500">Each app&apos;s releases go only to the people who use it. The tab shows how many.</p>
+          <p className="mt-0.5 text-xs text-slate-500">Each app&apos;s releases go only to the people who use it: open the app under Releases in the menu to see how many.</p>
         </div>
         <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
           <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400">
@@ -385,32 +445,17 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
         with the people not reached yet.
       </p>
 
-      {/* One tab per app; the selected app's versions below */}
-      <div role="tablist" aria-label="Apps" className="flex gap-2 overflow-x-auto pb-1">
-        {data.groups.map(({ app, releases }) => {
-          const active = app.id === shown.app.id;
-          const sending =
-            releases.some((r) => r.broadcasts.some((b) => b.status !== "done")) ||
-            data.groups.find((g) => g.app.id === app.id)!.review.broadcasts.some((b) => b.status !== "done");
-          return (
-            <button
-              key={app.id}
-              role="tab"
-              aria-selected={active}
-              onClick={() => setTab(app.id)}
-              className={`shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-semibold cursor-pointer transition-colors ${
-                active ? "bg-blue-600 border-blue-500 text-white" : "bg-slate-900 border-slate-800 text-slate-300 hover:text-white hover:border-slate-700"
-              }`}
-            >
-              {app.name}
-              <span className={`px-1.5 py-0.5 rounded-md text-[11px] ${active ? "bg-white/20" : "bg-slate-800 text-slate-400"}`}>{releases.length}</span>
-              {sending && <span className="w-2 h-2 rounded-full bg-amber-400" title="A broadcast isn't finished" />}
-            </button>
-          );
-        })}
-      </div>
+      {/* every app: the versions, every release, the emails sent and who stopped them */}
+      {!shown && (
+        <>
+          <VersionBoard adminFetch={adminFetch} onToast={(m, t) => toast.current(m, t)} onShow={onShow} onImported={load} />
+          <ReleaseTimeline releases={allReleases} onShow={onShow} onEdit={editById} />
+          <EmailHistory adminFetch={adminFetch} onToast={(m, t) => toast.current(m, t)} onRun={run} reloadKey={historyKey} />
+          <OptOuts adminFetch={adminFetch} onToast={(m, t) => toast.current(m, t)} onOpenAccount={onOpenAccount} onChanged={load} />
+        </>
+      )}
 
-      {[shown].map(({ app, users, releases, review, intro }) => (
+      {shown && [shown].map(({ app, users, releases, review, intro }) => (
         <section key={app.id} role="tabpanel" className="rounded-2xl border border-slate-800 bg-slate-900/40">
           <header className="flex flex-wrap items-center gap-3 px-5 py-4 border-b border-slate-800">
             <div className="mr-auto">
@@ -538,14 +583,50 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
             {review.broadcasts.length > 0 && <ul className="mt-3 space-y-2">{review.broadcasts.map((b) => broadcastRow(b, app.name))}</ul>}
           </div>
 
+          {releases.length > 3 && (
+            <div className="flex flex-wrap items-center gap-2 px-5 py-3 border-b border-slate-800">
+              <div className="relative">
+                <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" aria-hidden />
+                <input
+                  type="search"
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                  placeholder="Version or words"
+                  aria-label={`Search ${app.name} releases`}
+                  className="w-52 max-w-full pl-9 pr-3 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-base sm:text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500"
+                />
+              </div>
+              <div role="group" aria-label="Show" className="flex gap-1 p-1 rounded-lg bg-slate-950 border border-slate-800">
+                {(
+                  [
+                    ["all", "All"],
+                    ["unsent", "Not emailed"],
+                    ["nonotes", "No notes"],
+                  ] as const
+                ).map(([k, l]) => (
+                  <button
+                    key={k}
+                    onClick={() => setFilter(k)}
+                    aria-pressed={filter === k}
+                    className={`px-2.5 py-1 rounded-md text-[11.5px] font-semibold cursor-pointer ${filter === k ? "bg-slate-700 text-white" : "text-slate-400 hover:text-white"}`}
+                  >
+                    {l}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {releases.length === 0 ? (
             <p className="px-5 py-6 text-sm text-slate-400">No releases yet. Add one{app.github ? ", or import them from GitHub" : ""}.</p>
           ) : (
             <ul className="divide-y divide-slate-800">
-              {releases.map((rel) => {
+              {releases
+                .filter((rel) => (filter === "unsent" ? !rel.broadcasts.some((b) => b.sent > 0) : filter === "nonotes" ? !rel.notes.trim() : true))
+                .filter((rel) => !q.trim() || `${rel.version} ${rel.title} ${rel.notes}`.toLowerCase().includes(q.trim().toLowerCase()))
+                .map((rel) => {
                 const open = rel.broadcasts.find((b) => b.status !== "done");
                 const sentBefore = rel.broadcasts.some((b) => b.sent > 0);
-                const notes = rel.notes.split("\n").filter(Boolean);
                 return (
                   <li key={rel.id} className="px-5 py-4">
                     <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -556,13 +637,10 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
                       {!rel.broadcasts.length && <span className="ml-auto text-slate-500">Not sent yet</span>}
                     </div>
                     <p className="mt-2 text-sm font-semibold text-white">{rel.title}</p>
-                    {notes.length ? (
-                      <ul className="mt-1.5 space-y-0.5 text-[13px] text-slate-300 list-disc pl-5">
-                        {notes.slice(0, 5).map((n, i) => (
-                          <li key={i} className="break-words">{n}</li>
-                        ))}
-                        {notes.length > 5 && <li className="list-none -ml-5 text-slate-500">and {notes.length - 5} more</li>}
-                      </ul>
+                    {rel.notes.trim() ? (
+                      <div className="mt-1.5">
+                        <NoteLines notes={rel.notes} limit={5} />
+                      </div>
                     ) : (
                       <p className="mt-1.5 text-[13px] text-amber-300/90">No &ldquo;what&apos;s new&rdquo; yet. Edit to add it before sending.</p>
                     )}
@@ -630,6 +708,7 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
             load();
           }}
           onError={(m) => toast.current(m, "error")}
+          onPreview={setPreview}
         />
       )}
 
@@ -651,6 +730,7 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
 
       {confirming && (
         <ConfirmBroadcast
+          adminFetch={adminFetch}
           release={confirming.release}
           initialWho={confirming.who}
           appName={data.groups.find((g) => g.app.id === confirming.release.app)?.app.name || confirming.release.app}
@@ -683,6 +763,13 @@ export default function AdminReleases({ adminFetch, onToast }: { adminFetch: Fet
                 </li>
               ))}
             </ul>
+          )}
+          {failed.list.length > 0 && (
+            <div className="mt-4 flex justify-end">
+              <button onClick={() => retryFailed(failed.id)} disabled={!!running || busy === `retry-${failed.id}`} className={`${btn} px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white`}>
+                {busy === `retry-${failed.id}` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />} Send again to these {failed.list.length}
+              </button>
+            </div>
           )}
         </Modal>
       )}
@@ -725,6 +812,7 @@ function ReleaseForm({
   onClose,
   onSaved,
   onError,
+  onPreview,
 }: {
   apps: App[];
   initial: Partial<Release> & { app: string };
@@ -733,6 +821,8 @@ function ReleaseForm({
   onClose: () => void;
   onSaved: (message: string) => void;
   onError: (message: string) => void;
+  /** show the email as it would go out, before saving */
+  onPreview: (p: { subject: string; html: string; text: string }) => void;
 }) {
   const [f, setF] = useState({
     app: initial.app,
@@ -744,7 +834,36 @@ function ReleaseForm({
     linkLabel: initial.linkLabel || "",
   });
   const [saving, setSaving] = useState(false);
+  const [tool, setTool] = useState<string | null>(null);
+  const [linkState, setLinkState] = useState<{ ok: boolean; message: string; link: string } | null>(null);
   const app = apps.find((a) => a.id === f.app);
+
+  // this version's title, notes and date from its release on GitHub
+  const fillFromGitHub = async () => {
+    if (!f.version.trim()) return onError("Type the version first.");
+    if (f.notes.trim() && !confirm("Replace the notes you have with the ones on GitHub?")) return;
+    setTool("github");
+    const r = await adminFetch(`/api/admin/releases/tools?github=${encodeURIComponent(f.app)}&version=${encodeURIComponent(f.version.trim())}`);
+    setTool(null);
+    if (!r.ok) return onError(await errorOf(r));
+    const { release: g } = await r.json();
+    setF((x) => ({ ...x, notes: g.notes || x.notes, title: x.title.trim() ? x.title : g.title || x.title, releasedAt: g.releasedAt || x.releasedAt }));
+    if (!g.notes) onError(`GitHub's v${g.version} has no notes to copy.`);
+  };
+  const checkLink = async () => {
+    setTool("link");
+    const r = await adminFetch(`/api/admin/releases/tools?link=${encodeURIComponent(f.link.trim())}`);
+    setTool(null);
+    const j = await r.json().catch(() => ({}));
+    setLinkState({ ok: !!j.ok, message: j.message || j.error || "Couldn't check it", link: f.link.trim() });
+  };
+  const previewEmail = async () => {
+    setTool("preview");
+    const r = await adminFetch("/api/admin/releases/tools", json({ action: "preview", release: f }));
+    setTool(null);
+    if (!r.ok) return onError(await errorOf(r));
+    onPreview(await r.json());
+  };
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setF({ ...f, [k]: e.target.value });
 
   const save = async (e: React.FormEvent) => {
@@ -783,7 +902,20 @@ function ReleaseForm({
           </div>
           <div>
             <label className={label} htmlFor="rel-version">Version</label>
-            <input id="rel-version" required value={f.version} onChange={set("version")} placeholder={app?.current || "3.4"} className={input} />
+            <span className="flex gap-1.5">
+              <input id="rel-version" required value={f.version} onChange={set("version")} placeholder={app?.current || "3.4"} className={input} />
+              {app?.github && (
+                <button
+                  type="button"
+                  onClick={fillFromGitHub}
+                  disabled={tool !== null}
+                  title="Copy this version's title, notes and date from its release on GitHub"
+                  className={`${btn} shrink-0 bg-slate-800 hover:bg-slate-700 text-slate-200`}
+                >
+                  {tool === "github" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <GitBranch className="w-3.5 h-3.5" />} From GitHub
+                </button>
+              )}
+            </span>
           </div>
           <div>
             <label className={label} htmlFor="rel-date">Release date</label>
@@ -805,19 +937,39 @@ function ReleaseForm({
             className={`${input} font-mono text-[13px] leading-relaxed`}
           />
           <p className="mt-1 text-[11px] text-slate-500">Start a line with a short title and a colon (&ldquo;Paver hatch: …&rdquo;) to show the title in bold.</p>
+          {f.notes.trim() && (
+            <div className="mt-2 rounded-lg border border-slate-800 bg-slate-950/60 p-3">
+              <p className="mb-1.5 text-[10.5px] font-bold uppercase tracking-wider text-slate-500">How it reads ({f.notes.split("\n").filter((l) => l.trim()).length} items)</p>
+              <NoteLines notes={f.notes} />
+            </div>
+          )}
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className={label} htmlFor="rel-link">Download link</label>
-            <input id="rel-link" required value={f.link} onChange={set("link")} placeholder="/roadpro" className={input} />
-            <p className="mt-1 text-[11px] text-slate-500">A page on this site (/roadpro) or an https:// address.</p>
+            <span className="flex gap-1.5">
+              <input id="rel-link" required value={f.link} onChange={set("link")} placeholder="/roadpro" className={input} />
+              <button type="button" onClick={checkLink} disabled={tool !== null || !f.link.trim()} className={`${btn} shrink-0 bg-slate-800 hover:bg-slate-700 text-slate-200`}>
+                {tool === "link" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Link2 className="w-3.5 h-3.5" />} Check
+              </button>
+            </span>
+            {linkState && linkState.link === f.link.trim() ? (
+              <p className={`mt-1 flex items-center gap-1 text-[11px] font-semibold ${linkState.ok ? "text-emerald-300" : "text-rose-300"}`}>
+                {linkState.ok ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertTriangle className="w-3.5 h-3.5" />} {linkState.message}
+              </p>
+            ) : (
+              <p className="mt-1 text-[11px] text-slate-500">A page on this site (/roadpro) or an https:// address.</p>
+            )}
           </div>
           <div>
             <label className={label} htmlFor="rel-label">Button text</label>
             <input id="rel-label" value={f.linkLabel} onChange={set("linkLabel")} maxLength={60} placeholder={`Download ${app?.name || "the app"} ${f.version || ""}`.trim()} className={input} />
           </div>
         </div>
-        <div className="flex justify-end gap-2 pt-2">
+        <div className="flex flex-wrap justify-end gap-2 pt-2">
+          <button type="button" onClick={previewEmail} disabled={tool !== null} className={`${btn} px-4 py-2 mr-auto bg-slate-800 hover:bg-slate-700 text-slate-200`}>
+            {tool === "preview" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Eye className="w-3.5 h-3.5" />} Preview the email
+          </button>
           <button type="button" onClick={onClose} className={`${btn} px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200`}>Cancel</button>
           <button type="submit" disabled={saving} className={`${btn} px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white`}>
             {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />} {isNew ? "Add release" : "Save"}
@@ -852,6 +1004,7 @@ function PreviewModal({ preview, onClose }: { preview: { subject: string; html: 
 }
 
 function ConfirmBroadcast({
+  adminFetch,
   release,
   initialWho,
   appName,
@@ -861,6 +1014,7 @@ function ConfirmBroadcast({
   onStart,
   onPreview,
 }: {
+  adminFetch: Fetch;
   release: Release;
   initialWho: "app" | "all";
   appName: string;
@@ -909,6 +1063,7 @@ function ConfirmBroadcast({
       )}
       <div className="mt-4 rounded-xl bg-slate-950 border border-slate-800 p-3 text-sm text-slate-300">
         <b className="text-white">{count}</b> {count === 1 ? "person" : "people"} will get this email, one by one. People who stopped release emails are left out.
+        <Recipients adminFetch={adminFetch} releaseId={release.id} who={who} onlyNew={onlyNew} />
       </div>
       <label className="mt-4 flex items-start gap-2 text-sm text-slate-200 cursor-pointer">
         <input type="checkbox" checked={checked} onChange={(e) => setChecked(e.target.checked)} className="mt-0.5" />
