@@ -294,7 +294,7 @@ export default function AdminActivity({
   };
   const actions = Object.entries(facets?.actions ?? {}).sort((a, b) => b[1] - a[1]);
   const chip = (on: boolean) =>
-    `inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer border ${
+    `inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap cursor-pointer border ${
       on ? "bg-blue-600 text-white border-blue-600" : "bg-[var(--adm-hover)] border-[var(--adm-line)] text-slate-300 hover:text-white"
     }`;
   const select = "px-3 py-2 rounded-xl bg-[var(--adm-hover)] border border-[var(--adm-line)] text-sm text-slate-100 focus:outline-none focus:border-blue-500 cursor-pointer";
@@ -357,7 +357,7 @@ export default function AdminActivity({
             </button>
           </span>
         )}
-        <div className="ml-auto flex gap-2">
+        <div className="ml-auto flex flex-wrap gap-2">
           <button onClick={() => setLive(!live)} className={chip(live)} title="Show new lines as they come (every 20 seconds)">
             {live ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />} Live
           </button>
@@ -370,13 +370,13 @@ export default function AdminActivity({
                 await onClearAll();
                 refresh();
               }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer border bg-red-600/10 border-red-500/30 text-red-300"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap cursor-pointer border bg-red-600/10 border-red-500/30 text-red-300"
               title="Delete what people did in the apps and on the site. Downloads and the Toolkit's records stay."
             >
               Clear…
             </button>
           )}
-          <button onClick={exportCsv} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer border bg-emerald-600/15 border-emerald-500/30 text-emerald-300">
+          <button onClick={exportCsv} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap cursor-pointer border bg-emerald-600/15 border-emerald-500/30 text-emerald-300">
             <FileSpreadsheet className="w-3.5 h-3.5" /> Export CSV
           </button>
         </div>

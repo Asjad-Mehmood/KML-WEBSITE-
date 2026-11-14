@@ -123,7 +123,17 @@ interface Data {
   isPublic: boolean | null;
 }
 
+export type ToolkitSection = Section;
 type Section = "overview" | "accounts" | "pcs" | "activity" | "downloads" | "access";
+/** The parts of the Toolkit's detail: under Survey Toolkit in the Admin menu */
+export const TOOLKIT_SECTIONS: { id: Section; label: string; icon: typeof Activity }[] = [
+  { id: "overview", label: "Tools on PCs", icon: LayoutDashboard },
+  { id: "accounts", label: "Accounts", icon: Users },
+  { id: "pcs", label: "PCs", icon: Monitor },
+  { id: "activity", label: "Activity", icon: Activity },
+  { id: "downloads", label: "Downloads", icon: Download },
+  { id: "access", label: "Access", icon: Lock },
+];
 const SECTIONS: { id: Section; label: string; icon: typeof Activity }[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
   { id: "accounts", label: "Accounts", icon: Users },
@@ -286,16 +296,23 @@ export default function AdminToolkit({
   adminFetch,
   onToast,
   embedded = false,
+  part,
+  onPart,
 }: {
   adminFetch: Fetcher;
   onToast: (s: string) => void;
+  /** the part chosen in the Admin menu; the page's own buttons hide when it's given */
+  part?: Section;
+  onPart?: (s: Section) => void;
   /** under the app tab (Admin → Apps → Survey Toolkit), which already shows the totals */
   embedded?: boolean;
 }) {
   const [data, setData] = useState<Data | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
-  const [section, setSection] = useState<Section>("overview");
+  const [own, setOwn] = useState<Section>("overview");
+  const section = part ?? own;
+  const setSection = onPart ?? setOwn;
   const [now, setNow] = useState(0);
 
   // the first load runs from the effect, so it only sets state once the answer is in
@@ -325,7 +342,7 @@ export default function AdminToolkit({
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center gap-2">
-        {SECTIONS.map((s) => (
+        {!part && SECTIONS.map((s) => (
           <button
             key={s.id}
             onClick={() => setSection(s.id)}

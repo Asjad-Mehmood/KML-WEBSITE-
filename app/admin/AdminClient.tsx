@@ -6,11 +6,11 @@ import AdminSurveyors from "@/components/admin/AdminSurveyors";
 import AdminDownloads, { DOWNLOAD_TABS } from "@/components/admin/AdminDownloads";
 import AdminReviews, { REVIEW_APPS } from "../../components/admin/AdminReviews";
 import AdminReleases from "../../components/admin/AdminReleases";
-import SettingsPanel from "../../components/admin/SettingsPanel";
+import SettingsPanel, { SETTINGS_SECTIONS } from "../../components/admin/SettingsPanel";
 import AdminPoints from "../../components/admin/AdminPoints";
 import AdminTraverse from "../../components/admin/AdminTraverse";
 import AdminSlope from "../../components/admin/AdminSlope";
-import AdminToolkit from "@/components/admin/AdminToolkit";
+import AdminToolkit, { TOOLKIT_SECTIONS, type ToolkitSection } from "@/components/admin/AdminToolkit";
 import AdminExcelToKml from "@/components/admin/AdminExcelToKml";
 import AdminProgram from "@/components/admin/AdminProgram";
 import { AppSettings } from "@/components/admin/AppTab";
@@ -35,9 +35,6 @@ import {
   Server,
   Compass,
   BarChart3,
-  HardDrive,
-  Clock,
-  Filter,
   Files,
   Inbox,
   Star,
@@ -50,7 +47,7 @@ import {
 } from "lucide-react";
 import SurveyorDetailModal from "@/components/admin/SurveyorDetailModal";
 import FileViewer, { type ViewerFile } from "@/components/FileViewer";
-import { TRAVERSE_LEVEL_ACTIONS, actionLabel, adminActionTag } from "@/lib/activityKinds";
+import { actionLabel, adminActionTag } from "@/lib/activityKinds";
 
 interface UserItem {
   id: string;
@@ -148,44 +145,6 @@ function barWidth(n: number, total: number) {
 }
 
 /** Page buttons under a long table */
-function Pager({
-  page,
-  total,
-  size,
-  onPage,
-  noun,
-}: {
-  page: number;
-  total: number;
-  size: number;
-  onPage: (p: number) => void;
-  noun: string;
-}) {
-  if (total <= size) return null;
-  const pages = Math.ceil(total / size);
-  const from = page * size + 1;
-  const to = Math.min(total, (page + 1) * size);
-  const btn =
-    "px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-700 text-slate-300 hover:bg-slate-800 disabled:opacity-40 disabled:hover:bg-transparent cursor-pointer disabled:cursor-default";
-  return (
-    <div className="flex items-center justify-between gap-3 px-4 py-3 border-t border-slate-800 text-xs text-slate-400">
-      <span>
-        {from.toLocaleString()}–{to.toLocaleString()} of {total.toLocaleString()} {noun}
-      </span>
-      <div className="flex items-center gap-2">
-        <button className={btn} disabled={page === 0} onClick={() => onPage(page - 1)}>
-          Previous
-        </button>
-        <span className="tabular-nums">
-          {page + 1} / {pages}
-        </span>
-        <button className={btn} disabled={page >= pages - 1} onClick={() => onPage(page + 1)}>
-          Next
-        </button>
-      </div>
-    </div>
-  );
-}
 
 /** The apps under Releases in the menu (lib/releases.ts RELEASE_APPS, which the page can't import) */
 const RELEASE_TABS = [
@@ -237,6 +196,10 @@ export default function AdminClient() {
   // Reviews → a program
   const [reviewsApp, setReviewsApp] = useState("");
   const [reviewWaiting, setReviewWaiting] = useState<Record<string, number>>({});
+  // Survey Toolkit → one part of its detail (components/admin/AdminToolkit.tsx)
+  const [toolkitPart, setToolkitPart] = useState("");
+  // Settings → one part of it
+  const [settingsPart, setSettingsPart] = useState("");
   // Downloads → a program
   const [downloadsApp, setDownloadsApp] = useState("");
   const [downloadCounts, setDownloadCounts] = useState<Record<string, number>>({});
@@ -250,6 +213,8 @@ export default function AdminClient() {
     if (tab === "releases") setReleasesApp(part ?? "");
     if (tab === "reviews") setReviewsApp(part ?? "");
     if (tab === "downloads") setDownloadsApp(part ?? "");
+    if (tab === "settings") setSettingsPart(part ?? "");
+    if (tab === "toolkit") setToolkitPart(part ?? "");
     setActiveTab(tab as typeof activeTab);
   };
   useEffect(() => {
@@ -293,8 +258,6 @@ export default function AdminClient() {
 
   // Users state
   const [users, setUsers] = useState<UserItem[]>([]);
-  const [userSearch, setUserSearch] = useState("");
-  const [usersLoading, setUsersLoading] = useState(false);
   const [userModalOpen, setUserModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserItem | null>(null);
   const [userForm, setUserForm] = useState({
@@ -309,12 +272,8 @@ export default function AdminClient() {
 
   // App activities telemetry state
   const [allActivities, setAllActivities] = useState<UserActivityItem[]>([]);
-  const [activityFilter, setActivityFilter] = useState("all");
-  const [activitySearch, setActivitySearch] = useState("");
-  const [activitiesLoading, setActivitiesLoading] = useState(false);
   // every entry in the database; allActivities holds the newest of them, 200 more per "Load more"
   const [activitiesTotal, setActivitiesTotal] = useState(0);
-  const [actPage, setActPage] = useState(0);
 
   // Downloads state
   const [downloads, setDownloads] = useState<DownloadItem[]>([]);
@@ -337,7 +296,8 @@ export default function AdminClient() {
   };
 
   const formatLocationDisplay = (locStr?: string | null): { text: string; flag: string } => {
-    if (!locStr || locStr === "Localhost (Dev)" || locStr === "127.0.0.1" || locStr === "Localhost") {
+    if (!locStr || !locStr.trim()) return { text: "Not known", flag: "🌐" };
+    if (locStr === "Localhost (Dev)" || locStr === "127.0.0.1" || locStr === "Localhost") {
       return { text: "Localhost (Dev)", flag: "💻" };
     }
 
@@ -481,20 +441,18 @@ export default function AdminClient() {
   }, [activeTab]);
 
   const loadUsers = async (query = "") => {
-    setUsersLoading(true);
     try {
       const res = await adminFetch(`/api/admin/users?query=${encodeURIComponent(query)}`);
       if (res.ok) {
         const data = await res.json();
         setUsers(data.users || []);
       }
-    } finally {
-      setUsersLoading(false);
+    } catch {
+      // the page shows what it has
     }
   };
 
   const loadActivities = async () => {
-    setActivitiesLoading(true);
     try {
       const res = await adminFetch("/api/admin/activities?limit=20");
       if (res.ok) {
@@ -502,25 +460,8 @@ export default function AdminClient() {
         setAllActivities(data.activities || []);
         setActivitiesTotal(data.total ?? (data.activities || []).length);
       }
-    } finally {
-      setActivitiesLoading(false);
-    }
-  };
-
-  const loadMoreActivities = async () => {
-    setActivitiesLoading(true);
-    try {
-      const res = await adminFetch(`/api/admin/activities?limit=200&skip=${allActivities.length}`);
-      if (res.ok) {
-        const data = await res.json();
-        const have = new Set(allActivities.map((a) => a.id));
-        setAllActivities([...allActivities, ...(data.activities || []).filter((a: UserActivityItem) => !have.has(a.id))]);
-        setActivitiesTotal(data.total ?? activitiesTotal);
-      }
     } catch {
-      showToast("Couldn't load more activity", "error");
-    } finally {
-      setActivitiesLoading(false);
+      // the page shows what it has
     }
   };
 
@@ -584,7 +525,7 @@ export default function AdminClient() {
         hasFullAccess: false,
         customMaxPoints: "",
       });
-      loadUsers(userSearch);
+      loadUsers();
       setUsersReload((x) => x + 1);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Error saving user";
@@ -629,25 +570,6 @@ export default function AdminClient() {
   // --------------------------------------------------------------------------
   // ADMIN DASHBOARD VIEW
   // --------------------------------------------------------------------------
-  const filteredActivities = allActivities.filter((act) => {
-    const matchesAction =
-      activityFilter === "all" ||
-      act.action === activityFilter ||
-      (activityFilter === "traverse_level" && TRAVERSE_LEVEL_ACTIONS.includes(act.action));
-    if (!matchesAction) return false;
-    if (!activitySearch.trim()) return true;
-    const q = activitySearch.toLowerCase();
-    return (
-      (act.userName && act.userName.toLowerCase().includes(q)) ||
-      (act.userEmail && act.userEmail.toLowerCase().includes(q)) ||
-      (act.title && act.title.toLowerCase().includes(q)) ||
-      (act.fileName && act.fileName.toLowerCase().includes(q)) ||
-      (act.crs && act.crs.toLowerCase().includes(q))
-    );
-  });
-  const ACT_PAGE = 50;
-  const actPageNow = Math.min(actPage, Math.max(0, Math.ceil(filteredActivities.length / ACT_PAGE) - 1));
-  const pagedActivities = filteredActivities.slice(actPageNow * ACT_PAGE, (actPageNow + 1) * ACT_PAGE);
 
   // The menu, grouped by topic (components/admin/AdminShell.tsx)
   const groups: AdminGroup[] = [
@@ -705,7 +627,15 @@ export default function AdminClient() {
         { id: "slope", label: "Slope Calculator", icon: TrendingUp, text: "Everything about Slope Calculator: downloads, people, versions, calculations, how steep and how long, projects, problems, its settings and every calculation", count: stats?.slope?.jobs },
         { id: "roadpro", label: "RoadPro", icon: Route, text: "Everything about RoadPro: downloads, the PCs with it and their versions, Toolkit installs and failures, and its releases on GitHub" },
         { id: "pfm", label: "Project Folder Manager", icon: FolderTree, text: "Everything about Project Folder Manager: downloads, the PCs with it and their versions, Toolkit installs and failures, and its releases on GitHub" },
-        { id: "toolkit", label: "Survey Toolkit", icon: LayoutGrid, text: "Everything about the Survey Toolkit: downloads, people, every PC and its version, installs, updates and failures, GitHub, who may use it, and every account, PC and event" },
+        {
+          id: "toolkit",
+          label: "Survey Toolkit",
+          icon: LayoutGrid,
+          text: toolkitPart
+            ? `Survey Toolkit: ${TOOLKIT_SECTIONS.find((x) => x.id === toolkitPart)?.label ?? toolkitPart}`
+            : "Everything about the Survey Toolkit: downloads, people, every PC and its version, installs, updates and failures, GitHub, who may use it, and every account, PC and event",
+          sub: TOOLKIT_SECTIONS.map((x) => ({ id: x.id, label: x.label })),
+        },
       ],
     },
     {
@@ -735,7 +665,15 @@ export default function AdminClient() {
     {
       label: "System",
       sections: [
-        { id: "settings", label: "Settings", icon: Settings, text: "Sign-ups, email confirmation, the home page, announcements and maintenance" },
+        {
+          id: "settings",
+          label: "Settings",
+          icon: Settings,
+          text: settingsPart
+            ? `${SETTINGS_SECTIONS.find(([id]) => id === settingsPart)?.[1] ?? "Settings"}: change it and save; it's live on the site within a minute`
+            : "Sign-ups, email confirmation, the home page, announcements and maintenance",
+          sub: SETTINGS_SECTIONS.map(([id, label]) => ({ id, label })),
+        },
         { id: "log", label: "Admin log", icon: ScrollText, text: "Every change made in Admin: who, what and when" },
       ],
     },
@@ -748,7 +686,7 @@ export default function AdminClient() {
       active={activeTab}
       onSelect={selectSection}
       activeSub={
-        activeTab === "activities" ? activityApp : activeTab === "files" ? filesApp : activeTab === "releases" ? releasesApp : activeTab === "reviews" ? reviewsApp : activeTab === "downloads" ? downloadsApp : ""
+        activeTab === "activities" ? activityApp : activeTab === "files" ? filesApp : activeTab === "releases" ? releasesApp : activeTab === "reviews" ? reviewsApp : activeTab === "downloads" ? downloadsApp : activeTab === "settings" ? settingsPart : activeTab === "toolkit" ? toolkitPart : ""
       }
       admin={adminUser}
       onLogout={handleAdminLogout}
@@ -778,7 +716,7 @@ export default function AdminClient() {
         {/* ================================================================== */}
         {activeTab === "overview" && (
           <div className="space-y-8">
-            <AdminTrends adminFetch={adminFetch} onShow={(tab) => setActiveTab(tab as typeof activeTab)} />
+            <AdminTrends adminFetch={adminFetch} onShow={selectSection} />
             <h2 className="text-[13px] font-bold uppercase tracking-wider text-slate-500 -mb-4">All time</h2>
             {/* Stat Cards (5 metrics) */}
             <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
@@ -1066,52 +1004,8 @@ export default function AdminClient() {
               </div>
             </div>
 
-            {/* Geographic Distribution & Origin Analytics */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Top Locations Card */}
-              <div className="p-6 rounded-2xl bg-[var(--adm-card)] border border-[var(--adm-line)] space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-base font-bold text-white flex items-center gap-2">
-                    <Globe className="w-4 h-4 text-emerald-400" /> Where downloads come from
-                  </h3>
-                  <span className="text-xs text-slate-500">Top user locations</span>
-                </div>
-
-                <div className="space-y-3">
-                  {stats?.locationCounts && Object.keys(stats.locationCounts).length > 0 ? (
-                    Object.entries(stats.locationCounts)
-                      .sort(([, a], [, b]) => b - a)
-                      .slice(0, 5)
-                      .map(([locKey, count]) => {
-                        const total = stats.totalDownloads || 1;
-                        const pct = Math.round((count / total) * 100);
-                        const loc = formatLocationDisplay(locKey);
-                        return (
-                          <div key={locKey} className="space-y-1.5">
-                            <div className="flex justify-between items-center text-xs font-semibold">
-                              <span className="text-slate-300 flex items-center gap-1.5">
-                                <span className="text-sm shrink-0">{loc.flag}</span>
-                                <span>{loc.text}</span>
-                              </span>
-                              <span className="text-emerald-400 font-mono">
-                                {count} {count === 1 ? "event" : "events"} ({pct}%)
-                              </span>
-                            </div>
-                            <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                              <div
-                                className="h-full bg-emerald-500 rounded-full"
-                                style={{ width: `${Math.max(8, pct)}%` }}
-                              />
-                            </div>
-                          </div>
-                        );
-                      })
-                  ) : (
-                    <p className="text-xs text-slate-500 py-4 text-center">No location events recorded yet</p>
-                  )}
-                </div>
-              </div>
-
+            {/* The latest downloads (where they come from is in "Downloads by country" above) */}
+            <div className="grid grid-cols-1 gap-6">
               {/* Recent Real-time Activity Card */}
               <div className="p-6 rounded-2xl bg-[var(--adm-card)] border border-[var(--adm-line)] space-y-4">
                 <div className="flex items-center justify-between">
@@ -1126,8 +1020,8 @@ export default function AdminClient() {
                   </button>
                 </div>
 
-                <div className="space-y-2.5">
-                  {downloads.slice(0, 4).map((dl) => {
+                <div className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-4">
+                  {downloads.slice(0, 8).map((dl) => {
                     const loc = formatLocationDisplay(dl.location);
                     return (
                       <div
@@ -1151,7 +1045,7 @@ export default function AdminClient() {
 
                         <div className="text-right shrink-0">
                           <span className="font-mono text-[11px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 block mb-1">
-                            {dl.ipAddress || "127.0.0.1"}
+                            {dl.ipAddress || "—"}
                           </span>
                           <span className="text-[10px] text-slate-500">
                             {new Date(dl.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
@@ -1300,7 +1194,16 @@ export default function AdminClient() {
             }}
           />
         )}
-        {activeTab === "toolkit" && (
+        {activeTab === "toolkit" && toolkitPart && (
+          <AdminToolkit
+            adminFetch={adminFetch}
+            onToast={showToast}
+            embedded
+            part={toolkitPart as ToolkitSection}
+            onPart={(s) => selectSection(`toolkit:${s}`)}
+          />
+        )}
+        {activeTab === "toolkit" && !toolkitPart && (
           <AdminProgram
             app="toolkit"
             adminFetch={adminFetch}
@@ -1331,7 +1234,7 @@ export default function AdminClient() {
             footer={() => (
               <section className="pt-4 border-t border-[var(--adm-line)] space-y-3">
                 <h2 className="text-lg font-extrabold text-white">In detail</h2>
-                <AdminToolkit adminFetch={adminFetch} onToast={showToast} embedded />
+                <AdminToolkit adminFetch={adminFetch} onToast={showToast} embedded part="overview" onPart={(s) => selectSection(`toolkit:${s}`)} />
               </section>
             )}
           />
@@ -1377,7 +1280,7 @@ export default function AdminClient() {
         )}
 
         {activeTab === "settings" && (
-          <SettingsPanel adminFetch={adminFetch} onToast={showToast} />
+          <SettingsPanel adminFetch={adminFetch} onToast={showToast} part={settingsPart} />
         )}
       </div>
 
@@ -1509,7 +1412,7 @@ export default function AdminClient() {
           setDetailUserId(null);
         }}
         onUserUpdated={() => {
-          loadUsers(userSearch);
+          loadUsers();
           loadDashboardData();
         }}
         onToast={showToast}
