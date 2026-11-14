@@ -8,7 +8,7 @@
 import { useState, type ReactNode } from "react";
 import { AlertTriangle, CheckCircle2, Download, ExternalLink, Info, Loader2, Monitor, RefreshCw, UploadCloud, Wrench } from "lucide-react";
 import AppTab, { BarRow, Delta, Empty, Panel, Stat, ago, type AppOverviewData } from "@/components/admin/AppTab";
-import { ROADPRO_FILES, ROADPRO_VERSION } from "@/lib/roadpro";
+import { ROADPRO_FILES, ROADPRO_RELEASE } from "@/lib/roadpro";
 
 type Fetcher = (url: string, options?: RequestInit) => Promise<Response>;
 type Status = "current" | "behind" | "unknown";
@@ -36,7 +36,7 @@ const PROGRAMS: Record<string, { intro: string; sources: { label: string; href: 
   roadpro: {
     intro: "The AutoCAD road builder: RoadPro Hub and the plugin, installed by RoadPro Setup or the Survey Toolkit. Needs full AutoCAD, Civil 3D or Map 3D 2013 or newer.",
     sources: [
-      { label: "RoadPro Setup", href: ROADPRO_FILES.setup.href, detail: "The installer on GitHub, linked from /roadpro", version: ROADPRO_VERSION },
+      { label: "RoadPro Setup", href: ROADPRO_FILES.setup.href, detail: "The installer on GitHub, linked from /roadpro", version: ROADPRO_RELEASE },
       { label: "Plugin only (zip)", href: ROADPRO_FILES.plugin.href, detail: "For loading with APPLOAD; no automatic updates" },
     ],
     note: "RoadPro works inside AutoCAD and doesn't contact the site, so these numbers come from its downloads, its releases and the Survey Toolkit on each PC.",

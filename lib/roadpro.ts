@@ -1,17 +1,23 @@
 // RoadPro: the AutoCAD road builder plugin. Content from the RoadPro v3.6
 // user guide, notes and shortcut sheet (all downloadable from /roadpro).
 
+// The AutoCAD plugin's own version (RoadPro.lsp, the plugin-only zip, what the Survey Toolkit installs)
 export const ROADPRO_VERSION = "3.6.1";
 export const ROADPRO_RELEASED = "2026-11-11";
 
+// The newest RoadPro release (RoadPro Setup: RoadPro Hub and the plugin). 3.6.2 brought the new Hub
+// and its update notice; the plugin inside is still 3.6.1. The release's tag on GitHub.
+export const ROADPRO_RELEASE = "3.6.2";
+export const ROADPRO_RELEASE_DATE = "2026-11-12";
+
 // RoadPro Setup: installs RoadPro Hub and the plugin, then keeps them up to date (from 3.6.1).
-// Built by the Road-pro repository's release workflow. The release's own address, not
-// /releases/latest/…: GitHub's "latest" skips a release marked pre-release.
+// Built by the Road-pro repository's release workflow. GitHub's newest full release (3.6.2 on):
+// a release marked pre-release is skipped by "latest", so publish each one as Latest.
 export const ROADPRO_REPO = "Asjad-Mehmood/Road-pro";
-export const ROADPRO_SETUP_URL = `https://github.com/${ROADPRO_REPO}/releases/download/v${ROADPRO_VERSION}/RoadPro_Setup.exe`;
+export const ROADPRO_SETUP_URL = `https://github.com/${ROADPRO_REPO}/releases/latest/download/RoadPro_Setup.exe`;
 
 export const ROADPRO_FILES = {
-  setup: { href: ROADPRO_SETUP_URL, name: "RoadPro_Setup.exe", label: "RoadPro Setup", detail: "Installs RoadPro Hub and the AutoCAD plugin, and keeps them up to date. Windows, 8.2 MB" },
+  setup: { href: ROADPRO_SETUP_URL, name: "RoadPro_Setup.exe", label: "RoadPro Setup", detail: "Installs RoadPro Hub and the AutoCAD plugin, and keeps them up to date. Windows, 8.6 MB" },
   plugin: { href: "/roadpro/RoadPro.zip", name: "RoadPro.zip", label: "Plugin only (zip)", detail: "RoadPro.lsp, the RP_PAVER hatch pattern and install notes, to load with APPLOAD. No automatic updates. 124 KB" },
   guidePdf: { href: "/roadpro/RoadPro_User_Guide.pdf", name: "RoadPro_User_Guide.pdf", label: "User guide", detail: "PDF, 52 pages, 6.0 MB (version 3.6)" },
   guide: { href: "/roadpro/RoadPro_User_Guide.pptx", name: "RoadPro_User_Guide.pptx", label: "User guide", detail: "PowerPoint of the 3.5 guide, 44 slides, 5.1 MB" },
