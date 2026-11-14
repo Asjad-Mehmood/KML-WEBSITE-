@@ -1,6 +1,6 @@
 // Professional Traverse and Level Adjustment Software — app shell.
 import { SiteRemote, DemoRemote, JobStore, deviceUser, storage, validEmail, normEmail, AuthError } from './backend.js';
-import { initTools, openJob, newJob, loadTraverseData, refreshJobStates, recompute } from './tools.js';
+import { initTools, openJob, newJob, loadTraverseData, refreshJobStates, recompute, openJobInfo } from './tools.js';
 import { initSimulator, stopSim } from './simulator.js';
 import { $, $$, esc, toast, relTime } from './util.js';
 
@@ -45,26 +45,32 @@ function toggleCalendar(open) {
 // ---------------------------------------------------------------- routing
 const PRIVATE = ['dashboard', 'traverse', 'level', 'simulator'];
 // Opened as an installed app (the Windows program adds ?app=1; an installed web app runs
-// standalone): no front page. Straight to log in, or to the dashboard when already signed in.
+// standalone): no front page. Straight to log in, or back to your work when already signed in.
 const APP_MODE = /[?&]app=1(&|$)/.test(location.search) || matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+/** The tool this user last worked in (traverse or levelling): after logging in they go straight back to it. */
+const TOOLS = ['traverse', 'level'];
+const lastKey = () => (user ? `sx.last.${user.id}` : '');
+const home = () => { const t = user && storage.get(lastKey()); return TOOLS.includes(t) ? t : 'traverse'; };
 function route() {
   const h = location.hash;
   if (/access_token|error_description|type=recovery/.test(h)) return;          // Supabase link being processed
   let r = (h.replace(/^#\/?/, '').split('?')[0] || '').toLowerCase();
   if (recovery && r !== 'newpass') { location.hash = '#/newpass'; return; }
-  // no front page: signed out, everything goes to log in (or register / reset); signed in, to the dashboard
-  if (!r || r === 'landing') r = user ? 'dashboard' : 'login';
+  // no front page: signed out, everything goes to log in (or register / reset); signed in, back to the last tool
+  if (!r || r === 'landing') r = user ? home() : 'login';
   if (PRIVATE.includes(r) && !user) { storage.set('sx.after', r); location.hash = '#/login'; return; }
-  if (['login', 'register'].includes(r) && user) { location.hash = '#/dashboard'; return; }
+  if (['login', 'register'].includes(r) && user) { location.hash = '#/' + home(); return; }
   const view = user && !allow.enabled && PRIVATE.includes(r) ? 'closed' : r === 'traverse' || r === 'level' ? 'tools' : r;
   if (view === 'closed') $('#closed-msg').textContent = allow.message || 'Please try again later.';
-  if (!$(`[data-view="${view}"]`)) { location.hash = user ? '#/dashboard' : '#/login'; return; }
+  if (!$(`[data-view="${view}"]`)) { location.hash = user ? '#/' + home() : '#/login'; return; }
+  if (user && TOOLS.includes(r)) storage.set(lastKey(), r);
   $$('.view').forEach(v => (v.hidden = v.dataset.view !== view));
   $$('[data-nav]').forEach(a => a.toggleAttribute('aria-current', a.dataset.nav === r) || a.removeAttribute('aria-current'));
   $$('[data-nav]').forEach(a => { if (a.dataset.nav === r) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
   if (view === 'tools') { $$('.panel').forEach(p => (p.hidden = p.dataset.panel !== r)); recompute(r); refreshJobStates(); }
   if (view !== 'simulator') stopSim(); else initSimulator(sendToTraverse, logActivity);
   if (view === 'dashboard') renderDashboard();
+  renderRecent(); navOpen(false);
   document.title = { login: 'Log in · Traverse & Level', register: 'Register · Traverse & Level', dashboard: 'Dashboard · Traverse & Level', tools: (r === 'level' ? 'Levelling' : 'Traverse') + ' · Traverse & Level', simulator: 'Simulator · Traverse & Level' }[view] || 'Traverse & Level';
   window.scrollTo(0, 0);
   ['#calendar', '#user-menu'].forEach(s => ($(s).hidden = true));
@@ -82,11 +88,11 @@ function setUser(u, { celebrate = false } = {}) {
   if (u) {
     deviceUser.set(u);
     store = new JobStore(remote, u);
-    store.onChange = () => { refreshJobStates(); if (!$('[data-view="dashboard"]').hidden) renderDashboard(); };
+    store.onChange = () => { refreshJobStates(); renderRecent(); if (!$('[data-view="dashboard"]').hidden) renderDashboard(); };
     $('#avatar-initials').textContent = initials(u);
     $('#menu-name').textContent = u.name || 'Surveyor';
     $('#menu-email').textContent = u.email;
-    initTools(u, { store: () => store, log: logActivity, keep: (n, d, m) => { if (allow.keepFiles && remote.keepFile) remote.keepFile(n, d, m); }, onSaved: () => { if (!$('[data-view="dashboard"]').hidden) renderDashboard(); } });
+    initTools(u, { store: () => store, log: logActivity, keep: (n, d, m) => { if (allow.keepFiles && remote.keepFile) remote.keepFile(n, d, m); }, onSaved: () => { renderRecent(); if (!$('[data-view="dashboard"]').hidden) renderDashboard(); } });
     // once per sitting: the app was opened, and where (Windows program, installed app or browser)
     if (sessionStorage.getItem('tl.opened') !== u.id) {
       try { sessionStorage.setItem('tl.opened', u.id); } catch (e) { /* private mode */ }
@@ -109,12 +115,19 @@ async function applyAllow() {
 function goldFlash() {
   const f = $('#gold-flash'); f.hidden = false;
   const brand = $('.brand'); brand.classList.add('shine', 'glow');
-  $$('.avatar, .appnav a[aria-current]').forEach(e => e.classList.add('shine'));
+  $$('.avatar, .side-nav a[aria-current]').forEach(e => e.classList.add('shine'));
   setTimeout(() => { f.hidden = true; brand.classList.remove('glow'); $$('.shine').forEach(e => e.classList.remove('shine')); }, 2600);
 }
 function msg(id, text, ok = false) { const el = $(id); el.textContent = text || ''; el.classList.toggle('ok', ok); }
 function busy(form, on) { $$(`#${form} button[type=submit]`).forEach(b => { b.disabled = on; b.dataset.label ??= b.textContent; b.textContent = on ? 'Please wait…' : b.dataset.label; }); }
-function afterLogin() { const to = storage.get('sx.after'); storage.set('sx.after', null); location.hash = '#/' + (to || 'dashboard'); }
+function afterLogin() {
+  const to = storage.get('sx.after'); storage.set('sx.after', null);
+  const go = to || home();
+  location.hash = '#/' + go;
+  // say what was reopened, so it is clear this is the job from last time
+  const j = TOOLS.includes(go) && openJobInfo(go);
+  if (!to && j && j.name && !j.example) setTimeout(() => toast(`Welcome back. Reopened “${j.name}”.`), 300);
+}
 
 async function onLogin(e) {
   e.preventDefault(); msg('#login-msg', '');
@@ -157,7 +170,7 @@ async function onReset(e) {
 async function onNewPass(e) {
   e.preventDefault();
   const p = $('#np-pass').value; if (p.length < 8) return msg('#newpass-msg', 'Password must be at least 8 characters.');
-  try { await remote.setPassword(p); recovery = false; msg('#newpass-msg', 'Password saved.', true); const u = await remote.session(); if (u) setUser(u, { celebrate: true }); setTimeout(() => (location.hash = '#/dashboard'), 700); }
+  try { await remote.setPassword(p); recovery = false; msg('#newpass-msg', 'Password saved.', true); const u = await remote.session(); if (u) setUser(u, { celebrate: true }); setTimeout(() => (location.hash = '#/' + home()), 700); }
   catch (err) { msg('#newpass-msg', err.message); }
 }
 async function logout() {
@@ -223,6 +236,32 @@ async function startCode() {
     codeTimer = setTimeout(tick, 3000);
   };
   codeTimer = setTimeout(tick, 3000);
+}
+
+// ---------------------------------------------------------------- sidebar
+/** The last few jobs, newest first, one click from the tools. The open one is marked. */
+function renderRecent() {
+  const el = $('#recent-list'); if (!el) return;
+  if (!user || !store) { el.innerHTML = ''; return; }
+  const jobs = store.list().slice(0, 6), r = location.hash.replace(/^#\/?/, '').split('?')[0];
+  el.innerHTML = jobs.length ? jobs.map(j => {
+    const tab = j.kind === 'traverse' ? 'traverse' : 'level', o = openJobInfo(tab);
+    const on = r === tab && o && o.id === j.id, st = j.summary?.status || 'incomplete';
+    return `<button type="button" class="recent${on ? ' on' : ''}" data-rid="${j.id}" title="${esc(j.name)} · ${STATUS[st] || 'Incomplete'}"${on ? ' aria-current="true"' : ''}>${ICON[j.kind]}<span>${esc(j.name)}</span><i class="${st}" aria-label="${STATUS[st] || 'Incomplete'}"></i></button>`;
+  }).join('') : '<p class="recent-empty">Jobs you save appear here.</p>';
+}
+async function openRecent(id) {
+  const j = store && store.get(id); if (!j) return;
+  const tab = j.kind === 'traverse' ? 'traverse' : 'level', o = openJobInfo(tab);
+  if (o && o.id === j.id) { location.hash = '#/' + tab; return; }          // already open: keep its unsaved edits
+  if (o && (o.dirty || (!o.id && !o.example && o.name)) && !window.confirm(`Open “${j.name}”? Unsaved changes to “${o.name || 'the job on screen'}” will be lost.`)) return;
+  location.hash = '#/' + openJob(j);
+}
+/** On small screens the sidebar slides in over the page. */
+function navOpen(on) {
+  document.body.classList.toggle('nav-open', !!on);
+  const b = $('#nav-backdrop'); if (b) b.hidden = !on;
+  const t = $('#nav-toggle'); if (t) t.setAttribute('aria-expanded', String(!!on));
 }
 
 // ---------------------------------------------------------------- dashboard
@@ -317,9 +356,9 @@ function bind() {
   $('#calendar').addEventListener('click', e => e.stopPropagation());
   $('#avatar-btn').addEventListener('click', e => { e.stopPropagation(); const m = $('#user-menu'); m.hidden = !m.hidden; $('#avatar-btn').setAttribute('aria-expanded', String(!m.hidden)); });
   document.addEventListener('click', () => { toggleCalendar(false); $('#user-menu').hidden = true; });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') { toggleCalendar(false); $('#user-menu').hidden = true; $('#share-modal').hidden = true; } });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { toggleCalendar(false); $('#user-menu').hidden = true; $('#share-modal').hidden = true; navOpen(false); } });
   $('#logout-btn').addEventListener('click', logout);
-  $('#closed-retry').addEventListener('click', async () => { await applyAllow(); if (allow.enabled) { location.hash = '#/dashboard'; route(); toast('Traverse & Level is open again.'); } else toast('Still closed.'); });
+  $('#closed-retry').addEventListener('click', async () => { await applyAllow(); if (allow.enabled) { location.hash = '#/' + home(); route(); toast('Traverse & Level is open again.'); } else toast('Still closed.'); });
   $('#login-form').addEventListener('submit', onLogin);
   $('#code-start').addEventListener('click', startCode);
   $('#code-cancel').addEventListener('click', () => { codeView(false); msg('#login-msg', ''); });
@@ -343,16 +382,22 @@ function bind() {
   $$('.filters button').forEach(b => b.addEventListener('click', () => { filter = b.dataset.filter; $$('.filters button').forEach(x => x.setAttribute('aria-selected', String(x === b))); renderDashboard(); }));
   $('#job-search').addEventListener('input', renderDashboard);
   $$('[data-new]').forEach(a => a.addEventListener('click', () => newJob(a.dataset.new)));
+  $('#recent-list').addEventListener('click', e => { const b = e.target.closest('[data-rid]'); if (b) openRecent(b.dataset.rid); });
+  $('#nav-toggle').addEventListener('click', e => { e.stopPropagation(); navOpen(!document.body.classList.contains('nav-open')); });
+  $('#nav-backdrop').addEventListener('click', () => navOpen(false));
+  // the sticky sidebar starts under the top bar, whatever its height
+  const topH = () => document.documentElement.style.setProperty('--top-h', $('#top').offsetHeight + 'px');
+  topH(); window.addEventListener('resize', topH);
   $('#job-list').addEventListener('click', e => {
     const b = e.target.closest('[data-act]'); if (!b) return;
     const id = b.closest('.job').dataset.id, j = store.get(id); if (!j) return;
     switch (b.dataset.act) {
       case 'open': location.hash = '#/' + openJob(j); break;
       case 'share': openShare(id); break;
-      case 'dup': { const c = store.save({ kind: j.kind, name: j.name + ' (copy)', data: j.data, summary: j.summary }); toast(`Copied as "${c.name}".`); renderDashboard(); break; }
+      case 'dup': { const c = store.save({ kind: j.kind, name: j.name + ' (copy)', data: j.data, summary: j.summary }); toast(`Copied as "${c.name}".`); renderDashboard(); renderRecent(); break; }
       case 'del': confirmDel = id; renderDashboard(); break;
       case 'del-no': confirmDel = null; renderDashboard(); break;
-      case 'del-yes': confirmDel = null; store.remove(id); toast(`Deleted "${j.name}".`); renderDashboard(); break;
+      case 'del-yes': confirmDel = null; store.remove(id); toast(`Deleted "${j.name}".`); renderDashboard(); renderRecent(); break;
     }
   });
   $('#shared-list').addEventListener('click', e => {
@@ -372,7 +417,7 @@ async function start() {
   if (remote.kind !== 'demo') {
     remote.onAuth((ev, u) => {
       if (ev === 'PASSWORD_RECOVERY') { recovery = true; location.hash = '#/newpass'; }
-      if (ev === 'SIGNED_IN' && u && !user) { setUser(u, { celebrate: true }); if (/access_token/.test(location.hash) || !location.hash) location.hash = '#/dashboard'; }
+      if (ev === 'SIGNED_IN' && u && !user) { setUser(u, { celebrate: true }); if (/access_token/.test(location.hash) || !location.hash) location.hash = '#/' + home(); }
       if (ev === 'SIGNED_OUT' && user && navigator.onLine) { deviceUser.clear(); setUser(null); location.hash = '#/login'; }
     });
   }
@@ -381,7 +426,7 @@ async function start() {
   try { u = await remote.session(); } catch (e) { u = null; }
   if (!u && remote.kind !== 'demo' && !navigator.onLine) u = deviceUser.get();
   if (u) setUser(u);
-  if (/access_token|type=recovery/.test(location.hash)) setTimeout(() => { if (!recovery) location.hash = user ? '#/dashboard' : '#/login'; }, 1500);
+  if (/access_token|type=recovery/.test(location.hash)) setTimeout(() => { if (!recovery) location.hash = user ? '#/' + home() : '#/login'; }, 1500);
   route();
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js', CFG.swScope ? { scope: CFG.swScope } : undefined).catch(() => {});
 }

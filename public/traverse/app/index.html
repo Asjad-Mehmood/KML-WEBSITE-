@@ -36,10 +36,15 @@
 <div class="gold-flash" id="gold-flash" hidden></div>
 
 <header class="top" id="top">
-  <a class="brand" href="#/dashboard" aria-label="Traverse & Level">
+  <div class="top-left">
+  <button class="icon-btn nav-toggle user-only" id="nav-toggle" aria-label="Show the sections" aria-controls="sidebar" aria-expanded="false">
+    <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+  </button>
+  <a class="brand" href="#/" aria-label="Traverse & Level">
     <svg class="brand-rose"><use href="#rose"/></svg>
     <span class="brand-text"><b>Traverse &amp; Level</b><small>Professional Adjustment Software</small></span>
   </a>
+  </div>
   <div class="clock" id="clock">
     <button class="clock-btn" id="clock-btn" aria-haspopup="dialog" aria-expanded="false" aria-controls="calendar">
       <span class="clock-time" id="clock-time">--:--:--</span>
@@ -58,15 +63,11 @@
     </button>
     <div class="guest-only"><a class="btn ghost" href="#/login">Log in</a><a class="btn gold" href="#/register">Register</a></div>
     <div class="user-only">
-      <a class="btn ghost" href="#/dashboard" id="dash-link">Dashboard</a>
       <div class="user-menu">
         <button class="avatar" id="avatar-btn" aria-haspopup="menu" aria-expanded="false" title="Account"><span id="avatar-initials">?</span></button>
         <div class="menu" id="user-menu" role="menu" hidden>
           <div class="menu-who"><b id="menu-name"></b><span id="menu-email"></span></div>
-          <a role="menuitem" href="#/dashboard">Dashboard</a>
-          <a role="menuitem" href="#/traverse">Traverse</a>
-          <a role="menuitem" href="#/level">Levelling</a>
-          <a role="menuitem" href="#/simulator">Simulator</a>
+          <a role="menuitem" href="#/dashboard" id="menu-dashboard">Dashboard<small>All jobs, shared jobs and activity</small></a>
           <button role="menuitem" id="logout-btn">Log out</button>
         </div>
       </div>
@@ -74,13 +75,22 @@
   </div>
 </header>
 
-<nav class="appnav user-only" id="appnav" aria-label="Sections">
-  <a href="#/dashboard" data-nav="dashboard">Dashboard</a>
-  <a href="#/traverse" data-nav="traverse">Traverse</a>
-  <a href="#/level" data-nav="level">Levelling</a>
-  <a href="#/simulator" data-nav="simulator">Simulator</a>
-  <span class="net" id="net-state"></span>
-</nav>
+<div class="shell">
+<aside class="sidebar user-only" id="sidebar" aria-label="Sections">
+  <nav class="side-nav" aria-label="Tools">
+    <a href="#/traverse" data-nav="traverse"><svg viewBox="0 0 24 24"><path d="M3 19 L8 7 L15 9 L21 17"/><circle cx="8" cy="7" r="1.6"/><circle cx="15" cy="9" r="1.6"/></svg>Traverse</a>
+    <a href="#/level" data-nav="level"><svg viewBox="0 0 24 24"><path d="M3 18 H21"/><path d="M7 18 V9 M12 18 V6 M17 18 V11"/></svg>Levelling</a>
+    <a href="#/simulator" data-nav="simulator"><svg viewBox="0 0 24 24"><path d="M12 3 L12 13"/><path d="M8 21 L12 13 L16 21"/><rect x="8.5" y="5" width="7" height="5" rx="1"/></svg>Simulator</a>
+  </nav>
+  <div class="side-recent">
+    <h3>Recent jobs</h3>
+    <div id="recent-list" class="recent-list"></div>
+    <a class="side-all" href="#/dashboard" data-nav="dashboard">All jobs</a>
+  </div>
+  <div class="side-foot"><span class="net" id="net-state"></span></div>
+</aside>
+<div class="nav-backdrop" id="nav-backdrop" hidden></div>
+<div class="shell-main">
 
 <div class="demo-banner" id="demo-banner" hidden>Demo mode: this site is not connected to the account server yet, so accounts and jobs are kept only in this browser. Add your Supabase keys in <code>config.js</code> to go live.</div>
 
@@ -365,6 +375,8 @@
   </div>
 </section>
 </main>
+</div>
+</div>
 
 <div class="toast" id="toast" role="status" hidden></div>
 <noscript><p style="padding:24px">This app needs JavaScript.</p></noscript>
