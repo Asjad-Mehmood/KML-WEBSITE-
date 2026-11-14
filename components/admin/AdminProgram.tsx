@@ -5,7 +5,7 @@
 // the Survey Toolkit sees on each PC, the downloads, and the releases here and on GitHub:
 // PCs with it and their versions, installs, updates and failures through the Toolkit, who
 // downloads it, where the download comes from, and GitHub's newest release with an Import button.
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { AlertTriangle, CheckCircle2, Download, ExternalLink, Info, Loader2, Monitor, RefreshCw, UploadCloud, Wrench } from "lucide-react";
 import AppTab, { BarRow, Delta, Empty, Panel, Stat, ago, type AppOverviewData } from "@/components/admin/AppTab";
 import { ROADPRO_FILES, ROADPRO_VERSION } from "@/lib/roadpro";
@@ -40,6 +40,14 @@ const PROGRAMS: Record<string, { intro: string; sources: { label: string; href: 
       { label: "Plugin only (zip)", href: ROADPRO_FILES.plugin.href, detail: "For loading with APPLOAD; no automatic updates" },
     ],
     note: "RoadPro works inside AutoCAD and doesn't contact the site, so these numbers come from its downloads, its releases and the Survey Toolkit on each PC.",
+  },
+  toolkit: {
+    intro: "Installs, updates and opens every app on the PC, in one window, and keeps them up to date by itself.",
+    sources: [
+      { label: "Survey Toolkit Setup", href: "/toolkit", detail: "Downloaded through the site (signed in when Settings say so), from GitHub" },
+      { label: "GitHub releases", href: "https://github.com/Asjad-Mehmood/Survey-Toolkit/releases", detail: "Every version, with its notes" },
+    ],
+    note: "Every Survey Toolkit reports its PC, its version and the apps on it: the PCs below are all of them. Below the page are the accounts, every PC, every event and the testers.",
   },
   "folder-manager": {
     intro: "Sets up and keeps project folders in order on the PC: the Windows program (version 7 and later) with its installer, released on GitHub.",
@@ -127,8 +135,14 @@ export default function AdminProgram({
   onToast,
   onShow,
   onOpenAccount,
+  extra,
+  footer,
 }: {
-  app: "roadpro" | "folder-manager";
+  app: "roadpro" | "folder-manager" | "toolkit";
+  /** more of the app's own, after its numbers (the Toolkit: who may use it) */
+  extra?: ReactNode;
+  /** at the end of the page, given a way to read the numbers again */
+  footer?: (reload: () => void) => ReactNode;
   adminFetch: Fetcher;
   onToast: (m: string, t?: "success" | "error") => void;
   onShow: (section: string) => void;
@@ -136,7 +150,7 @@ export default function AdminProgram({
 }) {
   const info = PROGRAMS[app];
   return (
-    <AppTab app={app} adminFetch={adminFetch} onShow={onShow} onOpenAccount={onOpenAccount} intro={info.intro}>
+    <AppTab app={app} adminFetch={adminFetch} onShow={onShow} onOpenAccount={onOpenAccount} intro={info.intro} footer={footer}>
       {(d: AppOverviewData, days, reload) => {
         const x = d.extras as ProgramExtras | null;
         if (!x) return null;
@@ -145,6 +159,7 @@ export default function AdminProgram({
         const ev = t.events;
         const dl = x.downloads;
         const sourceBehind = info.sources.find((s) => s.version && x.newestRelease && s.version !== x.newestRelease.version);
+        const self = app === "toolkit";
         return (
           <>
             <p className="flex items-start gap-2 text-xs text-slate-400">
@@ -153,17 +168,23 @@ export default function AdminProgram({
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               <Stat
                 icon={Monitor}
-                label="On Toolkit PCs"
+                label={self ? "PCs with the Toolkit" : "On Toolkit PCs"}
                 value={t.withIt.toLocaleString()}
-                sub={t.allPcs ? `of ${t.allPcs.toLocaleString()} PCs with the Toolkit (${Math.round((t.withIt / t.allPcs) * 100)}%)` : "No PCs with the Toolkit yet"}
+                sub={
+                  self
+                    ? `${new Set(t.pcs.map((p) => p.userId)).size.toLocaleString()} accounts`
+                    : t.allPcs
+                      ? `of ${t.allPcs.toLocaleString()} PCs with the Toolkit (${Math.round((t.withIt / t.allPcs) * 100)}%)`
+                      : "No PCs with the Toolkit yet"
+                }
               />
               <Stat icon={CheckCircle2} label="On the latest" value={t.withIt ? `${t.current.toLocaleString()} of ${t.withIt.toLocaleString()}` : "—"} tone={t.behind ? "text-amber-300" : "text-white"} sub={t.behind ? `${t.behind.toLocaleString()} on an older version` : "Every PC is up to date"} />
               <Stat icon={RefreshCw} label={`Installed or updated, ${word}`} value={(ev.installed.cur + ev.updated.cur).toLocaleString()} sub={`${ev.installed.cur.toLocaleString()} installed · ${ev.updated.cur.toLocaleString()} updated · ${ev.uninstalled.cur.toLocaleString()} removed`} />
-              <Stat icon={Wrench} label={`Toolkit failures, ${word}`} value={ev.failed.cur.toLocaleString()} tone={ev.failed.cur ? "text-red-300" : "text-white"} sub={<Delta p={ev.failed} bad />} />
+              <Stat icon={Wrench} label={self ? `Its own failures, ${word}` : `Toolkit failures, ${word}`} value={ev.failed.cur.toLocaleString()} tone={ev.failed.cur ? "text-red-300" : "text-white"} sub={<Delta p={ev.failed} bad />} />
             </div>
             <div className="grid lg:grid-cols-2 gap-4">
               <Panel
-                title="PCs with it"
+                title={self ? "Every PC" : "PCs with it"}
                 action={
                   <button onClick={() => onShow("toolkit")} className="text-xs font-semibold text-blue-400 hover:underline cursor-pointer">
                     Survey Toolkit
@@ -180,7 +201,7 @@ export default function AdminProgram({
                             <button onClick={() => onOpenAccount(p.userId)} className="hover:underline cursor-pointer">
                               {p.email || p.userName || "Account"}
                             </button>{" "}
-                            · Toolkit {p.toolkitVersion || "?"} · seen {ago(p.lastSeen)}
+                            {self ? "" : ` · Toolkit ${p.toolkitVersion || "?"}`} · seen {ago(p.lastSeen)}
                           </span>
                         </span>
                         <span className="shrink-0 flex items-center gap-2 text-[13px] tabular-nums text-slate-200">
@@ -190,10 +211,10 @@ export default function AdminProgram({
                     ))}
                   </ul>
                 ) : (
-                  <Empty>No PC with the Survey Toolkit has it yet.</Empty>
+                  <Empty>{self ? "No PC has reported a Survey Toolkit yet." : "No PC with the Survey Toolkit has it yet."}</Empty>
                 )}
               </Panel>
-              <Panel title="Toolkit failures">
+              <Panel title={self ? "Its own update failures" : "Toolkit failures"}>
                 {t.failures.length ? (
                   <ul className="pb-2">
                     {t.failures.map((f) => (
@@ -252,6 +273,7 @@ export default function AdminProgram({
               </Panel>
               <GitHubPanel app={app} x={x} adminFetch={adminFetch} onToast={onToast} onShow={onShow} onDone={reload} />
             </div>
+            {extra}
           </>
         );
       }}
