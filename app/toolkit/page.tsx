@@ -6,6 +6,7 @@ import { openGraphFor } from "@/lib/site";
 import ToolkitHome from "@/components/toolkit/home/ToolkitHome";
 import ToolkitStructuredData from "@/components/toolkit/home/ToolkitStructuredData";
 import { TOOLKIT_DESCRIPTION, TOOLKIT_TITLE } from "@/lib/toolkit/homeFaq";
+import { homeNews, homeReviews } from "@/lib/toolkit/homeNews";
 import { getExtraSettings } from "@/lib/siteSettings";
 
 // Survey Toolkit: its public page. While the Toolkit is closed to the public (Admin → Settings →
@@ -27,11 +28,11 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function ToolkitPage({ searchParams }: { searchParams: Promise<{ download?: string }> }) {
   const open = await toolkitIsPublic();
   if (!open && (await adminVisitor().catch(() => "other")) !== "admin") notFound();
-  const [{ tools, toolkitVersion }, { download }] = await Promise.all([frontPageData(), searchParams]);
+  const [{ tools, toolkitVersion }, { download }, news, reviews] = await Promise.all([frontPageData(), searchParams, homeNews(), homeReviews()]);
   return (
     <>
       <ToolkitStructuredData path="/toolkit" version={toolkitVersion} />
-      <ToolkitHome tools={tools} toolkitVersion={toolkitVersion} draft={!open} download={download ?? null} />
+      <ToolkitHome tools={tools} toolkitVersion={toolkitVersion} draft={!open} download={download ?? null} news={news} reviews={reviews} />
     </>
   );
 }

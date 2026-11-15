@@ -8,6 +8,7 @@ import { frontPageData } from "@/lib/toolkit/frontPage";
 import ToolkitHome from "@/components/toolkit/home/ToolkitHome";
 import ToolkitStructuredData from "@/components/toolkit/home/ToolkitStructuredData";
 import { TOOLKIT_DESCRIPTION, TOOLKIT_TITLE } from "@/lib/toolkit/homeFaq";
+import { homeNews, homeReviews } from "@/lib/toolkit/homeNews";
 
 // Built once and kept; saving the hero choice in Admin → Settings builds it again at once,
 // and it is refreshed every few minutes (which also refreshes the user and download counts)
@@ -36,12 +37,12 @@ export default async function Home() {
   // the Survey Toolkit hub (as on /toolkit) only while the Toolkit is open to everyone
   const [hero, stats] = await Promise.all([heroOf(), publicStats()]);
   if (hero === "toolkit") {
-    const { tools, toolkitVersion } = await frontPageData();
+    const [{ tools, toolkitVersion }, news, reviews] = await Promise.all([frontPageData(), homeNews(), homeReviews()]);
     return (
       <>
         <HomeStructuredData />
         <ToolkitStructuredData path="/" version={toolkitVersion} />
-        <ToolkitHome tools={tools} toolkitVersion={toolkitVersion} />
+        <ToolkitHome tools={tools} toolkitVersion={toolkitVersion} news={news} reviews={reviews} />
       </>
     );
   }
