@@ -43,6 +43,7 @@ import {
   LayoutGrid,
   Route,
   FolderTree,
+  PenTool,
   ScrollText,
 } from "lucide-react";
 import SurveyorDetailModal from "@/components/admin/SurveyorDetailModal";
@@ -151,12 +152,13 @@ const RELEASE_TABS = [
   { id: "excel-to-kml", name: "Excel to KML" },
   { id: "traverse", name: "Traverse & Level" },
   { id: "slope", name: "Slope Calculator" },
+  { id: "auto-draft", name: "Auto Draft" },
   { id: "roadpro", name: "RoadPro" },
   { id: "folder-manager", name: "Project Folder Manager" },
   { id: "toolkit", name: "Survey Toolkit" },
 ];
 
-const ADMIN_TABS = ["overview", "users", "activities", "downloads", "files", "conversions", "excel", "traverse", "slope", "roadpro", "pfm", "toolkit", "releases", "reviews", "messages", "settings", "log"] as const;
+const ADMIN_TABS = ["overview", "users", "activities", "downloads", "files", "conversions", "excel", "traverse", "slope", "autodraft", "roadpro", "pfm", "toolkit", "releases", "reviews", "messages", "settings", "log"] as const;
 type AdminTab = (typeof ADMIN_TABS)[number];
 function tabFromAddress(): AdminTab {
   const id = typeof window === "undefined" ? "" : window.location.hash.slice(1);
@@ -625,6 +627,7 @@ export default function AdminClient() {
         { id: "excel", label: "Excel to KML", icon: FileSpreadsheet, text: "Everything about Excel to KML: downloads, people, versions, points, grids, problems and its settings" },
         { id: "traverse", label: "Traverse & Level", icon: Compass, text: "Everything about Traverse & Level: downloads, people, versions, jobs and results, sharing, problems, its settings and every job", count: stats?.traverse?.jobs },
         { id: "slope", label: "Slope Calculator", icon: TrendingUp, text: "Everything about Slope Calculator: downloads, people, versions, calculations, how steep and how long, projects, problems, its settings and every calculation", count: stats?.slope?.jobs },
+        { id: "autodraft", label: "Auto Draft", icon: PenTool, text: "Everything about Auto Draft: downloads, people, versions, the drawings saved (DXF, PDF, KML), the PCs with it, Toolkit installs and failures, and its releases on GitHub" },
         { id: "roadpro", label: "RoadPro", icon: Route, text: "Everything about RoadPro: downloads, the PCs with it and their versions, Toolkit installs and failures, and its releases on GitHub" },
         { id: "pfm", label: "Project Folder Manager", icon: FolderTree, text: "Everything about Project Folder Manager: downloads, the PCs with it and their versions, Toolkit installs and failures, and its releases on GitHub" },
         {
@@ -1181,10 +1184,10 @@ export default function AdminClient() {
             }}
           />
         )}
-        {(activeTab === "roadpro" || activeTab === "pfm") && (
+        {(activeTab === "roadpro" || activeTab === "pfm" || activeTab === "autodraft") && (
           <AdminProgram
             key={activeTab}
-            app={activeTab === "roadpro" ? "roadpro" : "folder-manager"}
+            app={activeTab === "roadpro" ? "roadpro" : activeTab === "autodraft" ? "auto-draft" : "folder-manager"}
             adminFetch={adminFetch}
             onToast={showToast}
             onShow={selectSection}

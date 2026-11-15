@@ -28,6 +28,7 @@ export const APP_DEFS: AppDef[] = [
   { id: "excel-to-kml", name: "Excel to KML", assets: ["windows_installer"], extras: ["sample_csv", "test_kml", "web_app"] },
   { id: "traverse", name: "Traverse & Level", assets: ["traverse"], extras: ["traverse_manual", "traverse_sample"] },
   { id: "slope", name: "Slope Calculator", assets: ["slope"] },
+  { id: "auto-draft", name: "Auto Draft", assets: ["auto_draft"] },
   { id: "roadpro", name: "RoadPro", assets: ["roadpro"] },
   { id: "folder-manager", name: "Project Folder Manager", assets: ["folder_manager"] },
   { id: "toolkit", name: "Survey Toolkit", assets: ["toolkit"] },

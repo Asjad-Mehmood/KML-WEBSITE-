@@ -6,12 +6,12 @@ import { prisma } from "@/lib/prisma";
 // Calculator, RoadPro, Project Folder Manager, the Survey Toolkit and the website itself.
 // Extra columns on "activities", added on first use (the Prisma model doesn't need them: they are
 // written and read with SQL), so no migration:
-//   app           excel-to-kml | traverse | slope | roadpro | folder-manager | toolkit | website
+//   app           excel-to-kml | traverse | slope | auto-draft | roadpro | folder-manager | toolkit | website
 //   platform      Web | Windows | Android | Toolkit …
 //   appVersion    the app's version when it says
 //   errorMessage  what went wrong, for status "error"
 
-export const ACTIVITY_APPS = ["excel-to-kml", "traverse", "slope", "roadpro", "folder-manager", "toolkit", "website"] as const;
+export const ACTIVITY_APPS = ["excel-to-kml", "traverse", "slope", "auto-draft", "roadpro", "folder-manager", "toolkit", "website"] as const;
 export type ActivityApp = (typeof ACTIVITY_APPS)[number];
 
 export interface ActivityTags {

@@ -184,7 +184,9 @@ async function readFeed(): Promise<Feed> {
   const tools = await Promise.all(
     TOOLKIT_TOOLS.map((t) => (t.source.kind === "installer" ? installerTool(t, t.source) : zipTool(t, t.source)))
   );
-  return { schema: TOOLKIT_FEED_SCHEMA, generated: new Date().toISOString(), tools };
+  // a tool before its first release isn't offered: nothing to install yet
+  const offered = tools.filter((f, i) => !TOOLKIT_TOOLS[i].prelaunch || f.version);
+  return { schema: TOOLKIT_FEED_SCHEMA, generated: new Date().toISOString(), tools: offered };
 }
 
 /** The feed, kept for ten minutes */

@@ -13,12 +13,13 @@ const PLATFORM: Record<string, string> = {
   traverse: "Web app and Windows",
   "folder-manager": "Windows",
   slope: "Web app and Windows",
+  "auto-draft": "Windows",
 };
 
 export async function frontPageData(): Promise<{ tools: OptionTool[]; toolkitVersion: string | null }> {
   const [feed, downloads] = await Promise.all([toolkitFeed().catch(() => null), toolkitDownloads().catch(() => null)]);
   return {
-    tools: TOOLKIT_TOOLS.map((t) => ({
+    tools: TOOLKIT_TOOLS.filter((t) => !t.prelaunch || feed?.tools.some((f) => f.id === t.id)).map((t) => ({
       id: t.id,
       name: t.name,
       platform: PLATFORM[t.id] ?? t.platform,

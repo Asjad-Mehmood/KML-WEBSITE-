@@ -4,7 +4,7 @@
 // its Probe workflow. Only the Toolkit's own routes (/api/toolkit/*) use this file.
 import { ROADPRO_FILES, ROADPRO_RELEASED, ROADPRO_VERSION } from "@/lib/roadpro";
 
-export type ToolkitToolId = "excel-to-kml" | "roadpro" | "traverse" | "folder-manager" | "slope";
+export type ToolkitToolId = "excel-to-kml" | "roadpro" | "traverse" | "folder-manager" | "slope" | "auto-draft";
 
 /** A Windows program with an NSIS installer, published as GitHub releases with latest.json */
 export interface InstallerTool {
@@ -51,6 +51,8 @@ export interface ToolkitTool {
   page: string;
   webApp?: string;
   source: InstallerTool | ZipTool;
+  /** Left out of the feed and the Toolkit's pages until its first release is on GitHub */
+  prelaunch?: true;
 }
 
 export const TOOLKIT_TOOLS: ToolkitTool[] = [
@@ -140,6 +142,24 @@ export const TOOLKIT_TOOLS: ToolkitTool[] = [
       opensAfterSilentInstall: false,
       closesOpenCopy: true,
     },
+  },
+  {
+    id: "auto-draft",
+    name: "Auto Draft",
+    platform: "Windows",
+    page: "/auto-draft",
+    // a silent install (/S) never opens the program; /S /UPDATE (its own updater) opens it again
+    source: {
+      kind: "installer",
+      repo: "Asjad-Mehmood/auto-draft-app",
+      installer: "AutoDraft-Setup.exe",
+      registryKey: "AutoDraft",
+      exe: ["AutoDraft.exe"],
+      silentArgs: ["/S"],
+      opensAfterSilentInstall: false,
+      closesOpenCopy: true,
+    },
+    prelaunch: true,
   },
 ];
 

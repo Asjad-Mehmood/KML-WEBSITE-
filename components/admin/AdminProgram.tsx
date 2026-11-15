@@ -49,6 +49,14 @@ const PROGRAMS: Record<string, { intro: string; sources: { label: string; href: 
     ],
     note: "Every Survey Toolkit reports its PC, its version and the apps on it: the PCs below are all of them. Below the page are the accounts, every PC, every event and the testers.",
   },
+  "auto-draft": {
+    intro: "Survey points to a finished drawing: the Windows program with its installer, released on GitHub. Signed in with the exceltokml.com account; each drawing saved (DXF, PDF, KML) is in Activity.",
+    sources: [
+      { label: "Auto Draft Setup", href: "https://github.com/Asjad-Mehmood/auto-draft-app/releases/latest", detail: "The installer on GitHub, linked from /auto-draft" },
+      { label: "Its page", href: "/auto-draft", detail: "Where people download it from the site, with the code guide" },
+    ],
+    note: "Auto Draft signs in and reports each drawing saved, so the people, versions and activity are its own; the PCs below come from the Survey Toolkit on each PC.",
+  },
   "folder-manager": {
     intro: "Sets up and keeps project folders in order on the PC: the Windows program (version 7 and later) with its installer, released on GitHub.",
     sources: [
@@ -138,7 +146,7 @@ export default function AdminProgram({
   extra,
   footer,
 }: {
-  app: "roadpro" | "folder-manager" | "toolkit";
+  app: "roadpro" | "folder-manager" | "auto-draft" | "toolkit";
   /** more of the app's own, after its numbers (the Toolkit: who may use it) */
   extra?: ReactNode;
   /** at the end of the page, given a way to read the numbers again */

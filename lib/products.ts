@@ -6,6 +6,7 @@ import { ROADPRO_RELEASE } from "@/lib/roadpro";
 import { TRAVERSE_FILES, TRAVERSE_SHORT, TRAVERSE_VERSION } from "@/lib/traverse";
 import { PFM_FILES, PFM_NAME, PFM_VERSION } from "@/lib/folderManager";
 import { SLOPE_APP, SLOPE_FILES, SLOPE_NAME, SLOPE_PAGE, SLOPE_VERSION } from "@/lib/slope";
+import { AUTO_DRAFT_FILES, AUTO_DRAFT_NAME, AUTO_DRAFT_PAGE, AUTO_DRAFT_RELEASED, AUTO_DRAFT_VERSION } from "@/lib/autoDraft";
 
 export interface Product {
   id: string;
@@ -83,6 +84,30 @@ export const PRODUCTS: Product[] = [
       height: SLOPE_FILES.shots.calculator.height,
       alt: "Slope Calculator: start and end level and chainage, the slope result and the profile",
       title: "Slope Calculator · 1+000 to 1+250",
+    },
+    inNav: true,
+  },
+  {
+    id: "auto-draft",
+    name: AUTO_DRAFT_NAME,
+    platform: "Windows",
+    version: AUTO_DRAFT_VERSION,
+    tagline: "Survey points to a finished CAD drawing",
+    description:
+      "Open the day's survey, from a CSV or straight from the total station, and Auto Draft joins the lines by their field codes, places the symbols, writes the levels, draws the contours and puts it on a sheet with your title block. Save a DXF for AutoCAD, a PDF to print and a KML for Google Earth.",
+    href: AUTO_DRAFT_PAGE,
+    image: {
+      ...AUTO_DRAFT_FILES.shots.contours,
+      alt: "Auto Draft: a surveyed plot drawn from its field codes, with road edges, buildings, trees, contours, the legend and the title block",
+    },
+    highlights: ["Lines from field codes", "Symbols, levels, layers", "Contours with breaklines", "DXF, PDF and KML"],
+    comingSoon: !AUTO_DRAFT_RELEASED,
+    newUntil: "2027-05-31",
+    inHero: true,
+    shot: {
+      ...AUTO_DRAFT_FILES.shots.contours,
+      alt: "Auto Draft: the drawing made from a coded survey, with contours, on an A3 sheet",
+      title: "Auto Draft · sample-survey.csv",
     },
     inNav: true,
   },
