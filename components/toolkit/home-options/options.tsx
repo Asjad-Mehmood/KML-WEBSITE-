@@ -341,7 +341,21 @@ export function HubGraphic({ tools, className = "" }: { tools: OptionTool[]; cla
         <circle className="ho-c-ring" cx={HUB.cx} cy={HUB.cy} r={HUB.r + 32} fill="none" stroke="#1e4fd8" strokeOpacity="0.35" strokeWidth="1.5" strokeDasharray="4 9" />
         {tools.map((t, i) => {
           const p = nodeAt(i, tools.length);
-          return <line key={t.id} x1={HUB.cx} y1={HUB.cy} x2={p.x} y2={p.y} stroke="#1e4fd8" strokeOpacity="0.22" strokeWidth="2" />;
+          return (
+            <line
+              key={t.id}
+              className="ho-c-line"
+              pathLength={1}
+              x1={HUB.cx}
+              y1={HUB.cy}
+              x2={p.x}
+              y2={p.y}
+              stroke="#1e4fd8"
+              strokeOpacity="0.22"
+              strokeWidth="2"
+              style={{ "--i": i } as CSSProperties}
+            />
+          );
         })}
         {tools.map((t, i) => {
           const p = nodeAt(i, tools.length);
@@ -373,7 +387,7 @@ export function HubGraphic({ tools, className = "" }: { tools: OptionTool[]; cla
           const dy = !p.left && !p.right ? -54 : 0;
           const Icon = iconOf(t.id);
           return (
-            <g key={t.id}>
+            <g key={t.id} className="ho-c-node" style={{ "--i": i } as CSSProperties}>
               <circle className="ho-c-glow" cx={p.x} cy={p.y} r="28" fill="#ffd21f" style={{ "--i": i } as CSSProperties} />
               <circle cx={p.x} cy={p.y} r="26" fill="#ffffff" stroke="#071a44" strokeWidth="2" />
               <Icon x={p.x - 11} y={p.y - 11} width={22} height={22} color="#071a44" strokeWidth={2.2} />

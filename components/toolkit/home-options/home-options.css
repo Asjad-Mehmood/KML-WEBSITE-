@@ -224,14 +224,127 @@
 .ho-root .ho-e-bar { transform-origin: left; animation: ho-e-bar 8s ease-in-out infinite; }
 @keyframes ho-e-bar { 0%, 24% { transform: scaleX(0); } 60%, 100% { transform: scaleX(1); } }
 
+/* ------------------------------------------------------------ the Toolkit's page (components/toolkit/home) */
+/* hero: two soft lights drifting behind it (20 and 26 s) */
+.ho-root .ho-h-blob {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(60px);
+  pointer-events: none;
+}
+.ho-root .ho-h-blob-1 { animation: ho-h-drift1 20s ease-in-out infinite alternate; }
+.ho-root .ho-h-blob-2 { animation: ho-h-drift2 26s ease-in-out infinite alternate; }
+@keyframes ho-h-drift1 { to { transform: translate(-60px, 40px) scale(1.08); } }
+@keyframes ho-h-drift2 { to { transform: translate(50px, -30px) scale(0.94); } }
+/* "Always up to date." gets a yellow underline that sweeps in once */
+.ho-root .ho-h-mark {
+  position: relative;
+  white-space: nowrap;
+}
+.ho-root .ho-h-mark::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0.02em;
+  height: 0.14em;
+  border-radius: 999px;
+  background: #ffd21f;
+  z-index: -1;
+  transform-origin: left;
+  animation: ho-h-sweep 0.9s var(--ho-ease) 0.9s both;
+}
+@keyframes ho-h-sweep { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+/* the hub: lines draw out to each tool, the tools pop in one by one, then float gently */
+.ho-root .ho-c-line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  animation: ho-c-line 0.9s var(--ho-ease) calc(0.6s + var(--i, 0) * 0.12s) both;
+}
+@keyframes ho-c-line { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+.ho-root .ho-c-node {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ho-c-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) calc(0.9s + var(--i, 0) * 0.12s) both,
+    ho-c-float 6s ease-in-out calc(2s + var(--i, 0) * 0.7s) infinite;
+}
+@keyframes ho-c-pop { from { opacity: 0; scale: 0.4; } to { opacity: 1; scale: 1; } }
+@keyframes ho-c-float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -5px; } }
+/* how it works: the dashed line draws from step to step when it comes into view */
+.ho-root .ho-line.ho-in {
+  transform-origin: left;
+  animation: ho-line 1.4s var(--ho-ease) 0.2s both;
+}
+@keyframes ho-line { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.ho-root .ho-step-icon {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.ho-root li:hover > .ho-step-icon {
+  transform: scale(1.08) rotate(-4deg);
+}
+/* a tool's card: its icon tilts on hover */
+.ho-root .ho-card .ho-icon {
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.ho-root .ho-card:hover .ho-icon {
+  transform: rotate(-8deg) scale(1.06);
+}
+/* the update walkthrough: the time on a step, and its text sliding in */
+.ho-root .ho-tour-bar {
+  transform-origin: left;
+  animation-name: ho-tour-bar;
+  animation-timing-function: linear;
+  animation-fill-mode: both;
+}
+@keyframes ho-tour-bar { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.ho-root .ho-tour-text { animation: ho-enter 0.45s var(--ho-ease) both; }
+/* what's new: a ping beside a release from the last two weeks */
+.ho-root .ho-new {
+  position: relative;
+}
+.ho-root .ho-new::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: inherit;
+  animation: ho-ping 2.4s ease-out infinite;
+}
+/* reviews: a slow row that keeps moving, paused while the pointer or keyboard is on it */
+.ho-root .ho-marquee {
+  display: flex;
+  width: max-content;
+  animation: ho-ticker 60s linear infinite;
+}
+.ho-root .ho-marquee-wrap:hover .ho-marquee,
+.ho-root .ho-marquee-wrap:focus-within .ho-marquee {
+  animation-play-state: paused;
+}
+/* the stars fill from left to right when the reviews come into view */
+.ho-root .ho-reveal.ho-in .ho-star {
+  animation: ho-c-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) calc(0.3s + var(--s, 0) * 0.08s) both;
+}
+/* safe by design: the grid drifts; the closing banner's light moves slowly */
+.ho-root .ho-grid-drift { animation: ho-b-drift 18s linear infinite; }
+.ho-root .ho-cta-glow { animation: ho-h-drift1 14s ease-in-out infinite alternate; }
+
 /* ------------------------------------------------------------ paused, and reduced motion */
 /* the entrance and the scroll reveal always finish, so nothing stays hidden */
 .ho-root[data-paused="true"] .ho-opt *:not(.ho-enter):not(.ho-reveal),
+.ho-root[data-paused="true"] .ho-h-blob,
+.ho-root[data-paused="true"] .ho-c-node,
+.ho-root[data-paused="true"] .ho-marquee,
+.ho-root[data-paused="true"] .ho-grid-drift,
+.ho-root[data-paused="true"] .ho-cta-glow,
 .ho-root[data-paused="true"] .ho-opt *::before,
 .ho-root[data-paused="true"] .ho-opt *::after {
   animation-play-state: paused !important;
 }
 @media (prefers-reduced-motion: reduce) {
+  /* the reviews stand still: they can be scrolled through instead */
+  .ho-root .ho-marquee-wrap {
+    overflow-x: auto;
+  }
   .ho-root *,
   .ho-root *::before,
   .ho-root *::after {

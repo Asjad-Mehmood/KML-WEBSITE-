@@ -19,6 +19,7 @@ import {
   Keyboard,
   Layers,
   ListChecks,
+  PlayCircle,
   Lock,
   MousePointerClick,
   Package,
@@ -33,9 +34,12 @@ import PageShell from "@/components/PageShell";
 import MotionRoot from "@/components/toolkit/home-options/MotionRoot";
 import { HubGraphic, type OptionTool } from "@/components/toolkit/home-options/options";
 import StartDownload from "@/components/toolkit/home/StartDownload";
+import { TOOLKIT_FAQS } from "@/lib/toolkit/homeFaq";
 import gridPng from "@/components/toolkit/images/9-app-grid.png";
 import updatesPng from "@/components/toolkit/images/10-updates.png";
-import updatingPng from "@/components/toolkit/images/6-updating.png";
+import UpdateTour from "@/components/toolkit/home/UpdateTour";
+import { Reviews, WhatsNew } from "@/components/toolkit/home/HomeSections";
+import type { HomeReviewsData, NewsItem } from "@/lib/toolkit/homeNews";
 
 /** Download: the newest installer for anyone who may have it (app/api/toolkit/download) */
 const DOWNLOAD = "/api/toolkit/download";
@@ -125,10 +129,16 @@ function DownloadButton({ dark = false, pulse = false }: { dark?: boolean; pulse
   );
 }
 
+// A screen of the Toolkit; a whole window drawn at half the page is small, so a click opens it full size
 function Shot({ src, alt }: { src: typeof gridPng; alt: string }) {
   return (
-    <figure className="ho-reveal rounded-2xl border border-slate-200 bg-[#071a44] p-1.5 shadow-[0_24px_60px_rgba(7,26,68,0.18)]">
-      <Image src={src} alt={alt} sizes="(min-width: 1024px) 600px, 100vw" className="w-full h-auto rounded-xl" />
+    <figure className="ho-reveal group relative rounded-2xl border border-slate-200 bg-[#071a44] p-1.5 shadow-[0_24px_60px_rgba(7,26,68,0.18)]">
+      <a href={src.src} target="_blank" rel="noopener" aria-label={`${alt} (opens full size)`} className="block cursor-zoom-in">
+        <Image src={src} alt={alt} sizes="(min-width: 1024px) 600px, 100vw" className="w-full h-auto rounded-xl" />
+        <span className="pointer-events-none absolute bottom-3 right-3 rounded-full bg-[#071a44]/85 px-2.5 py-1 text-[11.5px] font-semibold text-white opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+          Full size
+        </span>
+      </a>
     </figure>
   );
 }
@@ -138,9 +148,15 @@ export default function ToolkitHome({
   toolkitVersion,
   draft = false,
   download = null,
+  news = [],
+  reviews = null,
 }: {
   tools: OptionTool[];
   toolkitVersion: string | null;
+  /** Each tool's newest version, for What's new (lib/toolkit/homeNews.ts) */
+  news?: NewsItem[];
+  /** Published reviews; the section is left out when there are none */
+  reviews?: HomeReviewsData | null;
   /** The admins' preview while the Toolkit is closed to the public */
   draft?: boolean;
   /** ?download= on the page: "start" after signing in to download, or why a download didn't start */
@@ -176,14 +192,17 @@ export default function ToolkitHome({
         )}
 
         {/* ---------------------------------------------------------- hero */}
-        <section aria-labelledby="hero-h" className="relative overflow-hidden bg-[radial-gradient(70%_80%_at_80%_40%,#e9f0ff,#ffffff_70%)]">
+        <section aria-labelledby="hero-h" className="relative isolate overflow-hidden bg-[radial-gradient(70%_80%_at_80%_40%,#e9f0ff,#ffffff_70%)]">
+          {/* two soft lights drifting behind the hero */}
+          <span aria-hidden className="ho-h-blob ho-h-blob-1 -z-10 right-[8%] top-[10%] h-[340px] w-[340px] bg-[#c9d8ff]/70" />
+          <span aria-hidden className="ho-h-blob ho-h-blob-2 -z-10 right-[30%] bottom-[-60px] h-[260px] w-[260px] bg-[#fff1b8]/70" />
           <div className="max-w-[1180px] mx-auto px-5 sm:px-8 py-12 sm:py-20 grid grid-cols-1 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] gap-10 items-center">
             <div>
               <p className="ho-enter ho-enter-0 text-[12px] font-bold uppercase tracking-[0.16em] text-[#1e4fd8]">Survey Toolkit</p>
               <h1 id="hero-h" className="ho-enter ho-enter-1 mt-4 text-[38px] sm:text-[54px] font-extrabold leading-[1.04] tracking-tight text-[#071a44]">
                 Every survey tool.
                 <br />
-                One download. <span className="text-[#1e4fd8]">Always up to date.</span>
+                One download. <span className="ho-h-mark relative z-0 text-[#1e4fd8]">Always up to date.</span>
               </h1>
               <p className="ho-enter ho-enter-2 mt-5 max-w-xl text-[17px] leading-relaxed text-slate-600">
                 One download installs Excel to KML, RoadPro, Traverse &amp; Level, Project Folder Manager and Slope Calculator, and keeps every one of them up to
@@ -224,7 +243,9 @@ export default function ToolkitHome({
         </section>
 
         {/* ---------------------------------------------------------- the tools */}
-        <section id="tools" aria-labelledby="tools-h" className="scroll-mt-28 bg-[#f6f8fc]">
+        <section id="tools" aria-labelledby="tools-h" className="relative scroll-mt-28 bg-[#f6f8fc]">
+          {/* "/#download" (the footer's "Every download in one place") lands here: every program, with its download */}
+          <span id="download" aria-hidden className="absolute -top-28" />
           <div className="max-w-[1180px] mx-auto px-5 sm:px-8 py-20">
             <div className="ho-reveal max-w-3xl">
               <Eyebrow Icon={Layers}>The tools</Eyebrow>
@@ -244,7 +265,7 @@ export default function ToolkitHome({
                     style={{ "--i": i } as CSSProperties}
                   >
                     <div className="flex items-start gap-3">
-                      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#071a44] text-[#ffd21f]">
+                      <span className="ho-icon flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#071a44] text-[#ffd21f]">
                         <Icon className="w-6 h-6" aria-hidden />
                       </span>
                       <div className="min-w-0 flex-1">
@@ -264,13 +285,14 @@ export default function ToolkitHome({
                           ))}
                         </ul>
                         <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-[14px] font-semibold">
-                          <Link href={about.page} className="inline-flex items-center gap-1 text-[#1e4fd8] hover:underline">
+                          <Link href={about.page} className="inline-flex items-center gap-1 py-1 text-[#1e4fd8] hover:underline">
                             About {t.name} <ArrowRight className="w-4 h-4" aria-hidden />
                           </Link>
                           {about.webApp && (
-                            <Link href={about.webApp} prefetch={false} className="inline-flex items-center gap-1 text-slate-700 hover:text-[#1e4fd8]">
+                            // the web apps are pages of their own (the Traverse & Level app is a static app): a plain link
+                            <a href={about.webApp} className="inline-flex items-center gap-1 py-1 text-slate-700 hover:text-[#1e4fd8]">
                               Open the web app
-                            </Link>
+                            </a>
                           )}
                         </div>
                       </>
@@ -292,6 +314,9 @@ export default function ToolkitHome({
           </div>
         </section>
 
+        {/* ---------------------------------------------------------- what's new */}
+        <WhatsNew news={news} />
+
         {/* ---------------------------------------------------------- how it works */}
         <section aria-labelledby="how-h" className="bg-white">
           <div className="max-w-[1180px] mx-auto px-5 sm:px-8 py-20">
@@ -300,14 +325,14 @@ export default function ToolkitHome({
               <H2 id="how-h">Three steps, then you can forget about updates</H2>
             </div>
             <ol className="relative mt-10 grid grid-cols-1 md:grid-cols-3 gap-5">
-              <span aria-hidden className="absolute left-[16%] right-[16%] top-7 hidden md:block border-t-2 border-dashed border-[#1e4fd8]/25" />
+              <span aria-hidden className="ho-reveal ho-line absolute left-[16%] right-[16%] top-7 hidden md:block border-t-2 border-dashed border-[#1e4fd8]/25" />
               {[
                 { Icon: Download, title: "Download the Toolkit", text: "One installer for Windows 10 and 11. No administrator rights needed." },
                 { Icon: MousePointerClick, title: "Pick your tools", text: "Home shows what is already on your PC and what is new. Install the rest with one click." },
                 { Icon: BellRing, title: "Updates arrive", text: "New versions install by themselves, never while a tool is open, and a notification says so." },
               ].map((s, i) => (
                 <li key={s.title} className="ho-reveal relative text-center" style={{ "--i": i } as CSSProperties}>
-                  <span className="relative mx-auto flex h-14 w-14 items-center justify-center rounded-full border-2 border-[#ffd21f] bg-[#071a44] text-[#ffd21f]">
+                  <span className="ho-step-icon relative mx-auto flex h-14 w-14 items-center justify-center rounded-full border-2 border-[#ffd21f] bg-[#071a44] text-[#ffd21f]">
                     <s.Icon className="w-6 h-6" aria-hidden />
                   </span>
                   <p className="mt-4 text-[12px] font-bold uppercase tracking-wider text-slate-400">Step {i + 1}</p>
@@ -355,16 +380,29 @@ export default function ToolkitHome({
                 <Point>The Toolkit updates itself the same way.</Point>
               </ul>
             </div>
-            <div className="grid gap-5 lg:order-2">
+            <div className="lg:order-2">
               <Shot src={updatesPng} alt="The Updates section: start with Windows and keep running in the tray, and Automatic or Ask me for each installed tool" />
-              <Shot src={updatingPng} alt="An update in progress on Excel to KML's card: downloading 42 %" />
+            </div>
+          </div>
+        </section>
+
+        {/* ---------------------------------------------------------- an update, step by step */}
+        <section aria-labelledby="tour-h" className="bg-[#f6f8fc]">
+          <div className="max-w-[1180px] mx-auto px-5 sm:px-8 py-20">
+            <div className="ho-reveal max-w-3xl">
+              <Eyebrow Icon={PlayCircle}>See it work</Eyebrow>
+              <H2 id="tour-h">An update, from start to finish</H2>
+              <p className="mt-3 text-[16px] text-slate-600">Three real screens of the Toolkit while it updates Excel to KML. Pick a step, or let it play.</p>
+            </div>
+            <div className="ho-reveal mt-10">
+              <UpdateTour />
             </div>
           </div>
         </section>
 
         {/* ---------------------------------------------------------- safe by design */}
         <section aria-labelledby="safe-h" className="relative overflow-hidden bg-[#071a44] text-white">
-          <div aria-hidden className="absolute inset-0 opacity-[0.07] bg-[linear-gradient(#9cb8ff_1px,transparent_1px),linear-gradient(90deg,#9cb8ff_1px,transparent_1px)] bg-[size:48px_48px]" />
+          <div aria-hidden className="ho-grid-drift absolute -inset-12 opacity-[0.07] bg-[linear-gradient(#9cb8ff_1px,transparent_1px),linear-gradient(90deg,#9cb8ff_1px,transparent_1px)] bg-[size:48px_48px]" />
           <div className="relative max-w-[1180px] mx-auto px-5 sm:px-8 py-20">
             <div className="ho-reveal max-w-3xl">
               <Eyebrow Icon={ShieldCheck} light>
@@ -391,6 +429,9 @@ export default function ToolkitHome({
           </div>
         </section>
 
+        {/* ---------------------------------------------------------- what people say */}
+        <Reviews data={reviews} />
+
         {/* ---------------------------------------------------------- requirements and questions */}
         <section aria-labelledby="faq-h" className="bg-white">
           <div className="max-w-[1180px] mx-auto px-5 sm:px-8 py-20 grid grid-cols-1 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] gap-10">
@@ -411,22 +452,7 @@ export default function ToolkitHome({
                 Good to know
               </h2>
               <div className="mt-5 divide-y divide-slate-100 rounded-2xl border border-slate-200">
-                {[
-                  { q: "Is it free?", a: "Yes. The Toolkit is free, like the tools it installs." },
-                  { q: "Do I need an account?", a: "Yes, your free Excel to KML account, the same one you use on this website and in the web apps." },
-                  {
-                    q: "I already have some of the tools. Will they be installed again?",
-                    a: "No. The Toolkit finds what is on your PC and only updates it when a new version comes out.",
-                  },
-                  { q: "What if a tool is open when an update arrives?", a: "Nothing happens to it. The update waits and installs once you close the tool." },
-                  { q: "Can I stop the automatic updates?", a: "Yes. Set any tool to Ask me, and it is only updated when you press Update." },
-                  { q: "Does it work offline?", a: "Your tools work as usual. The Toolkit shows what it knew at its last check and catches up when you are back online." },
-                  {
-                    q: "Windows says it protected my PC. Is the Toolkit safe?",
-                    a: "Yes. Windows SmartScreen shows that for new programs it hasn't seen often. Press More info, then Run anyway. Every tool the Toolkit installs is checked against its SHA-256 fingerprint first.",
-                  },
-                  { q: "How do I remove it?", a: "Windows Settings, Apps, Survey Toolkit, Uninstall. Your tools stay installed; the Toolkit's own settings and sign-in go with it." },
-                ].map((f) => (
+                {TOOLKIT_FAQS.map((f) => (
                   <details key={f.q} className="group px-5 py-4">
                     <summary className="cursor-pointer list-none flex items-center justify-between gap-4 font-semibold text-slate-900">
                       {f.q}
@@ -443,7 +469,8 @@ export default function ToolkitHome({
         {/* ---------------------------------------------------------- the last word */}
         <section aria-label="Download" className="bg-white pb-20">
           <div className="ho-reveal max-w-[1180px] mx-auto px-5 sm:px-8">
-            <div className="relative overflow-hidden rounded-3xl bg-[radial-gradient(60%_90%_at_85%_50%,#1e4fd8,#071a44_70%)] p-8 sm:p-12 text-white grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_auto] gap-8 items-center">
+            <div className="relative isolate overflow-hidden rounded-3xl bg-[radial-gradient(60%_90%_at_85%_50%,#1e4fd8,#071a44_70%)] p-8 sm:p-12 text-white grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_auto] gap-8 items-center">
+              <span aria-hidden className="ho-cta-glow absolute -z-10 right-[-80px] top-[-80px] h-[300px] w-[300px] rounded-full bg-[#ffd21f]/15 blur-[70px]" />
               <div>
                 <p className="text-[28px] sm:text-[36px] font-extrabold tracking-tight leading-tight">
                   Every survey tool. One download.
@@ -454,7 +481,7 @@ export default function ToolkitHome({
               </div>
               <div className="flex flex-col items-start md:items-end gap-3">
                 <DownloadButton dark />
-                <Link href="/contact?topic=question" className="text-[14px] font-semibold text-blue-100/85 hover:text-white">
+                <Link href="/contact?topic=question" className="py-1 text-[14px] font-semibold text-blue-100/85 hover:text-white">
                   Questions? Write to us
                 </Link>
               </div>
