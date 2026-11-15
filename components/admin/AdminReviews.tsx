@@ -34,6 +34,7 @@ export const REVIEW_APPS = [
   { id: "excel-to-kml", name: "Excel to KML", release: "excel-to-kml" },
   { id: "traverse", name: "Traverse & Level", release: "traverse" },
   { id: "slope-calculator", name: "Slope Calculator", release: "slope" },
+  { id: "auto-draft", name: "Auto Draft", release: "auto-draft" },
   { id: "roadpro", name: "RoadPro", release: "roadpro" },
   { id: "project-folder-manager", name: "Project Folder Manager", release: "folder-manager" },
 ];

@@ -5,7 +5,7 @@ import { countryOf } from "@/lib/publicStats";
 
 // Admin → Dashboard → trends: the chosen period (7, 30, 90 or 365 days) against the period before
 // it, day by day, per program and per country, and what needs an admin's attention now.
-const PROGRAMS = ["windows_installer", "roadpro", "traverse", "folder_manager", "slope", "toolkit"];
+const PROGRAMS = ["windows_installer", "roadpro", "traverse", "folder_manager", "slope", "auto_draft", "toolkit"];
 // seeded and staff accounts that aren't real users (as lib/publicStats.ts)
 const NOT_USERS = ["admin@exceltokml.com", "surveyor@geotech.com", "demo@surveyor.io", "surveyor.demo@geotech.com"];
 

@@ -4,7 +4,7 @@
  * last used today". Noted from requests the apps already make (sign-in check, activity, files):
  *
  *  - X-App-Name / X-App-Version / X-App-Platform headers, sent by apps that report themselves
- *    (Traverse & Level does);
+ *    (Traverse & Level, Slope Calculator and Auto Draft do);
  *  - otherwise the request's origin: the Excel to KML Windows program serves its page from
  *    127.0.0.1, the Android app from appassets.androidplatform.net, and the web apps live at
  *    /app and /traverse/app on this site. These don't say their version, so it stays unknown
@@ -17,7 +17,7 @@ import { after, type NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { RELEASE_APPS, compareVersions, normVersion } from "@/lib/releases";
 
-export type UsageApp = "excel-to-kml" | "traverse" | "slope";
+export type UsageApp = "excel-to-kml" | "traverse" | "slope" | "auto-draft";
 
 export interface AppUse {
   app: UsageApp;
@@ -80,7 +80,7 @@ export function detectApp(req: NextRequest): { app: UsageApp; platform: string; 
   const name = (req.headers.get("x-app-name") || "").trim().toLowerCase();
   const version = cleanVersion(req.headers.get("x-app-version"));
   const platformHeader = (req.headers.get("x-app-platform") || "").trim().toLowerCase();
-  if (name === "traverse" || name === "excel-to-kml" || name === "slope") {
+  if (name === "traverse" || name === "excel-to-kml" || name === "slope" || name === "auto-draft") {
     return { app: name, platform: PLATFORMS[platformHeader] || "Web", version };
   }
 
@@ -162,6 +162,7 @@ const ASSETS: Record<string, string[]> = {
   traverse: ["traverse"],
   "folder-manager": ["folder_manager"],
   slope: ["slope"],
+  "auto-draft": ["auto_draft"],
 };
 
 export interface ProgramVersions {

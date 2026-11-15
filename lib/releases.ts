@@ -4,6 +4,7 @@ import { mailFrom, mailGapMs, mailReplyTo, mailTransport, isMailConfigured, send
 import { introductionOf, releaseEmail, type ReleaseForEmail } from "@/lib/releaseEmail";
 import { reviewRequestEmail } from "@/lib/reviewEmail";
 import { PRODUCTS } from "@/lib/products";
+import { ensureActivityColumns } from "@/lib/activityTags";
 import { LATEST_VERSION, SITE_NAME } from "@/lib/site";
 
 /**
@@ -33,6 +34,7 @@ export const normVersion = (v: string) => String(v || "").trim().replace(/^v(?=\
 const GITHUB_REPOS: Record<string, string> = {
   traverse: "Asjad-Mehmood/Traiverse",
   slope: "Asjad-Mehmood/Slope-calculator-",
+  "auto-draft": "Asjad-Mehmood/auto-draft-app",
   "folder-manager": "Asjad-Mehmood/Project-manager",
   toolkit: "Asjad-Mehmood/Survey-Toolkit",
   roadpro: "Asjad-Mehmood/Road-pro",
@@ -416,7 +418,7 @@ const downloaded = (types: string[]) =>
  * Windows app or used the converter (web, Android or Windows all log conversions). Traverse &
  * Level: downloaded the Windows program or used the web app (its activity starts with tl_).
  * RoadPro and Project Folder Manager: downloaded them. Slope Calculator: downloaded the Windows
- * program or keeps calculations in the account.
+ * program or keeps calculations in the account. Auto Draft: downloaded it or saved a drawing with it.
  */
 async function appUserSql(appId: string): Promise<string> {
   const t = await usageTables();
@@ -434,6 +436,13 @@ async function appUserSql(appId: string): Promise<string> {
         downloaded(["traverse"]),
         t.has("activities") && `EXISTS (SELECT 1 FROM "activities" a WHERE a."userId" = u."id" AND a."action" LIKE 'tl\\_%')`,
         t.has("user_files") && `EXISTS (SELECT 1 FROM "user_files" f WHERE f."userId" = u."id" AND f."platform" = 'traverse_app')`,
+      ]);
+    case "auto-draft":
+      // its activity is tagged with the app (lib/activityTags.ts adds that column on first use)
+      if (t.has("activities")) await ensureActivityColumns().catch(() => undefined);
+      return or([
+        downloaded(["auto_draft"]),
+        t.has("activities") && `EXISTS (SELECT 1 FROM "activities" a WHERE a."userId" = u."id" AND a."app" = 'auto-draft')`,
       ]);
     case "roadpro":
       return downloaded(["roadpro"]);
@@ -725,6 +734,7 @@ const REVIEW_PRODUCT: Record<string, string> = {
   traverse: "traverse",
   "folder-manager": "project-folder-manager",
   slope: "slope-calculator",
+  "auto-draft": "auto-draft",
 };
 const reviewAskFor = (appId: string) => ({ appName: appById(appId)?.name || appId, product: REVIEW_PRODUCT[appId] || appId });
 

@@ -22,6 +22,7 @@ export const NOTES_APPS: NotesApp[] = [
   { slug: "excel-to-kml", name: "Excel to KML", repo: repoOf("excel-to-kml"), page: "/download" },
   { slug: "traverse", name: "Traverse & Level", repo: repoOf("traverse"), page: "/traverse" },
   { slug: "slope", name: "Slope Calculator", repo: repoOf("slope"), page: "/slope-calculation" },
+  { slug: "auto-draft", name: "Auto Draft", repo: repoOf("auto-draft"), page: "/auto-draft" },
   { slug: "folder-manager", name: "Project Folder Manager", repo: repoOf("folder-manager"), page: "/project-folder-manager" },
   { slug: "survey-toolkit", name: "Survey Toolkit", repo: "Asjad-Mehmood/Survey-Toolkit", page: "/toolkit" },
 ];

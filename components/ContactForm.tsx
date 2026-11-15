@@ -20,6 +20,7 @@ const PROGRAMS: [string, string][] = [
   ["traverse", "Traverse & Level"],
   ["folder-manager", "Project Folder Manager"],
   ["slope", "Slope Calculator"],
+  ["auto-draft", "Auto Draft"],
   ["website", "The website or my account"],
 ];
 

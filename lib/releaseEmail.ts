@@ -114,6 +114,16 @@ const UPDATE_GUIDES: Record<string, UpdateGuide> = {
     newUser: "Don't have it yet? Open the web app, or install the Windows program.",
     more: { label: "What it does", href: "/slope-calculation" },
   },
+  "auto-draft": {
+    platform: "Windows 10 and 11",
+    automatic: true,
+    steps: [
+      "Open Auto Draft while you're online: it offers the update, then installs it and opens again.",
+      "Your code lists, sheet settings and sign-in are kept.",
+    ],
+    newUser: "Don't have it yet? Download it for Windows and open the sample survey to see it draw.",
+    more: { label: "Code guide", href: "/auto-draft/codes" },
+  },
   toolkit: {
     platform: "Windows 10 and 11",
     automatic: true,
