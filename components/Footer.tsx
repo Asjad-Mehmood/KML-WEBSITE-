@@ -16,13 +16,14 @@ interface FooterProps {
   onDownloadClick: () => void;
 }
 
-const linkCls = "hover:text-blue-600 transition-colors";
+// taller on phones, so each link is easy to tap (24 px and up)
+const linkCls = "inline-block py-1 sm:py-0 hover:text-blue-600 transition-colors";
 
 function FooterNav({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <nav aria-label={label}>
       <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3.5">{label}</h2>
-      <ul className="space-y-2.5 text-xs sm:text-sm text-slate-600">{children}</ul>
+      <ul className="space-y-1 sm:space-y-2.5 text-xs sm:text-sm text-slate-600">{children}</ul>
     </nav>
   );
 }
@@ -58,7 +59,7 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
             <p className="text-xs sm:text-sm text-slate-500 leading-relaxed max-w-[320px]">
               Free survey and engineering software: Excel to KML, RoadPro, Traverse &amp; Level, Slope Calculator and Project Folder Manager.
             </p>
-            <Link href="/#download" className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-[#0071e3] hover:underline">
+            <Link href="/#download" className="inline-flex items-center gap-1.5 py-1 text-xs sm:text-sm font-semibold text-[#0071e3] hover:underline">
               Every download in one place <ArrowRight className="w-3.5 h-3.5" aria-hidden />
             </Link>
           </div>
@@ -77,7 +78,7 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
               <WebAppLink className={linkCls}>Excel to KML web app</WebAppLink>
             </li>
             <li>
-              <Link href={TRAVERSE_APP} className={linkCls}>Traverse &amp; Level web app</Link>
+              <a href={TRAVERSE_APP} className={linkCls}>Traverse &amp; Level web app</a>
             </li>
           </FooterNav>
 
@@ -142,17 +143,17 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
             Copyright &copy; {new Date().getFullYear()} Excel to KML. All rights reserved.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-slate-600">
-            <Link href="/#download" className="hover:text-blue-600 transition-colors">Downloads</Link>
-            <Link href="/contact" className="hover:text-blue-600 transition-colors">Contact</Link>
-            <Link href="/privacy" className="hover:text-blue-600 transition-colors">Privacy</Link>
-            <Link href="/terms" className="hover:text-blue-600 transition-colors">Terms</Link>
+            <Link href="/#download" className="inline-block py-1.5 sm:py-0 hover:text-blue-600 transition-colors">Downloads</Link>
+            <Link href="/contact" className="inline-block py-1.5 sm:py-0 hover:text-blue-600 transition-colors">Contact</Link>
+            <Link href="/privacy" className="inline-block py-1.5 sm:py-0 hover:text-blue-600 transition-colors">Privacy</Link>
+            <Link href="/terms" className="inline-block py-1.5 sm:py-0 hover:text-blue-600 transition-colors">Terms</Link>
             {FACEBOOK_URL && (
               <a
                 href={FACEBOOK_URL}
                 target="_blank"
                 rel="noopener noreferrer me"
                 aria-label="Excel to KML on Facebook"
-                className="inline-flex items-center gap-1.5 hover:text-blue-600 transition-colors"
+                className="inline-flex items-center gap-1.5 py-1.5 sm:py-0 hover:text-blue-600 transition-colors"
               >
                 <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="currentColor" aria-hidden>
                   <path d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.96.93-1.96 1.89v2.25h3.33l-.53 3.49h-2.8V24C19.61 23.1 24 18.1 24 12.07z" />

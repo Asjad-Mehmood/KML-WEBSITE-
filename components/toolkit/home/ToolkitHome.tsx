@@ -33,6 +33,7 @@ import PageShell from "@/components/PageShell";
 import MotionRoot from "@/components/toolkit/home-options/MotionRoot";
 import { HubGraphic, type OptionTool } from "@/components/toolkit/home-options/options";
 import StartDownload from "@/components/toolkit/home/StartDownload";
+import { TOOLKIT_FAQS } from "@/lib/toolkit/homeFaq";
 import gridPng from "@/components/toolkit/images/9-app-grid.png";
 import updatesPng from "@/components/toolkit/images/10-updates.png";
 import updatingPng from "@/components/toolkit/images/6-updating.png";
@@ -125,10 +126,16 @@ function DownloadButton({ dark = false, pulse = false }: { dark?: boolean; pulse
   );
 }
 
+// A screen of the Toolkit; a whole window drawn at half the page is small, so a click opens it full size
 function Shot({ src, alt }: { src: typeof gridPng; alt: string }) {
   return (
-    <figure className="ho-reveal rounded-2xl border border-slate-200 bg-[#071a44] p-1.5 shadow-[0_24px_60px_rgba(7,26,68,0.18)]">
-      <Image src={src} alt={alt} sizes="(min-width: 1024px) 600px, 100vw" className="w-full h-auto rounded-xl" />
+    <figure className="ho-reveal group relative rounded-2xl border border-slate-200 bg-[#071a44] p-1.5 shadow-[0_24px_60px_rgba(7,26,68,0.18)]">
+      <a href={src.src} target="_blank" rel="noopener" aria-label={`${alt} (opens full size)`} className="block cursor-zoom-in">
+        <Image src={src} alt={alt} sizes="(min-width: 1024px) 600px, 100vw" className="w-full h-auto rounded-xl" />
+        <span className="pointer-events-none absolute bottom-3 right-3 rounded-full bg-[#071a44]/85 px-2.5 py-1 text-[11.5px] font-semibold text-white opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+          Full size
+        </span>
+      </a>
     </figure>
   );
 }
@@ -224,7 +231,9 @@ export default function ToolkitHome({
         </section>
 
         {/* ---------------------------------------------------------- the tools */}
-        <section id="tools" aria-labelledby="tools-h" className="scroll-mt-28 bg-[#f6f8fc]">
+        <section id="tools" aria-labelledby="tools-h" className="relative scroll-mt-28 bg-[#f6f8fc]">
+          {/* "/#download" (the footer's "Every download in one place") lands here: every program, with its download */}
+          <span id="download" aria-hidden className="absolute -top-28" />
           <div className="max-w-[1180px] mx-auto px-5 sm:px-8 py-20">
             <div className="ho-reveal max-w-3xl">
               <Eyebrow Icon={Layers}>The tools</Eyebrow>
@@ -264,13 +273,14 @@ export default function ToolkitHome({
                           ))}
                         </ul>
                         <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-[14px] font-semibold">
-                          <Link href={about.page} className="inline-flex items-center gap-1 text-[#1e4fd8] hover:underline">
+                          <Link href={about.page} className="inline-flex items-center gap-1 py-1 text-[#1e4fd8] hover:underline">
                             About {t.name} <ArrowRight className="w-4 h-4" aria-hidden />
                           </Link>
                           {about.webApp && (
-                            <Link href={about.webApp} prefetch={false} className="inline-flex items-center gap-1 text-slate-700 hover:text-[#1e4fd8]">
+                            // the web apps are pages of their own (the Traverse & Level app is a static app): a plain link
+                            <a href={about.webApp} className="inline-flex items-center gap-1 py-1 text-slate-700 hover:text-[#1e4fd8]">
                               Open the web app
-                            </Link>
+                            </a>
                           )}
                         </div>
                       </>
@@ -411,22 +421,7 @@ export default function ToolkitHome({
                 Good to know
               </h2>
               <div className="mt-5 divide-y divide-slate-100 rounded-2xl border border-slate-200">
-                {[
-                  { q: "Is it free?", a: "Yes. The Toolkit is free, like the tools it installs." },
-                  { q: "Do I need an account?", a: "Yes, your free Excel to KML account, the same one you use on this website and in the web apps." },
-                  {
-                    q: "I already have some of the tools. Will they be installed again?",
-                    a: "No. The Toolkit finds what is on your PC and only updates it when a new version comes out.",
-                  },
-                  { q: "What if a tool is open when an update arrives?", a: "Nothing happens to it. The update waits and installs once you close the tool." },
-                  { q: "Can I stop the automatic updates?", a: "Yes. Set any tool to Ask me, and it is only updated when you press Update." },
-                  { q: "Does it work offline?", a: "Your tools work as usual. The Toolkit shows what it knew at its last check and catches up when you are back online." },
-                  {
-                    q: "Windows says it protected my PC. Is the Toolkit safe?",
-                    a: "Yes. Windows SmartScreen shows that for new programs it hasn't seen often. Press More info, then Run anyway. Every tool the Toolkit installs is checked against its SHA-256 fingerprint first.",
-                  },
-                  { q: "How do I remove it?", a: "Windows Settings, Apps, Survey Toolkit, Uninstall. Your tools stay installed; the Toolkit's own settings and sign-in go with it." },
-                ].map((f) => (
+                {TOOLKIT_FAQS.map((f) => (
                   <details key={f.q} className="group px-5 py-4">
                     <summary className="cursor-pointer list-none flex items-center justify-between gap-4 font-semibold text-slate-900">
                       {f.q}
@@ -454,7 +449,7 @@ export default function ToolkitHome({
               </div>
               <div className="flex flex-col items-start md:items-end gap-3">
                 <DownloadButton dark />
-                <Link href="/contact?topic=question" className="text-[14px] font-semibold text-blue-100/85 hover:text-white">
+                <Link href="/contact?topic=question" className="py-1 text-[14px] font-semibold text-blue-100/85 hover:text-white">
                   Questions? Write to us
                 </Link>
               </div>

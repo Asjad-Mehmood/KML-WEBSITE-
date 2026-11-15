@@ -1,6 +1,6 @@
 import React from "react";
 import { FAQS, HOME_FAQS, faqHighlights } from "@/lib/faqs";
-import { FACEBOOK_URL, GITHUB_REPO_URL, INSTALLER_URL, SITE_DESCRIPTION, SITE_NAME, SITE_URL, jsonLd } from "@/lib/site";
+import { FACEBOOK_URL, GITHUB_REPO_URL, INSTALLER_URL, LATEST_VERSION, SITE_DESCRIPTION, SITE_NAME, SITE_URL, jsonLd } from "@/lib/site";
 
 // Schema.org JSON-LD. Everything here must match what the page visibly shows:
 // no made-up ratings or reviews, and FAQ answers come from the same data as the FAQ section.
@@ -49,8 +49,7 @@ export function HomeStructuredData() {
             installUrl: `${SITE_URL}/download`,
             screenshot: `${SITE_URL}/assets/hero_geospatial.jpg`,
             image: `${SITE_URL}/assets/icon-512.png`,
-            softwareVersion: "3.6.2",
-            fileSize: "3.15 MB",
+            softwareVersion: LATEST_VERSION.replace(/^v/, ""),
             isAccessibleForFree: true,
             offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
             publisher: { "@id": ORGANIZATION_ID },
