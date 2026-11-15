@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight, BookOpen, CheckCircle2, Download, Globe, LayoutDashboard, Map, PlayCircle } from "lucide-react";
 import PageShell from "../../../components/PageShell";
 import { clearPendingDownload, peekPendingDownload } from "@/lib/downloadHandoff";
+import { announceDownload } from "@/lib/downloadNotice";
 import { useAuth } from "../../../context/AuthContext";
 import { INSTALLER_NAME, SUPPORT_EMAIL } from "@/lib/site";
 import { useLatestRelease } from "@/lib/useLatestRelease";
@@ -40,6 +41,7 @@ export default function ThanksClient() {
       document.body.appendChild(a);
       a.click();
       a.remove();
+      announceDownload({ program: "Excel to KML", file: decodeURIComponent(pending.url.split("/").pop() || "") || INSTALLER_NAME, again: pending.url });
     }, 600);
     return () => clearTimeout(t);
   }, []);
@@ -60,6 +62,7 @@ export default function ThanksClient() {
     document.body.appendChild(a);
     a.click();
     a.remove();
+    announceDownload({ program: "Excel to KML", file: latest.fileName, again: latest.downloadUrl });
     queueMicrotask(() => setStarted(true));
   }, [isLoading, user, trackDownload, latest.fileName, latest.versionTag, latest.downloadUrl]);
 

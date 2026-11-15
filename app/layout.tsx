@@ -6,6 +6,7 @@ import SiteNotice from "../components/SiteNotice";
 import AuthModal from "../components/AuthModal";
 import AdSenseScript from "../components/AdSenseScript";
 import SignupPrompt from "../components/SignupPrompt";
+import DownloadNotice from "../components/DownloadNotice";
 import ReviewPrompt from "../components/ReviewPrompt";
 import { DEFAULT_TITLE, FACEBOOK_DOMAIN_VERIFICATION, FACEBOOK_PAGE_ID, OG_IMAGE, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import { Analytics } from '@vercel/analytics/next';
@@ -110,6 +111,8 @@ export default function RootLayout({
           <AuthModal />
           <SiteNotice />
           <SignupPrompt />
+          {/* "Your download is starting": what Windows SmartScreen may show, for every program */}
+          <DownloadNotice />
           <ReviewPrompt />
         </AuthProvider>
         <AdSenseScript />

@@ -1,5 +1,6 @@
 "use client";
 
+import { announceDownload } from "@/lib/downloadNotice";
 import { Clock, Download } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { TRAVERSE_FILES, TRAVERSE_VERSION } from "@/lib/traverse";
@@ -31,6 +32,7 @@ export default function TraverseDownload({ className, label = "Download for Wind
     document.body.appendChild(a);
     a.click();
     a.remove();
+    announceDownload({ program: "Traverse & Level", file: release.fileName, again: release.downloadUrl });
   };
 
   return (
