@@ -91,7 +91,7 @@ const structuredData = {
 // The hero: how the app is used, step by step (each screen flips over to the next)
 const HERO_STEPS: FlipStep[] = [
   { src: "/traverse/screens/v2-register.webp", title: "Create your free account", text: "Register, or log in with your Excel to KML account.", alt: "Register screen of Traverse & Level" },
-  { src: "/traverse/screens/v2-dashboard.webp", title: "Open your dashboard", text: "Saved traverses and level runs, their status and the week's activity.", alt: "Dashboard: saved traverses and level runs with their status, a job shared by a colleague and the week's activity" },
+  { src: "/traverse/screens/v2-dashboard.webp", title: "All your jobs", text: "Recent jobs in the sidebar; every job, share and copy on the dashboard.", alt: "Dashboard: saved traverses and level runs with their status, a job shared by a colleague and the week's activity" },
   { src: "/traverse/screens/v2-traverse.webp", title: "Enter the traverse", text: "Known points and the coordinates you measured on site.", alt: "Traverse screen: known points, site coordinates and an Accepted result with precision 1 : 62,105 after a Bowditch adjustment" },
   { src: "/traverse/screens/v2-fieldbook.webp", title: "Or type the field book", text: "Angles and distances, with side shots and levels.", alt: "Field book with angles, distances, side shots and levels, accepted with the angular and level checks" },
   { src: "/traverse/screens/v2-lsq.webp", title: "Adjust and check", text: "Bowditch, Transit, Equal or least squares, with residuals and error ellipses.", alt: "Least squares residuals for every angle and distance, and the error ellipses of the stations" },

@@ -26,8 +26,8 @@ export const TRAVERSE_FILES = {
     label: "Windows program",
     detail: "Installer for Windows 10 and 11. Adds Start menu and desktop shortcuts, needs no administrator rights and updates itself",
   },
-  manualPdf: { href: "/traverse/Traverse-Level-User-Manual.pdf", name: "Traverse-Level-User-Manual.pdf", label: "User manual", detail: "PDF, 41 pages, 5.5 MB" },
-  manual: { href: "/traverse/Traverse-Level-User-Manual.pptx", name: "Traverse-Level-User-Manual.pptx", label: "User manual", detail: "PowerPoint, 41 slides, 4.4 MB" },
+  manualPdf: { href: "/traverse/Traverse-Level-User-Manual.pdf", name: "Traverse-Level-User-Manual.pdf", label: "User manual", detail: "PDF, 42 pages, 5.8 MB" },
+  manual: { href: "/traverse/Traverse-Level-User-Manual.pptx", name: "Traverse-Level-User-Manual.pptx", label: "User manual", detail: "PowerPoint, 42 slides, 5.7 MB" },
   // the intro (with sound), and a silent, lighter copy that loops on the home page card
   // (WebM copies for browsers without H.264)
   video: {
@@ -69,47 +69,47 @@ export const TRAVERSE_SCREENS: { group: string; items: { no: string; title: stri
   {
     group: "Start",
     items: [
-      { no: "01", title: "Front page", text: "What the software does, with Register and Log in. The clock and the light / dark switch sit at the top.", img: "v2-front", page: 4 },
+      { no: "01", title: "Log in", text: "The app opens on Log in. Use your exceltokml.com account, or sign in with your browser for Google and admin accounts.", img: "v2-front", page: 4 },
       { no: "02", title: "Your account", text: "Register once with your name, email and password. It is the same account as exceltokml.com.", img: "v2-register", page: 5 },
-      { no: "03", title: "Dashboard", text: "Every saved traverse and level run, with its status and key result, plus jobs shared with you.", img: "v2-dashboard", page: 37 },
+      { no: "03", title: "Dashboard", text: "From the profile menu or All jobs: every saved traverse and level run, with its status and key result, plus jobs shared with you.", img: "v2-dashboard", page: 38 },
     ],
   },
   {
     group: "Traverse",
     items: [
-      { no: "04", title: "Known points and result", text: "Site coordinates or Angles & distances, the known points, and Accepted or Rejected as you type.", img: "v2-traverse", page: 7 },
-      { no: "05", title: "Site coordinates and plan", text: "The points as measured, the adjustment method and the plan of the adjusted and measured lines.", img: "v2-traverse-plan", page: 13 },
-      { no: "06", title: "Bearings, angles and side shots", text: "Whole-circle bearings against the observed distances, the balanced angles and the side shots from the adjusted stations.", img: "v2-traverse-bearings", page: 25 },
+      { no: "04", title: "Back to your last job", text: "After you log in, the job you had open opens again. The sidebar holds the tools and your recent jobs.", img: "v2-traverse", page: 7 },
+      { no: "05", title: "Site coordinates and plan", text: "The points as measured, the adjustment method and the plan of the adjusted and measured lines.", img: "v2-traverse-plan", page: 14 },
+      { no: "06", title: "Bearings, angles and side shots", text: "Whole-circle bearings against the observed distances, the balanced angles and the side shots from the adjusted stations.", img: "v2-traverse-bearings", page: 26 },
     ],
   },
   {
     group: "Angles & distances",
     items: [
-      { no: "07", title: "Field book", text: "Angles turned from the backsight and distances, side shots and levels, with the angular and level checks.", img: "v2-fieldbook", page: 22 },
-      { no: "08", title: "Least squares", text: "Angles and distances adjusted together by their weights, with residuals, error ellipses and the chi-square test.", img: "v2-lsq", page: 27 },
-      { no: "09", title: "Qatar National Grid", text: "The scale factor worked out for the job, and WGS84 latitude and longitude for every point, as in Excel to KML.", img: "v2-qng", page: 28 },
+      { no: "07", title: "Field book", text: "Angles turned from the backsight and distances, side shots and levels, with the angular and level checks.", img: "v2-fieldbook", page: 23 },
+      { no: "08", title: "Least squares", text: "Angles and distances adjusted together by their weights, with residuals, error ellipses and the chi-square test.", img: "v2-lsq", page: 28 },
+      { no: "09", title: "Qatar National Grid", text: "The scale factor worked out for the job, and WGS84 latitude and longitude for every point, as in Excel to KML.", img: "v2-qng", page: 29 },
     ],
   },
   {
     group: "Levelling and reports",
     items: [
-      { no: "10", title: "Level book", text: "Start and closing benchmarks, then BS, IS and FS on one row per point. Import a CSV or paste from Excel.", img: "v2-level", page: 32 },
-      { no: "11", title: "Levelling result", text: "Misclosure against the allowable, reduced levels, corrections, adjusted RLs and the arithmetic checks.", img: "v2-level-result", page: 33 },
-      { no: "12", title: "PDF reports", text: "Traverse and levelling reports with your report details and boxes for Surveyed, Checked and Approved by.", img: "v2-reports", page: 21 },
+      { no: "10", title: "Level book", text: "Start and closing benchmarks, then BS, IS and FS on one row per point. Import a CSV or paste from Excel.", img: "v2-level", page: 33 },
+      { no: "11", title: "Levelling result", text: "Misclosure against the allowable, reduced levels, corrections, adjusted RLs and the arithmetic checks.", img: "v2-level-result", page: 34 },
+      { no: "12", title: "PDF reports", text: "Traverse and levelling reports with your report details and boxes for Surveyed, Checked and Approved by.", img: "v2-reports", page: 22 },
     ],
   },
   {
     group: "Simulator and sharing",
     items: [
-      { no: "13", title: "Traverse simulator", text: "Choose a link or loop, the instrument accuracy and a scenario, then watch the total station observe it.", img: "v2-simulator", page: 35 },
-      { no: "14", title: "Simulator result", text: "Misclosure and precision, the field book with every random error, and Adjust in Traverse tool.", img: "v2-simulator-result", page: 36 },
-      { no: "15", title: "Share a job", text: "Type a colleague's email. They find the job under Shared with me; Remove stops sharing.", img: "v2-share", page: 38 },
+      { no: "13", title: "Traverse simulator", text: "Choose a link or loop, the instrument accuracy and a scenario, then watch the total station observe it.", img: "v2-simulator", page: 36 },
+      { no: "14", title: "Simulator result", text: "Misclosure and precision, the field book with every random error, and Adjust in Traverse tool.", img: "v2-simulator-result", page: 37 },
+      { no: "15", title: "Share a job", text: "Type a colleague's email. They find the job under Shared with me; Remove stops sharing.", img: "v2-share", page: 39 },
     ],
   },
   {
     group: "Anywhere",
     items: [
-      { no: "16", title: "Dark mode", text: "One click on the moon for night work. Your choice is remembered on that device.", img: "v2-dark", page: 39 },
+      { no: "16", title: "Dark mode", text: "One click on the moon for night work. Your choice is remembered on that device.", img: "v2-dark", page: 40 },
       { no: "17", title: "On your phone", text: "Every screen fits a phone, and the app keeps working offline after your first login.", img: "v2-phone", page: 6 },
     ],
   },
