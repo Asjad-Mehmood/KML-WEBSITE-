@@ -1,5 +1,6 @@
 "use client";
 
+import { announceDownload } from "@/lib/downloadNotice";
 import { Download } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { ROADPRO_FILES, ROADPRO_RELEASE, ROADPRO_VERSION } from "@/lib/roadpro";
@@ -28,6 +29,7 @@ export default function RoadProDownload({
     document.body.appendChild(a);
     a.click();
     a.remove();
+    announceDownload({ program: file === "setup" ? "RoadPro Setup" : "RoadPro plugin", file: name, again: href, zip: /\.zip$/i.test(name) });
   };
 
   return (

@@ -1,5 +1,6 @@
 "use client";
 
+import { announceDownload } from "@/lib/downloadNotice";
 import { useEffect, useState } from "react";
 import { Clock, Download } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
@@ -94,6 +95,7 @@ export default function SlopeDownload({ className, label = "Download for Windows
     document.body.appendChild(a);
     a.click();
     a.remove();
+    announceDownload({ program: "Slope Calculator", file: SLOPE_INSTALLER, again: release.downloadUrl });
   };
 
   return (

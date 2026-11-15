@@ -1,5 +1,6 @@
 "use client";
 
+import { announceDownload } from "@/lib/downloadNotice";
 import { Download } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { PFM_FILES, PFM_VERSION } from "@/lib/folderManager";
@@ -18,6 +19,7 @@ export default function FolderManagerDownload({ className, label = "Download Pro
     document.body.appendChild(a);
     a.click();
     a.remove();
+    announceDownload({ program: "Project Folder Manager", file: name, again: href, zip: /\.zip$/i.test(name) });
   };
 
   return (
