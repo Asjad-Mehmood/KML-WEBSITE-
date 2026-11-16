@@ -498,7 +498,7 @@ export async function listReleases() {
       const first = own.reduce<(typeof own)[number] | null>((a, r) => (!a || r.releasedAt < a.releasedAt ? r : a), null);
       return {
         app,
-        intro: intro ? { title: intro.title, releaseId: first?.id ?? null } : null,
+        intro: intro ? { title: intro.title, releaseId: first?.id ?? null, announce: intro.announce } : null,
         // people who downloaded or used this app
         users: await count(appSql, NEVER_EMAIL),
         // asking them for a review: who could be asked, and the requests sent before
