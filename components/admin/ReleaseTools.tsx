@@ -468,7 +468,7 @@ export function ReleaseTimeline({ releases, onShow, onEdit }: { releases: Timeli
 interface HistoryRow {
   id: string;
   kind: "release" | "review";
-  audience: "app" | "all";
+  audience: "app" | "all" | "behind";
   status: "sending" | "paused" | "done";
   subject: string;
   total: number;
@@ -588,7 +588,7 @@ export function EmailHistory({
               <span className="min-w-0 flex-1">
                 <span className="block text-[13px] text-white truncate">{b.subject}</span>
                 <span className="block text-[11px] text-slate-500">
-                  {b.kind === "review" ? "Review request" : "Release"} · {b.appName} {b.version} · {b.audience === "app" ? `${b.appName} users` : "everyone"} ·{" "}
+                  {b.kind === "review" ? "Review request" : "Release"} · {b.appName} {b.version} · {b.audience === "app" ? `${b.appName} users` : b.audience === "behind" ? `${b.appName} users on an older version` : "everyone"} ·{" "}
                   {when(b.createdAt)} by {b.createdBy}
                 </span>
               </span>
@@ -742,19 +742,38 @@ export function OptOuts({
 
 // ---------------------------------------------------------------- who an email goes to
 
-export function Recipients({ adminFetch, releaseId, who, onlyNew }: { adminFetch: Fetch; releaseId: string; who: "app" | "all"; onlyNew: boolean }) {
+export function Recipients({
+  adminFetch,
+  releaseId,
+  who,
+  onlyNew,
+  onCount,
+}: {
+  adminFetch: Fetch;
+  releaseId: string;
+  who: "app" | "all" | "behind";
+  onlyNew: boolean;
+  /** how many it found, for a dialog that can't count them itself */
+  onCount?: (n: number) => void;
+}) {
   const [r, setR] = useState<{ count: number; sample: { email: string; name: string }[] } | null>(null);
   const [open, setOpen] = useState(false);
   const fetcher = useRef(adminFetch);
+  const countRef = useRef(onCount);
   useEffect(() => {
     fetcher.current = adminFetch;
+    countRef.current = onCount;
   });
   useEffect(() => {
     let live = true;
     fetcher
       .current(`/api/admin/releases/tools?recipients=${encodeURIComponent(releaseId)}&audience=${who}&onlyNew=${onlyNew ? 1 : 0}`, { cache: "no-store" })
       .then((x) => x.json())
-      .then((j) => live && j.success && setR({ count: j.count, sample: j.sample }))
+      .then((j) => {
+        if (!live || !j.success) return;
+        setR({ count: j.count, sample: j.sample });
+        countRef.current?.(j.count);
+      })
       .catch(() => {});
     return () => {
       live = false;

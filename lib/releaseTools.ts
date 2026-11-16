@@ -12,7 +12,7 @@ import {
   forEmailOf,
   normVersion,
   notesFromMarkdown,
-  recipientsSql,
+  audiencePeople,
   type Audience,
 } from "@/lib/releases";
 
@@ -162,10 +162,11 @@ export async function recipientsPreview(releaseId: string, who: Audience, onlyNe
   await ensureReleaseTables();
   const r = await prisma.productRelease.findUnique({ where: { id: releaseId }, select: { app: true } });
   if (!r) throw new Error("That release no longer exists.");
-  const sql = `${await recipientsSql(r.app, who)}${onlyNew ? alreadySentSql : ` AND $2::text IS NOT NULL`}`;
+  const people = await audiencePeople(r.app, who, 3);
+  const sql = `${people.sql}${onlyNew ? alreadySentSql : ` AND $2::text IS NOT NULL`}`;
   const [count, sample] = await Promise.all([
-    prisma.$queryRawUnsafe<{ n: number }[]>(`SELECT count(*)::int AS n FROM (${sql}) e`, NEVER_EMAIL, releaseId),
-    prisma.$queryRawUnsafe<{ email: string; name: string }[]>(`SELECT * FROM (${sql}) e ORDER BY e.email LIMIT 40`, NEVER_EMAIL, releaseId),
+    prisma.$queryRawUnsafe<{ n: number }[]>(`SELECT count(*)::int AS n FROM (${sql}) e`, NEVER_EMAIL, releaseId, ...people.args),
+    prisma.$queryRawUnsafe<{ email: string; name: string }[]>(`SELECT * FROM (${sql}) e ORDER BY e.email LIMIT 40`, NEVER_EMAIL, releaseId, ...people.args),
   ]);
   return { count: count[0]?.n ?? 0, sample };
 }

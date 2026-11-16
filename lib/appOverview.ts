@@ -40,7 +40,7 @@ export const appDef = (id: string) => APP_DEFS.find((a) => a.id === id);
  * GitHub give the Survey Toolkit (lib/toolkit/feed.ts). For the Toolkit itself, the newest
  * installer on GitHub, which its download always is (lib/toolkit/downloads.ts).
  */
-async function latestOf(id: string, offered: string): Promise<string> {
+export async function latestOf(id: string, offered: string): Promise<string> {
   let found = "";
   if (id === "toolkit") {
     const { toolkitDownloads } = await import("@/lib/toolkit/downloads");

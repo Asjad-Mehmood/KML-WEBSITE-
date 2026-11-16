@@ -43,8 +43,8 @@ interface Broadcast {
   failed: number;
   lastError: string | null;
   createdBy: string;
-  /** app: people who use the app; all: everyone with an account */
-  audience: "app" | "all";
+  /** app: people who use the app; all: everyone with an account; behind: on an older version */
+  audience: Who;
   /** release: a version announcement; review: asking the app's users for a review */
   kind: "release" | "review";
   createdAt: string;
@@ -81,6 +81,8 @@ interface Data {
   mail: { configured: boolean; from: string; freeMailbox?: boolean };
 }
 type Fetch = (url: string, options?: RequestInit) => Promise<Response>;
+/** who a release email goes to: the app's users, everyone, or the app's users on an older version */
+type Who = "app" | "all" | "behind";
 
 const day = (iso: string) => new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
 const when = (iso: string) => new Date(iso).toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
@@ -116,7 +118,7 @@ export default function AdminReleases({
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<{ release: Partial<Release> & { app: string }; isNew: boolean } | null>(null);
   const [preview, setPreview] = useState<{ subject: string; html: string; text: string } | null>(null);
-  const [confirming, setConfirming] = useState<{ release: Release; who: "app" | "all" } | null>(null);
+  const [confirming, setConfirming] = useState<{ release: Release; who: Who } | null>(null);
   const [asking, setAsking] = useState<string | null>(null); // the app whose users are about to be asked for a review
   const [running, setRunning] = useState<string | null>(null); // broadcast id being sent from this page
   const [busy, setBusy] = useState<string | null>(null);
@@ -352,7 +354,7 @@ export default function AdminReleases({
           <span className="text-slate-200 font-semibold">
             {b.status === "done" ? `Sent to ${b.sent} of ${b.total}` : `${b.status === "paused" ? "Paused" : "Sending"}: ${done} of ${b.total}`}
           </span>
-          <span className="px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">{b.kind === "review" ? `Review request · ${appName} users` : b.audience === "app" ? `${appName} users` : "Everyone"}</span>
+          <span className="px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">{b.kind === "review" ? `Review request · ${appName} users` : b.audience === "app" ? `${appName} users` : b.audience === "behind" ? `${appName} users on an older version` : "Everyone"}</span>
           {b.failed > 0 && (
             <button onClick={() => showFailed(b)} className="text-rose-300 hover:underline cursor-pointer">
               {b.failed} failed
@@ -618,6 +620,23 @@ export default function AdminReleases({
               </div>
             );
           })()}
+
+          {/* Who has the newest version, and emailing the ones who don't */}
+          <WhoUpdated
+            key={`who-${app.id}-${historyKey}`}
+            adminFetch={adminFetch}
+            app={app}
+            newest={releases[0] ?? null}
+            canSend={data.mail.configured && !running}
+            onEmail={(rel) => setConfirming({ release: rel, who: "behind" })}
+            onAddRelease={(version) =>
+              setEditing({
+                isNew: true,
+                release: { app: app.id, version, releasedAt: new Date().toISOString().slice(0, 10), title: "", notes: "", link: app.href, linkLabel: "" },
+              })
+            }
+            onOpenAccount={onOpenAccount}
+          />
 
           {/* Ask the app's users for a review */}
           <div className="px-5 py-4 border-b border-slate-800 bg-amber-500/[0.04]">
@@ -1089,19 +1108,22 @@ function ConfirmBroadcast({
 }: {
   adminFetch: Fetch;
   release: Release;
-  initialWho: "app" | "all";
+  initialWho: Who;
   appName: string;
   appUsers: number;
   everyone: number;
   onClose: () => void;
-  onStart: (onlyNew: boolean, audience: "app" | "all") => void;
+  onStart: (onlyNew: boolean, audience: Who) => void;
   onPreview: () => void;
 }) {
   const sentBefore = release.broadcasts.some((b) => b.sent > 0);
-  const [who, setWho] = useState<"app" | "all">(initialWho);
+  const [who, setWho] = useState<Who>(initialWho);
   const [onlyNew, setOnlyNew] = useState(false);
   const [checked, setChecked] = useState(false);
-  const count = who === "app" ? (onlyNew ? release.notYet : appUsers) : onlyNew ? release.notYetAll : everyone;
+  // the people behind are counted by the server (Recipients below)
+  const [behindCount, setBehindCount] = useState<number | null>(null);
+  const count =
+    who === "behind" ? behindCount ?? 0 : who === "app" ? (onlyNew ? release.notYet : appUsers) : onlyNew ? release.notYetAll : everyone;
   return (
     <Modal title={`Send ${appName} ${release.version}`} onClose={onClose}>
       <p className="text-sm text-slate-300">
@@ -1117,6 +1139,21 @@ function ConfirmBroadcast({
           </span>
         </label>
         <label className="flex items-start gap-2 text-slate-200 cursor-pointer">
+          <input
+            type="radio"
+            checked={who === "behind"}
+            onChange={() => {
+              setBehindCount(null);
+              setWho("behind");
+            }}
+            className="mt-1"
+          />
+          <span>
+            {appName} users on an older version
+            <span className="block text-xs text-slate-500">Only the people whose copy is older than the newest {appName}: a reminder to update</span>
+          </span>
+        </label>
+        <label className="flex items-start gap-2 text-slate-200 cursor-pointer">
           <input type="radio" checked={who === "all"} onChange={() => setWho("all")} className="mt-1" />
           <span>
             All users: everyone with an account ({everyone})
@@ -1126,7 +1163,15 @@ function ConfirmBroadcast({
       </fieldset>
       {sentBefore && (
         <label className="mt-3 flex items-center gap-2 text-sm text-slate-200 cursor-pointer">
-          <input type="checkbox" checked={onlyNew} onChange={(e) => setOnlyNew(e.target.checked)} /> Skip people who already got this release
+          <input
+            type="checkbox"
+            checked={onlyNew}
+            onChange={(e) => {
+              if (who === "behind") setBehindCount(null);
+              setOnlyNew(e.target.checked);
+            }}
+          />{" "}
+          Skip people who already got this release
         </label>
       )}
       {!release.notes.trim() && (
@@ -1136,7 +1181,7 @@ function ConfirmBroadcast({
       )}
       <div className="mt-4 rounded-xl bg-slate-950 border border-slate-800 p-3 text-sm text-slate-300">
         <b className="text-white">{count}</b> {count === 1 ? "person" : "people"} will get this email, one by one. People who stopped release emails are left out.
-        <Recipients adminFetch={adminFetch} releaseId={release.id} who={who} onlyNew={onlyNew} />
+        <Recipients adminFetch={adminFetch} releaseId={release.id} who={who} onlyNew={onlyNew} onCount={who === "behind" ? setBehindCount : undefined} />
       </div>
       <label className="mt-4 flex items-start gap-2 text-sm text-slate-200 cursor-pointer">
         <input type="checkbox" checked={checked} onChange={(e) => setChecked(e.target.checked)} className="mt-0.5" />
@@ -1149,7 +1194,7 @@ function ConfirmBroadcast({
       <p className="mt-3 text-xs text-slate-500">Keep this page open while it sends. If you close it, press Continue later: nobody gets it twice.</p>
       <div className="mt-5 flex justify-end gap-2">
         <button onClick={onClose} className={`${btn} px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200`}>Cancel</button>
-        <button onClick={() => onStart(onlyNew, who)} disabled={!checked || count === 0} className={`${btn} px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white`}>
+        <button onClick={() => onStart(onlyNew, who)} disabled={!checked || count === 0 || (who === "behind" && behindCount === null)} className={`${btn} px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white`}>
           <Send className="w-3.5 h-3.5" /> Send to {count}
         </button>
       </div>
@@ -1200,4 +1245,201 @@ function ConfirmReviews({
       </div>
     </Modal>
   );
+}
+
+interface VersionsData {
+  latest: string;
+  current: number;
+  behind: number;
+  versions: { version: string; people: number; behind: boolean }[];
+  people: { userId: string; email: string; name: string; version: string; source: "app" | "toolkit" | "download"; at: string; behind: boolean }[];
+}
+
+const SOURCE: Record<string, string> = { app: "the program", toolkit: "Survey Toolkit", download: "downloaded" };
+
+/**
+ * Who has the newest version of the app and who doesn't (lib/versionsInUse.ts), and emailing the
+ * ones behind about the newest release
+ */
+function WhoUpdated({
+  adminFetch,
+  app,
+  newest,
+  canSend,
+  onEmail,
+  onAddRelease,
+  onOpenAccount,
+}: {
+  adminFetch: Fetch;
+  app: App;
+  /** the app's newest release in the list, which the email is about */
+  newest: Release | null;
+  canSend: boolean;
+  onEmail: (release: Release) => void;
+  onAddRelease: (version: string) => void;
+  onOpenAccount: (userId: string) => void;
+}) {
+  const [d, setD] = useState<VersionsData | null>(null);
+  const [failed, setFailed] = useState<string | null>(null);
+  const [all, setAll] = useState(false);
+  const fetcher = useRef(adminFetch);
+  useEffect(() => {
+    fetcher.current = adminFetch;
+  });
+  useEffect(() => {
+    let live = true;
+    fetcher
+      .current(`/api/admin/releases/versions?app=${encodeURIComponent(app.id)}`, { cache: "no-store" })
+      .then(async (r) => {
+        if (!r.ok) throw new Error(await errorOf(r));
+        return r.json() as Promise<VersionsData>;
+      })
+      .then((v) => live && setD(v))
+      .catch((e) => live && setFailed((e as Error).message));
+    return () => {
+      live = false;
+    };
+  }, [app.id]);
+
+  const known = d ? d.current + d.behind : 0;
+  const pct = (n: number) => (known ? Math.round((n / known) * 100) : 0);
+  const behindPeople = d?.people.filter((p) => p.behind) ?? [];
+  const shownPeople = all ? behindPeople : behindPeople.slice(0, 8);
+  // the email is about the newest release in the list; it should be the newest version
+  const newestListed = newest && d ? compareVersionsLoose(newest.version, d.latest) >= 0 : false;
+
+  return (
+    <div className="px-5 py-4 border-b border-slate-800 bg-emerald-500/[0.03]">
+      <div className="flex flex-wrap items-start gap-3">
+        <div className="mr-auto max-w-2xl">
+          <p className="flex items-center gap-2 text-sm font-bold text-white">
+            <Users className="w-4 h-4 text-emerald-300" /> Who has updated
+            {d && <span className="text-xs font-semibold text-slate-400">newest: {d.latest}</span>}
+          </p>
+          <p className="mt-0.5 text-xs text-slate-400">
+            Each account&apos;s copy of {app.name}: what the program itself or the Survey Toolkit on their PC reports, or else the last version they downloaded.
+            People we know nothing about aren&apos;t counted.
+          </p>
+        </div>
+        {d && d.behind > 0 && (
+          <button
+            onClick={() => newest && onEmail(newest)}
+            disabled={!canSend || !newest || !newestListed}
+            title={!newestListed ? `Add release ${d.latest} first: the email is about the newest release` : undefined}
+            className={`${btn} bg-emerald-500 hover:bg-emerald-400 text-slate-950`}
+          >
+            <Send className="w-3.5 h-3.5" /> Email the {d.behind} behind
+          </button>
+        )}
+      </div>
+
+      {!d && !failed && (
+        <p className="mt-3 text-xs text-slate-500">
+          <Loader2 className="inline w-3.5 h-3.5 animate-spin mr-1" /> Looking at everyone&apos;s versions…
+        </p>
+      )}
+      {failed && <p className="mt-3 text-xs text-rose-300">{failed}</p>}
+
+      {d && known === 0 && <p className="mt-3 text-xs text-slate-400">Nobody&apos;s version is known yet.</p>}
+
+      {d && known > 0 && (
+        <>
+          {/* up to date against behind */}
+          <div className="mt-3 flex h-2.5 overflow-hidden rounded-full bg-slate-800" aria-hidden>
+            <div className="bg-emerald-400" style={{ width: `${pct(d.current)}%` }} />
+            <div className="bg-amber-400" style={{ width: `${pct(d.behind)}%` }} />
+          </div>
+          <p className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-xs">
+            <span className="text-emerald-300">
+              <b>{d.current}</b> up to date ({pct(d.current)}%)
+            </span>
+            <span className="text-amber-300">
+              <b>{d.behind}</b> on an older version ({pct(d.behind)}%)
+            </span>
+          </p>
+
+          {/* by version */}
+          <ul className="mt-2 flex flex-wrap gap-1.5">
+            {d.versions.map((v) => (
+              <li
+                key={v.version}
+                className={`px-2 py-0.5 rounded-md border text-[11px] font-semibold ${
+                  v.behind ? "bg-amber-500/10 border-amber-500/30 text-amber-200" : "bg-emerald-500/10 border-emerald-500/30 text-emerald-200"
+                }`}
+              >
+                {v.version}
+                {!v.behind && " (newest)"} · {v.people}
+              </li>
+            ))}
+          </ul>
+
+          {d.behind > 0 && newest && !newestListed && (
+            <p className="mt-2 text-xs text-amber-300">
+              The newest release in the list is {newest.version}, but {d.latest} is out.{" "}
+              <button onClick={() => onAddRelease(d.latest)} className="underline cursor-pointer">
+                Add release {d.latest}
+              </button>{" "}
+              (or Import from GitHub) so the email tells them about it.
+            </p>
+          )}
+          {d.behind > 0 && !newest && (
+            <p className="mt-2 text-xs text-amber-300">
+              There&apos;s no release in the list yet.{" "}
+              <button onClick={() => onAddRelease(d.latest)} className="underline cursor-pointer">
+                Add release {d.latest}
+              </button>{" "}
+              to email them.
+            </p>
+          )}
+
+          {/* the people behind */}
+          {behindPeople.length > 0 && (
+            <div className="mt-3 overflow-x-auto rounded-xl border border-slate-800">
+              <table className="w-full min-w-[520px] text-left text-xs">
+                <thead className="bg-slate-950/60 text-[10.5px] uppercase tracking-wider text-slate-500">
+                  <tr>
+                    <th className="px-3 py-2 font-bold">Person</th>
+                    <th className="px-3 py-2 font-bold">Has</th>
+                    <th className="px-3 py-2 font-bold">From</th>
+                    <th className="px-3 py-2 font-bold">Seen</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800">
+                  {shownPeople.map((p) => (
+                    <tr key={p.userId}>
+                      <td className="px-3 py-2">
+                        <button onClick={() => onOpenAccount(p.userId)} className="text-left hover:underline cursor-pointer">
+                          <span className="block font-semibold text-slate-200">{p.name || p.email}</span>
+                          {p.name && <span className="block text-slate-500">{p.email}</span>}
+                        </button>
+                      </td>
+                      <td className="px-3 py-2 font-mono text-amber-200">{p.version}</td>
+                      <td className="px-3 py-2 text-slate-400">{SOURCE[p.source]}</td>
+                      <td className="px-3 py-2 text-slate-400">{day(p.at)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {behindPeople.length > 8 && (
+                <button onClick={() => setAll(!all)} className="w-full px-3 py-2 text-xs font-semibold text-blue-400 hover:bg-slate-800/50 cursor-pointer">
+                  {all ? "Show fewer" : `Show all ${behindPeople.length}`}
+                </button>
+              )}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+/** 2.10.0 against 2.9.1, number by number (the page can't import lib/releases) */
+function compareVersionsLoose(a: string, b: string): number {
+  const pa = a.replace(/^v/i, "").split(/[.+-]/).map((x) => parseInt(x, 10) || 0);
+  const pb = b.replace(/^v/i, "").split(/[.+-]/).map((x) => parseInt(x, 10) || 0);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const d = (pa[i] ?? 0) - (pb[i] ?? 0);
+    if (d) return d;
+  }
+  return 0;
 }
