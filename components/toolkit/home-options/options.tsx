@@ -331,7 +331,7 @@ export function OptionB({ tools, toolkitVersion, heroOnly }: OptionProps) {
 const HUB = { cx: 230, cy: 230, r: 150 };
 const nodeAt = (i: number, n: number) => {
   const a = (-90 + (360 / n) * i) * (Math.PI / 180);
-  return { x: HUB.cx + HUB.r * Math.cos(a), y: HUB.cy + HUB.r * Math.sin(a), left: Math.cos(a) < -0.2, right: Math.cos(a) > 0.2 };
+  return { x: HUB.cx + HUB.r * Math.cos(a), y: HUB.cy + HUB.r * Math.sin(a), left: Math.cos(a) < -0.2, right: Math.cos(a) > 0.2, below: Math.sin(a) > 0 };
 };
 
 /** Option C's picture: the Toolkit at the centre, the five tools around it, updates travelling out */
@@ -385,7 +385,8 @@ export function HubGraphic({ tools, className = "" }: { tools: OptionTool[]; cla
           const p = nodeAt(i, tools.length);
           const anchor = p.left ? "end" : p.right ? "start" : "middle";
           const dx = p.left ? -36 : p.right ? 36 : 0;
-          const dy = !p.left && !p.right ? -54 : 0;
+          // a node at the top or bottom: its name goes on the outside, above the top one and below the bottom one
+          const dy = !p.left && !p.right ? (p.below ? 46 : -54) : 0;
           const Icon = iconOf(t.id);
           return (
             <g key={t.id} className="ho-c-node" style={{ "--i": i } as CSSProperties}>

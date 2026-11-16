@@ -236,7 +236,7 @@
 .ho-root .ho-h-blob-2 { animation: ho-h-drift2 26s ease-in-out infinite alternate; }
 @keyframes ho-h-drift1 { to { transform: translate(-60px, 40px) scale(1.08); } }
 @keyframes ho-h-drift2 { to { transform: translate(50px, -30px) scale(0.94); } }
-/* "Always up to date." gets a yellow underline that sweeps in once */
+/* "Always up to date." gets a yellow highlight that sweeps in once */
 .ho-root .ho-h-mark {
   position: relative;
   white-space: nowrap;
@@ -246,8 +246,8 @@
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 0.02em;
-  height: 0.14em;
+  bottom: 0.04em;
+  height: 0.36em;
   border-radius: 999px;
   background: #ffd21f;
   z-index: -1;
