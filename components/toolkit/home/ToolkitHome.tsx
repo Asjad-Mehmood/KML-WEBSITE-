@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   Compass,
   Download,
+  DraftingCompass,
   FolderTree,
   Globe,
   HardDrive,
@@ -57,6 +58,7 @@ const ICONS: Record<string, LucideIcon> = {
   traverse: Compass,
   "folder-manager": FolderTree,
   slope: TrendingUp,
+  "auto-draft": DraftingCompass,
 };
 
 /** Each tool, as its own product page describes it */
@@ -88,6 +90,11 @@ const ABOUT: Record<string, { text: string; points: string[]; page: string; webA
     points: ["A live profile and crossfall", "A level book with checks", "Excel, PDF and CSV reports"],
     page: "/slope-calculation",
     webApp: "/slope-calculation/app",
+  },
+  "auto-draft": {
+    text: "Field-coded survey points to a finished CAD drawing, in minutes.",
+    points: ["Lines, symbols and levels from the codes", "Contours that bend at breaklines", "DXF, PDF on a sheet, and KML"],
+    page: "/auto-draft",
   },
 };
 

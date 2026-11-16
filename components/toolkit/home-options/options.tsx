@@ -7,7 +7,7 @@
 // reduced motion (or paused) each graphic shows a clean, complete picture. All graphics are
 // decorative (aria-hidden); the words beside them say the same thing.
 import type { CSSProperties, ReactNode } from "react";
-import { ArrowRight, Check, Compass, Download, FolderTree, Globe, RefreshCw, Route, TrendingUp, type LucideIcon } from "lucide-react";
+import { ArrowRight, Check, Compass, Download, DraftingCompass, FolderTree, Globe, RefreshCw, Route, TrendingUp, type LucideIcon } from "lucide-react";
 
 export interface OptionTool {
   id: string;
@@ -64,6 +64,7 @@ const ICONS: Record<string, LucideIcon> = {
   traverse: Compass,
   "folder-manager": FolderTree,
   slope: TrendingUp,
+  "auto-draft": DraftingCompass,
 };
 const iconOf = (id: string) => ICONS[id] ?? Globe;
 const ver = (t: OptionTool) => (t.version ? `v${t.version}` : "[version]");

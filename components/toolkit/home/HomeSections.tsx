@@ -3,7 +3,7 @@
 // .ho-star), still for reduced motion.
 import type { CSSProperties } from "react";
 import Link from "next/link";
-import { ArrowRight, Compass, FolderTree, Globe, MessageSquareQuote, Route, Sparkles, Star, TrendingUp, type LucideIcon } from "lucide-react";
+import { ArrowRight, Compass, DraftingCompass, FolderTree, Globe, MessageSquareQuote, Route, Sparkles, Star, TrendingUp, type LucideIcon } from "lucide-react";
 import type { HomeReviewsData, NewsItem } from "@/lib/toolkit/homeNews";
 
 const ICONS: Record<string, LucideIcon> = {
@@ -12,6 +12,7 @@ const ICONS: Record<string, LucideIcon> = {
   traverse: Compass,
   "folder-manager": FolderTree,
   slope: TrendingUp,
+  "auto-draft": DraftingCompass,
 };
 
 const fmt = (iso: string) => new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
