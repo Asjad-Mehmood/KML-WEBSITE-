@@ -82,7 +82,7 @@ const UPDATE_GUIDES: Record<string, UpdateGuide> = {
       ...(SHOW_ANDROID ? ["Android: install the new .apk from the download page over the one you have."] : []),
       "In your browser: nothing to do, the web version is always the newest.",
     ],
-    newUser: `Don't have it yet? Download it free for Windows${SHOW_ANDROID ? " or Android" : ""}, or use it in your browser.`,
+    newUser: `Don't have it yet? Download it for Windows${SHOW_ANDROID ? " or Android" : ""}, or use it in your browser.`,
     more: { label: "Full release notes", href: "/whats-new" },
   },
   traverse: {
@@ -158,7 +158,7 @@ const UPDATE_GUIDES: Record<string, UpdateGuide> = {
       "Open the Survey Toolkit while you're online: it offers its own update and installs it, then opens again.",
       "Your tools, their settings and your sign-in are kept.",
     ],
-    newUser: "New to the Survey Toolkit? Download it once, sign in with your free account and install any tool with one click.",
+    newUser: "New to the Survey Toolkit? Download it once, sign in with your account and install any tool with one click.",
     more: { label: "What it does", href: "/toolkit" },
     // Written like a personal email, so Gmail files it under Primary rather than Promotions:
     // no pictures, colours, buttons or sales words ("free", "new", "download now"), one link
@@ -282,6 +282,7 @@ export function releaseEmail(r: ReleaseForEmail, to: { name: string; email: stri
         ],
         footer,
         footerLink,
+        style: "plain",
       }),
       ...listHeaders(to.email),
     };
@@ -301,18 +302,30 @@ export function releaseEmail(r: ReleaseForEmail, to: { name: string; email: stri
     { steps: guide.steps }
   );
   if (guide.newUser) blocks.push({ p: guide.newUser });
-  blocks.push({ button: url, label: r.linkLabel.trim() || (r.newerVersion ? `Get ${r.appName} ${r.newerVersion}` : `Get ${r.appName} ${r.version}`) }, reply);
+  // written like a note: "Where to get it: exceltokml.com/toolkit", not a "Get it now" button
+  blocks.push({ button: url, label: r.linkLabel.trim() || "Where to get it" }, reply);
   return {
     ...letterEmail({
-      subject: title || `${r.appName} ${r.version}`,
+      subject: subjectOf(title, r),
       title: r.newerVersion ? `${r.appName} ${r.version}` : `${r.appName} ${r.version} is ready`,
       first,
       blocks,
       footer,
       footerLink,
+      style: "plain",
     }),
     ...listHeaders(to.email),
   };
+}
+
+/**
+ * A release's title as the email's subject; a bare "Survey Toolkit v1.0.10" (as releases imported
+ * from GitHub are called) reads like a product announcement, so it says what the email is
+ */
+function subjectOf(title: string, r: ReleaseForEmail): string {
+  const bare = new RegExp(`^${r.appName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s+v?${r.version.replace(/\./g, "\\.")}$`, "i");
+  if (!title || bare.test(title)) return r.newerVersion ? `${r.appName} ${r.version}` : `${r.appName} ${r.version}: what changed and how to get it`;
+  return title;
 }
 
 /** The programs' names, in bold where a letter lists them */

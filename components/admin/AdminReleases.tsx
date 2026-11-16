@@ -1054,8 +1054,8 @@ function ReleaseForm({
             )}
           </div>
           <div>
-            <label className={label} htmlFor="rel-label">Button text</label>
-            <input id="rel-label" value={f.linkLabel} onChange={set("linkLabel")} maxLength={60} placeholder={`Download ${app?.name || "the app"} ${f.version || ""}`.trim()} className={input} />
+            <label className={label} htmlFor="rel-label">Link text</label>
+            <input id="rel-label" value={f.linkLabel} onChange={set("linkLabel")} maxLength={60} placeholder="Where to get it" className={input} />
           </div>
         </div>
         <div className="flex flex-wrap justify-end gap-2 pt-2">
