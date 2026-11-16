@@ -31,6 +31,7 @@ import {
   AUTO_DRAFT_FILES,
   AUTO_DRAFT_NAME,
   AUTO_DRAFT_PAGE,
+  AUTO_DRAFT_RELEASED,
   AUTO_DRAFT_STEPS,
   AUTO_DRAFT_VERSION,
 } from "@/lib/autoDraft";
@@ -58,6 +59,7 @@ const structuredData = {
   applicationCategory: "DesignApplication",
   operatingSystem: "Windows 10, Windows 11",
   softwareVersion: AUTO_DRAFT_VERSION,
+  datePublished: AUTO_DRAFT_RELEASED,
   url: `${SITE_URL}${AUTO_DRAFT_PAGE}`,
   image: `${SITE_URL}${AUTO_DRAFT_FILES.shots.contours.src}`,
   offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },

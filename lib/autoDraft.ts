@@ -5,9 +5,9 @@
 // the app's own code list); keep them the same when the default codes change.
 
 export const AUTO_DRAFT_NAME = "Auto Draft";
-export const AUTO_DRAFT_VERSION = "0.1.0";
-/** The first release's date; empty until it is published (the product shows "Coming soon") */
-export const AUTO_DRAFT_RELEASED = "";
+export const AUTO_DRAFT_VERSION = "1.0.0";
+/** The first release's date (empty would show the product as "Coming soon") */
+export const AUTO_DRAFT_RELEASED = "2026-11-15";
 
 export const AUTO_DRAFT_PAGE = "/auto-draft";
 export const AUTO_DRAFT_CODES_PAGE = "/auto-draft/codes";

@@ -64,6 +64,11 @@ interface UpdateGuide {
     /** The letter: a few short paragraphs, then the steps to start */
     letter: string[];
     start: string[];
+    /** The letter's heading and its link's words (default "The <name> is ready", "Get the <name>") */
+    ready?: string;
+    cta?: string;
+    /** One line for the website's announcement bar, which Admin → Releases can show with the email */
+    announce?: string;
   };
 }
 
@@ -123,6 +128,28 @@ const UPDATE_GUIDES: Record<string, UpdateGuide> = {
     ],
     newUser: "Don't have it yet? Download it for Windows and open the sample survey to see it draw.",
     more: { label: "Code guide", href: "/auto-draft/codes" },
+    // the same plain letter as the Survey Toolkit's, so it lands in Primary
+    intro: {
+      title: "Auto Draft is ready for your account",
+      notes: [
+        "Survey points to a finished CAD drawing",
+        "Lines joined by the codes typed in the field, with symbols, levels and layers",
+        "Contours that bend at road edges, banks and drains",
+        "A DXF for AutoCAD, a PDF on a sheet with your title block, and a KML for Google Earth",
+      ],
+      letter: [
+        "We've made another Windows program for surveyors: Auto Draft. Open the day's survey, from a CSV or Excel file or straight from the total station, and it joins the lines by the codes you typed in the field, places the symbols, writes the levels and draws the contours.",
+        "It saves a DXF for AutoCAD, a PDF on a sheet with your title block and a KML for Google Earth, so the drawing that used to take a day is done in minutes. You sign in with the account you already have on our website.",
+      ],
+      start: [
+        "Get Auto Draft from the link below and run it. It doesn't need administrator rights. If Windows says it protected your PC, choose More info, then Run anyway.",
+        "Sign in with the same account you use on the website.",
+        "Open your survey file, or the sample survey from the same page, and save the DXF.",
+      ],
+      ready: "Auto Draft is ready",
+      cta: "Get Auto Draft",
+      announce: "New: Auto Draft turns your coded survey points into a finished CAD drawing, with contours.",
+    },
   },
   toolkit: {
     platform: "Windows 10 and 11",
@@ -169,9 +196,9 @@ const UPDATE_GUIDES: Record<string, UpdateGuide> = {
 };
 
 /** A new program's introduction email (its first release), or null when the app has none */
-export function introductionOf(appId: string): { title: string; notes: string } | null {
+export function introductionOf(appId: string): { title: string; notes: string; announce: string | null } | null {
   const i = UPDATE_GUIDES[appId]?.intro;
-  return i ? { title: i.title, notes: i.notes.join("\n") } : null;
+  return i ? { title: i.title, notes: i.notes.join("\n"), announce: i.announce ?? null } : null;
 }
 
 const FALLBACK_GUIDE: UpdateGuide = {
@@ -244,13 +271,13 @@ export function releaseEmail(r: ReleaseForEmail, to: { name: string; email: stri
     return {
       ...letterEmail({
         subject,
-        title: `The ${r.appName} is ready`,
+        title: intro.ready ?? `The ${r.appName} is ready`,
         first,
         blocks: [
           ...intro.letter.map((l, i): LetterBlock => (i === 0 ? { p: l, bold: PRODUCT_NAMES } : { p: l })),
           { heading: "Start in three steps" },
           { steps: intro.start },
-          { button: url, label: `Get the ${r.appName}` },
+          { button: url, label: intro.cta ?? `Get the ${r.appName}` },
           reply,
         ],
         footer,
@@ -289,4 +316,4 @@ export function releaseEmail(r: ReleaseForEmail, to: { name: string; email: stri
 }
 
 /** The programs' names, in bold where a letter lists them */
-const PRODUCT_NAMES = ["Excel to KML", "RoadPro", "Traverse & Level", "Project Folder Manager", "Slope Calculator", "the Survey Toolkit"];
+const PRODUCT_NAMES = ["Excel to KML", "RoadPro", "Traverse & Level", "Project Folder Manager", "Slope Calculator", "Auto Draft", "the Survey Toolkit"];

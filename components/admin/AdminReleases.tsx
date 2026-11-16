@@ -72,8 +72,8 @@ interface Data {
     app: App;
     users: number;
     releases: Release[];
-    /** A new program (the Survey Toolkit): its introduction email, and the release that carries it once made */
-    intro: { title: string; releaseId: string | null } | null;
+    /** A new program: its introduction email, the release that carries it once made, and its line for the website's announcement bar */
+    intro: { title: string; releaseId: string | null; announce: string | null } | null;
     /** reviewed: reviews of the app; toAsk: its users who haven't reviewed it; notAskedYet: those never asked */
     review: { reviewed: number; toAsk: number; notAskedYet: number; broadcasts: Broadcast[] };
   }[];
@@ -93,7 +93,8 @@ const input = "w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 
 // Admin → Releases: each app's versions, and emailing one to the people who use that app.
 // Admin → Releases (the menu has a part per app): with no app, every app's versions, every
 // release, the emails sent and who stopped them (components/admin/ReleaseTools.tsx); with an app,
-// its releases, review requests and introduction.
+// its releases, review requests, and a new program's introduction: the email to everyone and
+// the announcement bar on the website (Settings → Notices).
 export default function AdminReleases({
   adminFetch,
   onToast,
@@ -123,6 +124,9 @@ export default function AdminReleases({
   const [historyKey, setHistoryKey] = useState(0);
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<"all" | "unsent" | "nonotes">("all");
+  // the website's announcement bar (Settings → Notices), so a new program can be shown there too
+  const [notice, setNotice] = useState<{ text: string; active: boolean; link: string; endsAt: string } | null>(null);
+  const [announcing, setAnnouncing] = useState<string | null>(null); // the app about to be shown on the website
   const toast = useRef(onToast);
   const counts = useRef(onCounts);
   useEffect(() => {
@@ -151,6 +155,37 @@ export default function AdminReleases({
       stopRef.current = true;
     };
   }, [load]);
+
+  const loadNotice = useCallback(
+    () =>
+      adminFetch("/api/admin/settings")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          const s = d?.settings;
+          if (s) setNotice({ text: s.announcementBanner || "", active: !!s.announcementActive, link: s.announcementLink || "", endsAt: s.announcementEndsAt || "" });
+        })
+        .catch(() => undefined),
+    [adminFetch]
+  );
+  useEffect(() => {
+    loadNotice();
+  }, [loadNotice]);
+
+  /** Shows the new program in the bar along the bottom of every page for two weeks (Settings → Notices) */
+  const announce = async (app: App, text: string) => {
+    setBusy(`announce-${app.id}`);
+    const ends = new Date(Date.now() + 14 * 864e5).toISOString().slice(0, 10);
+    const r = await adminFetch("/api/admin/settings", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ announcementBanner: text, announcementActive: true, announcementTone: "success", announcementLink: app.href, announcementEndsAt: ends }),
+    });
+    setBusy(null);
+    setAnnouncing(null);
+    if (!r.ok) return toast.current(await errorOf(r), "error");
+    toast.current(`${app.name} is announced on the website until ${day(ends)}`);
+    loadNotice();
+  };
 
   // Watch a broadcast the server is sending until it is done or paused (closing the page doesn't stop it)
   const run = useCallback(
@@ -512,6 +547,44 @@ export default function AdminReleases({
                     {!data.mail.configured && (
                       <p className="mt-1 text-[12px] text-amber-300">Email isn&apos;t set up yet (Settings → System health), so it can&apos;t be sent.</p>
                     )}
+                    {intro.announce && (() => {
+                      const live = !!notice && notice.active && notice.text === intro.announce && (!notice.endsAt || notice.endsAt >= new Date().toISOString().slice(0, 10));
+                      return (
+                        <div className="mt-3 rounded-lg border border-slate-700 bg-slate-950/40 px-3 py-2">
+                          <p className="flex flex-wrap items-center gap-2 text-[12px] font-semibold text-slate-200">
+                            <Megaphone className="w-3.5 h-3.5 text-emerald-300" /> On the website
+                            {live && (
+                              <span className="px-2 py-0.5 rounded-md bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[11px]">
+                                Showing{notice?.endsAt ? ` until ${day(notice.endsAt)}` : ""}
+                              </span>
+                            )}
+                          </p>
+                          <p className="mt-0.5 text-[12px] text-slate-400">
+                            A green bar along the bottom of every page, linking to {app.href}: &ldquo;{intro.announce}&rdquo;. Visitors can close it. Change or stop it in
+                            Settings → Notices.
+                          </p>
+                          {!live && notice?.active && notice.text && notice.text !== intro.announce && (
+                            <p className="mt-1 text-[12px] text-amber-300">This replaces the announcement showing now: &ldquo;{notice.text}&rdquo;</p>
+                          )}
+                          {!live &&
+                            (announcing === app.id ? (
+                              <div className="mt-2 flex flex-wrap items-center gap-2">
+                                <span className="text-[12px] text-slate-300">Show it for two weeks?</span>
+                                <button onClick={() => announce(app, intro.announce!)} disabled={busy === `announce-${app.id}`} className={`${btn} bg-emerald-500 hover:bg-emerald-400 text-slate-950`}>
+                                  {busy === `announce-${app.id}` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />} Yes, show it
+                                </button>
+                                <button onClick={() => setAnnouncing(null)} className={`${btn} bg-slate-800 hover:bg-slate-700 text-slate-200`}>
+                                  Cancel
+                                </button>
+                              </div>
+                            ) : (
+                              <button onClick={() => setAnnouncing(app.id)} className={`${btn} mt-2 bg-slate-800 hover:bg-slate-700 text-slate-200`}>
+                                <Megaphone className="w-3.5 h-3.5" /> Show on the website
+                              </button>
+                            ))}
+                        </div>
+                      );
+                    })()}
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {!rel ? (
