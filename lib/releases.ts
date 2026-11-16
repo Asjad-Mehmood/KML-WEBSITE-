@@ -381,8 +381,11 @@ export function compareVersions(a: string, b: string): number {
 }
 
 // ---------- who gets the email ----------
-/** "app": people who downloaded or used that app. "all": everyone with an account. */
-export type Audience = "app" | "all";
+/**
+ * "app": people who downloaded or used that app. "all": everyone with an account. "behind":
+ * people whose copy of the app is older than the newest version (lib/versionsInUse.ts).
+ */
+export type Audience = "app" | "all" | "behind";
 
 const eligibleSql = `
   SELECT DISTINCT ON (lower(trim(u."email"))) lower(trim(u."email")) AS email, coalesce(u."name", '') AS name
@@ -458,9 +461,19 @@ async function appUserSql(appId: string): Promise<string> {
   }
 }
 
-/** The people a broadcast goes to ($1: never-email list) */
+/** The people a broadcast goes to ($1: never-email list); for "behind" use audiencePeople */
 export async function recipientsSql(appId: string, who: Audience): Promise<string> {
   return who === "app" ? `${eligibleSql}\n    AND ${await appUserSql(appId)}` : eligibleSql;
+}
+
+/**
+ * The people a broadcast goes to, with the extra query values it needs: "behind" is a list of
+ * accounts worked out now (lib/versionsInUse.ts), passed as parameter $<param>
+ */
+export async function audiencePeople(appId: string, who: Audience, param: number): Promise<{ sql: string; args: unknown[] }> {
+  if (who !== "behind") return { sql: await recipientsSql(appId, who), args: [] };
+  const ids = await (await import("@/lib/versionsInUse")).behindUserIds(appId);
+  return { sql: `${eligibleSql}\n    AND u."id" = ANY($${param}::text[])`, args: [ids] };
 }
 
 // people who already have this release from an earlier broadcast ($2: release id)
@@ -555,7 +568,10 @@ export async function startBroadcast(releaseId: string, onlyNew: boolean, who: A
     return open.id;
   }
   const subject = release.title;
-  const people = await recipientsSql(release.app, who);
+  // "behind": the people still on an older version, worked out now ($4)
+  const { sql: people, args } = await audiencePeople(release.app, who, 4);
+  const name = appById(release.app)?.name || release.app;
+  if (who === "behind" && !(args[0] as string[]).length) throw new Error(`Everyone we know has ${name} is on the newest version.`);
   const b = await prisma.releaseBroadcast.create({ data: { releaseId, subject, createdBy, audience: who } });
   const inserted = await prisma.$executeRawUnsafe(
     `INSERT INTO "release_recipients" ("id", "broadcastId", "email", "name", "status")
@@ -563,11 +579,14 @@ export async function startBroadcast(releaseId: string, onlyNew: boolean, who: A
      ON CONFLICT ("broadcastId", "email") DO NOTHING`,
     NEVER_EMAIL,
     releaseId,
-    b.id
+    b.id,
+    ...args
   );
   if (!inserted) {
     await prisma.releaseBroadcast.delete({ where: { id: b.id } });
-    const name = appById(release.app)?.name || release.app;
+    if (who === "behind") {
+      throw new Error(onlyNew ? `Everyone on an older ${name} already has this email.` : `Nobody on an older ${name} can be emailed (stopped emails or unconfirmed addresses).`);
+    }
     if (who === "app") {
       throw new Error(onlyNew ? `Everyone who uses ${name} already has this release.` : `Nobody has downloaded or used ${name} with their account yet.`);
     }

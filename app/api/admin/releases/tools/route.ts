@@ -8,7 +8,7 @@ import { checkLink, draftPreview, emailHistory, githubRelease, optOuts, recipien
 // GET ?board=1                               each app's versions and what's off
 // GET ?github=<app>&version=<v>              that version's release on GitHub (title, notes, date)
 // GET ?link=<url or /path>                   does the link answer
-// GET ?recipients=<release id>&audience=app|all&onlyNew=1   who an email would go to
+// GET ?recipients=<release id>&audience=app|all|behind&onlyNew=1   who an email would go to
 // GET ?history=1                             every release email and review request
 // GET ?optouts=1                             who stopped release emails
 // POST { action: "preview", release: {...} } the email of a release being written
@@ -23,7 +23,8 @@ export async function GET(req: NextRequest) {
     if (sp.get("github")) return NextResponse.json({ success: true, release: await githubRelease(sp.get("github")!, sp.get("version") || "") });
     if (sp.get("link")) return NextResponse.json({ success: true, ...(await checkLink(sp.get("link")!.slice(0, 500), req.nextUrl.origin)) });
     if (sp.get("recipients")) {
-      const who = sp.get("audience") === "all" ? "all" : "app";
+      const a = sp.get("audience");
+      const who = a === "all" ? "all" : a === "behind" ? "behind" : "app";
       return NextResponse.json({ success: true, ...(await recipientsPreview(sp.get("recipients")!, who, sp.get("onlyNew") === "1")) });
     }
     if (sp.get("history")) return NextResponse.json({ success: true, history: await emailHistory() });

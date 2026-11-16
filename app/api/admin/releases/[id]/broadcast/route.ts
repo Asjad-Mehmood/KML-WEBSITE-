@@ -8,7 +8,7 @@ import { startBroadcast } from "@/lib/releases";
 type Ctx = { params: Promise<{ id: string }> };
 
 // Start emailing a release to the people who use its app (audience "all": everyone with an
-// account; onlyNew: skip people who already got it).
+// account; "behind": the people still on an older version; onlyNew: skip people who already got it).
 // The server then sends it in steps (lib/broadcastRunner.ts); the admin page only watches.
 export async function POST(req: NextRequest, { params }: Ctx) {
   const session = await getAdminSession(req);
@@ -18,10 +18,11 @@ export async function POST(req: NextRequest, { params }: Ctx) {
   const body = await req.json().catch(() => ({}));
   if (body?.confirm !== true) return NextResponse.json({ error: "Confirm the broadcast first." }, { status: 400 });
   try {
-    const broadcastId = await startBroadcast(id, body.onlyNew === true, body.audience === "all" ? "all" : "app", session.user.email);
+    const who = body.audience === "all" ? "all" : body.audience === "behind" ? "behind" : "app";
+    const broadcastId = await startBroadcast(id, body.onlyNew === true, who, session.user.email);
     // sent on the server from here on, whether or not the page stays open
     after(() => kickBroadcast(req.nextUrl.origin, broadcastId));
-    await logAdmin(session.user, "release.send", `Release ${id}`, `To ${body.audience === "all" ? "everyone" : "app users"}${body.onlyNew === true ? ", only people not emailed yet" : ""}`, req);
+    await logAdmin(session.user, "release.send", `Release ${id}`, `To ${who === "all" ? "everyone" : who === "behind" ? "people on an older version" : "app users"}${body.onlyNew === true ? ", only people not emailed yet" : ""}`, req);
     return NextResponse.json({ broadcastId });
   } catch (err) {
     return NextResponse.json({ error: (err as Error).message || "Couldn't start the broadcast." }, { status: 400 });
