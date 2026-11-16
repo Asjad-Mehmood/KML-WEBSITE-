@@ -236,25 +236,10 @@
 .ho-root .ho-h-blob-2 { animation: ho-h-drift2 26s ease-in-out infinite alternate; }
 @keyframes ho-h-drift1 { to { transform: translate(-60px, 40px) scale(1.08); } }
 @keyframes ho-h-drift2 { to { transform: translate(50px, -30px) scale(0.94); } }
-/* "Always up to date." gets a thin navy underline that sweeps in once (no colour block behind it) */
+/* "Always up to date." stays plain: no highlight or line under it */
 .ho-root .ho-h-mark {
-  position: relative;
   white-space: nowrap;
 }
-.ho-root .ho-h-mark::after {
-  content: "";
-  position: absolute;
-  left: 0.02em;
-  right: 0.12em;
-  bottom: -0.08em;
-  height: 0.07em;
-  border-radius: 999px;
-  background: rgba(7, 26, 68, 0.28);
-  z-index: -1;
-  transform-origin: left;
-  animation: ho-h-sweep 0.9s var(--ho-ease) 0.9s both;
-}
-@keyframes ho-h-sweep { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 /* the hub: lines draw out to each tool, the tools pop in one by one, then float gently */
 .ho-root .ho-c-line {
   stroke-dasharray: 1;
