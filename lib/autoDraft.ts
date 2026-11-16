@@ -37,6 +37,14 @@ export const AUTO_DRAFT_FILES = {
     sheetPdf: shot("sheet-pdf", 1323, 936),
   },
   icon: "/auto-draft/icon-512.png",
+  /** The 43-second intro: open the survey, it draws itself, the checks, contours, and the files it saves */
+  video: {
+    href: "/auto-draft/auto-draft-intro.mp4",
+    webm: "/auto-draft/auto-draft-intro.webm",
+    poster: "/auto-draft/auto-draft-intro-cover.webp",
+    duration: "PT43S",
+    uploadDate: "2026-11-16",
+  },
   sample: {
     href: "/auto-draft/Auto-Draft-Sample-Survey.csv",
     name: "Auto-Draft-Sample-Survey.csv",
