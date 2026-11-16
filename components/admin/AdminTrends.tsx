@@ -33,7 +33,7 @@ const PROGRAM: Record<string, string> = {
   traverse: "Traverse & Level",
   folder_manager: "Project Folder Manager",
   slope: "Slope Calculator",
-  auto_draft: "Auto Draft",
+  auto_draft: "Auto Drafting",
   toolkit: "Survey Toolkit",
 };
 const SERIES = [

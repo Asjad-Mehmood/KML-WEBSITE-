@@ -4,7 +4,7 @@
  * last used today". Noted from requests the apps already make (sign-in check, activity, files):
  *
  *  - X-App-Name / X-App-Version / X-App-Platform headers, sent by apps that report themselves
- *    (Traverse & Level, Slope Calculator and Auto Draft do);
+ *    (Traverse & Level, Slope Calculator and Auto Drafting do);
  *  - otherwise the request's origin: the Excel to KML Windows program serves its page from
  *    127.0.0.1, the Android app from appassets.androidplatform.net, and the web apps live at
  *    /app and /traverse/app on this site. These don't say their version, so it stays unknown

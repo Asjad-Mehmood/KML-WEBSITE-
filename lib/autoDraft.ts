@@ -1,10 +1,10 @@
-// Auto Draft: field-coded survey points to a finished CAD drawing. A Windows program (Flutter)
+// Auto Drafting: field-coded survey points to a finished CAD drawing. A Windows program (Flutter)
 // built and released from Asjad-Mehmood/auto-draft-app: the installer is on its GitHub releases
 // and the program updates itself. Used with the exceltokml.com account (sign-in, activity), like
 // Slope Calculator. The code tables below follow docs/CODES.md in that repository (made there from
 // the app's own code list); keep them the same when the default codes change.
 
-export const AUTO_DRAFT_NAME = "Auto Draft";
+export const AUTO_DRAFT_NAME = "Auto Drafting";
 export const AUTO_DRAFT_VERSION = "1.0.1";
 /** The first release's date (empty would show the product as "Coming soon") */
 export const AUTO_DRAFT_RELEASED = "2026-11-15";
@@ -92,7 +92,7 @@ export const AUTO_DRAFT_FEATURES: { title: string; text: string }[] = [
 
 export const AUTO_DRAFT_STEPS: { title: string; text: string }[] = [
   { title: "Code in the field", text: "Type the code in the total station's code field as you survey: RE1 for road edge 1, TR for a tree, BLD1 CLS to close a building." },
-  { title: "Open the file", text: "Drag the file onto Auto Draft or click Open. The columns are found for you; check them once." },
+  { title: "Open the file", text: "Drag the file onto Auto Drafting or click Open. The columns are found for you; check them once." },
   { title: "Fix the problems", text: "The Problems list shows what doesn't add up. Fix a code, and the drawing follows. Ctrl+Z undoes anything." },
   { title: "Choose the sheet", text: "Scale, paper and title block: project, client, drawing number, surveyor and date." },
   { title: "Save", text: "DXF for CAD, PDF to print or send, KML for Google Earth. The drawing that took a day is done in minutes." },

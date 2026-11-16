@@ -77,7 +77,7 @@ function unionSql(): string {
     UNION ALL
     SELECT 'tk_' || e."id"::text, 'toolkit', 'toolkit', 'Windows', e."toVersion", e."userId", u."email", u."name",
            'toolkit_' || e."action",
-           CONCAT(INITCAP(e."action"), ' ', CASE e."tool" WHEN 'excel-to-kml' THEN 'Excel to KML' WHEN 'traverse' THEN 'Traverse & Level' WHEN 'slope' THEN 'Slope Calculator' WHEN 'auto-draft' THEN 'Auto Draft'
+           CONCAT(INITCAP(e."action"), ' ', CASE e."tool" WHEN 'excel-to-kml' THEN 'Excel to KML' WHEN 'traverse' THEN 'Traverse & Level' WHEN 'slope' THEN 'Slope Calculator' WHEN 'auto-draft' THEN 'Auto Drafting'
                   WHEN 'roadpro' THEN 'RoadPro' WHEN 'folder-manager' THEN 'Project Folder Manager' WHEN 'toolkit' THEN 'Survey Toolkit' ELSE e."tool" END,
                   CASE WHEN e."fromVersion" <> '' AND e."toVersion" <> '' AND e."fromVersion" <> e."toVersion" THEN CONCAT(' ', e."fromVersion", ' → ', e."toVersion")
                        WHEN e."toVersion" <> '' THEN CONCAT(' ', e."toVersion") ELSE '' END,

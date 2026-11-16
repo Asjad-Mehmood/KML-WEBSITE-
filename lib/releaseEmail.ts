@@ -123,14 +123,14 @@ const UPDATE_GUIDES: Record<string, UpdateGuide> = {
     platform: "Windows 10 and 11",
     automatic: true,
     steps: [
-      "Open Auto Draft while you're online: it offers the update, then installs it and opens again.",
+      "Open Auto Drafting while you're online: it offers the update, then installs it and opens again.",
       "Your code lists, sheet settings and sign-in are kept.",
     ],
     newUser: "Don't have it yet? Download it for Windows and open the sample survey to see it draw.",
     more: { label: "Code guide", href: "/auto-draft/codes" },
     // the same plain letter as the Survey Toolkit's, so it lands in Primary
     intro: {
-      title: "Auto Draft is ready for your account",
+      title: "Auto Drafting is ready for your account",
       notes: [
         "Survey points to a finished CAD drawing",
         "Lines joined by the codes typed in the field, with symbols, levels and layers",
@@ -138,17 +138,17 @@ const UPDATE_GUIDES: Record<string, UpdateGuide> = {
         "A DXF for AutoCAD, a PDF on a sheet with your title block, and a KML for Google Earth",
       ],
       letter: [
-        "We've made another Windows program for surveyors: Auto Draft. Open the day's survey, from a CSV or Excel file or straight from the total station, and it joins the lines by the codes you typed in the field, places the symbols, writes the levels and draws the contours.",
+        "We've made another Windows program for surveyors: Auto Drafting. Open the day's survey, from a CSV or Excel file or straight from the total station, and it joins the lines by the codes you typed in the field, places the symbols, writes the levels and draws the contours.",
         "It saves a DXF for AutoCAD, a PDF on a sheet with your title block and a KML for Google Earth, so the drawing that used to take a day is done in minutes. You sign in with the account you already have on our website.",
       ],
       start: [
-        "Get Auto Draft from the link below and run it. It doesn't need administrator rights. If Windows says it protected your PC, choose More info, then Run anyway.",
+        "Get Auto Drafting from the link below and run it. It doesn't need administrator rights. If Windows says it protected your PC, choose More info, then Run anyway.",
         "Sign in with the same account you use on the website.",
         "Open your survey file, or the sample survey from the same page, and save the DXF.",
       ],
-      ready: "Auto Draft is ready",
-      cta: "Get Auto Draft",
-      announce: "New: Auto Draft turns your coded survey points into a finished CAD drawing, with contours.",
+      ready: "Auto Drafting is ready",
+      cta: "Get Auto Drafting",
+      announce: "New: Auto Drafting turns your coded survey points into a finished CAD drawing, with contours.",
     },
   },
   toolkit: {
@@ -318,7 +318,7 @@ export function releaseEmail(r: ReleaseForEmail, to: { name: string; email: stri
 /**
  * A release's title as the email's subject; a bare "Survey Toolkit v1.0.10" (as releases imported
  * from GitHub are called) reads like a product announcement, so it says what the email is, as the
- * introduction's "Auto Draft is ready for your account" does
+ * introduction's "Auto Drafting is ready for your account" does
  */
 function subjectOf(title: string, r: ReleaseForEmail): string {
   const bare = new RegExp(`^${r.appName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s+v?${r.version.replace(/\./g, "\\.")}$`, "i");
@@ -327,4 +327,4 @@ function subjectOf(title: string, r: ReleaseForEmail): string {
 }
 
 /** The programs' names, in bold where a letter lists them */
-const PRODUCT_NAMES = ["Excel to KML", "RoadPro", "Traverse & Level", "Project Folder Manager", "Slope Calculator", "Auto Draft", "the Survey Toolkit"];
+const PRODUCT_NAMES = ["Excel to KML", "RoadPro", "Traverse & Level", "Project Folder Manager", "Slope Calculator", "Auto Drafting", "the Survey Toolkit"];

@@ -47,7 +47,7 @@ export const PRODUCTS: Product[] = [
     version: "1.0.6",
     tagline: "Every survey tool in one download, always up to date",
     description:
-      "One free Windows program installs Excel to KML, RoadPro, Traverse & Level, Project Folder Manager, Slope Calculator and Auto Draft with a click each, then keeps every one of them up to date by itself. The web apps open side by side, already signed in.",
+      "One free Windows program installs Excel to KML, RoadPro, Traverse & Level, Project Folder Manager, Slope Calculator and Auto Drafting with a click each, then keeps every one of them up to date by itself. The web apps open side by side, already signed in.",
     href: "/toolkit",
     image: {
       src: "/toolkit/app-grid.webp",
@@ -94,11 +94,11 @@ export const PRODUCTS: Product[] = [
     version: AUTO_DRAFT_VERSION,
     tagline: "Survey points to a finished CAD drawing",
     description:
-      "Open the day's survey, from a CSV or straight from the total station, and Auto Draft joins the lines by their field codes, places the symbols, writes the levels, draws the contours and puts it on a sheet with your title block. Save a DXF for AutoCAD, a PDF to print and a KML for Google Earth.",
+      "Open the day's survey, from a CSV or straight from the total station, and Auto Drafting joins the lines by their field codes, places the symbols, writes the levels, draws the contours and puts it on a sheet with your title block. Save a DXF for AutoCAD, a PDF to print and a KML for Google Earth.",
     href: AUTO_DRAFT_PAGE,
     image: {
       ...AUTO_DRAFT_FILES.shots.contours,
-      alt: "Auto Draft: a surveyed plot drawn from its field codes, with road edges, buildings, trees, contours, the legend and the title block",
+      alt: "Auto Drafting: a surveyed plot drawn from its field codes, with road edges, buildings, trees, contours, the legend and the title block",
     },
     highlights: ["Lines from field codes", "Symbols, levels, layers", "Contours with breaklines", "DXF, PDF and KML"],
     comingSoon: !AUTO_DRAFT_RELEASED,
@@ -106,8 +106,8 @@ export const PRODUCTS: Product[] = [
     inHero: true,
     shot: {
       ...AUTO_DRAFT_FILES.shots.contours,
-      alt: "Auto Draft: the drawing made from a coded survey, with contours, on an A3 sheet",
-      title: "Auto Draft · sample-survey.csv",
+      alt: "Auto Drafting: the drawing made from a coded survey, with contours, on an A3 sheet",
+      title: "Auto Drafting · sample-survey.csv",
     },
     inNav: true,
   },

@@ -212,7 +212,7 @@ export default function ToolkitHome({
                 One download. <span className="ho-h-mark relative z-0">Always up to date.</span>
               </h1>
               <p className="ho-enter ho-enter-2 mt-5 max-w-xl text-[17px] leading-relaxed text-slate-600">
-                One download installs Excel to KML, RoadPro, Traverse &amp; Level, Project Folder Manager, Slope Calculator and Auto Draft, and keeps every one of them up to
+                One download installs Excel to KML, RoadPro, Traverse &amp; Level, Project Folder Manager, Slope Calculator and Auto Drafting, and keeps every one of them up to
                 date by itself.
               </p>
               <div className="ho-enter ho-enter-3 mt-7 flex flex-wrap items-center gap-3">

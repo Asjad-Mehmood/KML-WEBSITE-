@@ -56,7 +56,7 @@ async function ask(): Promise<AutoDraftRelease> {
   }
 }
 
-/** The latest release of the Auto Draft Windows program on GitHub: version, installer, size, date, SHA-256 */
+/** The latest release of the Auto Drafting Windows program on GitHub: version, installer, size, date, SHA-256 */
 export function useAutoDraftRelease(): AutoDraftRelease {
   const [r, setR] = useState<AutoDraftRelease>(FALLBACK);
   useEffect(() => {
@@ -95,11 +95,11 @@ export default function AutoDraftDownload({ className, label = "Download for Win
     document.body.appendChild(a);
     a.click();
     a.remove();
-    announceDownload({ program: "Auto Draft", file: AUTO_DRAFT_INSTALLER, again: release.downloadUrl });
+    announceDownload({ program: "Auto Drafting", file: AUTO_DRAFT_INSTALLER, again: release.downloadUrl });
   };
 
   return (
-    <button type="button" onClick={() => requireAuth(start, "Sign in or create a free account to download Auto Draft.")} className={cls}>
+    <button type="button" onClick={() => requireAuth(start, "Sign in or create a free account to download Auto Drafting.")} className={cls}>
       <Download className="w-4 h-4" aria-hidden /> {label}
     </button>
   );
