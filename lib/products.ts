@@ -47,7 +47,7 @@ export const PRODUCTS: Product[] = [
     version: "1.0.6",
     tagline: "Every survey tool in one download, always up to date",
     description:
-      "One free Windows program installs Excel to KML, RoadPro, Traverse & Level, Project Folder Manager and Slope Calculator with a click each, then keeps every one of them up to date by itself. The web apps open side by side, already signed in.",
+      "One free Windows program installs Excel to KML, RoadPro, Traverse & Level, Project Folder Manager, Slope Calculator and Auto Draft with a click each, then keeps every one of them up to date by itself. The web apps open side by side, already signed in.",
     href: "/toolkit",
     image: {
       src: "/toolkit/app-grid.webp",
@@ -55,7 +55,7 @@ export const PRODUCTS: Product[] = [
       height: 900,
       alt: "Survey Toolkit: the five tools in one window, each with its version and an Open button",
     },
-    highlights: ["Five tools, one download", "Updates by itself", "Web apps side by side", "Official installers, checked"],
+    highlights: ["Six tools, one download", "Updates by itself", "Web apps side by side", "Official installers, checked"],
     newUntil: "2027-03-31",
     inNav: true,
   },

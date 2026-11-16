@@ -289,4 +289,4 @@ export function releaseEmail(r: ReleaseForEmail, to: { name: string; email: stri
 }
 
 /** The programs' names, in bold where a letter lists them */
-const PRODUCT_NAMES = ["Excel to KML", "RoadPro", "Traverse & Level", "Project Folder Manager", "Slope Calculator", "the Survey Toolkit"];
+const PRODUCT_NAMES = ["Excel to KML", "RoadPro", "Traverse & Level", "Project Folder Manager", "Slope Calculator", "Auto Draft", "the Survey Toolkit"];

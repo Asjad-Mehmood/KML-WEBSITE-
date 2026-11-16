@@ -205,7 +205,7 @@ export default function ToolkitHome({
                 One download. <span className="ho-h-mark relative z-0 text-[#1e4fd8]">Always up to date.</span>
               </h1>
               <p className="ho-enter ho-enter-2 mt-5 max-w-xl text-[17px] leading-relaxed text-slate-600">
-                One download installs Excel to KML, RoadPro, Traverse &amp; Level, Project Folder Manager and Slope Calculator, and keeps every one of them up to
+                One download installs Excel to KML, RoadPro, Traverse &amp; Level, Project Folder Manager, Slope Calculator and Auto Draft, and keeps every one of them up to
                 date by itself.
               </p>
               <div className="ho-enter ho-enter-3 mt-7 flex flex-wrap items-center gap-3">
@@ -224,7 +224,7 @@ export default function ToolkitHome({
         <section aria-label="In short" className="border-y border-slate-200 bg-white">
           <ul className="max-w-[1180px] mx-auto px-5 sm:px-8 py-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {[
-              { Icon: Package, title: "Five tools, one download", text: "Install only the ones you need." },
+              { Icon: Package, title: "Six tools, one download", text: "Install only the ones you need." },
               { Icon: ShieldCheck, title: "Official installers only", text: "Each checked by its SHA-256 first." },
               { Icon: UserCheck, title: "No administrator rights", text: "Installs for you alone, like an app." },
               { Icon: RefreshCw, title: "Updates by themselves", text: "Checked when it opens and every 4 hours." },
@@ -302,7 +302,7 @@ export default function ToolkitHome({
               })}
               {/* the sixth place: what the Toolkit itself is */}
               <li className="ho-reveal flex flex-col justify-center rounded-2xl bg-[#071a44] p-6 text-white" style={{ "--i": 5 } as CSSProperties}>
-                <p className="text-[18px] font-bold">All five, kept up to date</p>
+                <p className="text-[18px] font-bold">All six, kept up to date</p>
                 <p className="mt-2 text-[14.5px] text-blue-100/80">
                   One program looks after them: what is installed, what is new, and the update, with nobody pressing anything.
                 </p>
