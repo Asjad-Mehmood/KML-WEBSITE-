@@ -15,6 +15,7 @@ import {
   ListChecks,
   Monitor,
   Mountain,
+  PlayCircle,
   ScanSearch,
   Spline,
   Tags,
@@ -64,6 +65,15 @@ const structuredData = {
   image: `${SITE_URL}${AUTO_DRAFT_FILES.shots.contours.src}`,
   offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
   publisher: { "@id": `${SITE_URL}/#organization` },
+  video: {
+    "@type": "VideoObject",
+    name: "Auto Draft: survey points to a finished drawing",
+    description: "Open the day's survey, Auto Draft joins the lines by their field codes, checks for problems, draws contours and saves a DXF, PDF and KML.",
+    thumbnailUrl: `${SITE_URL}${AUTO_DRAFT_FILES.video.poster}`,
+    contentUrl: `${SITE_URL}${AUTO_DRAFT_FILES.video.href}`,
+    uploadDate: AUTO_DRAFT_FILES.video.uploadDate,
+    duration: AUTO_DRAFT_FILES.video.duration,
+  },
 };
 
 const FEATURE_ICONS = [FileInput, Spline, Tags, ScanSearch, Mountain, Frame, FileOutput, Wand2];
@@ -134,6 +144,25 @@ export default function AutoDraftPage() {
       </div>
 
       <div className="max-w-[1140px] mx-auto px-5 sm:px-8">
+        {/* Video */}
+        <section id="video" aria-labelledby="video-h" className="scroll-mt-28 mt-16">
+          <SectionHead id="video-h" eyebrow="Video" title="See it in 43 seconds" Icon={PlayCircle} />
+          <div className="mt-6 max-w-4xl mx-auto rounded-2xl overflow-hidden border border-slate-800 bg-[#0A1A36] shadow-[0_24px_60px_rgba(7,26,68,0.25)]">
+            <video
+              controls
+              preload="none"
+              playsInline
+              poster={AUTO_DRAFT_FILES.video.poster}
+              className="w-full h-auto aspect-video bg-[#0A1A36]"
+              aria-label="Auto Draft intro video: open the survey, it draws itself, the problems list, contours, and the DXF, PDF and KML it saves"
+            >
+              <source src={AUTO_DRAFT_FILES.video.href} type="video/mp4" />
+              <source src={AUTO_DRAFT_FILES.video.webm} type="video/webm" />
+              Your browser can&apos;t play this video. <a href={AUTO_DRAFT_FILES.video.href}>Download it</a> instead.
+            </video>
+          </div>
+        </section>
+
         {/* The app */}
         <section aria-labelledby="app-h" className="mt-20">
           <SectionHead
