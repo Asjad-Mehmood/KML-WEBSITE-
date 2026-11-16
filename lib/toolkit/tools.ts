@@ -145,7 +145,7 @@ export const TOOLKIT_TOOLS: ToolkitTool[] = [
   },
   {
     id: "auto-draft",
-    name: "Auto Draft",
+    name: "Auto Drafting",
     platform: "Windows",
     page: "/auto-draft",
     // a silent install (/S) never opens the program; /S /UPDATE (its own updater) opens it again

@@ -202,7 +202,7 @@ const APP_NAMES: Record<string, string> = {
   traverse: "Traverse & Level",
   slope: "Slope Calculator",
   "slope-calculator": "Slope Calculator",
-  "auto-draft": "Auto Draft",
+  "auto-draft": "Auto Drafting",
   roadpro: "RoadPro",
   "folder-manager": "Project Folder Manager",
   "project-folder-manager": "Project Folder Manager",

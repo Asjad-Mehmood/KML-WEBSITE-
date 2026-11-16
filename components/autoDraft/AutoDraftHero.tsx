@@ -6,7 +6,7 @@ import { AUTO_DRAFT_CODES_PAGE, AUTO_DRAFT_FILES, AUTO_DRAFT_HIGHLIGHTS, AUTO_DR
 
 const ICONS = [Spline, Layers, Mountain, FileOutput];
 
-// What the surveyor typed, and what Auto Draft makes of it: the left side of the "before → after"
+// What the surveyor typed, and what Auto Drafting makes of it: the left side of the "before → after"
 const FIELD = [
   { p: "2", code: "RE1 ST" },
   { p: "6", code: "RE1 ARC" },
@@ -33,11 +33,11 @@ export default function AutoDraftHero() {
           </span>
         </div>
         <h1 id="ad-h" className="mt-5 text-[44px] sm:text-[60px] font-black tracking-tight leading-[1.02] text-slate-900">
-          Auto Draft
+          Auto Drafting
         </h1>
         <p className="mt-2 text-[20px] sm:text-[24px] font-bold tracking-tight text-[#0071e3]">Survey points to a finished drawing</p>
         <p className="mt-4 max-w-[560px] text-[15.5px] sm:text-[17px] leading-relaxed text-slate-600">
-          Open the day&apos;s survey and Auto Draft joins the lines by their field codes, places the symbols, writes the levels, draws the contours and
+          Open the day&apos;s survey and Auto Drafting joins the lines by their field codes, places the symbols, writes the levels, draws the contours and
           puts it all on a sheet with your title block. Save a DXF for AutoCAD, a PDF to print and a KML for Google Earth.
         </p>
         <ul className="mt-6 space-y-3">
@@ -90,7 +90,7 @@ export default function AutoDraftHero() {
               src={AUTO_DRAFT_FILES.shots.contours.src}
               width={AUTO_DRAFT_FILES.shots.contours.width}
               height={AUTO_DRAFT_FILES.shots.contours.height}
-              alt="Auto Draft: a surveyed plot drawn from its codes, with road edges, buildings, trees, poles, contours, the legend and the title block on an A3 sheet"
+              alt="Auto Drafting: a surveyed plot drawn from its codes, with road edges, buildings, trees, poles, contours, the legend and the title block on an A3 sheet"
               sizes="(min-width: 1024px) 600px, 100vw"
               className="w-full h-auto rounded-xl"
               priority

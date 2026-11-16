@@ -421,7 +421,7 @@ const downloaded = (types: string[]) =>
  * Windows app or used the converter (web, Android or Windows all log conversions). Traverse &
  * Level: downloaded the Windows program or used the web app (its activity starts with tl_).
  * RoadPro and Project Folder Manager: downloaded them. Slope Calculator: downloaded the Windows
- * program or keeps calculations in the account. Auto Draft: downloaded it or saved a drawing with it.
+ * program or keeps calculations in the account. Auto Drafting: downloaded it or saved a drawing with it.
  */
 async function appUserSql(appId: string): Promise<string> {
   const t = await usageTables();

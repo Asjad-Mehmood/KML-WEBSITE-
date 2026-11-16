@@ -152,7 +152,7 @@ const RELEASE_TABS = [
   { id: "excel-to-kml", name: "Excel to KML" },
   { id: "traverse", name: "Traverse & Level" },
   { id: "slope", name: "Slope Calculator" },
-  { id: "auto-draft", name: "Auto Draft" },
+  { id: "auto-draft", name: "Auto Drafting" },
   { id: "roadpro", name: "RoadPro" },
   { id: "folder-manager", name: "Project Folder Manager" },
   { id: "toolkit", name: "Survey Toolkit" },
@@ -627,7 +627,7 @@ export default function AdminClient() {
         { id: "excel", label: "Excel to KML", icon: FileSpreadsheet, text: "Everything about Excel to KML: downloads, people, versions, points, grids, problems and its settings" },
         { id: "traverse", label: "Traverse & Level", icon: Compass, text: "Everything about Traverse & Level: downloads, people, versions, jobs and results, sharing, problems, its settings and every job", count: stats?.traverse?.jobs },
         { id: "slope", label: "Slope Calculator", icon: TrendingUp, text: "Everything about Slope Calculator: downloads, people, versions, calculations, how steep and how long, projects, problems, its settings and every calculation", count: stats?.slope?.jobs },
-        { id: "autodraft", label: "Auto Draft", icon: PenTool, text: "Everything about Auto Draft: downloads, people, versions, the drawings saved (DXF, PDF, KML), the PCs with it, Toolkit installs and failures, and its releases on GitHub" },
+        { id: "autodraft", label: "Auto Drafting", icon: PenTool, text: "Everything about Auto Drafting: downloads, people, versions, the drawings saved (DXF, PDF, KML), the PCs with it, Toolkit installs and failures, and its releases on GitHub" },
         { id: "roadpro", label: "RoadPro", icon: Route, text: "Everything about RoadPro: downloads, the PCs with it and their versions, Toolkit installs and failures, and its releases on GitHub" },
         { id: "pfm", label: "Project Folder Manager", icon: FolderTree, text: "Everything about Project Folder Manager: downloads, the PCs with it and their versions, Toolkit installs and failures, and its releases on GitHub" },
         {

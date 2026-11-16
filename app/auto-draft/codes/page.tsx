@@ -17,9 +17,9 @@ import {
 } from "@/lib/autoDraft";
 import { openGraphFor } from "@/lib/site";
 
-const TITLE = "Auto Draft code guide: field codes for survey drawings";
+const TITLE = "Auto Drafting code guide: field codes for survey drawings";
 const DESCRIPTION =
-  "How to code a topographic survey for Auto Draft: line codes and numbers (RE1, WL2), the control words ST, END, CLS, RECT, ARC and EARC, and every line and point code with its layer, colour, line type, symbol and how it is used for contours.";
+  "How to code a topographic survey for Auto Drafting: line codes and numbers (RE1, WL2), the control words ST, END, CLS, RECT, ARC and EARC, and every line and point code with its layer, colour, line type, symbol and how it is used for contours.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -100,7 +100,7 @@ const TOC = [
 export default function AutoDraftCodesPage() {
   return (
     <PageShell>
-      <BreadcrumbStructuredData name="Auto Draft code guide" path={AUTO_DRAFT_CODES_PAGE} />
+      <BreadcrumbStructuredData name="Auto Drafting code guide" path={AUTO_DRAFT_CODES_PAGE} />
       <div className="max-w-[960px] mx-auto px-5 sm:px-8 mb-20">
         <nav aria-label="Breadcrumb" className="text-[12.5px] text-slate-500 mb-5">
           <ol className="flex flex-wrap items-center gap-1.5">
@@ -109,16 +109,16 @@ export default function AutoDraftCodesPage() {
             </li>
             <li aria-hidden>/</li>
             <li>
-              <Link href={AUTO_DRAFT_PAGE} className="hover:text-[#1e4fd8]">Auto Draft</Link>
+              <Link href={AUTO_DRAFT_PAGE} className="hover:text-[#1e4fd8]">Auto Drafting</Link>
             </li>
             <li aria-hidden>/</li>
             <li aria-current="page" className="text-slate-700 font-medium">Code guide</li>
           </ol>
         </nav>
         <PageIntro
-          eyebrow="Auto Draft"
+          eyebrow="Auto Drafting"
           title="Field code guide"
-          lead="Type the code in the total station's code field as you survey. Auto Draft reads it and draws the line, the symbol and the level. Upper or lower case; words are separated by spaces (commas, semicolons and slashes work too)."
+          lead="Type the code in the total station's code field as you survey. Auto Drafting reads it and draws the line, the symbol and the level. Upper or lower case; words are separated by spaces (commas, semicolons and slashes work too)."
         />
 
         <nav aria-label="On this page" className="mt-8 rounded-2xl border border-slate-200 bg-[#fafbfc] p-5">
@@ -181,7 +181,7 @@ export default function AutoDraftCodesPage() {
         </p>
 
         <H2 id="example">3. A worked example</H2>
-        <p className="mt-3 text-[15.5px] text-slate-700">What a surveyor types, point by point, and what Auto Draft draws from it.</p>
+        <p className="mt-3 text-[15.5px] text-slate-700">What a surveyor types, point by point, and what Auto Drafting draws from it.</p>
         <div className="mt-5 overflow-x-auto rounded-2xl border border-slate-200">
           <table className="w-full min-w-[480px] text-left text-[14.5px]">
             <thead className="bg-slate-50 text-[12px] uppercase tracking-wide text-slate-500">
@@ -207,7 +207,7 @@ export default function AutoDraftCodesPage() {
           <a href={AUTO_DRAFT_FILES.sample.href} download={AUTO_DRAFT_FILES.sample.name} className="inline-flex items-center gap-1 font-semibold text-[#1e4fd8] hover:underline">
             sample survey <Download className="w-3.5 h-3.5" aria-hidden />
           </a>{" "}
-          is a whole plot coded this way (roads with curves, a walled plot with a gate, buildings closed and squared, trees and poles): open it in Auto Draft to see the drawing it makes.
+          is a whole plot coded this way (roads with curves, a walled plot with a gate, buildings closed and squared, trees and poles): open it in Auto Drafting to see the drawing it makes.
         </p>
 
         <H2 id="line-codes">4. Line codes</H2>
@@ -243,7 +243,7 @@ export default function AutoDraftCodesPage() {
         <H2 id="own">7. Your own codes</H2>
         <div className="mt-3 space-y-3 text-[15.5px] leading-relaxed text-slate-700">
           <p>
-            Every office codes a little differently. In Auto Draft&apos;s <strong>Codes</strong> tab you can rename a code, add your own or delete one, and choose its
+            Every office codes a little differently. In Auto Drafting&apos;s <strong>Codes</strong> tab you can rename a code, add your own or delete one, and choose its
             layer, colour, line type, symbol and whether it is a breakline.
           </p>
           <p>
@@ -254,7 +254,7 @@ export default function AutoDraftCodesPage() {
 
         <div className="mt-14 flex flex-wrap gap-3">
           <Link href={AUTO_DRAFT_PAGE} className="inline-flex items-center gap-2 rounded-full bg-[#071a44] px-6 py-3 text-[15px] font-bold text-white hover:bg-[#0b2459]">
-            Get Auto Draft <ArrowRight className="w-4 h-4" aria-hidden />
+            Get Auto Drafting <ArrowRight className="w-4 h-4" aria-hidden />
           </Link>
           <a
             href={AUTO_DRAFT_FILES.sample.href}

@@ -38,9 +38,9 @@ import {
 } from "@/lib/autoDraft";
 import { SITE_URL, jsonLd, openGraphFor } from "@/lib/site";
 
-const TITLE = "Auto Draft: survey points to a finished CAD drawing";
+const TITLE = "Auto Drafting: survey points to a finished CAD drawing";
 const DESCRIPTION =
-  "Free Windows program for surveyors: open the day's survey (CSV, Excel, Leica GSI, Sokkia SDR, Nikon RAW) and Auto Draft joins the lines by their field codes, places the symbols, writes the levels, draws contours and saves a DXF for AutoCAD, a PDF on a sheet with your title block and a KML for Google Earth.";
+  "Free Windows program for surveyors: open the day's survey (CSV, Excel, Leica GSI, Sokkia SDR, Nikon RAW) and Auto Drafting joins the lines by their field codes, places the symbols, writes the levels, draws contours and saves a DXF for AutoCAD, a PDF on a sheet with your title block and a KML for Google Earth.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
   alternates: { canonical: AUTO_DRAFT_PAGE },
   openGraph: {
     ...openGraphFor(AUTO_DRAFT_PAGE, `${TITLE} | Excel to KML`, DESCRIPTION),
-    images: [{ url: AUTO_DRAFT_FILES.shots.contours.src, width: 1360, height: 860, alt: "Auto Draft: a surveyed plot drawn from its field codes, with contours, on an A3 sheet" }],
+    images: [{ url: AUTO_DRAFT_FILES.shots.contours.src, width: 1360, height: 860, alt: "Auto Drafting: a surveyed plot drawn from its field codes, with contours, on an A3 sheet" }],
   },
 };
 
@@ -67,8 +67,8 @@ const structuredData = {
   publisher: { "@id": `${SITE_URL}/#organization` },
   video: {
     "@type": "VideoObject",
-    name: "Auto Draft: survey points to a finished drawing",
-    description: "Open the day's survey, Auto Draft joins the lines by their field codes, checks for problems, draws contours and saves a DXF, PDF and KML.",
+    name: "Auto Drafting: survey points to a finished drawing",
+    description: "Open the day's survey, Auto Drafting joins the lines by their field codes, checks for problems, draws contours and saves a DXF, PDF and KML.",
     thumbnailUrl: `${SITE_URL}${AUTO_DRAFT_FILES.video.poster}`,
     contentUrl: `${SITE_URL}${AUTO_DRAFT_FILES.video.href}`,
     uploadDate: AUTO_DRAFT_FILES.video.uploadDate,
@@ -82,32 +82,32 @@ const SHOTS = [
   {
     ...AUTO_DRAFT_FILES.shots.problems,
     title: "Problems, before you save",
-    alt: "Auto Draft's Problems list: a road edge that jumps 160 m, a fence with one point, an unknown code with its fixes and a point at level 0.000",
+    alt: "Auto Drafting's Problems list: a road edge that jumps 160 m, a fence with one point, an unknown code with its fixes and a point at level 0.000",
   },
   {
     ...AUTO_DRAFT_FILES.shots.codes,
     title: "Your own codes",
-    alt: "Auto Draft's code editor: code, name, layer, colour, line type and symbol",
+    alt: "Auto Drafting's code editor: code, name, layer, colour, line type and symbol",
   },
   {
     ...AUTO_DRAFT_FILES.shots.instrument,
     title: "Total station files",
-    alt: "Auto Draft opening a Leica GSI-16 file: 11 points worked out from the measurements and the station, with their codes",
+    alt: "Auto Drafting opening a Leica GSI-16 file: 11 points worked out from the measurements and the station, with their codes",
   },
   {
     ...AUTO_DRAFT_FILES.shots.tin,
     title: "The ground surface (TIN)",
-    alt: "Auto Draft showing the triangles of the ground surface the contours come from, bending at the road edges",
+    alt: "Auto Drafting showing the triangles of the ground surface the contours come from, bending at the road edges",
   },
   {
     ...AUTO_DRAFT_FILES.shots.kml,
     title: "KML for Google Earth",
-    alt: "Auto Draft's KML dialog: the UTM zone and hemisphere for the coordinates",
+    alt: "Auto Drafting's KML dialog: the UTM zone and hemisphere for the coordinates",
   },
   {
     ...AUTO_DRAFT_FILES.shots.sheetPdf,
     title: "The PDF, ready to print",
-    alt: "The PDF Auto Draft saves: the drawing at 1:500 on A3 with the grid, legend, north arrow, scale bar and title block",
+    alt: "The PDF Auto Drafting saves: the drawing at 1:500 on A3 with the grid, legend, north arrow, scale bar and title block",
   },
 ];
 
@@ -136,7 +136,7 @@ export default function AutoDraftPage() {
               <Link href="/" className="hover:text-[#1e4fd8]">Home</Link>
             </li>
             <li aria-hidden>/</li>
-            <li aria-current="page" className="text-slate-700 font-medium">Auto Draft</li>
+            <li aria-current="page" className="text-slate-700 font-medium">Auto Drafting</li>
           </ol>
         </nav>
 
@@ -154,7 +154,7 @@ export default function AutoDraftPage() {
               playsInline
               poster={AUTO_DRAFT_FILES.video.poster}
               className="w-full h-auto aspect-video bg-[#0A1A36]"
-              aria-label="Auto Draft intro video: open the survey, it draws itself, the problems list, contours, and the DXF, PDF and KML it saves"
+              aria-label="Auto Drafting intro video: open the survey, it draws itself, the problems list, contours, and the DXF, PDF and KML it saves"
             >
               <source src={AUTO_DRAFT_FILES.video.href} type="video/mp4" />
               <source src={AUTO_DRAFT_FILES.video.webm} type="video/webm" />
@@ -169,7 +169,7 @@ export default function AutoDraftPage() {
             id="app-h"
             eyebrow="The app"
             title="A day of drafting, done in minutes"
-            text="Drafting a topographic survey by hand means joining hundreds of points line by line, placing every symbol and typing every level. Auto Draft reads the codes you typed in the field and does it for you. This is the sample survey that comes with it."
+            text="Drafting a topographic survey by hand means joining hundreds of points line by line, placing every symbol and typing every level. Auto Drafting reads the codes you typed in the field and does it for you. This is the sample survey that comes with it."
             Icon={Monitor}
           />
           <figure className="mt-8 rounded-2xl border border-slate-200 bg-[#071a44] p-1.5 shadow-[0_16px_40px_rgba(7,26,68,0.22)]">
@@ -177,7 +177,7 @@ export default function AutoDraftPage() {
               src={AUTO_DRAFT_FILES.shots.sheet.src}
               width={AUTO_DRAFT_FILES.shots.sheet.width}
               height={AUTO_DRAFT_FILES.shots.sheet.height}
-              alt="Auto Draft: road edges with curves, a centre line, a drain, a fence, a walled plot with two buildings, trees, poles and spot levels, drawn from their codes on an A3 sheet with the legend and title block"
+              alt="Auto Drafting: road edges with curves, a centre line, a drain, a fence, a walled plot with two buildings, trees, poles and spot levels, drawn from their codes on an A3 sheet with the legend and title block"
               sizes="(min-width: 1140px) 1080px, 100vw"
               className="w-full h-auto rounded-xl"
             />
@@ -290,7 +290,7 @@ export default function AutoDraftPage() {
               <div className="rounded-2xl border border-white/15 bg-white/5 p-6 flex flex-col">
                 <FileSpreadsheet className="w-7 h-7 text-[#ffd21f]" aria-hidden />
                 <h3 className="mt-3 text-lg font-bold">Sample survey</h3>
-                <p className="mt-2 text-[14px] text-blue-50/90 flex-1">{AUTO_DRAFT_FILES.sample.detail}. Open it in Auto Draft to see every code at work, or look at it to see how to code your own.</p>
+                <p className="mt-2 text-[14px] text-blue-50/90 flex-1">{AUTO_DRAFT_FILES.sample.detail}. Open it in Auto Drafting to see every code at work, or look at it to see how to code your own.</p>
                 <a
                   href={AUTO_DRAFT_FILES.sample.href}
                   download={AUTO_DRAFT_FILES.sample.name}
@@ -338,7 +338,7 @@ export default function AutoDraftPage() {
           </p>
         </section>
 
-        <ProductReviews product="auto-draft" name="Auto Draft" />
+        <ProductReviews product="auto-draft" name="Auto Drafting" />
       </div>
     </PageShell>
   );

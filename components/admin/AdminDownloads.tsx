@@ -36,7 +36,7 @@ export const DOWNLOAD_TABS = [
   { id: "excel-to-kml", name: "Excel to KML" },
   { id: "traverse", name: "Traverse & Level" },
   { id: "slope", name: "Slope Calculator" },
-  { id: "auto-draft", name: "Auto Draft" },
+  { id: "auto-draft", name: "Auto Drafting" },
   { id: "roadpro", name: "RoadPro" },
   { id: "folder-manager", name: "Project Folder Manager" },
   { id: "toolkit", name: "Survey Toolkit" },

@@ -52,10 +52,10 @@ const PROGRAMS: Record<string, { intro: string; sources: { label: string; href: 
   "auto-draft": {
     intro: "Survey points to a finished drawing: the Windows program with its installer, released on GitHub. Signed in with the exceltokml.com account; each drawing saved (DXF, PDF, KML) is in Activity.",
     sources: [
-      { label: "Auto Draft Setup", href: "https://github.com/Asjad-Mehmood/auto-draft-app/releases/latest", detail: "The installer on GitHub, linked from /auto-draft" },
+      { label: "Auto Drafting Setup", href: "https://github.com/Asjad-Mehmood/auto-draft-app/releases/latest", detail: "The installer on GitHub, linked from /auto-draft" },
       { label: "Its page", href: "/auto-draft", detail: "Where people download it from the site, with the code guide" },
     ],
-    note: "Auto Draft signs in and reports each drawing saved, so the people, versions and activity are its own; the PCs below come from the Survey Toolkit on each PC.",
+    note: "Auto Drafting signs in and reports each drawing saved, so the people, versions and activity are its own; the PCs below come from the Survey Toolkit on each PC.",
   },
   "folder-manager": {
     intro: "Sets up and keeps project folders in order on the PC: the Windows program (version 7 and later) with its installer, released on GitHub.",
