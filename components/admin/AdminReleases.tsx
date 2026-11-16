@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   AlertTriangle,
+  ArrowRight,
+  ChevronDown,
   CheckCircle2,
   Download,
   Eye,
@@ -129,6 +131,9 @@ export default function AdminReleases({
   // the website's announcement bar (Settings → Notices), so a new program can be shown there too
   const [notice, setNotice] = useState<{ text: string; active: boolean; link: string; endsAt: string } | null>(null);
   const [announcing, setAnnouncing] = useState<string | null>(null); // the app about to be shown on the website
+  const [unfolded, setUnfolded] = useState<string[]>([]); // older releases opened to their buttons
+  // per app, from Who has updated: the newest version out and how many people are behind it
+  const [versionsOf, setVersionsOf] = useState<Record<string, { latest: string; behind: number }>>({});
   const toast = useRef(onToast);
   const counts = useRef(onCounts);
   useEffect(() => {
@@ -391,6 +396,95 @@ export default function AdminReleases({
     );
   };
 
+  const unfold = (id: string) => setUnfolded((u) => (u.includes(id) ? u.filter((x) => x !== id) : [...u, id]));
+
+  // A release: the newest one open, older ones folded to a line that opens on a tap
+  const releaseItem = (rel: Release, app: App, newest: boolean) => {
+    const open = rel.broadcasts.find((b) => b.status !== "done");
+    const sentTo = rel.broadcasts.reduce((n, b) => n + b.sent, 0);
+    const mailOk = !!data?.mail.configured;
+    const status = open ? (open.status === "paused" ? "Email paused" : "Sending…") : sentTo ? `Emailed to ${sentTo}` : "Not emailed";
+    if (!newest && !unfolded.includes(rel.id)) {
+      return (
+        <li key={rel.id}>
+          <button
+            onClick={() => unfold(rel.id)}
+            aria-expanded={false}
+            className="w-full flex items-center gap-3 px-5 py-3 text-left text-xs hover:bg-slate-800/40 cursor-pointer"
+          >
+            <span className="w-16 shrink-0 font-bold text-slate-200">{rel.version}</span>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-slate-300">{rel.title || "No title"}</span>
+              <span className="block text-slate-500">{day(rel.releasedAt)}</span>
+            </span>
+            <span className={`shrink-0 ${open ? "text-amber-300" : sentTo ? "text-emerald-300" : "text-slate-500"}`}>{status}</span>
+            <ChevronDown className="w-4 h-4 shrink-0 text-slate-500" />
+          </button>
+        </li>
+      );
+    }
+    return (
+      <li key={rel.id} className={`px-5 py-4 ${newest ? "" : "bg-slate-950/30"}`}>
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          <span className="px-2 py-0.5 rounded-md bg-blue-500/15 border border-blue-500/30 text-blue-200 font-bold">{app.name} {rel.version}</span>
+          {newest && <span className="px-2 py-0.5 rounded-md bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-semibold">Newest</span>}
+          {rel.version === app.current && !newest && (
+            <span className="px-2 py-0.5 rounded-md bg-slate-800 border border-slate-700 text-slate-300 font-semibold">On the download page</span>
+          )}
+          {rel.introduces && <span className="px-2 py-0.5 rounded-md bg-amber-400/15 border border-amber-400/30 text-amber-200 font-semibold">Introduction email</span>}
+          <span className="text-slate-500">{day(rel.releasedAt)}</span>
+          {!newest && (
+            <button onClick={() => unfold(rel.id)} aria-expanded className="ml-auto p-1 rounded text-slate-400 hover:text-white cursor-pointer" aria-label="Fold">
+              <ChevronDown className="w-4 h-4 rotate-180" />
+            </button>
+          )}
+        </div>
+        <p className="mt-2 text-sm font-semibold text-white">{rel.title}</p>
+        {rel.introduces ? (
+          <p className="mt-1.5 text-[13px] text-slate-400">The introduction email: it says what {app.name} is and how to start, so it needs no &ldquo;what&apos;s new&rdquo;.</p>
+        ) : rel.notes.trim() ? (
+          <div className="mt-1.5">
+            <NoteLines notes={rel.notes} limit={5} />
+          </div>
+        ) : (
+          <p className="mt-1.5 text-[13px] text-amber-300/90">No &ldquo;what&apos;s new&rdquo; yet. Press Edit to add it before emailing.</p>
+        )}
+
+        {/* the emails sent about it, newest first */}
+        {rel.broadcasts.length > 0 ? (
+          <ul className="mt-3 space-y-2">{rel.broadcasts.map((b) => broadcastRow(b, app.name))}</ul>
+        ) : (
+          <p className="mt-3 text-xs text-slate-500">Not emailed to anyone yet.</p>
+        )}
+
+        <div className="mt-3 flex flex-wrap gap-2">
+          {!open && !rel.introduces && (
+            <button
+              onClick={() => setConfirming({ release: rel, who: "app" })}
+              disabled={!mailOk || !!running}
+              title="Choose who gets it on the next step"
+              className={`${btn} bg-blue-600 hover:bg-blue-500 text-white`}
+            >
+              <Send className="w-3.5 h-3.5" /> {sentTo ? "Email again…" : "Email it…"}
+            </button>
+          )}
+          <button onClick={() => showPreview(rel)} disabled={busy === `preview-${rel.id}`} className={`${btn} bg-slate-800 hover:bg-slate-700 text-slate-200`}>
+            <Eye className="w-3.5 h-3.5" /> Preview
+          </button>
+          <button onClick={() => sendTest(rel)} disabled={!mailOk || busy === `test-${rel.id}`} className={`${btn} bg-slate-800 hover:bg-slate-700 text-slate-200`}>
+            {busy === `test-${rel.id}` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Mail className="w-3.5 h-3.5" />} Test to me
+          </button>
+          <button onClick={() => setEditing({ isNew: false, release: rel })} className={`${btn} bg-slate-800 hover:bg-slate-700 text-slate-200`}>
+            <Pencil className="w-3.5 h-3.5" /> Edit
+          </button>
+          <button onClick={() => remove(rel, app.name)} disabled={!!open} className={`${btn} ml-auto text-rose-300 hover:bg-rose-500/10`}>
+            <Trash2 className="w-3.5 h-3.5" /> Delete
+          </button>
+        </div>
+      </li>
+    );
+  };
+
   if (loading && !data) {
     return (
       <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-10 text-center text-slate-400">
@@ -420,7 +514,8 @@ export default function AdminReleases({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* an app's page has its own header below */}
+      <div className={`${shown ? "hidden" : "flex"} flex-col sm:flex-row sm:items-center justify-between gap-4`}>
         <div>
           <h3 className="text-base font-bold text-white">Releases</h3>
           <p className="text-xs text-slate-400">
@@ -439,7 +534,14 @@ export default function AdminReleases({
         </button>
       </div>
 
-      {/* Email and audience */}
+      {/* Email and audience: on the overview; an app's page only warns when email isn't set up */}
+      {shown && !data.mail.configured && (
+        <p className="rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+          Email isn&apos;t set up, so nothing can be sent. Add SMTP_HOST, SMTP_USER and SMTP_PASS in Vercel, then redeploy.
+        </p>
+      )}
+      {!shown && (
+      <>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <div className={`rounded-2xl border p-4 ${data.mail.configured ? "border-slate-800 bg-slate-900/60" : "border-amber-500/40 bg-amber-500/10"}`}>
           <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400">
@@ -481,6 +583,8 @@ export default function AdminReleases({
         Gmail sends about 500 emails a day (2,000 with Google Workspace). A broadcast that reaches the limit pauses by itself; press Continue the next day and it carries on
         with the people not reached yet.
       </p>
+      </>
+      )}
 
       {/* every app: the versions, every release, the emails sent and who stopped them */}
       {!shown && (
@@ -503,6 +607,16 @@ export default function AdminReleases({
                 <a href={app.href} target="_blank" rel="noopener" className="text-blue-400 hover:underline">{app.href}</a>
               </p>
             </div>
+            <button
+              onClick={() => {
+                setLoading(true);
+                load();
+              }}
+              aria-label="Refresh"
+              className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white cursor-pointer"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+            </button>
             {app.github && (
               <button onClick={() => importGitHub(app)} disabled={busy === `import-${app.id}`} className={`${btn} bg-slate-800 hover:bg-slate-700 text-slate-200`}>
                 {busy === `import-${app.id}` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />} Import from GitHub
@@ -521,13 +635,87 @@ export default function AdminReleases({
             </button>
           </header>
 
+          {/* Next step: the one thing to do now, worked out from the releases and who has updated */}
+          {(() => {
+            const newest = releases[0] ?? null;
+            const v = versionsOf[app.id];
+            const introRel = intro?.releaseId ? releases.find((r) => r.id === intro.releaseId) ?? null : null;
+            const sending = newest?.broadcasts.find((b) => b.status !== "done");
+            const sentTo = newest ? newest.broadcasts.reduce((n, b) => n + b.sent, 0) : 0;
+            const mailOk = data.mail.configured && !running;
+            const addNew = (version: string) =>
+              setEditing({
+                isNew: true,
+                release: { app: app.id, version, releasedAt: new Date().toISOString().slice(0, 10), title: "", notes: "", link: app.href, linkLabel: "" },
+              });
+            let tone: "todo" | "done" = "todo";
+            let title: string;
+            let text: string;
+            let action: React.ReactNode = null;
+            const go = (label: string, onClick: () => void, disabled = false) => (
+              <button onClick={onClick} disabled={disabled} className={`${btn} px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white`}>
+                {label} <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            );
+            if (!newest) {
+              title = "Add the first release";
+              text = app.github ? "Import the versions from GitHub, or add one by hand." : "Add the version that's on the download page now.";
+              action = app.github ? go("Import from GitHub", () => importGitHub(app), busy === `import-${app.id}`) : go("Add release", () => addNew(app.current));
+            } else if (sending) {
+              title = sending.status === "paused" ? `The email about ${newest.version} is paused` : `Sending ${newest.version}…`;
+              text = `${sending.sent + sending.failed} of ${sending.total} done. Press Continue on the release below to carry on; nobody gets it twice.`;
+            } else if (intro && !introRel) {
+              title = `Introduce ${app.name} to everyone`;
+              text = "Make the one-time introduction email, check it, then send it.";
+              action = go("Create the introduction email", () => createIntro(app), busy === `intro-${app.id}`);
+            } else if (introRel && !introRel.broadcasts.some((b) => b.sent > 0)) {
+              title = `Introduce ${app.name} to everyone`;
+              text = `The introduction email is ready for ${introRel.notYetAll} ${introRel.notYetAll === 1 ? "person" : "people"}. Look at the preview, then send it.`;
+              action = go("Email everyone", () => setConfirming({ release: introRel, who: "all" }), !mailOk || introRel.notYetAll === 0);
+            } else if (v && compareVersionsLoose(v.latest, newest.version) > 0) {
+              title = `Add release ${v.latest}`;
+              text = `${app.name} ${v.latest} is out, but the newest release here is ${newest.version}. Add it, with what's new, so you can email people about it.`;
+              action = app.github ? go("Import from GitHub", () => importGitHub(app), busy === `import-${app.id}`) : go(`Add release ${v.latest}`, () => addNew(v.latest));
+            } else if (!newest.introduces && !newest.notes.trim()) {
+              title = `Write what's new in ${newest.version}`;
+              text = "The email lists the changes, so add them first.";
+              action = go("Edit release", () => setEditing({ isNew: false, release: newest }));
+            } else if (!sentTo) {
+              title = `Email ${newest.version} to ${app.name} users`;
+              text = `${users} ${users === 1 ? "person has" : "people have"} downloaded or used ${app.name}. You choose who gets it on the next step.`;
+              action = go("Email it", () => setConfirming({ release: newest, who: "app" }), !mailOk);
+            } else if (v && v.behind > 0) {
+              title = `Remind the ${v.behind} on an older version`;
+              text = `${newest.version} went to ${sentTo} ${sentTo === 1 ? "person" : "people"}, but ${v.behind} still ${v.behind === 1 ? "has" : "have"} an older copy (listed below).`;
+              action = go(`Email the ${v.behind}`, () => setConfirming({ release: newest, who: "behind" }), !mailOk);
+            } else {
+              tone = "done";
+              title = "All done";
+              text = `${newest.version} went to ${sentTo} ${sentTo === 1 ? "person" : "people"}${v ? ", and everyone we know of is up to date" : ""}. Next time there's a new version, add it here.`;
+            }
+            return (
+              <div className={`mx-4 mt-4 sm:mx-5 rounded-xl border px-4 py-3 ${tone === "done" ? "border-emerald-500/30 bg-emerald-500/[0.06]" : "border-blue-500/40 bg-blue-500/[0.08]"}`}>
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="mr-auto min-w-0 max-w-xl">
+                    <p className={`text-[11px] font-bold uppercase tracking-wider ${tone === "done" ? "text-emerald-300" : "text-blue-300"}`}>
+                      {tone === "done" ? <CheckCircle2 className="inline w-3.5 h-3.5 -mt-0.5 mr-1" /> : null}Next step
+                    </p>
+                    <p className="mt-0.5 text-sm font-bold text-white">{title}</p>
+                    <p className="mt-0.5 text-xs text-slate-400">{text}</p>
+                  </div>
+                  {action}
+                </div>
+              </div>
+            );
+          })()}
+
           {/* A new program: introduce it to everyone */}
           {intro && (() => {
             const rel = releases.find((r) => r.id === intro.releaseId) ?? null;
             const sent = rel?.broadcasts.some((b) => b.sent > 0) ?? false;
             const open = rel?.broadcasts.find((b) => b.status !== "done");
             return (
-              <div className="px-5 py-4 border-b border-slate-800 bg-gradient-to-r from-amber-400/[0.08] to-blue-500/[0.06]">
+              <div className="px-5 py-4 border-b border-slate-800 bg-amber-400/[0.06]">
                 <div className="flex flex-wrap items-start gap-3">
                   <div className="mr-auto max-w-xl">
                     <p className="flex items-center gap-2 text-sm font-bold text-white">
@@ -604,13 +792,13 @@ export default function AdminReleases({
                         <button onClick={() => setEditing({ isNew: false, release: rel })} className={`${btn} bg-slate-800 hover:bg-slate-700 text-slate-200`}>
                           <Pencil className="w-3.5 h-3.5" /> Edit
                         </button>
-                        {!open && (
+                        {!open && sent && (
                           <button
                             onClick={() => setConfirming({ release: rel, who: "all" })}
                             disabled={!data.mail.configured || !!running || rel.notYetAll === 0}
                             className={`${btn} bg-amber-400 hover:bg-amber-300 text-slate-950`}
                           >
-                            <Send className="w-3.5 h-3.5" /> {sent ? "Send to the rest" : "Email everyone"} ({rel.notYetAll})
+                            <Send className="w-3.5 h-3.5" /> Send to the rest ({rel.notYetAll})
                           </button>
                         )}
                       </>
@@ -620,6 +808,13 @@ export default function AdminReleases({
               </div>
             );
           })()}
+
+          {/* the newest release, open */}
+          {releases.length === 0 ? (
+            <p className="px-5 py-6 text-sm text-slate-400">No releases yet. Add one{app.github ? ", or import them from GitHub" : ""}.</p>
+          ) : (
+            <ul className="border-b border-slate-800">{releaseItem(releases[0], app, true)}</ul>
+          )}
 
           {/* Who has the newest version, and emailing the ones who don't */}
           <WhoUpdated
@@ -636,7 +831,62 @@ export default function AdminReleases({
               })
             }
             onOpenAccount={onOpenAccount}
+            onLoaded={(v) => setVersionsOf((m) => (m[app.id]?.latest === v.latest && m[app.id]?.behind === v.behind ? m : { ...m, [app.id]: v }))}
           />
+
+
+          {/* older releases, one line each */}
+          {releases.length > 1 && (() => {
+            const older = releases
+              .slice(1)
+              .filter((rel) => (filter === "unsent" ? !rel.broadcasts.some((b) => b.sent > 0) : filter === "nonotes" ? !rel.notes.trim() : true))
+              .filter((rel) => !q.trim() || `${rel.version} ${rel.title} ${rel.notes}`.toLowerCase().includes(q.trim().toLowerCase()));
+            return (
+              <div className="border-b border-slate-800">
+                <div className="flex flex-wrap items-center gap-2 px-5 pt-4 pb-2">
+                  <p className="mr-auto text-xs font-bold uppercase tracking-wider text-slate-400">Older releases ({releases.length - 1})</p>
+                  {releases.length > 4 && (
+                    <>
+              <div className="relative">
+                <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" aria-hidden />
+                <input
+                  type="search"
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                  placeholder="Version or words"
+                  aria-label={`Search ${app.name} releases`}
+                  className="w-52 max-w-full pl-9 pr-3 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-base sm:text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500"
+                />
+              </div>
+              <div role="group" aria-label="Show" className="flex gap-1 p-1 rounded-lg bg-slate-950 border border-slate-800">
+                {(
+                  [
+                    ["all", "All"],
+                    ["unsent", "Not emailed"],
+                    ["nonotes", "No notes"],
+                  ] as const
+                ).map(([k, l]) => (
+                  <button
+                    key={k}
+                    onClick={() => setFilter(k)}
+                    aria-pressed={filter === k}
+                    className={`px-2.5 py-1 rounded-md text-[11.5px] font-semibold cursor-pointer ${filter === k ? "bg-slate-700 text-white" : "text-slate-400 hover:text-white"}`}
+                  >
+                    {l}
+                  </button>
+                ))}
+              </div>
+                    </>
+                  )}
+                </div>
+                {older.length === 0 ? (
+                  <p className="px-5 pb-4 text-xs text-slate-500">None match.</p>
+                ) : (
+                  <ul className="divide-y divide-slate-800/70">{older.map((rel) => releaseItem(rel, app, false))}</ul>
+                )}
+              </div>
+            );
+          })()}
 
           {/* Ask the app's users for a review */}
           <div className="px-5 py-4 border-b border-slate-800 bg-amber-500/[0.04]">
@@ -675,115 +925,6 @@ export default function AdminReleases({
             {review.broadcasts.length > 0 && <ul className="mt-3 space-y-2">{review.broadcasts.map((b) => broadcastRow(b, app.name))}</ul>}
           </div>
 
-          {releases.length > 3 && (
-            <div className="flex flex-wrap items-center gap-2 px-5 py-3 border-b border-slate-800">
-              <div className="relative">
-                <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" aria-hidden />
-                <input
-                  type="search"
-                  value={q}
-                  onChange={(e) => setQ(e.target.value)}
-                  placeholder="Version or words"
-                  aria-label={`Search ${app.name} releases`}
-                  className="w-52 max-w-full pl-9 pr-3 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-base sm:text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500"
-                />
-              </div>
-              <div role="group" aria-label="Show" className="flex gap-1 p-1 rounded-lg bg-slate-950 border border-slate-800">
-                {(
-                  [
-                    ["all", "All"],
-                    ["unsent", "Not emailed"],
-                    ["nonotes", "No notes"],
-                  ] as const
-                ).map(([k, l]) => (
-                  <button
-                    key={k}
-                    onClick={() => setFilter(k)}
-                    aria-pressed={filter === k}
-                    className={`px-2.5 py-1 rounded-md text-[11.5px] font-semibold cursor-pointer ${filter === k ? "bg-slate-700 text-white" : "text-slate-400 hover:text-white"}`}
-                  >
-                    {l}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {releases.length === 0 ? (
-            <p className="px-5 py-6 text-sm text-slate-400">No releases yet. Add one{app.github ? ", or import them from GitHub" : ""}.</p>
-          ) : (
-            <ul className="divide-y divide-slate-800">
-              {releases
-                .filter((rel) => (filter === "unsent" ? !rel.broadcasts.some((b) => b.sent > 0) : filter === "nonotes" ? !rel.notes.trim() : true))
-                .filter((rel) => !q.trim() || `${rel.version} ${rel.title} ${rel.notes}`.toLowerCase().includes(q.trim().toLowerCase()))
-                .map((rel) => {
-                const open = rel.broadcasts.find((b) => b.status !== "done");
-                const sentBefore = rel.broadcasts.some((b) => b.sent > 0);
-                return (
-                  <li key={rel.id} className="px-5 py-4">
-                    <div className="flex flex-wrap items-center gap-2 text-xs">
-                      <span className="px-2 py-0.5 rounded-md bg-blue-500/15 border border-blue-500/30 text-blue-200 font-bold">{app.name} {rel.version}</span>
-                      {rel.version === app.current && <span className="px-2 py-0.5 rounded-md bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-semibold">Latest</span>}
-                      {rel.introduces && <span className="px-2 py-0.5 rounded-md bg-amber-400/15 border border-amber-400/30 text-amber-200 font-semibold">Introduction email</span>}
-                      <span className="text-slate-500">{day(rel.releasedAt)}</span>
-                      {!rel.broadcasts.length && <span className="ml-auto text-slate-500">Not sent yet</span>}
-                    </div>
-                    <p className="mt-2 text-sm font-semibold text-white">{rel.title}</p>
-                    {rel.notes.trim() ? (
-                      <div className="mt-1.5">
-                        <NoteLines notes={rel.notes} limit={5} />
-                      </div>
-                    ) : (
-                      <p className="mt-1.5 text-[13px] text-amber-300/90">No &ldquo;what&apos;s new&rdquo; yet. Edit to add it before sending.</p>
-                    )}
-
-                    {/* Broadcast history, newest first */}
-                    {rel.broadcasts.length > 0 && (
-                      <ul className="mt-3 space-y-2">
-                        {rel.broadcasts.map((b) => broadcastRow(b, app.name))}
-                      </ul>
-                    )}
-
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      <button onClick={() => showPreview(rel)} disabled={busy === `preview-${rel.id}`} className={`${btn} bg-slate-800 hover:bg-slate-700 text-slate-200`}>
-                        <Eye className="w-3.5 h-3.5" /> Preview
-                      </button>
-                      <button onClick={() => sendTest(rel)} disabled={!data.mail.configured || busy === `test-${rel.id}`} className={`${btn} bg-slate-800 hover:bg-slate-700 text-slate-200`}>
-                        {busy === `test-${rel.id}` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Mail className="w-3.5 h-3.5" />} Send test to me
-                      </button>
-                      {!open && (
-                        <>
-                          <button
-                            onClick={() => setConfirming({ release: rel, who: "app" })}
-                            disabled={!data.mail.configured || !!running}
-                            title={`People who downloaded or used ${app.name} with their account`}
-                            className={`${btn} bg-blue-600 hover:bg-blue-500 text-white`}
-                          >
-                            <Send className="w-3.5 h-3.5" />
-                            {sentBefore ? "Send again" : "Send"} to {app.name} users ({users})
-                          </button>
-                          <button
-                            onClick={() => setConfirming({ release: rel, who: "all" })}
-                            disabled={!data.mail.configured || !!running}
-                            title="Everyone with an account, also people who haven't used this app"
-                            className={`${btn} bg-slate-800 hover:bg-slate-700 text-slate-200`}
-                          >
-                            <Users className="w-3.5 h-3.5" /> Send to all users ({data.audience.everyone})
-                          </button>
-                        </>
-                      )}
-                      <button onClick={() => setEditing({ isNew: false, release: rel })} className={`${btn} bg-slate-800 hover:bg-slate-700 text-slate-200`}>
-                        <Pencil className="w-3.5 h-3.5" /> Edit
-                      </button>
-                      <button onClick={() => remove(rel, app.name)} disabled={!!open} className={`${btn} ml-auto text-rose-300 hover:bg-rose-500/10`}>
-                        <Trash2 className="w-3.5 h-3.5" /> Delete
-                      </button>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
         </section>
       ))}
 
@@ -1269,6 +1410,7 @@ function WhoUpdated({
   onEmail,
   onAddRelease,
   onOpenAccount,
+  onLoaded,
 }: {
   adminFetch: Fetch;
   app: App;
@@ -1278,8 +1420,14 @@ function WhoUpdated({
   onEmail: (release: Release) => void;
   onAddRelease: (version: string) => void;
   onOpenAccount: (userId: string) => void;
+  /** the newest version and how many are behind it, for the page's Next step */
+  onLoaded?: (v: { latest: string; behind: number }) => void;
 }) {
   const [d, setD] = useState<VersionsData | null>(null);
+  const loaded = useRef(onLoaded);
+  useEffect(() => {
+    loaded.current = onLoaded;
+  });
   const [failed, setFailed] = useState<string | null>(null);
   const [all, setAll] = useState(false);
   const fetcher = useRef(adminFetch);
@@ -1294,7 +1442,11 @@ function WhoUpdated({
         if (!r.ok) throw new Error(await errorOf(r));
         return r.json() as Promise<VersionsData>;
       })
-      .then((v) => live && setD(v))
+      .then((v) => {
+        if (!live) return;
+        setD(v);
+        loaded.current?.({ latest: v.latest, behind: v.behind });
+      })
       .catch((e) => live && setFailed((e as Error).message));
     return () => {
       live = false;
@@ -1317,8 +1469,7 @@ function WhoUpdated({
             {d && <span className="text-xs font-semibold text-slate-400">newest: {d.latest}</span>}
           </p>
           <p className="mt-0.5 text-xs text-slate-400">
-            Each account&apos;s copy of {app.name}: what the program itself or the Survey Toolkit on their PC reports, or else the last version they downloaded.
-            People we know nothing about aren&apos;t counted.
+            The version each person has, from the program, the Survey Toolkit or their last download. People we know nothing about aren&apos;t counted.
           </p>
         </div>
         {d && d.behind > 0 && (
@@ -1395,13 +1546,13 @@ function WhoUpdated({
           {/* the people behind */}
           {behindPeople.length > 0 && (
             <div className="mt-3 overflow-x-auto rounded-xl border border-slate-800">
-              <table className="w-full min-w-[520px] text-left text-xs">
+              <table className="w-full text-left text-xs">
                 <thead className="bg-slate-950/60 text-[10.5px] uppercase tracking-wider text-slate-500">
                   <tr>
                     <th className="px-3 py-2 font-bold">Person</th>
                     <th className="px-3 py-2 font-bold">Has</th>
-                    <th className="px-3 py-2 font-bold">From</th>
-                    <th className="px-3 py-2 font-bold">Seen</th>
+                    <th className="hidden sm:table-cell px-3 py-2 font-bold">From</th>
+                    <th className="hidden sm:table-cell px-3 py-2 font-bold">Seen</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800">
@@ -1414,8 +1565,8 @@ function WhoUpdated({
                         </button>
                       </td>
                       <td className="px-3 py-2 font-mono text-amber-200">{p.version}</td>
-                      <td className="px-3 py-2 text-slate-400">{SOURCE[p.source]}</td>
-                      <td className="px-3 py-2 text-slate-400">{day(p.at)}</td>
+                      <td className="hidden sm:table-cell px-3 py-2 text-slate-400">{SOURCE[p.source]}</td>
+                      <td className="hidden sm:table-cell px-3 py-2 text-slate-400">{day(p.at)}</td>
                     </tr>
                   ))}
                 </tbody>
