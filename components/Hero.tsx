@@ -11,6 +11,7 @@ import {
   FileSpreadsheet,
   Route,
   Compass,
+  DraftingCompass,
   FolderTree,
   ShieldCheck,
   Layers,
@@ -56,7 +57,7 @@ type Tab = {
 /** A round number the count is truly more than: 32 → 30, 40 → 30, 17 → 15 */
 const moreThan = (n: number) => (n > 20 ? Math.floor((n - 1) / 10) * 10 : Math.floor((n - 1) / 5) * 5);
 
-const ICONS: Record<string, LucideIcon> = { roadpro: Route, traverse: Compass, "folder-manager": FolderTree };
+const ICONS: Record<string, LucideIcon> = { roadpro: Route, traverse: Compass, "folder-manager": FolderTree, "auto-draft": DraftingCompass };
 const ROTATE_MS = 7000;
 
 // The home page hero, in the manner of a software maker's front page: one headline for the
