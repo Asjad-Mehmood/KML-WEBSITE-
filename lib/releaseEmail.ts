@@ -282,7 +282,6 @@ export function releaseEmail(r: ReleaseForEmail, to: { name: string; email: stri
         ],
         footer,
         footerLink,
-        style: "plain",
       }),
       ...listHeaders(to.email),
     };
@@ -290,20 +289,19 @@ export function releaseEmail(r: ReleaseForEmail, to: { name: string; email: stri
 
   const items = noteItems(r.notes);
   const released = longDate(r.releasedAt);
+  // Shaped like the introduction and review emails, which reach the inbox: a "... is ready" title,
+  // a few short paragraphs, the steps and one button. A ticked list of features under headings
+  // read as an advert, and Gmail filed it under Promotions.
   const lead = r.newerVersion
-    ? `Here's a look back at ${r.appName} ${r.version}, released on ${released}. The newest version is now ${r.newerVersion}, and updating gets you everything below plus what came after.`
-    : "Here's what changed, and how to get it.";
-  const blocks: LetterBlock[] = [{ p: lead }];
-  if (items.length) {
-    blocks.push({ heading: `What changed in ${r.version}` }, { bullets: items.map((i) => (i.head ? `${i.head}: ${i.text}` : i.text)) });
-  }
-  blocks.push(
-    { heading: guide.automatic ? "Already using it? It updates itself" : "Already using it? To update" },
-    { steps: guide.steps }
-  );
+    ? `This is about ${r.appName} ${r.version}, released on ${released}. The newest version is now ${r.newerVersion}, and updating gets you what's below and what came after.`
+    : `${r.appName} ${r.version} is out. Here's what's different, and how to get it.`;
+  const blocks: LetterBlock[] = [{ p: lead, bold: [r.appName] }];
+  // what changed, as short paragraphs: "Head: text" keeps its head in bold
+  for (const i of items.slice(0, 6)) blocks.push(i.head ? { p: `${i.head}: ${i.text}`, bold: [`${i.head}:`] } : { p: i.text });
+  if (items.length > 6) blocks.push({ p: `And ${items.length - 6} more: the full list is on the What's new page of our website.` });
+  blocks.push({ heading: guide.automatic ? "Already using it? It updates itself" : "Already using it? To update" }, { steps: guide.steps });
   if (guide.newUser) blocks.push({ p: guide.newUser });
-  // written like a note: "Where to get it: exceltokml.com/toolkit", not a "Get it now" button
-  blocks.push({ button: url, label: r.linkLabel.trim() || "Where to get it" }, reply);
+  blocks.push({ button: url, label: r.linkLabel.trim() || `Get ${r.appName} ${r.newerVersion || r.version}` }, reply);
   return {
     ...letterEmail({
       subject: subjectOf(title, r),
@@ -312,7 +310,6 @@ export function releaseEmail(r: ReleaseForEmail, to: { name: string; email: stri
       blocks,
       footer,
       footerLink,
-      style: "plain",
     }),
     ...listHeaders(to.email),
   };
@@ -320,11 +317,12 @@ export function releaseEmail(r: ReleaseForEmail, to: { name: string; email: stri
 
 /**
  * A release's title as the email's subject; a bare "Survey Toolkit v1.0.10" (as releases imported
- * from GitHub are called) reads like a product announcement, so it says what the email is
+ * from GitHub are called) reads like a product announcement, so it says what the email is, as the
+ * introduction's "Auto Draft is ready for your account" does
  */
 function subjectOf(title: string, r: ReleaseForEmail): string {
   const bare = new RegExp(`^${r.appName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s+v?${r.version.replace(/\./g, "\\.")}$`, "i");
-  if (!title || bare.test(title)) return r.newerVersion ? `${r.appName} ${r.version}` : `${r.appName} ${r.version}: what changed and how to get it`;
+  if (!title || bare.test(title)) return r.newerVersion ? `${r.appName} ${r.version}` : `${r.appName} ${r.version} is ready for your PC`;
   return title;
 }
 

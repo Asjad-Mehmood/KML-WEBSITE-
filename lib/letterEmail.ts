@@ -8,12 +8,6 @@
 //   - one button at most, and few links
 // lib/releaseEmail.ts (new versions and new programs), lib/reviewEmail.ts, lib/downloadEmail.ts,
 // lib/emailVerify.ts and the password reset all use it.
-//
-// style "plain" is for emails sent to many people at once (new versions, new programs): Gmail
-// still filed the card layout under Promotions there, since a designed card with a logo and a
-// coloured button sent to everyone reads as a newsletter. Plain is written like a person's
-// email: no card, no logo, no title, no button or ticks, just paragraphs, plain lists and
-// ordinary links.
 import { SITE_NAME } from "@/lib/site";
 
 export const escHtml = (s: string) =>
@@ -48,8 +42,6 @@ export interface Letter {
   footer: string;
   /** e.g. "Stop these emails" and its address, after the footer */
   footerLink?: { label: string; url: string };
-  /** "card" (default): the designed layout; "plain": like a person's email (see above) */
-  style?: "card" | "plain";
 }
 
 const BLUE = "#0b63ce";
@@ -78,7 +70,6 @@ function item(s: string): { head: string; text: string } {
 const shortUrl = (u: string) => u.replace(/^https:\/\//, "").replace(/\?.*$/, "");
 
 export function letterEmail(l: Letter): { subject: string; text: string; html: string } {
-  if (l.style === "plain") return plainLetter(l);
   const hi = l.first ? `Hi ${l.first},` : "Hi,";
   const signOff = l.signOff ?? "Thanks,";
 
@@ -157,51 +148,5 @@ ${h.join("\n")}
 </table>
 </td></tr></table>
 </body></html>`;
-  return { subject: l.subject, text, html };
-}
-
-/** The plain style: what a person would type, with the links written in */
-function plainLetter(l: Letter): { subject: string; text: string; html: string } {
-  const hi = l.first ? `Hi ${l.first},` : "Hi,";
-  const signOff = l.signOff ?? "Thanks,";
-
-  // ---------- plain text: no title line, the link on its own line ----------
-  const t: string[] = [hi, ""];
-  for (const b of l.blocks) {
-    if ("p" in b) t.push(b.p, "");
-    else if ("heading" in b) t.push(b.heading);
-    else if ("steps" in b) t.push(...b.steps.map((s, i) => `${i + 1}. ${s}`), "");
-    else if ("bullets" in b) t.push(...b.bullets.map((s) => `- ${s}`), "");
-    else if ("code" in b) t.push(`    ${b.code}`, "");
-    else if ("button" in b) t.push(`${b.label}: ${b.button}`, "");
-    else if ("link" in b) t.push(b.link, "");
-  }
-  t.push(signOff, `The ${SITE_NAME} team`, "", "--", l.footer + (l.footerLink ? ` ${l.footerLink.label}: ${l.footerLink.url}` : ""));
-  const text = t.join("\n");
-
-  // ---------- HTML: paragraphs and lists in the reader's own font, nothing drawn ----------
-  const p = (inner: string) => `<p style="margin:0 0 14px">${inner}</p>`;
-  const a = (href: string, label: string) => `<a href="${escHtml(href)}">${escHtml(label)}</a>`;
-  const h: string[] = [p(escHtml(hi))];
-  for (const b of l.blocks) {
-    if ("p" in b) h.push(p(escHtml(b.p)));
-    else if ("heading" in b) h.push(`<p style="margin:18px 0 6px"><b>${escHtml(b.heading)}</b></p>`);
-    else if ("steps" in b) h.push(`<ol style="margin:0 0 14px;padding-left:22px">${b.steps.map((s) => `<li style="margin:0 0 6px">${escHtml(s)}</li>`).join("")}</ol>`);
-    else if ("bullets" in b) h.push(`<ul style="margin:0 0 14px;padding-left:22px">${b.bullets.map((s) => `<li style="margin:0 0 6px">${escHtml(s)}</li>`).join("")}</ul>`);
-    else if ("code" in b) h.push(p(`<b style="font-size:20px;letter-spacing:4px">${escHtml(b.code)}</b>`));
-    else if ("button" in b) h.push(p(`${escHtml(b.label)}: ${a(b.button, shortUrl(b.button))}`));
-    else if ("link" in b) h.push(p(a(b.link, b.label ?? shortUrl(b.link))));
-  }
-  h.push(p(`${escHtml(signOff)}<br>The ${escHtml(SITE_NAME)} team`));
-  h.push(
-    `<p style="margin:24px 0 0;font-size:12px;color:#777">${escHtml(l.footer)}${
-      l.footerLink ? ` ${a(l.footerLink.url, l.footerLink.label)}` : ""
-    }</p>`
-  );
-  const html = `<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escHtml(l.subject)}</title></head>
-<body><div style="font-size:15px;line-height:1.6;max-width:640px">
-${h.join("\n")}
-</div></body></html>`;
   return { subject: l.subject, text, html };
 }
