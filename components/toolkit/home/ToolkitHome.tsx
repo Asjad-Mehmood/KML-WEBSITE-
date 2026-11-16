@@ -209,7 +209,7 @@ export default function ToolkitHome({
               <h1 id="hero-h" className="ho-enter ho-enter-1 mt-4 text-[38px] sm:text-[54px] font-extrabold leading-[1.04] tracking-tight text-[#071a44]">
                 Every survey tool.
                 <br />
-                One download. <span className="ho-h-mark relative z-0 text-[#1e4fd8]">Always up to date.</span>
+                One download. <span className="ho-h-mark relative z-0">Always up to date.</span>
               </h1>
               <p className="ho-enter ho-enter-2 mt-5 max-w-xl text-[17px] leading-relaxed text-slate-600">
                 One download installs Excel to KML, RoadPro, Traverse &amp; Level, Project Folder Manager, Slope Calculator and Auto Draft, and keeps every one of them up to
