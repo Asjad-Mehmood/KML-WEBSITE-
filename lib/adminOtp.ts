@@ -215,7 +215,16 @@ export async function resendChallenge(challenge: string, email: (userId: string)
   return { userId: rows[0].userId, email: to, challenge: await issue(rows[0].userId, to, ip, ua) };
 }
 
-export type CodeCheck = { ok: true; userId: string } | { ok: false; reason: "invalid" | "expired" | "locked"; userId?: string };
+/** Whether this challenge is an admin sign-in (the apps send it where an email check goes) */
+export async function isAdminChallenge(challenge: string): Promise<boolean> {
+  if (!challenge || challenge.length > 100) return false;
+  await ensureTables();
+  const rows = await prisma.$queryRaw<{ id: string }[]>`
+    SELECT "id" FROM "admin_login_codes" WHERE "challengeHash" = ${hash("challenge", challenge)} LIMIT 1`;
+  return rows.length > 0;
+}
+
+export type CodeCheck ={ ok: true; userId: string } | { ok: false; reason: "invalid" | "expired" | "locked"; userId?: string };
 
 /** Check a code. Right code: the challenge is spent. Wrong code: counts as a try, and the 5th wrong one kills the challenge. */
 export async function checkCode(challenge: string, code: string): Promise<CodeCheck> {

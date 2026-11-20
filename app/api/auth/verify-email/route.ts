@@ -2,15 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { signedInResponse } from "@/lib/loginResponse";
 import { checkVerifyCode, confirmByLink } from "@/lib/emailVerify";
+import { isAdminChallenge } from "@/lib/adminOtp";
+import { checkAdminCode } from "@/lib/adminCodeStep";
 
 // The 6-digit code from the confirmation email, typed in after signing up or signing in:
-// confirms the address and signs the account in
+// confirms the address and signs the account in. The apps send an admin's sign-in code here too.
 export async function POST(req: NextRequest) {
   try {
     const { challenge, code } = await req.json().catch(() => ({}));
     if (typeof challenge !== "string" || typeof code !== "string" || challenge.length > 100) {
       return NextResponse.json({ error: "Enter the 6-digit code from your email." }, { status: 400 });
     }
+    if (await isAdminChallenge(challenge)) return await checkAdminCode(req, challenge, code, false);
     const result = await checkVerifyCode(challenge, code.replace(/\s+/g, ""));
     if (!result.ok) {
       const message =
