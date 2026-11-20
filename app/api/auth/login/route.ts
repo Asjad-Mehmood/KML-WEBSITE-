@@ -3,7 +3,12 @@ import { db } from "@/lib/db";
 import { clientIp, recordFailure, tooManyFailures } from "@/lib/loginThrottle";
 import { signedInResponse } from "@/lib/loginResponse";
 import { TooManyCodes, isTrustedBrowser, maskEmail, otpEnabled, startChallenge } from "@/lib/adminOtp";
+import { adminCodeNeeded } from "@/lib/adminCodeStep";
 import { TooManyVerifyCodes, confirmMessage, mustVerify, sendVerification } from "@/lib/emailVerify";
+
+// An account made with Google has no password of its own until "Forgot password" sets one
+const WRONG_PASSWORD =
+  "Wrong email or password. Made your account with Google? Use “Sign in with browser”, or “Forgot password” to set a password.";
 
 export async function POST(req: NextRequest) {
   try {
@@ -30,18 +35,19 @@ export async function POST(req: NextRequest) {
     if (!user || !db.verifyPassword(user, password)) {
       await recordFailure(String(email), ip, req.headers.get("user-agent"));
       return NextResponse.json(
-        { error: "Invalid email or password." },
+        { error: WRONG_PASSWORD },
         { status: 401 }
       );
     }
 
     // Admins: a browser that hasn't been through the email code before must
     // pass it now, unless two-factor sign-in is switched off in Admin → Settings → Security.
-    // (Without email set up the code can't be sent; see lib/adminOtp.)
+    // (Without email set up the code can't be sent; see lib/adminOtp.) The apps can't keep the
+    // trusted-browser cookie, so they always get the code; they type it where an email code goes.
     if (db.isAdmin(user) && (await otpEnabled()) && !(await isTrustedBrowser(req, user.id))) {
       try {
         const challenge = await startChallenge(user.id, user.email, ip, req.headers.get("user-agent"));
-        return NextResponse.json({ otpRequired: true, challenge, sentTo: maskEmail(user.email) });
+        return adminCodeNeeded(challenge, user.email);
       } catch (err) {
         if (err instanceof TooManyCodes) {
           return NextResponse.json(

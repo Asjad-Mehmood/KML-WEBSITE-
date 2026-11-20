@@ -103,6 +103,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       const data = await res.json().catch(() => ({}));
+      // Admin from a browser we don't know yet: a code was emailed (checked first: the reply
+      // also says verifyRequired, for the apps)
+      if (data.otpRequired && data.challenge) {
+        setOtp({ kind: "admin", challenge: data.challenge, sentTo: data.sentTo });
+        return { ok: false, error: "", otpRequired: true };
+      }
       // The account's email isn't confirmed yet: a code was emailed
       if (data.verifyRequired && data.challenge) {
         setOtp({ kind: "email", challenge: data.challenge, sentTo: data.sentTo });
@@ -110,11 +116,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       if (!res.ok) {
         return { ok: false, error: data.error || "Sign-in failed. Please try again." };
-      }
-      // Admin from a browser we don't know yet: a code was emailed
-      if (data.otpRequired) {
-        setOtp({ kind: "admin", challenge: data.challenge, sentTo: data.sentTo });
-        return { ok: false, error: "", otpRequired: true };
       }
 
       return finishSignIn(data.user);

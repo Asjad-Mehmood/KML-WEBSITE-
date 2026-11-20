@@ -18138,7 +18138,9 @@ PC-01,229045.640,392414.010"></textarea>
         loginForm.style.display = "none";
         registerForm.style.display = "none";
         verifyForm.style.display = "block";
-        document.getElementById("verifyText").textContent = "We sent a 6-digit code to " + (data.sentTo || "your email") + ". It works for 24 hours. Not in your inbox? Look in Spam.";
+        document.getElementById("verifyText").textContent = data.admin
+          ? "Admin account: we sent a 6-digit sign-in code to " + (data.sentTo || "your email") + ". It works for 10 minutes. Not in your inbox? Look in Spam."
+          : "We sent a 6-digit code to " + (data.sentTo || "your email") + ". It works for 24 hours. Not in your inbox? Look in Spam.";
         clearAlert();
         var input = document.getElementById("verifyCode");
         input.value = "";
