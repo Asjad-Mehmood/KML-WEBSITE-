@@ -45,7 +45,7 @@ export function CompanyHero({ stats }: { stats: PublicStats | null }) {
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(15,23,42,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.04)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_75%)]" />
       </div>
 
-      <div className={`${container} relative grid lg:grid-cols-[1.05fr_0.95fr] gap-14 lg:gap-10 items-center`}>
+      <div className={`${container} relative grid grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] gap-14 lg:gap-10 items-center`}>
         <div>
           {TOOLKIT && (
             <Link
@@ -62,7 +62,7 @@ export function CompanyHero({ stats }: { stats: PublicStats | null }) {
           <h1 className="mt-6 text-[2.6rem] leading-[1.05] sm:text-6xl lg:text-[4.1rem] font-extrabold tracking-[-0.035em] text-slate-950">
             Survey software,{" "}
             <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 bg-clip-text text-transparent">
-              from site to sign-off
+              from site to sign&#8209;off
             </span>
           </h1>
           <p className="mt-6 text-lg sm:text-xl text-slate-600 leading-relaxed max-w-xl">
@@ -105,12 +105,12 @@ export function CompanyHero({ stats }: { stats: PublicStats | null }) {
               <span className="w-3 h-3 rounded-full bg-[#28c840]" />
               <span className="ml-3 text-[13px] font-semibold text-slate-500">Excel to KML suite</span>
             </div>
-            <ul className="grid gap-2">
+            <ul className="grid grid-cols-[minmax(0,1fr)] gap-2">
               {CARDS.map((p) => (
-                <li key={p.id}>
+                <li key={p.id} className="min-w-0">
                   <Link
                     href={p.href}
-                    className="group flex items-center gap-3.5 rounded-2xl bg-white border border-slate-100 px-3.5 py-3 hover:border-blue-200 hover:shadow-md transition-all"
+                    className="group flex min-w-0 items-center gap-3.5 rounded-2xl bg-white border border-slate-100 px-3.5 py-3 hover:border-blue-200 hover:shadow-md transition-all"
                   >
                     <SuiteIcon id={p.id} size={40} />
                     <span className="min-w-0 flex-1">
@@ -156,6 +156,8 @@ export function ProductGrid({ excelVersion }: { excelVersion?: string }) {
         <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6">
           {CARDS.map((p) => {
             const version = p.id === "excel-to-kml" ? (excelVersion ?? "").replace(/^v/, "") : p.version;
+            // the program's own screen where there is one (a poster or banner otherwise)
+            const pic = p.shot ?? p.image;
             return (
               <Link
                 key={p.id}
@@ -164,10 +166,10 @@ export function ProductGrid({ excelVersion }: { excelVersion?: string }) {
               >
                 <div className="relative aspect-[16/10] overflow-hidden bg-slate-100 border-b border-slate-100">
                   <Image
-                    src={p.image.src}
-                    alt={p.image.alt}
-                    width={p.image.width}
-                    height={p.image.height}
+                    src={pic.src}
+                    alt={pic.alt}
+                    width={pic.width}
+                    height={pic.height}
                     sizes="(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw"
                     className="w-full h-full object-cover object-left-top group-hover:scale-[1.03] transition-transform duration-500"
                   />

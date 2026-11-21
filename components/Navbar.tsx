@@ -201,7 +201,7 @@ export default function Navbar(_props: { onDownloadClick?: () => void }) {
               {productsOpen && (
                 <div
                   role="menu"
-                  className="absolute left-0 lg:left-1/2 lg:-translate-x-1/2 mt-3 w-[min(92vw,640px)] bg-white/95 backdrop-blur-xl border border-black/[0.08] rounded-3xl shadow-[0_24px_60px_rgba(15,23,42,0.18)] p-3"
+                  className="absolute left-0 lg:left-1/2 lg:-translate-x-1/2 mt-3 w-[min(92vw,640px)] bg-white border border-black/[0.08] rounded-3xl shadow-[0_24px_60px_rgba(15,23,42,0.18)] p-3"
                 >
                   <div className="grid sm:grid-cols-2 gap-1">
                     {PRODUCT_LINKS.map((p) => (
@@ -254,7 +254,7 @@ export default function Navbar(_props: { onDownloadClick?: () => void }) {
               {resourcesOpen && (
                 <div
                   role="menu"
-                  className="absolute left-1/2 -translate-x-1/2 mt-3 w-80 bg-white/95 backdrop-blur-xl border border-black/[0.08] rounded-3xl shadow-[0_24px_60px_rgba(15,23,42,0.18)] p-2"
+                  className="absolute left-1/2 -translate-x-1/2 mt-3 w-80 bg-white border border-black/[0.08] rounded-3xl shadow-[0_24px_60px_rgba(15,23,42,0.18)] p-2"
                 >
                   {RESOURCE_LINKS.map((r) => (
                     <Link
