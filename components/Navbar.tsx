@@ -1,7 +1,8 @@
 "use client";
 
 import { usePublicSettings } from "@/lib/publicSettings";
-import { PRODUCTS, badgeLabel } from "@/lib/products";
+import { badgeLabel } from "@/lib/products";
+import { SUITE, SuiteIcon } from "./SuiteIcon";
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -15,6 +16,13 @@ import {
   LogOut,
   Shield,
   LayoutDashboard,
+  BookOpen,
+  FileText,
+  Globe2,
+  GraduationCap,
+  HelpCircle,
+  Workflow,
+  Wrench,
 } from "lucide-react";
 
 function GithubIcon({ className }: { className?: string }) {
@@ -29,18 +37,26 @@ function GithubIcon({ className }: { className?: string }) {
   );
 }
 
-// Absolute paths so the links also work from /faq and other pages
-// id: a home-page section (highlighted while in view); path: a page section of its own
+// The website's menu: the products and the resources as menus, then the company's own pages.
+// Absolute paths so the links also work from every page.
 const NAV_LINKS: { label: string; href: string; id?: string; path?: string; wideOnly?: boolean; xlOnly?: boolean }[] = [
   // wideOnly: hidden below 1024 px; xlOnly: hidden below 1280 px (still in the mobile menu)
-  { label: "How it works", href: "/how-it-works", path: "/how-it-works", wideOnly: true },
-  { label: "Formats", href: "/formats", path: "/formats", xlOnly: true },
-  { label: "Grids", href: "/convert", path: "/convert" },
-  { label: "Tools", href: "/tools", path: "/tools" },
-  { label: "Tutorial", href: "/tutorial", path: "/tutorial", wideOnly: true },
+  { label: "What's new", href: "/whats-new", path: "/whats-new", wideOnly: true },
+  { label: "About", href: "/about", path: "/about" },
+  { label: "Contact", href: "/contact", path: "/contact", xlOnly: true },
 ];
-// our other software (lib/products.ts): one "Products" menu, so the bar fits however many there are
-const PRODUCT_LINKS = PRODUCTS;
+// every program, Excel to KML first (components/SuiteIcon.tsx)
+const PRODUCT_LINKS = SUITE;
+// guides, grids and the free online tools
+const RESOURCE_LINKS: { label: string; href: string; text: string; icon: typeof Globe2 }[] = [
+  { label: "Grid converter", href: "/convert", text: "5,800+ coordinate systems, one page each", icon: Globe2 },
+  { label: "Online tools", href: "/tools", text: "Free converters and calculators in the browser", icon: Wrench },
+  { label: "Guides", href: "/guides", text: "Grids, datums and survey workflows explained", icon: BookOpen },
+  { label: "Tutorial", href: "/tutorial", text: "Excel to KML, step by step with pictures", icon: GraduationCap },
+  { label: "How it works", href: "/how-it-works", text: "From the survey sheet to Google Earth", icon: Workflow },
+  { label: "File formats", href: "/formats", text: "KML, KMZ, DXF, CSV and the rest", icon: FileText },
+  { label: "Questions", href: "/faq", text: "Answers about every program", icon: HelpCircle },
+];
 
 // Download in the bar: with the Survey Toolkit's home page (Admin → Settings) it gets the Toolkit;
 // with the Excel to KML layouts it goes to that program's download
@@ -48,7 +64,9 @@ const TOOLKIT_DOWNLOAD = "/api/toolkit/download";
 const downloadCls =
   "bg-[#0071e3] text-white px-4 lg:px-5 py-2 rounded-full text-sm font-bold shadow-md shadow-[#0071e3]/20 hover:shadow-lg hover:shadow-[#0071e3]/30 hover:-translate-y-0.5 transition-all flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2";
 
-export default function Navbar({ onDownloadClick }: { onDownloadClick: () => void }) {
+// Pages still pass their own download; the bar's Download goes to /download, for every program
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export default function Navbar(_props: { onDownloadClick?: () => void }) {
   const { user, logout } = useAuth();
   const toolkitHome = usePublicSettings()?.toolkitHome === true;
   const [scrolled, setScrolled] = useState(false);
@@ -58,6 +76,8 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [productsOpen, setProductsOpen] = useState(false);
   const productsRef = useRef<HTMLDivElement>(null);
+  const [resourcesOpen, setResourcesOpen] = useState(false);
+  const resourcesRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -104,9 +124,15 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
       if (productsRef.current && !productsRef.current.contains(e.target as Node)) {
         setProductsOpen(false);
       }
+      if (resourcesRef.current && !resourcesRef.current.contains(e.target as Node)) {
+        setResourcesOpen(false);
+      }
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setProductsOpen(false);
+      if (e.key === "Escape") {
+        setProductsOpen(false);
+        setResourcesOpen(false);
+      }
     };
     document.addEventListener("mousedown", handleClickOutside);
     document.addEventListener("keydown", onKey);
@@ -156,6 +182,101 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
 
           {/* Center Links */}
           <nav aria-label="Main" className="hidden md:flex items-center gap-0.5 lg:gap-1">
+            {/* every program, with its icon and what it does */}
+            <div className="relative" ref={productsRef}>
+              <button
+                type="button"
+                onClick={() => {
+                  setProductsOpen((o) => !o);
+                  setResourcesOpen(false);
+                }}
+                aria-haspopup="menu"
+                aria-expanded={productsOpen}
+                className={`inline-flex items-center gap-1 whitespace-nowrap px-2.5 lg:px-3 xl:px-4 py-2 text-[14px] font-semibold rounded-full transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+                  PRODUCT_LINKS.some((p) => pathname?.startsWith(p.href)) ? "text-slate-900 bg-black/[0.05]" : "text-slate-600 hover:text-slate-900 hover:bg-black/5"
+                }`}
+              >
+                Products <ChevronDown className={`w-3.5 h-3.5 transition-transform ${productsOpen ? "rotate-180" : ""}`} aria-hidden />
+              </button>
+              {productsOpen && (
+                <div
+                  role="menu"
+                  className="absolute left-0 lg:left-1/2 lg:-translate-x-1/2 mt-3 w-[min(92vw,640px)] bg-white/95 backdrop-blur-xl border border-black/[0.08] rounded-3xl shadow-[0_24px_60px_rgba(15,23,42,0.18)] p-3"
+                >
+                  <div className="grid sm:grid-cols-2 gap-1">
+                    {PRODUCT_LINKS.map((p) => (
+                      <Link
+                        key={p.id}
+                        href={p.href}
+                        role="menuitem"
+                        onClick={() => setProductsOpen(false)}
+                        aria-current={pathname?.startsWith(p.href) ? "page" : undefined}
+                        className="flex items-start gap-3 px-3 py-2.5 rounded-2xl hover:bg-slate-100 transition-colors"
+                      >
+                        <SuiteIcon id={p.id} size={36} />
+                        <span className="min-w-0">
+                          <span className="flex items-center gap-2 text-[14px] font-bold text-slate-900">
+                            <span className="truncate">{p.name}</span>
+                            {badgeLabel(p) && (
+                              <span className="shrink-0 px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold uppercase tracking-wider">{badgeLabel(p)}</span>
+                            )}
+                          </span>
+                          <span className="block text-[12.5px] text-slate-500 leading-snug mt-0.5">{p.tagline}</span>
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                  <div className="mt-2 flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3">
+                    <span className="text-[13px] text-slate-600">Every program is free with one account.</span>
+                    <Link href="/download" onClick={() => setProductsOpen(false)} className="text-[13px] font-semibold text-blue-600 hover:text-blue-700">
+                      All downloads →
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+            {/* guides, grids and the online tools */}
+            <div className="relative" ref={resourcesRef}>
+              <button
+                type="button"
+                onClick={() => {
+                  setResourcesOpen((o) => !o);
+                  setProductsOpen(false);
+                }}
+                aria-haspopup="menu"
+                aria-expanded={resourcesOpen}
+                className={`inline-flex items-center gap-1 whitespace-nowrap px-2.5 lg:px-3 xl:px-4 py-2 text-[14px] font-semibold rounded-full transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+                  RESOURCE_LINKS.some((r) => pathname?.startsWith(r.href)) ? "text-slate-900 bg-black/[0.05]" : "text-slate-600 hover:text-slate-900 hover:bg-black/5"
+                }`}
+              >
+                Resources <ChevronDown className={`w-3.5 h-3.5 transition-transform ${resourcesOpen ? "rotate-180" : ""}`} aria-hidden />
+              </button>
+              {resourcesOpen && (
+                <div
+                  role="menu"
+                  className="absolute left-1/2 -translate-x-1/2 mt-3 w-80 bg-white/95 backdrop-blur-xl border border-black/[0.08] rounded-3xl shadow-[0_24px_60px_rgba(15,23,42,0.18)] p-2"
+                >
+                  {RESOURCE_LINKS.map((r) => (
+                    <Link
+                      key={r.href}
+                      href={r.href}
+                      role="menuitem"
+                      onClick={() => setResourcesOpen(false)}
+                      aria-current={pathname?.startsWith(r.href) ? "page" : undefined}
+                      className="flex items-start gap-3 px-3 py-2.5 rounded-2xl hover:bg-slate-100 transition-colors"
+                    >
+                      <span className="mt-0.5 inline-flex w-8 h-8 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                        <r.icon className="w-4 h-4" aria-hidden />
+                      </span>
+                      <span>
+                        <span className="block text-[14px] font-bold text-slate-900">{r.label}</span>
+                        <span className="block text-[12.5px] text-slate-500 leading-snug">{r.text}</span>
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
             {NAV_LINKS.map((link) => {
               const isActive = link.path ? Boolean(pathname?.startsWith(link.path)) : activeId === link.id;
               return (
@@ -171,44 +292,6 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
                 </Link>
               );
             })}
-            {PRODUCT_LINKS.length > 0 && (
-              <div className="relative" ref={productsRef}>
-                <button
-                  type="button"
-                  onClick={() => setProductsOpen((o) => !o)}
-                  aria-haspopup="menu"
-                  aria-expanded={productsOpen}
-                  className={`inline-flex items-center gap-1 whitespace-nowrap px-2.5 lg:px-3 xl:px-4 py-2 text-[14px] font-semibold rounded-full transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
-                    PRODUCT_LINKS.some((p) => pathname?.startsWith(p.href)) ? "text-slate-900 bg-black/[0.05]" : "text-slate-600 hover:text-slate-900 hover:bg-black/5"
-                  }`}
-                >
-                  Products <ChevronDown className={`w-3.5 h-3.5 transition-transform ${productsOpen ? "rotate-180" : ""}`} aria-hidden />
-                </button>
-                {productsOpen && (
-                  <div role="menu" className="absolute left-1/2 -translate-x-1/2 mt-3 w-80 bg-white/95 backdrop-blur-xl border border-black/[0.08] rounded-2xl shadow-[0_16px_40px_rgba(0,0,0,0.12)] p-2">
-                    {PRODUCT_LINKS.map((p) => (
-                      <Link
-                        key={p.id}
-                        href={p.href}
-                        role="menuitem"
-                        onClick={() => setProductsOpen(false)}
-                        aria-current={pathname?.startsWith(p.href) ? "page" : undefined}
-                        className="block px-3 py-2.5 rounded-xl hover:bg-slate-100 transition-colors"
-                      >
-                        <span className="flex items-center gap-2 text-[14px] font-bold text-slate-900">
-                          {p.name}
-                          <span className="text-[11px] font-semibold text-slate-400">{p.version}</span>
-                          {badgeLabel(p) && (
-                            <span className="ml-auto px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold uppercase tracking-wider">{badgeLabel(p)}</span>
-                          )}
-                        </span>
-                        <span className="block text-[12.5px] text-slate-500 leading-snug mt-0.5">{p.platform} · {p.tagline}</span>
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
           </nav>
 
           {/* Right Actions */}
@@ -278,10 +361,10 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
                 <span>Download</span>
               </a>
             ) : (
-              <button onClick={onDownloadClick} className={downloadCls}>
+              <Link href="/download" title="Download our programs" className={downloadCls}>
                 <Download className="w-4 h-4" />
                 <span>Download</span>
-              </button>
+              </Link>
             )}
 
             {/* Mobile Menu Toggle */}
@@ -307,7 +390,7 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
       >
         <div className="flex-1 overflow-y-auto pt-28 px-6 pb-6 flex flex-col">
           <nav aria-label="Main" className="flex flex-col gap-6 flex-1">
-            {[...NAV_LINKS, ...PRODUCT_LINKS.map((p) => ({ label: p.name, href: p.href }))].map(link => (
+            {[...PRODUCT_LINKS.map((p) => ({ label: p.name, href: p.href })), ...RESOURCE_LINKS, ...NAV_LINKS].map(link => (
               <Link key={link.label} href={link.href} onClick={() => setMobileMenuOpen(false)} className="text-3xl font-black text-slate-900 tracking-tight flex items-center justify-between group">
                 <span>{link.label}</span>
                 <ChevronDown className="w-6 h-6 -rotate-90 opacity-0 group-hover:opacity-100 group-hover:translate-x-2 transition-all text-[#0071e3]" />

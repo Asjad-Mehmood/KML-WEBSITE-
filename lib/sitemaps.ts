@@ -37,6 +37,7 @@ export function priorityEntries(): Entry[] {
     page("/tutorial", 0.9),
     ...PRODUCTS.map((p) => page(p.href, 0.9)),
     page(SLOPE_FILES.manual.href, 0.6),
+    page("/excel-to-kml", 0.9),
     page("/how-it-works", 0.8),
     page("/formats", 0.8),
     page("/faq", 0.8),

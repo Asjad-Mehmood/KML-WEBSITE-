@@ -5,7 +5,6 @@ import { goToDownload } from "@/lib/downloadHandoff";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import Navbar from "../components/Navbar";
-import Hero from "../components/Hero";
 import HeroClassic from "../components/HeroClassic";
 import Showcase from "../components/Showcase";
 // Hidden from the home page to keep it short; uncomment here and below to bring it back
@@ -23,18 +22,16 @@ import GridsAndGuides from "../components/GridsAndGuides";
 import CtaBanner from "../components/CtaBanner";
 import Footer from "../components/Footer";
 import ToolkitFlow from "../components/home/ToolkitFlow";
-import { ExcelToKmlSection, FolderManagerSection, RoadProSection, TraverseSection } from "../components/home/ProductSections";
+import { CompanyCta, CompanyHero, ProductGrid, ToolkitBand, WhyUs } from "../components/home/CompanyHome";
 import HomeReviews from "../components/home/HomeReviews";
-import DownloadCentre from "../components/home/DownloadCentre";
 import HomeFaq from "../components/home/HomeFaq";
-import AccountCta from "../components/home/AccountCta";
 import { useAuth } from "../context/AuthContext";
 import type { HomeHero } from "@/lib/siteSettings";
 import type { PublicStats } from "@/lib/publicCounts";
 
-// heroStyle (Admin → Settings → Home page): "new" is the home page for every program (a tab
-// for each in the hero, then a section for each, every download and questions about them all);
-// "classic" is the earlier home page, all about Excel to KML
+// heroStyle (Admin → Settings → Home page): "new" is the website's home page (the suite, every
+// product, the Survey Toolkit, how they work together, reviews, guides and questions);
+// "classic" is the page all about Excel to KML, which is also Excel to KML's own page (/excel-to-kml)
 // What the sign-in popup says when a download needs an account: why, and that it's quick
 const DOWNLOAD_INTENT =
   "Create a free account to download: it takes 30 seconds, or one click with Google. It keeps your downloads and files, and tells you when there's an update.";
@@ -109,24 +106,20 @@ export default function HomeClient({ heroStyle = "new", stats = null }: { heroSt
           </>
         ) : (
           <>
-            {/* A tab and screenshot for every program */}
-            <Hero versionTag={versionTag} fileSizeText={fileSizeText} onDownloadClick={handleDownloadApp} stats={stats} />
-            {/* How the four programs follow one job */}
+            {/* The website's home: the suite, every product and where to go next */}
+            <CompanyHero stats={stats} />
+            <ProductGrid excelVersion={versionTag} />
+            <ToolkitBand />
+            {/* How the programs follow one job */}
             <ToolkitFlow />
-            {/* A section for each program, Excel to KML first with the live converter */}
-            <ExcelToKmlSection versionTag={versionTag} fileSizeText={fileSizeText} onDownloadClick={handleDownloadApp} />
-            <RoadProSection />
-            <TraverseSection />
-            <FolderManagerSection />
+            <WhyUs />
             {/* Published reviews of any program; hidden until there are some */}
             <HomeReviews />
-            {/* Every program's download */}
-            <DownloadCentre versionTag={versionTag} fileSizeText={fileSizeText} onDownloadClick={handleDownloadApp} stats={stats} />
             {/* Grid converter pages and guides */}
             <GridsAndGuides leftHeading />
             {/* Questions about every program (FaqStructuredData home in app/page.tsx) */}
             <HomeFaq />
-            <AccountCta />
+            <CompanyCta />
           </>
         )}
       </main>

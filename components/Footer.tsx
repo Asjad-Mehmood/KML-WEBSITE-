@@ -67,7 +67,7 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
           {/* Every program */}
           <FooterNav label="Programs">
             <li>
-              <Link href="/features" className={linkCls}>Excel to KML</Link>
+              <Link href="/excel-to-kml" className={linkCls}>Excel to KML</Link>
             </li>
             {PRODUCTS.map((p) => (
               <li key={p.id}>
