@@ -9110,7 +9110,7 @@
     <span class="sline"></span>
     <button class="step" id="stSave" type="button" data-n="4"><span class="sdot">4</span><span class="stx">Save</span></button>
     <span class="spacer"></span>
-    <button class="qcsum" id="stQc" type="button">Quality checks: <b id="stQcTx">not run yet</b></button>
+    <button class="qcsum" id="stQc" type="button" style="display:none">Quality checks: <b id="stQcTx">not run yet</b></button>
   </div>
 
   <div class="mtabs" id="mtabs">
@@ -9124,10 +9124,7 @@
       <button class="ritem" type="button" data-sec="jobs" title="Jobs"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span class="rl">Jobs</span><span class="rs" id="rs-jobs"></span><span class="rdot" id="rd-jobs"></span></button>
       <button class="ritem on" type="button" data-sec="points" title="Points in"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9.5h18M3 15h18M9 9.5V20"/></svg><span class="rl">Points in</span><span class="rs" id="rs-points"></span><span class="rdot" id="rd-points"></span></button>
       <button class="ritem" type="button" data-sec="grid" title="Coordinate system"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg><span class="rl">Coordinate system</span><span class="rs" id="rs-grid"></span><span class="rdot" id="rd-grid"></span></button>
-      <button class="ritem" type="button" data-sec="sitecal" title="Site calibration"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19 19 5M9 5h10v10"/></svg><span class="rl">Site calibration</span><span class="rs" id="rs-sitecal"></span><span class="rdot" id="rd-sitecal"></span></button>
       <div class="rsep" aria-hidden="true"></div>
-      <button class="ritem" type="button" data-sec="checks" title="Quality checks"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg><span class="rl">Quality checks</span><span class="rs" id="rs-checks"></span><span class="rdot" id="rd-checks"></span></button>
-      <button class="ritem" type="button" data-sec="compare" title="Against design"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 19h18"/><path d="M4 15l5-6 4 3 7-8"/></svg><span class="rl">Against design</span><span class="rs" id="rs-compare"></span><span class="rdot" id="rd-compare"></span></button>
       <div class="rsep" aria-hidden="true"></div>
       <button class="ritem" type="button" data-sec="symbols" title="Symbols and labels"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7.5" cy="7.5" r="3.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/><path d="M17 3.5l3.5 6h-7z"/><path d="M4.5 19.5l6-6"/></svg><span class="rl">Symbols and labels</span><span class="rs" id="rs-symbols"></span><span class="rdot" id="rd-symbols"></span></button>
       <button class="ritem" type="button" data-sec="library" title="Symbol library"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6-5.3-6-10a6 6 0 0 1 12 0c0 4.7-6 10-6 10z"/><circle cx="12" cy="11" r="2.2"/><path d="M4 21h16"/></svg><span class="rl">Symbol library</span><span class="rs" id="rs-library"></span><span class="rdot" id="rd-library"></span></button>
@@ -9415,6 +9412,14 @@ POINT NUMBER   STATION   EASTING   NORTHING   ELEVATION   LATITUDE   LONGITUDE  
               </div>
             </div>
           </fieldset>
+          <div class="zrow" style="margin-top:4px">
+            <div class="zf" style="flex:1;min-width:210px">
+              <label for="altGrid">Grid for exported coordinates — used by Save CSV, Save Excel and Save DXF</label>
+              <input type="text" id="altGrid" spellcheck="false"
+                placeholder="2932 · QATAR-NG · 32639 — leave empty for none">
+              <span class="zsub" id="altNote" style="margin:3px 0 0"></span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -9836,14 +9841,6 @@ PC-01,229045.640,392414.010"></textarea>
             </div>
           </div>
           <div class="qa" id="qaCards"></div>
-          <div class="zrow" style="margin-top:4px">
-            <div class="zf" style="flex:1;min-width:210px">
-              <label for="altGrid">Grid for exported coordinates — used by Save CSV, Save Excel and Save DXF</label>
-              <input type="text" id="altGrid" spellcheck="false"
-                placeholder="2932 · QATAR-NG · 32639 — leave empty for none">
-              <span class="zsub" id="altNote" style="margin:3px 0 0"></span>
-            </div>
-          </div>
           <div class="qalist hidden" id="qaList"></div>
         </div>
       </div>
@@ -11125,8 +11122,6 @@ PC-01,229045.640,392414.010"></textarea>
           " outside tolerance.</b> Points outside are marked red in the saved file.");
       }
       var bad = runChecks();
-      if (bad) h += logLine("warn", "<b>Quality checks found " + bad + " thing" + (bad === 1 ? "" : "s") +
-        " to look at.</b> Open Quality checks on the left for the list.");
       /* these lines are added after the log was first drawn, so draw it again */
       rep.innerHTML = h;
       if (PHOTOS.length) {
@@ -11559,7 +11554,6 @@ PC-01,229045.640,392414.010"></textarea>
         "</ol></div>" +
         "<div><h3>Worth knowing</h3><ul>" +
         "<li><b>Symbols and labels</b> holds your code library \u2014 set TBM once, every job after.</li>" +
-        "<li><b>Quality checks</b> runs by itself and catches repeats and odd levels.</li>" +
         "<li>The <b>Radar simulator</b> gives the bearing and distance to every point from a station.</li>" +
         "<li>The <b>Manual</b> button has all of it, with pictures.</li>" +
         "</ul></div></div>" +
@@ -13089,10 +13083,10 @@ PC-01,229045.640,392414.010"></textarea>
       DXFGRID = hasGrid ? null : altTarget();
       if (!hasGrid && !DXFGRID) {
         $("report").innerHTML = logLine("bad", "<b>No grid for the drawing yet.</b> These points are " +
-          "latitude and longitude, and a drawing needs metres on a grid. Open Quality checks and put " +
+          "latitude and longitude, and a drawing needs metres on a grid. Open Coordinate system and put " +
           "your grid in the box for exported coordinates — DUB-DLTM, QND95, 32640 — then press Save DXF again.") +
           $("report").innerHTML;
-        var z = $("checks"); if (z.classList.contains("shut")) z.querySelector(".zonehead").click();
+        goSection("grid"); var z = $("zone"); if (z.classList.contains("shut")) z.querySelector(".zonehead").click();
         $("altGrid").focus();
         return;
       }
@@ -14797,13 +14791,6 @@ PC-01,229045.640,392414.010"></textarea>
       else if (gridTrusted(cfg)) it.push(["ok", "Grid tied to WGS 84 within about a metre", gridTrusted(cfg) + " Checking a known mark is optional.", "proof", "Check a mark"]);
       else it.push(["warn", "Grid not proved yet", "Check one mark you already know before you rely on these positions.", "proof", "Check a mark"]);
 
-      var q = $("chkSum").textContent;
-      if (/nothing wrong/.test(q)) it.push(["ok", "Quality checks: all clear", "No repeats, near-duplicates, odd levels or missing levels.", "checks", "Checks"]);
-      else if (/to look at/.test(q)) it.push(["warn", "Quality checks: " + q, "Look them over before the file goes out.", "checks", "Look"]);
-
-      var c = $("cmpSum").textContent, m = /(\d+) outside/.exec(c);
-      if (m) it.push([m[1] === "0" ? "ok" : "warn", "Against design: " + c, m[1] === "0" ? "Every point within tolerance." : "Marked in the file and carried into the report.", "compare", "Design"]);
-
       if (typeof PHOTOS !== "undefined" && PHOTOS.length) {
         var used = {}, n = 0;
         READY.pts.forEach(function (g) { photosFor(g.d).forEach(function (p) { if (!used[p.key]) { used[p.key] = 1; n++; } }); });
@@ -16185,9 +16172,9 @@ PC-01,229045.640,392414.010"></textarea>
       var fmt = $("instFmt").value, r = instrumentFile(fmt);
       if (!r) {
         $("report").innerHTML = logLine("bad", "<b>No grid for the instrument yet.</b> These points are " +
-          "latitude and longitude. Put the grid in the export box under Quality checks, then save again.") +
+          "latitude and longitude. Put the grid in the export box under Coordinate system, then save again.") +
           $("report").innerHTML;
-        var z = $("checks"); if (z.classList.contains("shut")) z.querySelector(".zonehead").click();
+        goSection("grid"); var z = $("zone"); if (z.classList.contains("shut")) z.querySelector(".zonehead").click();
         return;
       }
       var name = baseName() + (fmt === "gsi" ? "" : " " + fmt.toUpperCase()) + r.ext;
@@ -16434,7 +16421,7 @@ PC-01,229045.640,392414.010"></textarea>
       if (j.near) $("chkNear").value = j.near;
       if (j.jump) $("chkJump").value = j.jump;
       crsChosen(); refresh(); lineReport();
-      if (j.ctrl) { scRun(); if (j.scon) { $("scApply").checked = true; SC.on = true; refresh(); } }
+      if (j.ctrl) { scRun();  }
       $("report").innerHTML = logLine("ok", "<b>Job loaded.</b> " + esc(nm) + ".") + $("report").innerHTML;
     });
     $("jobDel").addEventListener("click", function () {
@@ -16535,7 +16522,7 @@ PC-01,229045.640,392414.010"></textarea>
       });
       LOGO = s.logo ? { name: s.logo.name, bytes: s.logo.bytes instanceof Uint8Array ? s.logo.bytes : new Uint8Array(s.logo.bytes) } : null;
       $("logoNote").textContent = LOGO ? LOGO.name + " · " + Math.round(LOGO.bytes.length / 1024) + " KB" : "none";
-      DESIGNTXT = s.design || null; DESIGN = DESIGNTXT ? designRead(DESIGNTXT) : null;
+      DESIGNTXT = null; DESIGN = DESIGNTXT ? designRead(DESIGNTXT) : null;
       var missed = jobFieldsApply(s.fields);
       if (s.epsg && window.CRSDB && window.CRSDB[s.epsg]) CRSSEL = { c: s.epsg, e: window.CRSDB[s.epsg] };
       SYMCOL = s.symcol || ""; SYMPICK = s.sympick || {}; SYMTINT = s.symtint || {};
@@ -16547,7 +16534,7 @@ PC-01,229045.640,392414.010"></textarea>
       /* choices whose lists fill in only once the sheet is read */
       if (missed.length) { jobFieldsApply(missed.reduce(function (o, k) { o[k] = s.fields[k]; return o; }, {})); }
       if (SYMCOL) $("symCol").value = SYMCOL;
-      if ($("ctrlText").value.trim()) { scRun(); if (s.scon) { $("scApply").checked = true; SC.on = true; } }
+      if ($("ctrlText").value.trim()) { scRun();  }
       runCompare(); lineReport(); drawThumbs(); refresh();
       if (s.src) $("srcNote").textContent = s.src;
       if (s.trav && typeof tvLoad === "function") tvLoad(s.trav);

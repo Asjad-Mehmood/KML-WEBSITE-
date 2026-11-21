@@ -7,7 +7,8 @@ import { useAuth } from "../../context/AuthContext";
 import { WEB_APP_LOGIN_URL } from "@/lib/authRedirect";
 import { RotateCw, Maximize2, Minimize2, ArrowLeft, Download, Loader2 } from "lucide-react";
 
-export default function WebAppClient() {
+/** inToolkit: shown inside Survey Toolkit, which has its own bar: the app alone, no website around it */
+export default function WebAppClient({ inToolkit = false }: { inToolkit?: boolean }) {
   const { user, isLoading: authLoading } = useAuth();
   const frameRef = useRef<HTMLIFrameElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -57,7 +58,7 @@ export default function WebAppClient() {
   return (
     <div className="flex flex-col h-screen h-dvh w-screen overflow-hidden bg-white text-slate-900 font-sans">
       {/* Top App Bar */}
-      {!isFullscreen && (
+      {!isFullscreen && !inToolkit && (
         <header className="flex-none h-14 bg-white border-b border-slate-200 px-2 sm:px-4 flex items-center justify-between gap-2 z-30 shadow-2xs">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <Link
