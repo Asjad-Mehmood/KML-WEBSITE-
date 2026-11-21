@@ -3,13 +3,16 @@ import { db } from "@/lib/db";
 import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
 import { HANDOFF_PAGES, createHandoff, takeHandoff } from "@/lib/toolkit/store";
 import { mayUseToolkit } from "@/lib/toolkit/access";
+import { IN_TOOLKIT_COOKIE } from "@/lib/toolkit/inToolkit";
 
 // Survey Toolkit (beta test): signing in the web apps the Toolkit shows inside its own window
 // (lib/toolkit/store.ts, "sign-in handover").
 //   POST { "next": "/slope-calculation/app" }  with "Authorization: Bearer <token>", testers only
 //        → { "url": "https://…/api/toolkit/handoff?code=…" }, good once for 60 seconds
 //   GET  ?code=…  → signs this browser in (a session of its own) and goes on to the app; an
-//        unknown, used or expired code goes on to the app's own sign-in instead
+//        unknown, used or expired code goes on to the app's own sign-in instead. It also marks
+//        this browser as the Toolkit's window (IN_TOOLKIT_COOKIE): there the web app shows
+//        without the website around it, so the Toolkit can't be used to browse the website.
 
 export async function POST(req: NextRequest) {
   const s = await sessionForToken(tokenFromRequest(req));
@@ -45,6 +48,14 @@ export async function GET(req: NextRequest) {
   const res = NextResponse.redirect(new URL(next, req.nextUrl.origin), 303);
   res.headers.set("Cache-Control", "no-store");
   res.headers.set("Referrer-Policy", "no-referrer");
+  // Only the Toolkit gets handover codes, so this browser is the Toolkit's window
+  res.cookies.set(IN_TOOLKIT_COOKIE, "1", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 365 * 24 * 60 * 60,
+    path: "/",
+  });
   if (!taken) return res;
   try {
     const session = await db.createSession(taken.userId);
