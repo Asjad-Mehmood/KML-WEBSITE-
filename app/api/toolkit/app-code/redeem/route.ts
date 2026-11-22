@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { signedInResponse } from "@/lib/loginResponse";
+import { sessionForToken } from "@/lib/serverSession";
 import { clientIp, recordFailure, tooManyFailures } from "@/lib/loginThrottle";
 import { APP_CODE_PROGRAMS, takeHandoff } from "@/lib/toolkit/store";
 
@@ -24,10 +25,12 @@ export async function GET(req: NextRequest) {
   const app = req.nextUrl.searchParams.get("app") || "";
   const start = WEB_WINDOW_START[app];
   if (!start) return NextResponse.json({ error: "Unknown program." }, { status: 400 });
-  const signedIn = await redeem(req, (req.nextUrl.searchParams.get("code") || "").trim(), app);
   const res = NextResponse.redirect(new URL(start, req.nextUrl.origin), 303);
   res.headers.set("Cache-Control", "no-store");
   res.headers.set("Referrer-Policy", "no-referrer");
+  // the window is signed in already: that sign-in stays, and the code is left unused (it runs out)
+  if (await sessionForToken(req.cookies.get("surveyor_auth_token")?.value).catch(() => null)) return res;
+  const signedIn = await redeem(req, (req.nextUrl.searchParams.get("code") || "").trim(), app);
   if (signedIn.ok) for (const c of signedIn.cookies.getAll()) res.cookies.set(c);
   return res;
 }
