@@ -65,8 +65,9 @@ const ICONS: Record<string, LucideIcon> = {
 const ABOUT: Record<string, { text: string; points: string[]; page: string; webApp?: string }> = {
   "excel-to-kml": {
     text: "Survey coordinates from Excel or CSV, on 5,800+ EPSG grids, into Google Earth KML, KMZ and DXF.",
-    points: ["Site photos and PDF reports", "Quality checks on every point", "On Windows and in the browser"],
-    page: "/download",
+    points: ["Site photos and PDF reports", "Levels, boundaries and areas", "On Windows and in the browser"],
+    // everything Excel to KML does; /download is only its download
+    page: "/features",
     webApp: "/app",
   },
   roadpro: {

@@ -118,6 +118,8 @@ export default function AdminReleases({
 }) {
   const [data, setData] = useState<Data | null>(null);
   const [loading, setLoading] = useState(true);
+  // the overview's lower part: every release, the emails sent, or who stopped release emails
+  const [tab, setTab] = useState<"releases" | "emails" | "optouts">("releases");
   const [editing, setEditing] = useState<{ release: Partial<Release> & { app: string }; isNew: boolean } | null>(null);
   const [preview, setPreview] = useState<{ subject: string; html: string; text: string } | null>(null);
   const [confirming, setConfirming] = useState<{ release: Release; who: Who } | null>(null);
@@ -514,26 +516,6 @@ export default function AdminReleases({
 
   return (
     <div className="space-y-6">
-      {/* an app's page has its own header below */}
-      <div className={`${shown ? "hidden" : "flex"} flex-col sm:flex-row sm:items-center justify-between gap-4`}>
-        <div>
-          <h3 className="text-base font-bold text-white">Releases</h3>
-          <p className="text-xs text-slate-400">
-            Every version of each app. A release goes to the people who downloaded or used that app, new version or past; each email has a link to stop release emails.
-          </p>
-        </div>
-        <button
-          onClick={() => {
-            setLoading(true);
-            load();
-          }}
-          aria-label="Refresh"
-          className="self-start sm:self-auto p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white cursor-pointer"
-        >
-          <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
-        </button>
-      </div>
-
       {/* Email and audience: on the overview; an app's page only warns when email isn't set up */}
       {shown && !data.mail.configured && (
         <p className="rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
@@ -541,58 +523,87 @@ export default function AdminReleases({
         </p>
       )}
       {!shown && (
-      <>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <div className={`rounded-2xl border p-4 ${data.mail.configured ? "border-slate-800 bg-slate-900/60" : "border-amber-500/40 bg-amber-500/10"}`}>
-          <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400">
-            <Mail className="w-4 h-4" /> Sends from
-          </p>
-          {data.mail.configured ? (
-            <>
-              <p className="mt-1.5 text-sm text-white break-all">{data.mail.from}</p>
-              {data.mail.freeMailbox && (
-                <p className="mt-1.5 text-xs text-amber-300 leading-relaxed">
-                  Emails to many people from a personal Gmail address often land in Spam. Sending from your own domain (for example hello@exceltokml.com) through an email service fixes this. Emails now go out a few seconds apart, so keep this page open while they send.
-                </p>
-              )}
-            </>
-          ) : (
-            <p className="mt-1.5 text-sm text-amber-200">Email isn&apos;t set up. Add SMTP_HOST, SMTP_USER and SMTP_PASS in Vercel, then redeploy.</p>
-          )}
+        <div className="flex flex-wrap items-stretch gap-2">
+          <div
+            className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-[13px] ${
+              data.mail.configured ? "border-slate-800 bg-slate-900/60 text-slate-300" : "border-amber-500/40 bg-amber-500/10 text-amber-200"
+            }`}
+            title={
+              data.mail.configured
+                ? `Gmail sends about 500 emails a day (2,000 with Google Workspace). A send that reaches the limit pauses by itself; press Continue the next day.${
+                    data.mail.freeMailbox ? " Emails to many people from a personal Gmail address often land in Spam; sending from your own domain fixes this." : ""
+                  }`
+                : "Add SMTP_HOST, SMTP_USER and SMTP_PASS in Vercel, then redeploy."
+            }
+          >
+            <Mail className="w-4 h-4 shrink-0" />
+            {data.mail.configured ? (
+              <span>
+                Sends from <b className="text-white break-all">{data.mail.from}</b>
+              </span>
+            ) : (
+              <span>
+                <b>Email isn&apos;t set up</b>: add SMTP_HOST, SMTP_USER and SMTP_PASS in Vercel
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900/60 px-3 py-2 text-[13px] text-slate-300" title="Each app's releases go only to the people who use it">
+            <Users className="w-4 h-4 shrink-0" />
+            <span>
+              <b className="text-white tabular-nums">{data.audience.everyone.toLocaleString()}</b> {data.audience.everyone === 1 ? "account" : "accounts"}
+            </span>
+          </div>
+          <button
+            onClick={() => setTab("optouts")}
+            className="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900/60 px-3 py-2 text-[13px] text-slate-300 hover:border-slate-600 cursor-pointer"
+            title="They pressed Stop release emails in an email, so they're left out"
+          >
+            <Megaphone className="w-4 h-4 shrink-0" />
+            <span>
+              <b className="text-white tabular-nums">{data.audience.optedOut}</b> stopped release emails
+            </span>
+          </button>
+          <button
+            onClick={() => {
+              setLoading(true);
+              load();
+            }}
+            aria-label="Refresh"
+            className="ml-auto self-center p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white cursor-pointer"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+          </button>
         </div>
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
-          <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400">
-            <Users className="w-4 h-4" /> Accounts
-          </p>
-          <p className="mt-1.5 text-sm text-white">
-            <b className="text-lg">{data.audience.everyone}</b> {data.audience.everyone === 1 ? "person" : "people"} with an account
-          </p>
-          <p className="mt-0.5 text-xs text-slate-500">Each app&apos;s releases go only to the people who use it: open the app under Releases in the menu to see how many.</p>
-        </div>
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
-          <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400">
-            <Megaphone className="w-4 h-4" /> Unsubscribed
-          </p>
-          <p className="mt-1.5 text-sm text-white">
-            <b className="text-lg">{data.audience.optedOut}</b> stopped release emails
-          </p>
-          <p className="mt-0.5 text-xs text-slate-500">They pressed &ldquo;Stop release emails&rdquo; in an email, so they&apos;re left out.</p>
-        </div>
-      </div>
-      <p className="text-xs text-slate-500 -mt-3">
-        Gmail sends about 500 emails a day (2,000 with Google Workspace). A broadcast that reaches the limit pauses by itself; press Continue the next day and it carries on
-        with the people not reached yet.
-      </p>
-      </>
       )}
 
-      {/* every app: the versions, every release, the emails sent and who stopped them */}
+      {/* every app: its versions; then every release, the emails sent and who stopped them, one at a time */}
       {!shown && (
         <>
           <VersionBoard adminFetch={adminFetch} onToast={(m, t) => toast.current(m, t)} onShow={onShow} onImported={load} />
-          <ReleaseTimeline releases={allReleases} onShow={onShow} onEdit={editById} />
-          <EmailHistory adminFetch={adminFetch} onToast={(m, t) => toast.current(m, t)} onRun={run} reloadKey={historyKey} />
-          <OptOuts adminFetch={adminFetch} onToast={(m, t) => toast.current(m, t)} onOpenAccount={onOpenAccount} onChanged={load} />
+          <div>
+            <div role="tablist" aria-label="Releases and emails" className="mb-3 inline-flex rounded-xl border border-slate-800 bg-slate-900/60 p-1">
+              {(
+                [
+                  ["releases", `Every release · ${allReleases.length}`],
+                  ["emails", "Emails sent"],
+                  ["optouts", `Stopped emails · ${data.audience.optedOut}`],
+                ] as const
+              ).map(([id, label]) => (
+                <button
+                  key={id}
+                  role="tab"
+                  aria-selected={tab === id}
+                  onClick={() => setTab(id)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer ${tab === id ? "bg-blue-600 text-white" : "text-slate-400 hover:text-white"}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            {tab === "releases" && <ReleaseTimeline releases={allReleases} onShow={onShow} onEdit={editById} />}
+            {tab === "emails" && <EmailHistory adminFetch={adminFetch} onToast={(m, t) => toast.current(m, t)} onRun={run} reloadKey={historyKey} />}
+            {tab === "optouts" && <OptOuts adminFetch={adminFetch} onToast={(m, t) => toast.current(m, t)} onOpenAccount={onOpenAccount} onChanged={load} />}
+          </div>
         </>
       )}
 

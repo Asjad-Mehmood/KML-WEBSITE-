@@ -22,6 +22,15 @@ import {
   RotateCcw,
   Search,
   UserCheck,
+  Compass,
+  FileSpreadsheet,
+  FolderTree,
+  LayoutGrid,
+  Package,
+  PenTool,
+  Route,
+  TrendingUp,
+  type LucideIcon,
 } from "lucide-react";
 
 type Fetch = (url: string, options?: RequestInit) => Promise<Response>;
@@ -72,6 +81,17 @@ export function NoteLines({ notes, limit }: { notes: string; limit?: number }) {
 }
 
 // ---------------------------------------------------------------- the version board
+
+/** Each app's icon, as in the admin menu */
+const APP_ICONS: Record<string, LucideIcon> = {
+  "excel-to-kml": FileSpreadsheet,
+  traverse: Compass,
+  slope: TrendingUp,
+  "auto-draft": PenTool,
+  roadpro: Route,
+  "folder-manager": FolderTree,
+  toolkit: LayoutGrid,
+};
 
 interface BoardRow {
   app: { id: string; name: string; href: string; github: string | null };
@@ -150,13 +170,19 @@ export function VersionBoard({
   const needImport = (rows ?? []).filter((r) => r.issues.some((i) => i.text.includes("not in Releases")));
   const warnings = (rows ?? []).reduce((n, r) => n + r.issues.filter((i) => i.tone === "warn").length, 0);
 
+  // the apps with something to do first, then the rest in their usual order
+  const sorted = (rows ?? [])
+    .map((r, i) => ({ r, i, todo: r.issues.filter((x) => x.tone === "warn").length }))
+    .sort((x, y) => (y.todo > 0 ? 1 : 0) - (x.todo > 0 ? 1 : 0) || x.i - y.i)
+    .map((x) => x.r);
+
   return (
-    <section className={card}>
-      <header className="flex flex-wrap items-center gap-3 px-5 py-4 border-b border-slate-800">
+    <section>
+      <header className="flex flex-wrap items-end gap-3 mb-3">
         <div className="mr-auto">
-          <h4 className="text-sm font-bold text-white">Versions</h4>
+          <h4 className="text-sm font-bold text-white">Apps</h4>
           <p className="text-xs text-slate-400">
-            Each app&apos;s version on the site, in Releases here and on GitHub.{" "}
+            Each app&apos;s newest version, on the site and on GitHub, and whether it was emailed.{" "}
             {rows &&
               (warnings ? (
                 <span className="text-amber-300 font-semibold">{warnings} to look at</span>
@@ -173,22 +199,90 @@ export function VersionBoard({
           disabled={!rows || busy !== null}
           className={`${btn} ${needImport.length ? "bg-blue-600 hover:bg-blue-500 text-white" : "bg-slate-800 hover:bg-slate-700 text-slate-200"}`}
         >
-          {busy === "all" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />} Import everything new from GitHub
+          {busy === "all" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />} Import all from GitHub
         </button>
       </header>
       {!rows ? (
-        <p className="px-5 py-8 text-center text-sm text-slate-400">
+        <p className={`${card} px-5 py-8 text-center text-sm text-slate-400`}>
           <Loader2 className="inline w-4 h-4 animate-spin mr-2" /> Asking GitHub…
         </p>
       ) : (
-        <div>
-          {/* a phone: one card per app */}
-          <ul className="md:hidden divide-y divide-slate-800/70">
-            {rows.map((r) => (
-              <li key={r.app.id} className="px-4 py-3">
-                <div className="flex items-center justify-between gap-2">
-                  <button onClick={() => onShow(`releases:${r.app.id}`)} className="text-[14px] font-bold text-white hover:underline cursor-pointer text-left">
-                    {r.app.name}
+        <ul className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+          {sorted.map((r) => {
+            const todo = r.issues.filter((i) => i.tone === "warn").length;
+            const Icon = APP_ICONS[r.app.id] ?? Package;
+            const github = r.github ? `v${r.github.version}` : !r.app.github ? "Not on GitHub" : r.githubAnswered ? "None" : "No answer";
+            return (
+              <li key={r.app.id} className={`${card} flex flex-col p-4 ${todo ? "border-amber-500/30" : ""}`}>
+                <div className="flex items-start gap-3">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-500/10 text-blue-400">
+                    <Icon className="w-5 h-5" aria-hidden />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <button onClick={() => onShow(`releases:${r.app.id}`)} className="block text-left text-[14px] font-bold text-white hover:underline cursor-pointer">
+                      {r.app.name}
+                    </button>
+                    <p className="text-[11.5px] text-slate-500">
+                      {r.releases} {r.releases === 1 ? "release" : "releases"}
+                    </p>
+                  </div>
+                  {todo ? (
+                    <span className="shrink-0 rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-bold text-amber-300">{todo} to do</span>
+                  ) : (
+                    <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[11px] font-bold text-emerald-300">
+                      <CheckCircle2 className="w-3 h-3" aria-hidden /> In step
+                    </span>
+                  )}
+                </div>
+
+                {/* the newest release, large */}
+                <div className="mt-3 flex items-baseline gap-2">
+                  <span className="text-[26px] font-extrabold tracking-tight text-white tabular-nums">{r.newest ? `v${r.newest.version}` : "No release"}</span>
+                  {r.newest && <span className="text-[12px] text-slate-500">{day(r.newest.at)}</span>}
+                </div>
+                {r.newest?.title && <p className="text-[12.5px] text-slate-400 truncate" title={r.newest.title}>{r.newest.title}</p>}
+
+                {/* where it is */}
+                <dl className="mt-3 grid grid-cols-3 gap-2 text-[11px]">
+                  <div className="rounded-lg bg-slate-950/50 border border-slate-800 px-2 py-1.5">
+                    <dt className="text-slate-500">On the site</dt>
+                    <dd className="text-[13px] font-semibold text-white tabular-nums">v{r.site}</dd>
+                    {r.settingsVersion && <dd className="text-[10.5px] text-slate-500">Settings v{r.settingsVersion}</dd>}
+                  </div>
+                  <div className="rounded-lg bg-slate-950/50 border border-slate-800 px-2 py-1.5 min-w-0">
+                    <dt className="text-slate-500">GitHub</dt>
+                    <dd className="text-[13px] font-semibold text-white tabular-nums truncate">
+                      {r.github ? (
+                        <a href={r.github.url} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                          {github} <ExternalLink className="inline w-3 h-3 text-slate-500" />
+                        </a>
+                      ) : (
+                        <span className="text-slate-500 font-normal text-[12px]">{github}</span>
+                      )}
+                    </dd>
+                  </div>
+                  <div className="rounded-lg bg-slate-950/50 border border-slate-800 px-2 py-1.5">
+                    <dt className="text-slate-500">Emailed</dt>
+                    <dd className={`text-[13px] font-semibold tabular-nums ${r.newest?.emailed ? "text-emerald-300" : "text-slate-500 font-normal text-[12px]"}`}>
+                      {r.newest?.emailed ? r.newest.emailed.toLocaleString() : "Not yet"}
+                    </dd>
+                  </div>
+                </dl>
+
+                {/* what to do */}
+                {r.issues.length > 0 && (
+                  <ul className="mt-3 space-y-1">
+                    {r.issues.map((i) => (
+                      <li key={i.text} className={`flex items-start gap-1.5 text-[12px] ${i.tone === "warn" ? "text-amber-300" : "text-slate-400"}`}>
+                        {i.tone === "warn" ? <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-px" /> : <Info className="w-3.5 h-3.5 shrink-0 mt-px" />} {i.text}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                <div className="mt-auto pt-4 flex items-center gap-2">
+                  <button onClick={() => onShow(`releases:${r.app.id}`)} className={`${btn} bg-blue-600 hover:bg-blue-500 text-white`}>
+                    Open <ChevronRight className="w-3.5 h-3.5" />
                   </button>
                   {r.app.github && (
                     <button onClick={() => importApps([r.app.id])} disabled={busy !== null} className={`${btn} bg-slate-800 hover:bg-slate-700 text-slate-200`}>
@@ -196,132 +290,14 @@ export function VersionBoard({
                     </button>
                   )}
                 </div>
-                <dl className="mt-2 grid grid-cols-3 gap-2 text-[11px]">
-                  {(
-                    [
-                      ["Site", `v${r.site}`],
-                      ["Releases", r.newest ? `v${r.newest.version}` : "None"],
-                      ["GitHub", r.github ? `v${r.github.version}` : !r.app.github ? "—" : r.githubAnswered ? "None" : "No answer"],
-                    ] as const
-                  ).map(([k, v]) => (
-                    <div key={k} className="rounded-lg bg-slate-950/60 border border-slate-800 px-2 py-1.5">
-                      <dt className="text-slate-500">{k}</dt>
-                      <dd className="text-[13px] font-semibold text-white tabular-nums">{v}</dd>
-                    </div>
-                  ))}
-                </dl>
-                {r.issues.length > 0 && (
-                  <ul className="mt-2 space-y-0.5">
-                    {r.issues.map((i) => (
-                      <li key={i.text} className={`flex items-start gap-1 text-[12px] ${i.tone === "warn" ? "text-amber-300" : "text-slate-400"}`}>
-                        {i.tone === "warn" ? <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-px" /> : <Info className="w-3.5 h-3.5 shrink-0 mt-px" />}{" "}
-                        {i.text}
-                      </li>
-                    ))}
-                  </ul>
-                )}
               </li>
-            ))}
-          </ul>
-          <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                <tr className="border-b border-slate-800">
-                  <th className="px-5 py-2.5">App</th>
-                  <th className="px-3 py-2.5">The site offers</th>
-                  <th className="px-3 py-2.5">Newest in Releases</th>
-                  <th className="px-3 py-2.5">Newest on GitHub</th>
-                  <th className="px-3 py-2.5 hidden lg:table-cell">Emailed</th>
-                  <th className="px-3 py-2.5">
-                    <span className="sr-only">Actions</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/70">
-                {rows.map((r) => (
-                  <tr key={r.app.id} className="align-top">
-                    <td className="px-5 py-3">
-                      <button
-                        onClick={() => onShow(`releases:${r.app.id}`)}
-                        className="text-[13px] font-bold text-white hover:underline cursor-pointer text-left"
-                      >
-                        {r.app.name}
-                      </button>
-                      <span className="block text-[11px] text-slate-500">
-                        {r.releases} {r.releases === 1 ? "release" : "releases"}
-                      </span>
-                      {r.issues.length > 0 && (
-                        <ul className="mt-1.5 space-y-0.5">
-                          {r.issues.map((i) => (
-                            <li key={i.text} className={`flex items-start gap-1 text-[11.5px] ${i.tone === "warn" ? "text-amber-300" : "text-slate-400"}`}>
-                              {i.tone === "warn" ? <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-px" /> : <Info className="w-3.5 h-3.5 shrink-0 mt-px" />}{" "}
-                              {i.text}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </td>
-                    <td className="px-3 py-3 whitespace-nowrap">
-                      <span className="text-[13px] font-semibold text-white tabular-nums">v{r.site}</span>
-                      {r.settingsVersion && <span className="block text-[11px] text-slate-500">Settings: v{r.settingsVersion}</span>}
-                    </td>
-                    <td className="px-3 py-3 whitespace-nowrap">
-                      {r.newest ? (
-                        <>
-                          <span className="text-[13px] font-semibold text-white tabular-nums">v{r.newest.version}</span>
-                          <span className="block text-[11px] text-slate-500">{day(r.newest.at)}</span>
-                        </>
-                      ) : (
-                        <span className="text-slate-500">None</span>
-                      )}
-                    </td>
-                    <td className="px-3 py-3 whitespace-nowrap">
-                      {r.github ? (
-                        <a href={r.github.url} target="_blank" rel="noopener noreferrer" className="group">
-                          <span className="text-[13px] font-semibold text-white tabular-nums group-hover:underline">v{r.github.version}</span>
-                          <ExternalLink className="inline w-3 h-3 ml-1 text-slate-500" />
-                          <span className="block text-[11px] text-slate-500">
-                            {day(r.github.at)}
-                            {r.github.prerelease ? " · pre-release" : ""}
-                          </span>
-                        </a>
-                      ) : (
-                        <span className="text-slate-500">{!r.app.github ? "Not on GitHub" : r.githubAnswered ? "None" : "No answer"}</span>
-                      )}
-                    </td>
-                    <td className="px-3 py-3 whitespace-nowrap hidden lg:table-cell">
-                      {r.newest?.emailed ? (
-                        <span className="text-emerald-300">
-                          <CheckCircle2 className="inline w-3.5 h-3.5 mr-1" />
-                          {r.newest.emailed.toLocaleString()}
-                          <span className="block text-[11px] text-slate-500">{r.newest.emailedAt ? day(r.newest.emailedAt) : ""}</span>
-                        </span>
-                      ) : (
-                        <span className="text-slate-500">Not yet</span>
-                      )}
-                    </td>
-                    <td className="px-3 py-3 text-right whitespace-nowrap">
-                      {r.app.github && (
-                        <button
-                          onClick={() => importApps([r.app.id])}
-                          disabled={busy !== null}
-                          className={`${btn} bg-slate-800 hover:bg-slate-700 text-slate-200`}
-                        >
-                          {busy === r.app.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />} Import
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <p className="px-5 py-3 text-[11px] text-slate-500 border-t border-slate-800">
-            &ldquo;The site offers&rdquo; is the version on the download pages, set in the site&apos;s code; a new one goes live with the next update of the
-            site. Excel to KML&apos;s download page also shows the version in Admin → Settings until GitHub answers.
-          </p>
-        </div>
+            );
+          })}
+        </ul>
       )}
+      <p className="mt-2 text-[11px] text-slate-500">
+        &ldquo;On the site&rdquo; is the version on the download pages, set in the site&apos;s code; a new one goes live with the next update of the site.
+      </p>
     </section>
   );
 }
