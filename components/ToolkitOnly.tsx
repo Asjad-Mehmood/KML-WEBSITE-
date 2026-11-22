@@ -8,16 +8,22 @@ import { useDirectDownload } from "@/lib/publicSettings";
 
 /**
  * In place of a program's download button while its download is switched off (Admin → Settings →
- * Downloads): the program is installed with the Survey Toolkit, so this leads there. Same look as
- * the button it stands in for.
+ * Downloads): a small note that it comes with the Survey Toolkit, in the colour of the text around it.
+ * [className] is the button's it stands in for; only its margins are kept, so the note sits where
+ * the button would.
  */
 export default function ToolkitOnly({ className, name }: { className?: string; name: string }) {
-  const cls =
-    className ?? "inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-sm font-semibold cursor-pointer";
+  const margins = (className ?? "").split(/\s+/).filter((c) => /^-?m[trblxy]?-/.test(c)).join(" ");
   return (
-    <Link href="/toolkit" className={cls} title={`${name} is installed with the Survey Toolkit`}>
-      <PackageOpen className="w-4 h-4" aria-hidden /> Get it in the Survey Toolkit
-    </Link>
+    <p className={`${margins} inline-flex items-center gap-1.5 text-[13px] leading-snug opacity-80`} title={`${name} is installed with the Survey Toolkit`}>
+      <PackageOpen className="w-4 h-4 shrink-0" aria-hidden />
+      <span>
+        Download it with the{" "}
+        <Link href="/toolkit" className="font-semibold underline underline-offset-2 hover:opacity-80">
+          Survey Toolkit
+        </Link>
+      </span>
+    </p>
   );
 }
 
