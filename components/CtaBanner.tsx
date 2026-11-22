@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { DownloadOrToolkit } from "@/components/ToolkitOnly";
 import { Download, ArrowRight, Sparkles } from "lucide-react";
 import WebAppLink from "./WebAppLink";
 
@@ -29,13 +30,15 @@ export default function CtaBanner({ versionTag, onDownloadClick }: CtaBannerProp
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5">
-          <button 
-            onClick={onDownloadClick}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 text-sm font-semibold text-white bg-[#2563eb] hover:bg-[#1d4ed8] active:translate-y-0.5 rounded-xl shadow-[0_2px_8px_rgba(37,99,235,0.2)] hover:shadow-[0_4px_14px_rgba(37,99,235,0.28)] transition-all cursor-pointer"
-          >
-            <Download className="w-4 h-4" />
-            <span>Download for Windows</span>
-          </button>
+          <DownloadOrToolkit program="excel-to-kml" name="Excel to KML" className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 text-sm font-semibold text-white bg-[#2563eb] hover:bg-[#1d4ed8] rounded-xl">
+            <button 
+              onClick={onDownloadClick}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 text-sm font-semibold text-white bg-[#2563eb] hover:bg-[#1d4ed8] active:translate-y-0.5 rounded-xl shadow-[0_2px_8px_rgba(37,99,235,0.2)] hover:shadow-[0_4px_14px_rgba(37,99,235,0.28)] transition-all cursor-pointer"
+            >
+              <Download className="w-4 h-4" />
+              <span>Download for Windows</span>
+            </button>
+          </DownloadOrToolkit>
 
           <WebAppLink
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 text-sm font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 rounded-xl border border-slate-200/90 shadow-xs transition-colors"

@@ -29,6 +29,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import WebAppLink from "./WebAppLink";
+import ToolkitOnly from "./ToolkitOnly";
+import { directDownloadAllowed, useDirectDownload } from "@/lib/publicSettings";
 import { INSTALLER_NAME } from "@/lib/site";
 
 interface DownloadHubProps {
@@ -74,13 +76,19 @@ export default function DownloadHub({
   const { requireAuth, trackDownload } = useAuth();
   const router = useRouter();
   const [copied, setCopied] = useState<"hash" | "command" | null>(null);
+  // off in Admin → Settings → Downloads: the information stays, the download is the Survey Toolkit's
+  const offered = useDirectDownload("excel-to-kml");
 
   // Tag may or may not carry a leading "v" depending on the GitHub release
   const displayVersion = versionTag.startsWith("v") ? versionTag : `v${versionTag}`;
   const verifyCommand = `Get-FileHash .\\${fileName} -Algorithm SHA256`;
 
   const handleDownloadExe = () => {
-    requireAuth(() => {
+    requireAuth(async () => {
+      if (!(await directDownloadAllowed("excel-to-kml"))) {
+        router.push("/toolkit");
+        return;
+      }
       // Record it, then the thank-you page starts the file
       trackDownload("windows_installer", fileName, versionTag);
       goToDownload(router.push, downloadUrl, versionTag);
@@ -186,10 +194,12 @@ BLDG-C2,228663.388,392422.144,11.15,STRUCTURE,Building Column Corner B
             id="download-heading"
             className="text-2xl sm:text-3xl lg:text-[36px] font-extrabold tracking-tight text-slate-900 mb-4 leading-[1.15]"
           >
-            {asPage ? "Download Excel to KML" : "Get Excel to KML for Windows"}
+            {offered === false ? "Excel to KML for Windows" : asPage ? "Download Excel to KML" : "Get Excel to KML for Windows"}
           </HeadingTag>
           <p className="text-sm sm:text-[15px] text-slate-500 leading-relaxed max-w-[500px] mx-auto">
-            A free, fully offline survey converter. Install in under two minutes, or grab the sample dataset to try a conversion first.
+            {offered === false
+              ? "A free, fully offline survey converter. The Survey Toolkit installs it and keeps it up to date, or try the sample dataset in the web app first."
+              : "A free, fully offline survey converter. Install in under two minutes, or grab the sample dataset to try a conversion first."}
           </p>
         </div>
 
@@ -198,7 +208,7 @@ BLDG-C2,228663.388,392422.144,11.15,STRUCTURE,Building Column Corner B
           <div className="grid grid-cols-1 lg:grid-cols-12">
 
             {/* Left: product + actions */}
-            <div className="lg:col-span-7 p-6 sm:p-8 lg:p-10">
+            <div className={`${offered === false ? "lg:col-span-12" : "lg:col-span-7"} p-6 sm:p-8 lg:p-10`}>
               <div className="flex items-start gap-4 sm:gap-5 mb-6">
                 <div className="shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-[#0a84ff] to-[#0058b0] shadow-[0_8px_20px_-6px_rgba(0,113,227,0.55)] flex items-center justify-center">
                   <MapPinned className="w-7 h-7 sm:w-8 sm:h-8 text-white" strokeWidth={1.8} />
@@ -214,7 +224,7 @@ BLDG-C2,228663.388,392422.144,11.15,STRUCTURE,Building Column Corner B
                     </span>
                   </div>
                   <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
-                    Windows Desktop Installer
+                    {offered === false ? "Excel to KML for Windows" : "Windows Desktop Installer"}
                   </h3>
                   <p className="text-xs text-slate-500 mt-0.5">{releaseDateText}</p>
                 </div>
@@ -239,6 +249,12 @@ BLDG-C2,228663.388,392422.144,11.15,STRUCTURE,Building Column Corner B
               </ul>
 
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                {offered === false ? (
+                  <ToolkitOnly
+                    name="Excel to KML"
+                    className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-[#0071e3] hover:bg-[#0077ed] text-white text-sm font-semibold rounded-xl shadow-[0_4px_14px_rgba(0,113,227,0.28)] transition-all"
+                  />
+                ) : (
                 <button
                   onClick={handleDownloadExe}
                   className="group inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-[#0071e3] hover:bg-[#0077ed] active:translate-y-0.5 text-white text-sm font-semibold rounded-xl shadow-[0_4px_14px_rgba(0,113,227,0.28)] hover:shadow-[0_6px_20px_rgba(0,113,227,0.38)] transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
@@ -247,6 +263,7 @@ BLDG-C2,228663.388,392422.144,11.15,STRUCTURE,Building Column Corner B
                   <span>Download for Windows</span>
                   <span className="text-white text-xs font-normal">· {fileSizeText}</span>
                 </button>
+                )}
 
                 <button
                   onClick={handleDownloadSampleCsv}
@@ -267,7 +284,7 @@ BLDG-C2,228663.388,392422.144,11.15,STRUCTURE,Building Column Corner B
 
             {/* Right, on the home page (compact): the build at a glance and a light note on checking it.
                 The full build details and SHA-256 tools below are on /download. */}
-            {compact && (
+            {compact && offered !== false && (
               <div className="lg:col-span-5 border-t lg:border-t-0 lg:border-l border-slate-200/80 bg-gradient-to-b from-slate-50/80 to-white p-6 sm:p-8 flex flex-col gap-5">
                 <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-500">This release</h4>
                 <dl className="grid grid-cols-2 gap-3">
@@ -301,7 +318,7 @@ BLDG-C2,228663.388,392422.144,11.15,STRUCTURE,Building Column Corner B
             )}
 
             {/* Right, on /download: build details + verification */}
-            {!compact && (
+            {!compact && offered !== false && (
             <div className="lg:col-span-5 bg-white border-t lg:border-t-0 lg:border-l border-slate-200/80 p-6 sm:p-8 flex flex-col">
               <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-3">
                 Build details
@@ -381,6 +398,7 @@ BLDG-C2,228663.388,392422.144,11.15,STRUCTURE,Building Column Corner B
         {!compact && (
           <>
         {/* ── Installation Steps ── */}
+        {offered !== false && (
         <div className="mb-14">
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 mb-8">
             <div>
@@ -439,6 +457,7 @@ BLDG-C2,228663.388,392422.144,11.15,STRUCTURE,Building Column Corner B
             })}
           </ol>
         </div>
+        )}
 
         {/* ── System Requirements ── */}
         <div className="rounded-2xl border border-slate-200/90 bg-slate-50/60 p-5 sm:p-6 mb-14">
@@ -484,6 +503,7 @@ BLDG-C2,228663.388,392422.144,11.15,STRUCTURE,Building Column Corner B
             <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-[#0071e3] group-hover:translate-x-0.5 transition-all shrink-0 mt-1" />
           </WebAppLink>
 
+          {offered !== false && (
           <a
             href={releaseNotesUrl}
             target="_blank"
@@ -506,6 +526,7 @@ BLDG-C2,228663.388,392422.144,11.15,STRUCTURE,Building Column Corner B
             </div>
             <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-slate-700 group-hover:translate-x-0.5 transition-all shrink-0 mt-1" />
           </a>
+          )}
         </div>
           </>
         )}

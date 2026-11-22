@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { DownloadOrToolkit } from "@/components/ToolkitOnly";
 import Link from "next/link";
 import { ArrowRight, BookOpen, Check, ChevronRight, Download, Globe, Info, PlayCircle, Radar } from "lucide-react";
 import WebAppLink from "../WebAppLink";
@@ -85,9 +86,11 @@ export function ExcelToKmlSection({ versionTag, fileSizeText, onDownloadClick }:
             ]}
           />
           <div className="mt-8 flex flex-col sm:flex-row sm:flex-wrap gap-3">
-            <button onClick={onDownloadClick} className={primary} title={fileSizeText ? `Windows installer, ${fileSizeText}` : undefined}>
-              <Download className="w-4 h-4" aria-hidden /> Download for Windows
-            </button>
+            <DownloadOrToolkit program="excel-to-kml" name="Excel to KML" className={primary}>
+              <button onClick={onDownloadClick} className={primary} title={fileSizeText ? `Windows installer, ${fileSizeText}` : undefined}>
+                <Download className="w-4 h-4" aria-hidden /> Download for Windows
+              </button>
+            </DownloadOrToolkit>
             <WebAppLink className={secondary}>
               Open the web app <ChevronRight className="w-4 h-4 text-slate-400" aria-hidden />
             </WebAppLink>

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { DownloadOrToolkit } from "@/components/ToolkitOnly";
 import dynamic from "next/dynamic";
 import {
   Download,
@@ -130,14 +131,16 @@ export default function HeroClassic({ versionTag, fileSizeText, onDownloadClick 
 
             {/* Action Buttons with subtle modern polish */}
             <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 mb-8 w-full">
-              <button
-                onClick={onDownloadClick}
-                className="group inline-flex items-center justify-center gap-2.5 px-6 py-3 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-xl text-sm font-semibold shadow-[0_4px_14px_rgba(0,113,227,0.28)] hover:shadow-[0_6px_20px_rgba(0,113,227,0.38)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-              >
-                <Download className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" />
-                <span>Download for Windows</span>
-                <span className="text-white text-xs font-normal">· {fileSizeText}</span>
-              </button>
+              <DownloadOrToolkit program="excel-to-kml" name="Excel to KML" className="inline-flex items-center justify-center gap-2.5 px-6 py-3 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-xl text-sm font-semibold">
+                <button
+                  onClick={onDownloadClick}
+                  className="group inline-flex items-center justify-center gap-2.5 px-6 py-3 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-xl text-sm font-semibold shadow-[0_4px_14px_rgba(0,113,227,0.28)] hover:shadow-[0_6px_20px_rgba(0,113,227,0.38)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                >
+                  <Download className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" />
+                  <span>Download for Windows</span>
+                  <span className="text-white text-xs font-normal">· {fileSizeText}</span>
+                </button>
+              </DownloadOrToolkit>
 
               <WebAppLink
                 className="group inline-flex items-center justify-center gap-1.5 px-5 py-3 text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200/90 hover:border-slate-300 rounded-xl text-sm font-medium shadow-xs transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"

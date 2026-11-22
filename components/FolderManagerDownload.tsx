@@ -1,6 +1,9 @@
 "use client";
 
 import { announceDownload } from "@/lib/downloadNotice";
+import { useRouter } from "next/navigation";
+import ToolkitOnly from "@/components/ToolkitOnly";
+import { directDownloadAllowed, useDirectDownload } from "@/lib/publicSettings";
 import { Download } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { PFM_FILES, PFM_VERSION } from "@/lib/folderManager";
@@ -10,8 +13,15 @@ import { PFM_FILES, PFM_VERSION } from "@/lib/folderManager";
 export default function FolderManagerDownload({ className, label = "Download Project Folder Manager" }: { className?: string; label?: string }) {
   const { requireAuth, trackDownload } = useAuth();
   const { href, name } = PFM_FILES.package;
+  const offered = useDirectDownload("folder-manager");
+  const router = useRouter();
 
-  const start = () => {
+  const start = async () => {
+    // switched off since the page opened: the Survey Toolkit instead
+    if (!(await directDownloadAllowed("folder-manager"))) {
+      router.push("/toolkit");
+      return;
+    }
     trackDownload("folder_manager", name, `v${PFM_VERSION}`);
     const a = document.createElement("a");
     a.href = href;
@@ -21,6 +31,8 @@ export default function FolderManagerDownload({ className, label = "Download Pro
     a.remove();
     announceDownload({ program: "Project Folder Manager", file: name, again: href, zip: /\.zip$/i.test(name) });
   };
+
+  if (offered === false) return <ToolkitOnly className={className} name="Project Folder Manager" />;
 
   return (
     <button

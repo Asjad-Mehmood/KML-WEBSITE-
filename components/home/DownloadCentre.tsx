@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { DownloadOrToolkit } from "@/components/ToolkitOnly";
 import { ArrowRight, Compass, Download, FileSpreadsheet, FileText, FolderTree, Info, PackageOpen, Route, ShieldCheck, Smartphone, UserCheck, type LucideIcon } from "lucide-react";
 import RoadProDownload from "../RoadProDownload";
 import TraverseDownload from "../TraverseDownload";
@@ -121,9 +122,11 @@ export default function DownloadCentre({
             needs={`Windows 10 and 11, 64-bit. Also ${SHOW_ANDROID ? "on Android and " : ""}in your browser.`}
             href="/download"
             action={
-              <button onClick={onDownloadClick} className={button}>
-                <Download className="w-4 h-4" aria-hidden /> Download
-              </button>
+              <DownloadOrToolkit program="excel-to-kml" name="Excel to KML" className={button}>
+                <button onClick={onDownloadClick} className={button}>
+                  <Download className="w-4 h-4" aria-hidden /> Download
+                </button>
+              </DownloadOrToolkit>
             }
             guide={{ href: "/tutorial", label: "Tutorial" }}
             extra={

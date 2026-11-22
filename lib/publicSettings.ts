@@ -2,6 +2,7 @@
 // Admin settings the public pages read (from /api/settings/public), fetched
 // once per page load and shared by every component that asks.
 import { useEffect, useState } from "react";
+import type { DirectDownloads, DownloadProgram } from "@/lib/directDownloads";
 
 export interface PublicSettings {
   requireAuthForDownload: boolean;
@@ -24,6 +25,8 @@ export interface PublicSettings {
   reviewPrompt?: boolean;
   /** The home page is the Survey Toolkit's: the menu bar's Download gets the Toolkit */
   toolkitHome?: boolean;
+  /** Which programs' installers the website offers; a program missing here is offered */
+  directDownloads?: Partial<DirectDownloads>;
 }
 
 let pending: Promise<PublicSettings | null> | null = null;
@@ -45,4 +48,29 @@ export function usePublicSettings(): PublicSettings | null {
     };
   }, []);
   return s;
+}
+
+/**
+ * Whether the website offers [program]'s installer (Admin → Settings → Downloads): null while the
+ * settings load, then true or false. The settings can't be read: offered, as before.
+ */
+export function useDirectDownload(program: DownloadProgram): boolean | null {
+  const s = usePublicSettings();
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    let live = true;
+    loadPublicSettings().then((v) => live && !v && setFailed(true));
+    return () => {
+      live = false;
+    };
+  }, []);
+  if (failed) return true;
+  if (!s) return null;
+  return s.directDownloads?.[program] !== false;
+}
+
+/** The same, asked once more right before a download starts */
+export async function directDownloadAllowed(program: DownloadProgram): Promise<boolean> {
+  const s = await loadPublicSettings();
+  return s?.directDownloads?.[program] !== false;
 }

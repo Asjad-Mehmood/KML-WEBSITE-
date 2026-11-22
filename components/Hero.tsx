@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useSyncExternalStore } from "react";
+import { DownloadOrToolkit } from "@/components/ToolkitOnly";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -160,14 +161,16 @@ export default function Hero({ versionTag, fileSizeText, onDownloadClick, stats 
                 Get the Android app
               </Link>
             ) : (
-              <button
-                onClick={onDownloadClick}
-                className="group inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-xl text-[15px] font-semibold shadow-[0_6px_20px_rgba(0,113,227,0.3)] hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-              >
-                <Download className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" aria-hidden />
-                Download Excel to KML
-                <span className="text-white/75 text-xs font-normal">{fileSizeText}</span>
-              </button>
+              <DownloadOrToolkit program="excel-to-kml" name="Excel to KML" className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-xl text-[15px] font-semibold transition-all">
+                <button
+                  onClick={onDownloadClick}
+                  className="group inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-xl text-[15px] font-semibold shadow-[0_6px_20px_rgba(0,113,227,0.3)] hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                >
+                  <Download className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" aria-hidden />
+                  Download Excel to KML
+                  <span className="text-white/75 text-xs font-normal">{fileSizeText}</span>
+                </button>
+              </DownloadOrToolkit>
             )}
             <WebAppLink className="group inline-flex items-center justify-center gap-1.5 px-6 py-3.5 rounded-xl bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-800 text-[15px] font-semibold shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
               Try it in your browser

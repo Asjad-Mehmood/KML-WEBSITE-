@@ -1,6 +1,9 @@
 "use client";
 
 import { announceDownload } from "@/lib/downloadNotice";
+import { useRouter } from "next/navigation";
+import ToolkitOnly from "@/components/ToolkitOnly";
+import { directDownloadAllowed, useDirectDownload } from "@/lib/publicSettings";
 import { Clock, Download } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { TRAVERSE_FILES, TRAVERSE_VERSION } from "@/lib/traverse";
@@ -12,9 +15,13 @@ import { useTraverseRelease } from "@/lib/useTraverseRelease";
 export default function TraverseDownload({ className, label = "Download for Windows" }: { className?: string; label?: string }) {
   const { requireAuth, trackDownload } = useAuth();
   const release = useTraverseRelease();
+  const offered = useDirectDownload("traverse");
+  const router = useRouter();
   const cls =
     className ??
     "inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-sm font-semibold cursor-pointer";
+
+  if (offered === false) return <ToolkitOnly className={cls} name="Traverse & Level" />;
 
   if (!TRAVERSE_FILES.setup.href) {
     return (
@@ -24,7 +31,12 @@ export default function TraverseDownload({ className, label = "Download for Wind
     );
   }
 
-  const start = () => {
+  const start = async () => {
+    // switched off since the page opened: the Survey Toolkit instead
+    if (!(await directDownloadAllowed("traverse"))) {
+      router.push("/toolkit");
+      return;
+    }
     trackDownload("traverse", release.fileName, release.versionTag || `v${TRAVERSE_VERSION}`);
     const a = document.createElement("a");
     a.href = release.downloadUrl;
@@ -49,6 +61,8 @@ export default function TraverseDownload({ className, label = "Download for Wind
 /** Version, size, date, SHA-256 and release notes of the latest Windows installer. */
 export function TraverseReleaseInfo() {
   const r = useTraverseRelease();
+  const offered = useDirectDownload("traverse");
+  if (offered === false) return null;
   const facts = [r.versionTag && `Version ${r.versionTag.replace(/^v/, "")}`, r.fileSizeText, r.releaseDateText].filter(Boolean);
   return (
     <div className="mt-2 text-center text-[12.5px] text-slate-500">
