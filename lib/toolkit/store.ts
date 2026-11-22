@@ -174,6 +174,8 @@ export async function addEvent(userId: string, deviceId: string, e: EventReport)
 
 /** The pages the handover may go on to: the three web apps */
 export const HANDOFF_PAGES = ["/app", "/traverse/app", "/slope-calculation/app"] as const;
+/** The Windows programs the Toolkit can open signed in (/api/toolkit/app-code) */
+export const APP_CODE_PROGRAMS = ["excel-to-kml", "traverse", "slope", "auto-draft"] as const;
 const HANDOFF_SECONDS = 60;
 const hashOf = (code: string) => crypto.createHash("sha256").update(code).digest("hex");
 
