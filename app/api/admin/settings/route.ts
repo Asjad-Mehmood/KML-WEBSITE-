@@ -8,6 +8,7 @@ import { clientIp } from "@/lib/loginThrottle";
 import { browserLabel } from "@/lib/adminOtp";
 import { isMailConfigured, sendMail } from "@/lib/mailer";
 import { SITE_URL } from "@/lib/site";
+import { DOWNLOAD_PROGRAMS } from "@/lib/directDownloads";
 import { EXTRA_DEFAULTS, HOME_HEROES, getExtraSettings, safeNoticeLink, saveExtraSettings, type ExtraSettings } from "@/lib/siteSettings";
 
 type AllSettings = AppSettings & ExtraSettings;
@@ -48,6 +49,12 @@ const LABELS: Record<keyof AllSettings, string> = {
   toolkitPublic: "Survey Toolkit open to everyone",
   slopeKeepJobs: "Slope Calculator keeps calculations",
   slopeMaxJobs: "Slope Calculator calculations per account",
+  dlExcelToKml: "Excel to KML download on the website",
+  dlRoadpro: "RoadPro download on the website",
+  dlTraverse: "Traverse & Level download on the website",
+  dlFolderManager: "Project Folder Manager download on the website",
+  dlSlope: "Slope Calculator download on the website",
+  dlAutoDraft: "Auto Drafting download on the website",
 };
 
 async function allSettings(): Promise<AllSettings> {
@@ -175,6 +182,7 @@ function cleanSettings(body: Record<string, unknown>): Partial<AllSettings> | { 
     "verifyEmails", "verifyOldAccounts",
     "traverseEnabled", "tlEnabled", "tlSharing", "tlKeepFiles", "signupPrompt", "reviewPrompt", "adminTwoFactor",
     "toolkitPublic", "slopeKeepJobs",
+    ...DOWNLOAD_PROGRAMS.map((p) => p.key),
   ];
   for (const k of bools) if (typeof body[k] === "boolean") out[k] = body[k] as boolean;
   const texts: [string, number][] = [

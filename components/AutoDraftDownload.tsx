@@ -1,6 +1,9 @@
 "use client";
 
 import { announceDownload } from "@/lib/downloadNotice";
+import { useRouter } from "next/navigation";
+import ToolkitOnly from "@/components/ToolkitOnly";
+import { directDownloadAllowed, useDirectDownload } from "@/lib/publicSettings";
 import { useEffect, useState } from "react";
 import { Clock, Download } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
@@ -75,9 +78,13 @@ export function useAutoDraftRelease(): AutoDraftRelease {
 export default function AutoDraftDownload({ className, label = "Download for Windows" }: { className?: string; label?: string }) {
   const { requireAuth, trackDownload } = useAuth();
   const release = useAutoDraftRelease();
+  const offered = useDirectDownload("auto-draft");
+  const router = useRouter();
   const cls =
     className ??
     "inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-sm font-semibold cursor-pointer";
+
+  if (offered === false) return <ToolkitOnly className={cls} name="Auto Drafting" />;
 
   if (release.state === "none") {
     return (
@@ -87,7 +94,12 @@ export default function AutoDraftDownload({ className, label = "Download for Win
     );
   }
 
-  const start = () => {
+  const start = async () => {
+    // switched off since the page opened: the Survey Toolkit instead
+    if (!(await directDownloadAllowed("auto-draft"))) {
+      router.push("/toolkit");
+      return;
+    }
     trackDownload("auto_draft", AUTO_DRAFT_INSTALLER, release.versionTag || `v${AUTO_DRAFT_VERSION}`);
     const a = document.createElement("a");
     a.href = release.downloadUrl;
@@ -108,7 +120,8 @@ export default function AutoDraftDownload({ className, label = "Download for Win
 /** Version, size, date and SHA-256 of the latest installer, under the download button */
 export function AutoDraftReleaseInfo({ className = "text-slate-500" }: { className?: string }) {
   const r = useAutoDraftRelease();
-  if (r.state !== "ready") return null;
+  const offered = useDirectDownload("auto-draft");
+  if (r.state !== "ready" || offered === false) return null;
   const facts = [r.versionTag && `Version ${r.versionTag.replace(/^v/, "")}`, r.fileSizeText, r.releaseDateText].filter(Boolean);
   return (
     <div className={`text-[12.5px] ${className}`}>

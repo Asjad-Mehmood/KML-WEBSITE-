@@ -9,6 +9,8 @@ import { announceDownload } from "@/lib/downloadNotice";
 import { useAuth } from "../../../context/AuthContext";
 import { INSTALLER_NAME, SUPPORT_EMAIL } from "@/lib/site";
 import { useLatestRelease } from "@/lib/useLatestRelease";
+import { directDownloadAllowed } from "@/lib/publicSettings";
+import { useRouter } from "next/navigation";
 
 const NEXT: { href: string; title: string; text: string; Icon: React.ElementType }[] = [
   { href: "/tutorial", title: "App tutorial", text: "Four steps from your sheet to Google Earth, with screenshots.", Icon: PlayCircle },
@@ -20,6 +22,7 @@ const NEXT: { href: string; title: string; text: string; Icon: React.ElementType
 export default function ThanksClient() {
   const { user, isLoading, trackDownload } = useAuth();
   const autoDone = useRef(false);
+  const router = useRouter();
   const latest = useLatestRelease();
   const [picked, setUrl] = useState<string | null>(null);
   const url = picked ?? latest.downloadUrl;
@@ -31,8 +34,13 @@ export default function ThanksClient() {
   useEffect(() => {
     const pending = peekPendingDownload();
     if (!pending) return;
-    const t = setTimeout(() => {
+    const t = setTimeout(async () => {
       clearPendingDownload(); // once only: a refresh doesn't download again
+      // switched off in Admin → Settings → Downloads: Excel to KML comes with the Survey Toolkit
+      if (!(await directDownloadAllowed("excel-to-kml"))) {
+        router.replace("/toolkit");
+        return;
+      }
       setUrl(pending.url);
       setStarted(true);
       const a = document.createElement("a");
@@ -44,7 +52,7 @@ export default function ThanksClient() {
       announceDownload({ program: "Excel to KML", file: decodeURIComponent(pending.url.split("/").pop() || "") || INSTALLER_NAME, again: pending.url });
     }, 600);
     return () => clearTimeout(t);
-  }, []);
+  }, [router]);
 
   // Signed in with Google from the download popup: the page comes back here
   // with ?auto=1. Record the download and start it once, then drop the flag
@@ -55,16 +63,22 @@ export default function ThanksClient() {
     autoDone.current = true;
     window.history.replaceState(null, "", "/download/thanks");
     if (!user || peekPendingDownload()) return;
-    trackDownload("windows_installer", latest.fileName, latest.versionTag || "latest");
-    const a = document.createElement("a");
-    a.href = latest.downloadUrl;
-    a.download = "";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    announceDownload({ program: "Excel to KML", file: latest.fileName, again: latest.downloadUrl });
-    queueMicrotask(() => setStarted(true));
-  }, [isLoading, user, trackDownload, latest.fileName, latest.versionTag, latest.downloadUrl]);
+    void (async () => {
+      if (!(await directDownloadAllowed("excel-to-kml"))) {
+        router.replace("/toolkit");
+        return;
+      }
+      trackDownload("windows_installer", latest.fileName, latest.versionTag || "latest");
+      const a = document.createElement("a");
+      a.href = latest.downloadUrl;
+      a.download = "";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      announceDownload({ program: "Excel to KML", file: latest.fileName, again: latest.downloadUrl });
+      setStarted(true);
+    })();
+  }, [isLoading, user, trackDownload, latest.fileName, latest.versionTag, latest.downloadUrl, router]);
 
   return (
     <PageShell>

@@ -52,6 +52,13 @@ export interface ExtraSettings {
   slopeKeepJobs: boolean;
   /** Calculations one account may keep in Slope Calculator */
   slopeMaxJobs: number;
+  /** Each Windows program's installer offered for download on the website (lib/directDownloads.ts). Off: its pages show "Get it in the Survey Toolkit" instead */
+  dlExcelToKml: boolean;
+  dlRoadpro: boolean;
+  dlTraverse: boolean;
+  dlFolderManager: boolean;
+  dlSlope: boolean;
+  dlAutoDraft: boolean;
 }
 
 export type HomeHero = "new" | "classic" | "toolkit";
@@ -81,6 +88,12 @@ export const EXTRA_DEFAULTS: ExtraSettings = {
   toolkitPublic: true,
   slopeKeepJobs: true,
   slopeMaxJobs: 500,
+  dlExcelToKml: true,
+  dlRoadpro: true,
+  dlTraverse: true,
+  dlFolderManager: true,
+  dlSlope: true,
+  dlAutoDraft: true,
 };
 
 let ready: Promise<void> | null = null;

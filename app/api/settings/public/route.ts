@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { isGoogleConfigured } from "@/lib/googleAuth";
 import { announcementLive, getExtraSettings } from "@/lib/siteSettings";
+import { directDownloadsOf } from "@/lib/directDownloads";
 
 // The admin settings the public site needs (no secrets): download gate,
 // maintenance, announcement and the installer fallback details
@@ -30,6 +31,8 @@ export async function GET() {
         reviewPrompt: x.reviewPrompt,
         // the home page is the Survey Toolkit's (Admin → Settings), as app/page.tsx decides
         toolkitHome: x.homeHero === "toolkit" && Boolean(x.toolkitPublic),
+        // which programs' installers the website offers (Admin → Settings → Downloads)
+        directDownloads: directDownloadsOf(x),
       },
       {
         headers: {

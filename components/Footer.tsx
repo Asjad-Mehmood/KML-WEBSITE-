@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { DownloadOrToolkit } from "@/components/ToolkitOnly";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
@@ -85,7 +86,9 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
           {/* Excel to KML: the program the most pages are about */}
           <FooterNav label="Excel to KML">
             <li>
-              <button onClick={onDownloadClick} className={`${linkCls} text-left cursor-pointer`}>Download for Windows</button>
+              <DownloadOrToolkit program="excel-to-kml" name="Excel to KML" className={`${linkCls} inline-flex items-center gap-1.5`}>
+                <button onClick={onDownloadClick} className={`${linkCls} text-left cursor-pointer`}>Download for Windows</button>
+              </DownloadOrToolkit>
             </li>
             {[
               ["/features", "Features"],

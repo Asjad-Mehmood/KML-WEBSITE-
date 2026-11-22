@@ -5,6 +5,8 @@ import { getClientIp, getIpGeoLocation } from "@/lib/geo";
 import { prisma } from "@/lib/prisma";
 import { isMailConfigured, sendMail } from "@/lib/mailer";
 import { downloadThanksEmail } from "@/lib/downloadEmail";
+import { DOWNLOAD_PROGRAMS, directDownloadsOf, programOfAsset } from "@/lib/directDownloads";
+import { getExtraSettings } from "@/lib/siteSettings";
 
 export async function POST(req: NextRequest) {
   try {
@@ -39,6 +41,13 @@ export async function POST(req: NextRequest) {
       fileName = INSTALLER_NAME,
       version = LATEST_VERSION,
     } = body;
+
+    // a program whose download is switched off in Admin → Settings → Downloads: only through the Survey Toolkit
+    const program = programOfAsset(String(assetType));
+    if (program && !directDownloadsOf(await getExtraSettings())[program]) {
+      const name = DOWNLOAD_PROGRAMS.find((p) => p.id === program)?.name ?? "This program";
+      return NextResponse.json({ error: `${name} is installed with the Survey Toolkit.`, toolkitOnly: true }, { status: 403 });
+    }
 
     const clientIp = getClientIp(req);
     const geo = await getIpGeoLocation(clientIp, req);

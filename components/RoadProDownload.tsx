@@ -1,6 +1,9 @@
 "use client";
 
 import { announceDownload } from "@/lib/downloadNotice";
+import { useRouter } from "next/navigation";
+import ToolkitOnly from "@/components/ToolkitOnly";
+import { directDownloadAllowed, useDirectDownload } from "@/lib/publicSettings";
 import { Download } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { ROADPRO_FILES, ROADPRO_RELEASE, ROADPRO_VERSION } from "@/lib/roadpro";
@@ -19,8 +22,15 @@ export default function RoadProDownload({
 }) {
   const { requireAuth, trackDownload } = useAuth();
   const { href, name } = ROADPRO_FILES[file];
+  const offered = useDirectDownload("roadpro");
+  const router = useRouter();
 
-  const start = () => {
+  const start = async () => {
+    // switched off since the page opened: the Survey Toolkit instead
+    if (!(await directDownloadAllowed("roadpro"))) {
+      router.push("/toolkit");
+      return;
+    }
     // Setup is the release (Hub and plugin); the zip is the plugin alone
     trackDownload("roadpro", name, `v${file === "setup" ? ROADPRO_RELEASE : ROADPRO_VERSION}`);
     const a = document.createElement("a");
@@ -31,6 +41,8 @@ export default function RoadProDownload({
     a.remove();
     announceDownload({ program: file === "setup" ? "RoadPro Setup" : "RoadPro plugin", file: name, again: href, zip: /\.zip$/i.test(name) });
   };
+
+  if (offered === false) return <ToolkitOnly className={className} name="RoadPro" />;
 
   return (
     <button

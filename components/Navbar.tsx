@@ -50,7 +50,9 @@ const downloadCls =
 
 export default function Navbar({ onDownloadClick }: { onDownloadClick: () => void }) {
   const { user, logout } = useAuth();
-  const toolkitHome = usePublicSettings()?.toolkitHome === true;
+  const publicSettings = usePublicSettings();
+  // the Toolkit's home page, or Excel to KML only through the Toolkit (Admin → Settings → Downloads)
+  const toolkitHome = publicSettings?.toolkitHome === true || publicSettings?.directDownloads?.["excel-to-kml"] === false;
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);

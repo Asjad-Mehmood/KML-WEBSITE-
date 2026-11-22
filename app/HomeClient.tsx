@@ -2,6 +2,7 @@
 
 import { useLatestRelease } from "@/lib/useLatestRelease";
 import { goToDownload } from "@/lib/downloadHandoff";
+import { directDownloadAllowed } from "@/lib/publicSettings";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import Navbar from "../components/Navbar";
@@ -59,7 +60,12 @@ export default function HomeClient({ heroStyle = "new", stats = null }: { heroSt
 
   // Gated download handler used across buttons
   const handleDownloadApp = () => {
-    requireAuth(() => {
+    requireAuth(async () => {
+      // off in Admin → Settings → Downloads: Excel to KML comes with the Survey Toolkit
+      if (!(await directDownloadAllowed("excel-to-kml"))) {
+        router.push("/toolkit");
+        return;
+      }
       // Record it, then the thank-you page starts the file
       trackDownload("windows_installer", fileName, versionTag);
       goToDownload(router.push, downloadUrl, versionTag);

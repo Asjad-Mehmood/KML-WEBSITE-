@@ -24,6 +24,7 @@ import SignInSecurity from "./SignInSecurity";
 import SystemHealth from "./SystemHealth";
 import AppSourceStatus from "./AppSourceStatus";
 import CleanupCard from "./CleanupCard";
+import { DOWNLOAD_PROGRAMS } from "@/lib/directDownloads";
 
 export interface AllSettings {
   appVersion: string;
@@ -53,6 +54,12 @@ export interface AllSettings {
   homeHero: "new" | "classic" | "toolkit";
   adminTwoFactor: boolean;
   toolkitPublic: boolean;
+  dlExcelToKml: boolean;
+  dlRoadpro: boolean;
+  dlTraverse: boolean;
+  dlFolderManager: boolean;
+  dlSlope: boolean;
+  dlAutoDraft: boolean;
 }
 
 type Draft = AllSettings;
@@ -68,6 +75,7 @@ export const SETTINGS_SECTIONS = [
   ["notices", "Notices"],
   ["home", "Home page"],
   ["toolkit", "Survey Toolkit"],
+  ["downloads", "Downloads"],
   ["features", "App features"],
   ["traverse", "Traverse & Level"],
   ["release", "Release"],
@@ -201,6 +209,14 @@ export default function SettingsPanel({
             <Pill label="Announcement" value={announcementLive ? "Showing" : "Off"} />
             <Pill label="Admin two-factor" value={saved.adminTwoFactor ? "On" : "Off"} warn={!saved.adminTwoFactor} />
             <Pill label="Survey Toolkit" value={saved.toolkitPublic ? "Public" : "Testers only"} />
+            <Pill
+              label="Direct downloads"
+              value={(() => {
+                const off = DOWNLOAD_PROGRAMS.filter((p) => !saved[p.key]).length;
+                return off === 0 ? "All on" : off === DOWNLOAD_PROGRAMS.length ? "Toolkit only" : `${off} off`;
+              })()}
+              warn={DOWNLOAD_PROGRAMS.some((p) => !saved[p.key])}
+            />
           </div>
         </Section>
 
@@ -464,6 +480,46 @@ export default function SettingsPanel({
             <a href="/toolkit-beta/admin" className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-400 hover:text-blue-300">
               Toolkit admin: PCs, updates and testers <ExternalLink className="w-3.5 h-3.5" />
             </a>
+          </div>
+        </Section>
+
+        {/* Direct downloads: each program's installer on the website, or only through the Survey Toolkit */}
+        <Section
+          id="downloads"
+          icon={Download}
+          title="Downloads"
+          text="Which programs can be downloaded straight from the website. Off: the program's page keeps all its information, and Get it in the Survey Toolkit takes the place of the download. The Survey Toolkit still installs and updates every program."
+        >
+          {DOWNLOAD_PROGRAMS.map((p) => (
+            <Toggle
+              key={p.key}
+              label={p.name}
+              text={
+                draft[p.key]
+                  ? "On: its download buttons work on the website."
+                  : "Off: no download on the website; people get it with the Survey Toolkit."
+              }
+              checked={draft[p.key]}
+              onChange={(v) => set(p.key, v)}
+              tone="emerald"
+            />
+          ))}
+          {!draft.toolkitPublic && DOWNLOAD_PROGRAMS.some((p) => !draft[p.key]) && (
+            <p className="text-xs text-amber-300">
+              The Survey Toolkit is open to testers only (Survey Toolkit above), so people without it can&apos;t get the programs that are off here.
+            </p>
+          )}
+          <div className="flex flex-wrap gap-2 pt-1">
+            {(["all", "none"] as const).map((which) => (
+              <button
+                key={which}
+                type="button"
+                onClick={() => DOWNLOAD_PROGRAMS.forEach((p) => set(p.key, which === "all"))}
+                className="rounded-full border border-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:border-slate-500 hover:text-white cursor-pointer"
+              >
+                {which === "all" ? "Allow every download" : "Toolkit only for every program"}
+              </button>
+            ))}
           </div>
         </Section>
 
