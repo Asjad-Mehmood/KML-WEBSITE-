@@ -67,9 +67,31 @@ function item(s: string): { head: string; text: string } {
   return i > 0 && i < 60 ? { head: s.slice(0, i), text: s.slice(i + 2) } : { head: "", text: s };
 }
 
-const shortUrl = (u: string) => u.replace(/^https:\/\//, "").replace(/\?.*$/, "");
+const shortUrl = (u: string) => u.replace(/^https?:\/\//, "").replace(/\?.*$/, "");
 
-export function letterEmail(l: Letter): { subject: string; text: string; html: string } {
+// The site's endpoints that an email may link to, and the clean address of each (middleware.ts
+// answers the clean one with the endpoint). An address with /api/ in it is never written out.
+const PRETTY_LINKS: [RegExp, string][] = [
+  [/\/api\/auth\/verify-email(?=[?#]|$)/, "/confirm-email"],
+  [/\/api\/toolkit\/download(?=[?#]|$)/, "/get/toolkit"],
+];
+export function prettyLink(url: string): string {
+  let u = url;
+  for (const [re, to] of PRETTY_LINKS) u = u.replace(re, to);
+  return u;
+}
+/** The address as it may be shown in an email: the clean one, or null for an endpoint */
+const shownUrl = (url: string): string | null => {
+  const u = shortUrl(prettyLink(url));
+  return /\/api\//.test(u) ? null : u;
+};
+
+export function letterEmail(raw: Letter): { subject: string; text: string; html: string } {
+  // every link in its clean form
+  const l: Letter = {
+    ...raw,
+    blocks: raw.blocks.map((b) => ("button" in b ? { ...b, button: prettyLink(b.button) } : "link" in b ? { ...b, link: prettyLink(b.link) } : b)),
+  };
   const hi = l.first ? `Hi ${l.first},` : "Hi,";
   const signOff = l.signOff ?? "Thanks,";
 
@@ -122,9 +144,13 @@ export function letterEmail(l: Letter): { subject: string; text: string; html: s
       h.push(`<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 10px"><tr>
 <td bgcolor="${BLUE}" style="border-radius:8px"><a href="${escHtml(b.button)}" style="display:inline-block;padding:12px 22px;font-family:${FONT};font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:8px">${escHtml(b.label)}</a></td>
 </tr></table>
-<p style="margin:0 0 20px;font-size:13px;line-height:1.5;color:${MUTED}">Or open <a href="${escHtml(b.button)}" style="color:${BLUE};text-decoration:none">${escHtml(shortUrl(b.button))}</a></p>`);
+${
+          shownUrl(b.button)
+            ? `<p style="margin:0 0 20px;font-size:13px;line-height:1.5;color:${MUTED}">Button not working? Open <a href="${escHtml(b.button)}" style="color:${BLUE};text-decoration:none">${escHtml(shownUrl(b.button) as string)}</a></p>`
+            : `<div style="height:10px"></div>`
+        }`);
     else if ("link" in b)
-      h.push(p(`<a href="${escHtml(b.link)}" style="color:${BLUE};font-weight:600;text-decoration:none">${escHtml(b.label ?? shortUrl(b.link))}</a>`));
+      h.push(p(`<a href="${escHtml(b.link)}" style="color:${BLUE};font-weight:600;text-decoration:none">${escHtml(b.label ?? shownUrl(b.link) ?? "Open the link")}</a>`));
   }
 
   const html = `<!doctype html>

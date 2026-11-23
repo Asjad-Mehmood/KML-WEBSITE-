@@ -13,10 +13,25 @@ const ADMIN_SIDE_ALSO = /^\/login\/?$|^\/api\/(auth\/(login|verify-otp|resend-ot
 // Next's own files, and files from public/ (images, fonts, scripts)
 const FILE = /^\/_next\/|^\/[^?]*\.[a-z0-9]{2,8}$/i;
 
+// clean address → the endpoint behind it (the reverse of lib/letterEmail.ts PRETTY_LINKS)
+const PRETTY: Record<string, string> = {
+  "/confirm-email": "/api/auth/verify-email",
+  "/get/toolkit": "/api/toolkit/download",
+};
+
 const notFound = () => NextResponse.json({ error: "Not found" }, { status: 404 });
 
 export function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
+
+  // the clean addresses emails link to (lib/letterEmail.ts prettyLink): the endpoint answers,
+  // the address stays as it is
+  const behind = PRETTY[path];
+  if (behind && !onAdminHost(req.headers)) {
+    const to = req.nextUrl.clone();
+    to.pathname = behind;
+    return NextResponse.rewrite(to);
+  }
 
   // The raw web app file must not be reachable directly: /app checks sign-in first
   if (path === "/app.html") {
