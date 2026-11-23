@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { signOutEverywherePath } from "../lib/authHost";
 import { usePublicSettings } from "@/lib/publicSettings";
 import { isAdminUser } from "@/lib/adminRole";
 
@@ -224,6 +225,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error(err);
     }
     setUser(null);
+    // the site's other addresses (sign-in, dashboard) sign out too, or they'd sign this one back in
+    const everywhere = signOutEverywherePath();
+    if (everywhere) {
+      window.location.assign(everywhere);
+      // the browser is leaving: don't let the caller's own navigation (e.g. to "/") cut it short
+      await new Promise<never>(() => {});
+    }
   };
 
   const trackDownload = async (

@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { sessionForToken } from "@/lib/serverSession";
+import { authHost, authOrigin, continuePath } from "@/lib/authHost";
+import { onDashboardHost } from "@/lib/dashboardHost";
 import { listJobs } from "@/lib/userJobs";
 import { cardsOwn, cardsShared } from "@/lib/traverseJobs";
 import DashboardClient, { type DashboardData } from "./DashboardClient";
@@ -21,7 +23,16 @@ export const metadata: Metadata = {
 export default async function DashboardPage() {
   const token = (await cookies()).get("surveyor_auth_token")?.value;
   const session = await sessionForToken(token);
-  if (!session) redirect("/login?next=%2Fdashboard");
+  if (!session) {
+    // on the dashboard address (lib/dashboardHost) with a sign-in address: hand over from there,
+    // straight away when they are signed in there already
+    const h = await headers();
+    if (onDashboardHost(h) && authHost()) {
+      const proto = `${(h.get("x-forwarded-proto") || "https").split(",")[0].trim()}:`;
+      redirect(`${authOrigin(proto)}${continuePath("/dashboard")}`);
+    }
+    redirect("/login?next=%2Fdashboard");
+  }
 
   const { user } = session;
   const [activities, files, downloads, points, jobs, tlOwn, tlShared] = await Promise.all([
