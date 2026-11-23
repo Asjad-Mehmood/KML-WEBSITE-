@@ -18,6 +18,7 @@ import { OCCUPATIONS, OCCUPATION_MAX } from "@/lib/occupations";
 import { usePublicSettings } from "@/lib/publicSettings";
 import GoogleSignIn, { GOOGLE_ERRORS } from "@/components/GoogleSignIn";
 import OtpForm from "@/components/OtpForm";
+import ToolkitInvite from "@/components/ToolkitInvite";
 import { AuthCard, Avatar, DONE_MS, Status, destination, input, primary } from "../signin/SigninFlow";
 
 import { SIGNUP_STEPS, type SignupStepName } from "./steps";
@@ -45,12 +46,13 @@ const LEVELS = [
   { label: "Strong", color: "bg-emerald-500" },
 ];
 
-type Phase = "form" | "creating" | "code" | "done";
+type Phase = "form" | "creating" | "code" | "done" | "welcome";
 
 export default function SignupFlow({ step, next, query, error }: { step: SignupStepName; next: string; query: string; error: string | null }) {
   const router = useRouter();
   const { register, otp } = useAuth();
-  const closed = usePublicSettings()?.signupsOpen === false;
+  const settings = usePublicSettings();
+  const closed = settings?.signupsOpen === false;
   const authSide = useSyncExternalStore(() => () => {}, inAuthHost, () => false);
 
   const [name, setName] = useState(draft.name);
@@ -82,8 +84,13 @@ export default function SignupFlow({ step, next, query, error }: { step: SignupS
   };
 
   const go = () => window.location.assign(authSide ? continuePath(next) : next);
+  const [firstName, setFirstName] = useState("");
   const finished = () => {
+    setFirstName(draft.name.split(" ")[0] || name.split(" ")[0]);
     Object.assign(draft, { name: "", email: "", password: "", organization: "", role: "" });
+    // while the Survey Toolkit is open to everyone: the welcome, with the Toolkit to download;
+    // otherwise straight on
+    if (settings?.toolkitPublic) return setPhase("welcome");
     setPhase("done");
     window.setTimeout(go, DONE_MS + 400);
   };
@@ -164,6 +171,15 @@ export default function SignupFlow({ step, next, query, error }: { step: SignupS
         <OtpForm onSuccess={finished} />
       </div>
     );
+  } else if (phase === "welcome") {
+    body = (
+      <ToolkitInvite
+        firstName={firstName}
+        downloadHref={authSide ? continuePath("/api/toolkit/download") : "/api/toolkit/download"}
+        onContinue={go}
+        continueLabel={`Continue to ${destination(next)}`}
+      />
+    );
   } else if (phase === "done") {
     body = (
       <Status
@@ -172,7 +188,7 @@ export default function SignupFlow({ step, next, query, error }: { step: SignupS
             <PartyPopper className="w-6 h-6" aria-hidden />
           </span>
         }
-        title={`Welcome, ${draft.name.split(" ")[0] || name.split(" ")[0]}!`}
+        title={`Welcome, ${firstName}!`}
         text={`Your account is ready. Taking you to ${destination(next)}…`}
       >
         <div className="mt-6 h-1 w-full overflow-hidden rounded-full bg-slate-100">

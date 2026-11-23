@@ -3,6 +3,9 @@
 import { useId, useState } from "react";
 import AuthShell, { buttonClass, inputClass } from "../../components/AuthShell";
 import { OCCUPATIONS, OCCUPATION_MAX } from "../../lib/occupations";
+import { usePublicSettings } from "../../lib/publicSettings";
+import ToolkitInvite from "../../components/ToolkitInvite";
+import { AuthCard, destination } from "../signin/SigninFlow";
 
 export default function WelcomeClient(props: { next: string; firstName: string; email: string; organization: string; occupation: string }) {
   const id = useId();
@@ -10,6 +13,11 @@ export default function WelcomeClient(props: { next: string; firstName: string; 
   const [occupation, setOccupation] = useState(props.occupation);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // then, while the Survey Toolkit is open to everyone, the Toolkit to download (else straight on)
+  const toolkitPublic = usePublicSettings()?.toolkitPublic === true;
+  const [invite, setInvite] = useState(false);
+  // Full load so every part of the site sees the finished account
+  const onward = () => (toolkitPublic ? setInvite(true) : window.location.assign(props.next));
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,13 +32,25 @@ export default function WelcomeClient(props: { next: string; firstName: string; 
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Couldn't save. Please try again.");
-      // Full load so every part of the site sees the finished account
-      window.location.assign(props.next);
+      onward();
     } catch (err) {
       setError((err as Error).message);
       setSaving(false);
     }
   };
+
+  if (invite) {
+    return (
+      <AuthCard>
+        <ToolkitInvite
+          firstName={props.firstName}
+          downloadHref="/api/toolkit/download"
+          onContinue={() => window.location.assign(props.next)}
+          continueLabel={`Continue to ${destination(props.next)}`}
+        />
+      </AuthCard>
+    );
+  }
 
   return (
     <AuthShell
@@ -80,9 +100,9 @@ export default function WelcomeClient(props: { next: string; firstName: string; 
         <button type="submit" disabled={saving} className={buttonClass}>
           {saving ? "Saving…" : "Finish and continue"}
         </button>
-        <a href={props.next} className="block text-center text-[13px] font-semibold text-slate-500 hover:text-slate-700 hover:underline">
+        <button type="button" onClick={onward} className="block w-full text-center text-[13px] font-semibold text-slate-500 hover:text-slate-700 hover:underline">
           Skip for now
-        </a>
+        </button>
       </form>
     </AuthShell>
   );

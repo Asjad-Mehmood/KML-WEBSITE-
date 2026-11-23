@@ -25,6 +25,8 @@ export interface PublicSettings {
   reviewPrompt?: boolean;
   /** The home page is the Survey Toolkit's: the menu bar's Download gets the Toolkit */
   toolkitHome?: boolean;
+  /** The Survey Toolkit is open to every account (Admin → Settings → Survey Toolkit) */
+  toolkitPublic?: boolean;
   /** Which programs' installers the website offers; a program missing here is offered */
   directDownloads?: Partial<DirectDownloads>;
 }

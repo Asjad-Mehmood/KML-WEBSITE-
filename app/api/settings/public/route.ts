@@ -31,6 +31,7 @@ export async function GET() {
         reviewPrompt: x.reviewPrompt,
         // the home page is the Survey Toolkit's (Admin → Settings), as app/page.tsx decides
         toolkitHome: x.homeHero === "toolkit" && Boolean(x.toolkitPublic),
+        toolkitPublic: Boolean(x.toolkitPublic),
         // which programs' installers the website offers (Admin → Settings → Downloads)
         directDownloads: directDownloadsOf(x),
       },
