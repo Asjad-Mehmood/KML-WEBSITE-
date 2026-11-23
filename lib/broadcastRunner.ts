@@ -4,6 +4,7 @@
 // page only watches the counts; opening it (or the nightly job) restarts a run that stopped.
 import crypto from "crypto";
 import { stalledBroadcasts } from "@/lib/releases";
+import { stalledMails } from "@/lib/customMail";
 
 const key = () => process.env.AUTH_SECRET || process.env.DATABASE_URL || "excel-to-kml";
 
@@ -32,9 +33,25 @@ export async function kickBroadcast(origin: string, id: string): Promise<void> {
   }
 }
 
-/** Restart every broadcast whose run stopped (a step that died, a deploy in between) */
+/** Admin → Email (lib/customMail.ts): the same steps, at /api/mail/<id>/step, with a token of their own */
+export async function kickMail(origin: string, id: string): Promise<void> {
+  try {
+    const res = await fetch(`${origin}/api/mail/${encodeURIComponent(id)}/step`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${stepToken(`mail:${id}`)}` },
+      cache: "no-store",
+      signal: AbortSignal.timeout(15_000),
+    });
+    if (!res.ok) console.error("[mail] next step refused", id, res.status);
+  } catch (err) {
+    console.error("[mail] couldn't start the next step", id, err);
+  }
+}
+
+/** Restart every broadcast and admin email whose run stopped (a step that died, a deploy in between) */
 export async function kickStalled(origin: string): Promise<number> {
   const ids = await stalledBroadcasts().catch(() => [] as string[]);
-  await Promise.all(ids.map((id) => kickBroadcast(origin, id)));
-  return ids.length;
+  const mails = await stalledMails().catch(() => [] as string[]);
+  await Promise.all([...ids.map((id) => kickBroadcast(origin, id)), ...mails.map((id) => kickMail(origin, id))]);
+  return ids.length + mails.length;
 }
