@@ -22,7 +22,8 @@ export default function LoginPage() {
     () => new URLSearchParams(window.location.search).get("error"),
     () => null
   );
-  // the admin address (admin.…): admins only, so no Google sign-in and no new accounts there
+  // the admin address (admin.…): admins only, so no Google sign-in and no new accounts there.
+  // Otherwise it looks like any sign-in: nothing on it says "admin".
   const adminSide = useSyncExternalStore(
     () => () => {},
     () => window.location.hostname.startsWith("admin."),
@@ -112,7 +113,7 @@ export default function LoginPage() {
         <>
         <div className="text-center mb-8">
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight">
-            {adminSide ? "Admin sign-in" : "Welcome Back"}
+            Welcome Back
           </h1>
           {nextParam === "/app" && (
             <p role="status" className="mt-3 text-xs sm:text-sm font-medium text-blue-800 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">

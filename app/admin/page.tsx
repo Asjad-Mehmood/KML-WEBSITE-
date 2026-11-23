@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { db } from "@/lib/db";
-import { sessionHasAdminPower } from "@/lib/adminHost";
+import { onAdminHost, sessionHasAdminPower } from "@/lib/adminHost";
 import AdminClient from "./AdminClient";
 
 // Checked on every request
@@ -37,7 +37,8 @@ export async function generateMetadata(): Promise<Metadata> {
 // normal "page not found".
 export default async function AdminPage() {
   const who = await visitor();
-  if (who === "signed-out") redirect(ADMIN_LOGIN_URL);
+  // on the admin address the sign-in goes back here by itself, and its address doesn't say "admin"
+  if (who === "signed-out") redirect(onAdminHost(await headers()) ? "/login" : ADMIN_LOGIN_URL);
   if (who !== "admin") notFound();
   return <AdminClient />;
 }
