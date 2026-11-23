@@ -3,7 +3,7 @@
 // colour only, as a well-made account email is, so Gmail files it under Primary or Updates rather
 // than Promotions. What sent mail there (seen in Gmail): a picture banner, product tiles, sales
 // words ("Meet", "New", "Free"), hidden preview text. So, never here:
-//   - no pictures (the logo is drawn with text), no banner or background picture
+//   - no pictures but the small logo in the header (the site's own icon), no banner or background picture
 //   - no hidden preview text, no sales words, no "!"
 //   - one button at most, and few links
 // lib/releaseEmail.ts (new versions and new programs), lib/reviewEmail.ts, lib/downloadEmail.ts,
@@ -183,7 +183,7 @@ ${
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:580px">
 <tr><td bgcolor="${NAVY}" style="background:${NAVY};border-radius:16px 16px 0 0;padding:18px 32px">
 <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
-<td valign="middle"><div style="width:30px;height:30px;border-radius:9px;background:${YELLOW};color:${NAVY};font-size:16px;font-weight:900;line-height:30px;text-align:center">&#9678;</div></td>
+<td valign="middle"><img src="${escHtml(`${SITE_URL}/assets/icon.png`)}" width="36" height="36" alt="" style="display:block;width:36px;height:36px;border:1px solid #3b5b8f;border-radius:9px"></td>
 <td valign="middle" style="padding-left:11px;font-size:16px;font-weight:700;color:#ffffff;letter-spacing:-.01em">${escHtml(SITE_NAME)}</td>
 </tr></table>
 </td></tr>
