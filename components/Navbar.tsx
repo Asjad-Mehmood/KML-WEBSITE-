@@ -2,7 +2,10 @@
 
 import { usePublicSettings } from "@/lib/publicSettings";
 import { PRODUCTS, badgeLabel } from "@/lib/products";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useSyncExternalStore } from "react";
+import { SITE_URL } from "@/lib/site";
+import { inAuthHost } from "@/lib/authHost";
+import { inDashboardHost } from "@/lib/dashboardHost";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
@@ -50,6 +53,10 @@ const downloadCls =
 
 export default function Navbar({ onDownloadClick }: { onDownloadClick: () => void }) {
   const { user, logout } = useAuth();
+  // on the dashboard or sign-in address (lib/dashboardHost, lib/authHost) the site's pages are on
+  // the main site: links there go there, in full
+  const away = useSyncExternalStore(() => () => {}, () => inDashboardHost() || inAuthHost(), () => false);
+  const site = (href: string) => (away && href.startsWith("/") ? `${SITE_URL}${href}` : href);
   const publicSettings = usePublicSettings();
   // the Toolkit's home page, or Excel to KML only through the Toolkit (Admin → Settings → Downloads)
   const toolkitHome = publicSettings?.toolkitHome === true || publicSettings?.directDownloads?.["excel-to-kml"] === false;
@@ -144,7 +151,7 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
         >
           {/* Logo */}
           <Link
-            href="/"
+            href={site("/")}
             aria-label="Excel to KML — home"
             className="flex items-center pl-1.5 pr-3 sm:pr-4 py-1 rounded-full hover:bg-black/[0.04] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           >
@@ -163,7 +170,7 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
               return (
                 <Link
                   key={link.label}
-                  href={link.href}
+                  href={site(link.href)}
                   aria-current={isActive ? (link.path ? "page" : "location") : undefined}
                   className={`${link.xlOnly ? "hidden xl:inline-block " : link.wideOnly ? "hidden lg:inline-block " : ""}whitespace-nowrap px-2.5 lg:px-3 xl:px-4 py-2 text-[14px] font-semibold rounded-full transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                     isActive ? "text-slate-900 bg-black/[0.05]" : "text-slate-600 hover:text-slate-900 hover:bg-black/5"
@@ -191,7 +198,7 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
                     {PRODUCT_LINKS.map((p) => (
                       <Link
                         key={p.id}
-                        href={p.href}
+                        href={site(p.href)}
                         role="menuitem"
                         onClick={() => setProductsOpen(false)}
                         aria-current={pathname?.startsWith(p.href) ? "page" : undefined}
@@ -275,7 +282,13 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
 
             {toolkitHome ? (
               // the Survey Toolkit's installer, the same as its page's Download button (signs in first when needed)
-              <a href={TOOLKIT_DOWNLOAD} title="Download the Survey Toolkit for Windows" className={downloadCls}>
+              <a href={site(TOOLKIT_DOWNLOAD)} title="Download the Survey Toolkit for Windows" className={downloadCls}>
+                <Download className="w-4 h-4" />
+                <span>Download</span>
+              </a>
+            ) : away ? (
+              // the download page, on the main site
+              <a href={site("/download")} className={downloadCls}>
                 <Download className="w-4 h-4" />
                 <span>Download</span>
               </a>
@@ -310,7 +323,7 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
         <div className="flex-1 overflow-y-auto pt-28 px-6 pb-6 flex flex-col">
           <nav aria-label="Main" className="flex flex-col gap-6 flex-1">
             {[...NAV_LINKS, ...PRODUCT_LINKS.map((p) => ({ label: p.name, href: p.href }))].map(link => (
-              <Link key={link.label} href={link.href} onClick={() => setMobileMenuOpen(false)} className="text-3xl font-black text-slate-900 tracking-tight flex items-center justify-between group">
+              <Link key={link.label} href={site(link.href)} onClick={() => setMobileMenuOpen(false)} className="text-3xl font-black text-slate-900 tracking-tight flex items-center justify-between group">
                 <span>{link.label}</span>
                 <ChevronDown className="w-6 h-6 -rotate-90 opacity-0 group-hover:opacity-100 group-hover:translate-x-2 transition-all text-[#0071e3]" />
               </Link>
