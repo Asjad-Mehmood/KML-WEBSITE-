@@ -143,8 +143,8 @@ function Features({ items }: { items: { Icon: LucideIcon; title: string; text: s
   return (
     <ul className="mt-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
       {items.map((f, i) => (
-        <li key={f.title} className="ho-reveal ho-card rounded-2xl border border-slate-200 bg-white p-4 hover:border-[#1e4fd8]/35" style={{ "--i": i } as CSSProperties}>
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#eef3ff] text-[#1e4fd8]">
+        <li key={f.title} className="ho-reveal ho-card rounded-2xl border border-slate-200 bg-white p-4 hover:border-slate-300" style={{ "--i": i } as CSSProperties}>
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-[#071a44]">
             <f.Icon className="w-[18px] h-[18px]" aria-hidden />
           </span>
           <p className="mt-2.5 text-[15px] font-bold text-[#071a44]">{f.title}</p>
@@ -158,12 +158,12 @@ function Features({ items }: { items: { Icon: LucideIcon; title: string; text: s
 // A screen of the Toolkit; a whole window drawn at half the page is small, so a click opens it full size
 function Shot({ src, alt }: { src: typeof gridPng; alt: string }) {
   return (
-    <figure className="ho-reveal group relative rounded-[22px] bg-gradient-to-br from-[#1e4fd8] via-[#0b2560] to-[#071a44] p-2 shadow-[0_30px_70px_rgba(7,26,68,0.25)] lg:rotate-[-0.6deg] transition-transform duration-500 hover:rotate-0">
+    <figure className="ho-reveal group relative rounded-[22px] border border-slate-200 bg-slate-100 p-2 shadow-[0_24px_60px_rgba(7,26,68,0.12)] lg:rotate-[-0.6deg] transition-transform duration-500 hover:rotate-0">
       {/* a window's title bar */}
       <span aria-hidden className="flex items-center gap-1.5 px-2.5 pb-2 pt-1">
-        <i className="h-2.5 w-2.5 rounded-full bg-white/25" />
-        <i className="h-2.5 w-2.5 rounded-full bg-white/25" />
-        <i className="h-2.5 w-2.5 rounded-full bg-white/25" />
+        <i className="h-2.5 w-2.5 rounded-full bg-slate-300" />
+        <i className="h-2.5 w-2.5 rounded-full bg-slate-300" />
+        <i className="h-2.5 w-2.5 rounded-full bg-slate-300" />
       </span>
       <a href={src.src} target="_blank" rel="noopener" aria-label={`${alt} (opens full size)`} className="block cursor-zoom-in">
         <Image src={src} alt={alt} sizes="(min-width: 1024px) 640px, 100vw" className="w-full h-auto rounded-[14px]" />
@@ -255,20 +255,20 @@ export default function ToolkitHome({
         {/* ---------------------------------------------------------- four facts: a card over the hero's edge */}
         <section aria-label="In short" className="relative z-[1] -mt-6 sm:-mt-10">
           <div className="max-w-[1180px] mx-auto px-5 sm:px-8">
-            <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 overflow-hidden rounded-3xl bg-[#071a44] text-white shadow-[0_30px_70px_rgba(7,26,68,0.28)] divide-y sm:divide-y-0 divide-white/10">
+            <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_24px_60px_rgba(7,26,68,0.10)] divide-y sm:divide-y-0 divide-slate-200">
               {[
                 { Icon: Package, title: "Six tools, one download", text: "Install only the ones you need." },
                 { Icon: ShieldCheck, title: "Official installers only", text: "Each checked by its SHA-256 first." },
                 { Icon: UserCheck, title: "No administrator rights", text: "Installs for you alone, like an app." },
                 { Icon: RefreshCw, title: "Updates by themselves", text: "Checked when it opens and every 4 hours." },
               ].map((f, i) => (
-                <li key={f.title} className={`ho-reveal flex items-start gap-3 p-5 sm:p-6 ${i % 2 ? "sm:border-l sm:border-white/10" : ""} ${i === 2 ? "lg:border-l lg:border-white/10" : ""}`} style={{ "--i": i } as CSSProperties}>
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/[0.08] text-[#ffd21f] ring-1 ring-white/10">
+                <li key={f.title} className={`ho-reveal flex items-start gap-3 p-5 sm:p-6 ${i % 2 ? "sm:border-l sm:border-slate-200" : ""} ${i === 2 ? "lg:border-l lg:border-slate-200" : ""}`} style={{ "--i": i } as CSSProperties}>
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#071a44] text-[#ffd21f]">
                     <f.Icon className="w-5 h-5" aria-hidden />
                   </span>
                   <div>
-                    <p className="font-bold">{f.title}</p>
-                    <p className="mt-0.5 text-[13.5px] text-blue-100/75">{f.text}</p>
+                    <p className="font-bold text-[#071a44]">{f.title}</p>
+                    <p className="mt-0.5 text-[13.5px] text-slate-600">{f.text}</p>
                   </div>
                 </li>
               ))}
@@ -295,13 +295,13 @@ export default function ToolkitHome({
                 return (
                   <li
                     key={t.id}
-                    className="ho-reveal ho-card group relative flex flex-col overflow-hidden rounded-3xl border border-slate-200/80 bg-gradient-to-b from-[#f7f9ff] to-white p-6 hover:-translate-y-1 hover:border-[#1e4fd8]/35 hover:shadow-[0_24px_50px_rgba(7,26,68,0.12)]"
+                    className="ho-reveal ho-card group relative flex flex-col overflow-hidden rounded-3xl border border-slate-200/80 bg-white p-6 hover:-translate-y-1 hover:border-[#1e4fd8]/35 hover:shadow-[0_24px_50px_rgba(7,26,68,0.12)]"
                     style={{ "--i": i } as CSSProperties}
                   >
                     {/* a soft light that follows the card's hover */}
-                    <span aria-hidden className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-[#1e4fd8]/[0.06] blur-2xl transition-transform duration-500 group-hover:scale-150" />
+                    <span aria-hidden className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-slate-100 blur-2xl transition-transform duration-500 group-hover:scale-150" />
                     <div className="relative flex items-start justify-between gap-3">
-                      <span className="ho-icon flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#0b2560] to-[#071a44] text-[#ffd21f] shadow-[0_10px_24px_rgba(7,26,68,0.25)]">
+                      <span className="ho-icon flex h-14 w-14 items-center justify-center rounded-2xl bg-[#071a44] text-[#ffd21f]">
                         <Icon className="w-7 h-7" aria-hidden />
                       </span>
                       <span className="rounded-full border border-[#1e4fd8]/15 bg-white px-2.5 py-0.5 text-[12px] font-bold tabular-nums text-[#1e4fd8]">{ver(t)}</span>
@@ -336,15 +336,14 @@ export default function ToolkitHome({
               })}
             </ul>
             {/* what the Toolkit itself is */}
-            <div className="ho-reveal relative isolate mt-5 overflow-hidden rounded-3xl bg-[radial-gradient(80%_120%_at_100%_0%,#1e4fd8,#071a44_65%)] p-7 sm:p-9 text-white grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_auto] gap-6 items-center">
-              <span aria-hidden className="ho-cta-glow absolute -z-10 left-[-60px] bottom-[-90px] h-[240px] w-[240px] rounded-full bg-[#ffd21f]/15 blur-[60px]" />
+            <div className="ho-reveal relative isolate mt-5 overflow-hidden rounded-3xl border border-slate-200 bg-slate-50 p-7 sm:p-9 grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_auto] gap-6 items-center">
               <div>
-                <p className="text-[22px] sm:text-[26px] font-extrabold tracking-tight">All six, kept up to date</p>
-                <p className="mt-2 max-w-2xl text-[15px] text-blue-100/80">
+                <p className="text-[22px] sm:text-[26px] font-extrabold tracking-tight text-[#071a44]">All six, kept up to date</p>
+                <p className="mt-2 max-w-2xl text-[15px] text-slate-600">
                   One program looks after them: what is installed, what is new, and the update, with nobody pressing anything.
                 </p>
               </div>
-              <DownloadButton dark />
+              <DownloadButton />
             </div>
           </div>
         </section>
@@ -353,19 +352,16 @@ export default function ToolkitHome({
         <WhatsNew news={news} />
 
         {/* ---------------------------------------------------------- how it works */}
-        <section aria-labelledby="how-h" className="relative overflow-hidden bg-[#071a44] text-white">
-          <div aria-hidden className="ho-grid-drift absolute -inset-12 opacity-[0.07] bg-[linear-gradient(#9cb8ff_1px,transparent_1px),linear-gradient(90deg,#9cb8ff_1px,transparent_1px)] bg-[size:48px_48px]" />
+        <section aria-labelledby="how-h" className="relative overflow-hidden bg-slate-50">
           <div className="relative max-w-[1180px] mx-auto px-5 sm:px-8 py-20">
             <div className="ho-reveal mx-auto max-w-3xl text-center">
-              <Eyebrow Icon={ListChecks} light>
-                How it works
-              </Eyebrow>
-              <H2 id="how-h" light>
+              <Eyebrow Icon={ListChecks}>How it works</Eyebrow>
+              <H2 id="how-h">
                 Three steps, then you can forget about updates
               </H2>
             </div>
             <ol className="relative mt-12 grid grid-cols-1 md:grid-cols-3 gap-5">
-              <span aria-hidden className="ho-reveal ho-line absolute left-[16%] right-[16%] top-[52px] hidden md:block border-t-2 border-dashed border-[#ffd21f]/30" />
+              <span aria-hidden className="ho-reveal ho-line absolute left-[16%] right-[16%] top-[52px] hidden md:block border-t-2 border-dashed border-slate-300" />
               {[
                 { Icon: Download, title: "Download the Toolkit", text: "One installer for Windows 10 and 11. No administrator rights needed." },
                 { Icon: MousePointerClick, title: "Pick your tools", text: "Home shows what is already on your PC and what is new. Install the rest with one click." },
@@ -373,15 +369,15 @@ export default function ToolkitHome({
               ].map((st, i) => (
                 <li
                   key={st.title}
-                  className="ho-reveal ho-card relative rounded-3xl border border-white/10 bg-white/[0.04] p-7 text-center backdrop-blur-sm hover:border-[#ffd21f]/40"
+                  className="ho-reveal ho-card relative rounded-3xl border border-slate-200 bg-white p-7 text-center hover:border-slate-300 hover:shadow-[0_18px_40px_rgba(7,26,68,0.08)]"
                   style={{ "--i": i } as CSSProperties}
                 >
                   <span className="ho-step-icon relative mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#ffd21f] text-[#071a44] shadow-[0_0_0_6px_rgba(255,210,31,0.12)]">
                     <st.Icon className="w-6 h-6" aria-hidden />
                   </span>
-                  <p className="mt-5 text-[12px] font-bold uppercase tracking-[0.16em] text-[#ffd21f]/80">Step {i + 1}</p>
-                  <p className="mt-1 text-[19px] font-bold">{st.title}</p>
-                  <p className="mx-auto mt-2 max-w-xs text-[14.5px] text-blue-100/75">{st.text}</p>
+                  <p className="mt-5 text-[12px] font-bold uppercase tracking-[0.16em] text-slate-400">Step {i + 1}</p>
+                  <p className="mt-1 text-[19px] font-bold text-[#071a44]">{st.title}</p>
+                  <p className="mx-auto mt-2 max-w-xs text-[14.5px] text-slate-600">{st.text}</p>
                 </li>
               ))}
             </ol>
@@ -408,7 +404,7 @@ export default function ToolkitHome({
         </section>
 
         {/* ---------------------------------------------------------- updates */}
-        <section aria-labelledby="upd-h" className="bg-[#f6f8fc]">
+        <section aria-labelledby="upd-h" className="bg-white">
           <div className="max-w-[1180px] mx-auto px-5 sm:px-8 py-20 grid grid-cols-1 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] gap-12 items-center">
             <div className="ho-reveal">
               <Eyebrow Icon={RefreshCw}>Updates</Eyebrow>
@@ -427,7 +423,7 @@ export default function ToolkitHome({
         </section>
 
         {/* ---------------------------------------------------------- an update, step by step */}
-        <section aria-labelledby="tour-h" className="bg-[#f6f8fc]">
+        <section aria-labelledby="tour-h" className="bg-slate-50">
           <div className="max-w-[1180px] mx-auto px-5 sm:px-8 py-20">
             <div className="ho-reveal max-w-3xl">
               <Eyebrow Icon={PlayCircle}>See it work</Eyebrow>
@@ -443,7 +439,7 @@ export default function ToolkitHome({
         {/* ---------------------------------------------------------- safe by design */}
         <section aria-labelledby="safe-h" className="bg-white">
           <div className="max-w-[1180px] mx-auto px-5 sm:px-8 py-20">
-            <div className="relative isolate overflow-hidden rounded-[32px] bg-[radial-gradient(70%_90%_at_0%_0%,#e6eeff,#f6f8fc_70%)] p-7 sm:p-12">
+            <div className="relative isolate overflow-hidden rounded-[32px] border border-slate-200 bg-slate-50 p-7 sm:p-12">
               <div className="ho-reveal grid grid-cols-1 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] gap-10 items-start">
                 <div>
                   <Eyebrow Icon={ShieldCheck}>Safe by design</Eyebrow>
@@ -457,7 +453,7 @@ export default function ToolkitHome({
                     { Icon: HardDrive, title: "Your PC, your choice", text: "Installed for you alone, no administrator rights. Removing the Toolkit keeps your tools." },
                     { Icon: Lock, title: "Nothing of your files", text: "It tells us only this PC's name, Windows version and tool versions, so we can see updates arrive." },
                   ].map((c, i) => (
-                    <li key={c.title} className="ho-reveal ho-card rounded-2xl border border-white bg-white/80 p-5 shadow-[0_8px_24px_rgba(7,26,68,0.06)] hover:shadow-[0_18px_40px_rgba(7,26,68,0.12)]" style={{ "--i": i } as CSSProperties}>
+                    <li key={c.title} className="ho-reveal ho-card rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_8px_24px_rgba(7,26,68,0.06)] hover:shadow-[0_18px_40px_rgba(7,26,68,0.12)]" style={{ "--i": i } as CSSProperties}>
                       <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#071a44] text-[#ffd21f]">
                         <c.Icon className="w-5 h-5" aria-hidden />
                       </span>
@@ -495,7 +491,7 @@ export default function ToolkitHome({
               </h2>
               <div className="mt-5 space-y-3">
                 {TOOLKIT_FAQS.map((f) => (
-                  <details key={f.q} className="group rounded-2xl border border-slate-200 bg-white px-5 py-4 open:border-[#1e4fd8]/30 open:bg-[#f7f9ff] open:shadow-[0_10px_30px_rgba(7,26,68,0.06)]">
+                  <details key={f.q} className="group rounded-2xl border border-slate-200 bg-white px-5 py-4 open:border-slate-300 open:bg-slate-50 open:shadow-[0_10px_30px_rgba(7,26,68,0.06)]">
                     <summary className="cursor-pointer list-none flex items-center justify-between gap-4 font-semibold text-slate-900">
                       {f.q}
                       <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-transform group-open:rotate-45 group-open:bg-[#071a44] group-open:text-[#ffd21f]">
@@ -513,7 +509,7 @@ export default function ToolkitHome({
         {/* ---------------------------------------------------------- the last word */}
         <section aria-label="Download" className="bg-white pb-20">
           <div className="ho-reveal max-w-[1180px] mx-auto px-5 sm:px-8">
-            <div className="relative isolate overflow-hidden rounded-3xl bg-[radial-gradient(60%_90%_at_85%_50%,#1e4fd8,#071a44_70%)] p-8 sm:p-12 text-white grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_auto] gap-8 items-center">
+            <div className="relative isolate overflow-hidden rounded-3xl bg-[#071a44] p-8 sm:p-12 text-white grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_auto] gap-8 items-center">
               <span aria-hidden className="ho-cta-glow absolute -z-10 right-[-80px] top-[-80px] h-[300px] w-[300px] rounded-full bg-[#ffd21f]/15 blur-[70px]" />
               <div>
                 <p className="text-[28px] sm:text-[36px] font-extrabold tracking-tight leading-tight">
