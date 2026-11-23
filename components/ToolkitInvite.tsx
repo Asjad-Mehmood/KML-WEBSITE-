@@ -2,7 +2,7 @@
 
 // Shown once a new account is made (the sign-up, and Google's /welcome): the account is ready,
 // and the Survey Toolkit is the way to get every program. A celebration on arrival (confetti,
-// the Toolkit rising in with its programs flying around it), then Download starts the installer
+// the Toolkit rising in), then Download starts the installer
 // (/api/toolkit/download; on the sign-in address through the handover, so the main site is
 // signed in for it) and turns into a step tracker: downloading, open it, install, signed in.
 // Everything stays still for reduced motion.
@@ -11,20 +11,14 @@ import Image from "next/image";
 import {
   ArrowRight,
   Check,
-  Compass,
   Download,
-  DraftingCompass,
   FolderOpen,
-  FolderTree,
-  Globe,
   LayoutGrid,
   Loader2,
   MousePointerClick,
   PartyPopper,
   RefreshCw,
-  Route,
   ShieldCheck,
-  TrendingUp,
   UserCheck,
   type LucideIcon,
 } from "lucide-react";
@@ -35,16 +29,6 @@ const POINTS = [
   { Icon: LayoutGrid, text: "Excel to KML, Traverse & Level, Slope Calculator, Auto Drafting and more, in one app" },
   { Icon: ShieldCheck, text: "Sign in once: every program opens already signed in" },
   { Icon: RefreshCw, text: "New versions install themselves, checked before they run" },
-];
-
-// the programs that fly in around the Toolkit: where each settles (% of the box) and from where
-const ORBIT: { Icon: LucideIcon; x: number; y: number; fx: number; fy: number }[] = [
-  { Icon: Globe, x: -4, y: 18, fx: -120, fy: -40 },
-  { Icon: Compass, x: 92, y: 10, fx: 120, fy: -60 },
-  { Icon: TrendingUp, x: -6, y: 62, fx: -140, fy: 30 },
-  { Icon: DraftingCompass, x: 94, y: 56, fx: 140, fy: 20 },
-  { Icon: Route, x: 20, y: -8, fx: -40, fy: -120 },
-  { Icon: FolderTree, x: 72, y: -10, fx: 60, fy: -120 },
 ];
 
 const STEPS = [
@@ -154,18 +138,8 @@ export default function ToolkitInvite({
         </p>
       </div>
 
-      {/* the Toolkit rising in, its programs flying around it */}
-      <div className="relative mt-6 px-3">
-        {ORBIT.map(({ Icon, x, y, fx, fy }, i) => (
-          <span
-            key={i}
-            aria-hidden
-            className="ti-fly absolute z-10 flex h-8 w-8 items-center justify-center rounded-full bg-[#071a44] text-[#ffd21f] shadow-[0_6px_16px_-4px_rgba(7,26,68,0.5)] ring-2 ring-white"
-            style={{ left: `${x}%`, top: `${y}%`, "--fx": `${fx}px`, "--fy": `${fy}px`, animationDelay: `${450 + i * 90}ms, ${1400 + i * 90}ms` } as React.CSSProperties}
-          >
-            <Icon className="w-4 h-4" />
-          </span>
-        ))}
+      {/* the Toolkit rising in */}
+      <div className="relative mt-6">
         <div className="ti-rise overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-b from-[#eef3ff] to-[#f5f7fb]" style={{ animationDelay: "300ms" }}>
           <div className="flex items-center gap-3 px-4 pt-4">
             <Image src={toolkitIcon} alt="" width={40} height={40} className="h-10 w-10 rounded-xl shadow-md" />
@@ -268,7 +242,6 @@ export default function ToolkitInvite({
         .ti-ring { animation: ti-ring 1.4s ease-out .3s 2 both; }
         .ti-rise { animation: ti-rise .8s cubic-bezier(.2,.8,.2,1) both; }
         .ti-float { animation: ti-float 5s ease-in-out 1.2s infinite; }
-        .ti-fly { animation: ti-fly .7s cubic-bezier(.2,1.3,.4,1) both, ti-bobble 3.5s ease-in-out infinite; }
         .ti-cta { box-shadow: 0 12px 28px -10px rgba(0,113,227,.7); animation: ti-up .5s cubic-bezier(.2,.7,.2,1) both, ti-glow 2.4s ease-in-out 2s infinite; }
         .ti-sweep { animation: ti-sweep 2.8s ease-in-out 1.8s infinite; }
         .ti-bob { animation: ti-bob 1.6s ease-in-out 2s infinite; }
@@ -279,15 +252,13 @@ export default function ToolkitInvite({
         @keyframes ti-ring { from { opacity: .8; transform: scale(1); } to { opacity: 0; transform: scale(1.9); } }
         @keyframes ti-rise { from { opacity: 0; transform: translateY(40px) scale(.94) rotateX(18deg); } to { opacity: 1; transform: none; } }
         @keyframes ti-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-        @keyframes ti-fly { from { opacity: 0; transform: translate(var(--fx), var(--fy)) scale(.2) rotate(-90deg); } to { opacity: 1; transform: none; } }
-        @keyframes ti-bobble { 0%,100% { translate: 0 0; } 50% { translate: 0 -6px; } }
         @keyframes ti-glow { 0%,100% { box-shadow: 0 12px 28px -10px rgba(0,113,227,.7); } 50% { box-shadow: 0 12px 36px -6px rgba(0,113,227,.95); } }
         @keyframes ti-sweep { 0% { left: -40%; } 60%,100% { left: 120%; } }
         @keyframes ti-bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(2px); } }
         @keyframes ti-indet { 0% { transform: translateX(-100%); } 100% { transform: translateX(300%); } }
         @keyframes ti-shine { to { background-position: -200% 0; } }
         @media (prefers-reduced-motion: reduce) {
-          .ti-up, .ti-badge, .ti-ring, .ti-rise, .ti-float, .ti-fly, .ti-cta, .ti-sweep, .ti-bob, .ti-indet, .ti-shine { animation: none !important; }
+          .ti-up, .ti-badge, .ti-ring, .ti-rise, .ti-float, .ti-cta, .ti-sweep, .ti-bob, .ti-indet, .ti-shine { animation: none !important; }
           .ti-shine { color: #0071e3; }
         }
       `}</style>
