@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminHost, onAdminHost } from "@/lib/adminHost";
+import { AUTH_PAGE, authHost, onAuthHost } from "@/lib/authHost";
 import { SITE_URL } from "@/lib/site";
 
 // Admin's pages and APIs (lib/adminHost: they live on ADMIN_HOST once it is set)
@@ -28,8 +29,31 @@ export function middleware(req: NextRequest) {
     if (ADMIN_API.test(path)) return notFound();
   }
 
+  const auth = authHost();
+  if (auth) {
+    if (onAuthHost(req.headers)) return authSide(req, path);
+    // the main site: its sign-in pages are on the sign-in address
+    if (AUTH_PAGE.test(path)) return NextResponse.redirect(`${req.nextUrl.protocol}//${auth}${path}${req.nextUrl.search}`, 307);
+  }
+
   if (!path.startsWith("/api/")) return NextResponse.next();
   return withCors(req);
+}
+
+/** The sign-in address: the sign-in pages, their APIs and files; nothing else of the site */
+function authSide(req: NextRequest, path: string) {
+  if (path === "/robots.txt") {
+    return new NextResponse("User-agent: *\nDisallow: /\n", { headers: { "Content-Type": "text/plain" } });
+  }
+  if (AUTH_PAGE.test(path) || path.startsWith("/api/auth/") || path === "/api/settings/public" || FILE.test(path)) {
+    // same-origin only: no CORS headers here (the programs sign in on the main site)
+    const res = NextResponse.next();
+    res.headers.set("X-Robots-Tag", "noindex, nofollow");
+    return res;
+  }
+  if (path.startsWith("/api/")) return notFound();
+  // anything else, "/" too: the main site
+  return NextResponse.redirect(`${SITE_URL}${path}${req.nextUrl.search}`, 307);
 }
 
 /** The admin address: admin pages, their sign-in and files; nothing of the public site */

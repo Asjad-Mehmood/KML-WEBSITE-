@@ -1,4 +1,5 @@
 import { after, NextRequest, NextResponse } from "next/server";
+import { authOrigin, continuePath, onAuthHost } from "@/lib/authHost";
 import { logEvent } from "@/lib/activityEvents";
 import { isBlocked } from "@/lib/accountControls";
 import { db } from "@/lib/db";
@@ -59,7 +60,8 @@ export async function GET(req: NextRequest) {
     const signedIn = user;
     after(() => logEvent(req, signedIn, needsProfile ? "sign_up" : "sign_in", needsProfile ? "Made an account with Google" : "Signed in (Google)"));
     const dest = needsProfile ? `/welcome?next=${encodeURIComponent(next)}` : next;
-    const res = NextResponse.redirect(new URL(dest, req.url));
+    // on the sign-in address (lib/authHost) the main site is signed in by a handover code
+    const res = NextResponse.redirect(onAuthHost(req.headers) ? new URL(continuePath(dest), authOrigin(req.nextUrl.protocol)) : new URL(dest, req.url));
     res.cookies.set("surveyor_auth_token", session.token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",

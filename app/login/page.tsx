@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 import { safeNextPath } from "../../lib/authRedirect";
+import { continuePath, inAuthHost } from "../../lib/authHost";
 import GoogleSignIn, { GOOGLE_ERRORS } from "../../components/GoogleSignIn";
 import OtpForm from "../../components/OtpForm";
 
@@ -29,8 +30,10 @@ export default function LoginPage() {
     () => window.location.hostname.startsWith("admin."),
     () => false
   );
+  // the sign-in address (lib/authHost): signed in here, the main site is signed in by a handover
+  const authSide = useSyncExternalStore(() => () => {}, inAuthHost, () => false);
   const googleError = googleErrorCode ? GOOGLE_ERRORS[googleErrorCode] ?? null : null;
-  const { login, user, isLoading, otp } = useAuth();
+  const { login, logout, user, isLoading, otp } = useAuth();
 
   // Links to the web app send signed-out visitors here with ?next=/app. Someone
   // who is already signed in goes straight on (decided once, when the session check ends)
@@ -38,8 +41,9 @@ export default function LoginPage() {
   useEffect(() => {
     if (isLoading || sessionChecked.current) return;
     sessionChecked.current = true;
-    if (user && nextParam) router.replace(safeNextPath(nextParam));
-  }, [isLoading, user, nextParam, router]);
+    // (on the sign-in address they choose: "Continue as …" or another account)
+    if (user && nextParam && !authSide) router.replace(safeNextPath(nextParam));
+  }, [isLoading, user, nextParam, router, authSide]);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -70,7 +74,9 @@ export default function LoginPage() {
   // admins go to the admin dashboard and everyone else to the home page
   const goOn = (isAdmin?: boolean) => {
     const next = new URLSearchParams(window.location.search).get("next");
-    router.push(next ? safeNextPath(next) : isAdmin || adminSide ? "/admin" : "/");
+    const dest = next ? safeNextPath(next) : isAdmin || adminSide ? "/admin" : "/";
+    if (authSide) window.location.assign(continuePath(dest));
+    else router.push(dest);
   };
 
 
@@ -107,7 +113,28 @@ export default function LoginPage() {
 
       {/* Main Login Card */}
       <div className="max-w-md w-full mx-auto my-12 bg-white rounded-3xl border border-slate-200 shadow-xl shadow-slate-200/60 p-8 sm:p-10">
-        {otp ? (
+        {authSide && user && !otp ? (
+          // signed in on the sign-in address already: go on as them, or use another account
+          <div className="text-center">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight">Welcome Back</h1>
+            <p className="mt-2 text-sm text-slate-500">You&apos;re signed in as</p>
+            <p className="mt-1 font-bold text-slate-900">{user.name}</p>
+            <p className="text-sm text-slate-500 break-all">{user.email}</p>
+            <a
+              href={continuePath(safeNextPath(nextParam))}
+              className="mt-6 w-full py-3.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-blue-500/25 transition-all flex items-center justify-center"
+            >
+              Continue as {user.name.split(" ")[0]}
+            </a>
+            <button
+              type="button"
+              onClick={() => void logout()}
+              className="mt-3 w-full py-3 px-4 border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-sm rounded-xl transition-colors"
+            >
+              Use another account
+            </button>
+          </div>
+        ) : otp ? (
           <OtpForm onSuccess={(r) => goOn(r.isAdmin)} />
         ) : (
         <>
