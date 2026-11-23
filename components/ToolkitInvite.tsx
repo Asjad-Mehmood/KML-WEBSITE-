@@ -20,7 +20,6 @@ import {
   RefreshCw,
   ShieldCheck,
   UserCheck,
-  type LucideIcon,
 } from "lucide-react";
 import toolkitIcon from "@/components/toolkit/images/toolkit-icon.png";
 import shot from "@/components/toolkit/images/shot-home.png";
