@@ -30,6 +30,19 @@ const nextConfig: NextConfig = {
   // Slope Calculator the same.
   async headers() {
     return [
+      // every page: no other site may show it in a frame (clickjacking), no type guessing,
+      // HTTPS only, and the full address is never sent to other sites
+      {
+        source: "/:path*",
+        headers: [
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "Content-Security-Policy", value: "frame-ancestors 'self'" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Strict-Transport-Security", value: "max-age=63072000" },
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), payment=(), usb=(), geolocation=(self)" },
+        ],
+      },
       {
         source: "/traverse/app/sw.js",
         headers: [
