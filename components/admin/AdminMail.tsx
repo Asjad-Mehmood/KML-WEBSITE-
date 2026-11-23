@@ -217,17 +217,14 @@ export default function AdminMail({
   const canSend = subject.trim() && body.trim() && !needsPick && reach && reach.count > 0;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-base font-bold text-white">Email</h3>
-        <p className="text-xs text-slate-400">
-          Write an email to one person, people you pick, everyone who uses an app, or everyone. It goes out from the server in small batches, carries on if you close this page, and never reaches anyone who stopped our emails.
-        </p>
-      </div>
+    <div className="space-y-5 pb-24 sm:space-y-6 sm:pb-0">
+      <p className="text-xs leading-relaxed text-slate-400">
+        It goes out in the background (closing this page doesn&apos;t stop it) and skips anyone who stopped our emails.
+      </p>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         {/* ---------------- who ---------------- */}
-        <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+        <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 sm:p-5">
           <p className="text-sm font-bold text-white">1. Who gets it</p>
           <div className="mt-3 grid grid-cols-2 gap-2">
             {AUDIENCES.map(({ id, label: l, Icon }) => (
@@ -238,7 +235,7 @@ export default function AdminMail({
                   setAudience(id);
                   if (id === "one") setPicked((p) => p.slice(0, 1));
                 }}
-                className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-sm font-semibold cursor-pointer ${
+                className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-[13px] sm:text-sm font-semibold cursor-pointer ${
                   audience === id ? "border-blue-500 bg-blue-600/15 text-white" : "border-slate-800 text-slate-400 hover:text-white"
                 }`}
               >
@@ -331,7 +328,7 @@ export default function AdminMail({
         </section>
 
         {/* ---------------- what ---------------- */}
-        <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+        <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 sm:p-5">
           <p className="text-sm font-bold text-white">2. The email</p>
           <div className="mt-3 space-y-3">
             <div>
@@ -370,24 +367,40 @@ export default function AdminMail({
             </div>
           </div>
 
-          <div className="mt-5 flex flex-wrap gap-2">
-            <button type="button" disabled={!!busy} onClick={doPreview} className="inline-flex items-center gap-1.5 rounded-xl border border-slate-700 px-3.5 py-2 text-sm font-semibold text-slate-200 hover:bg-slate-800 disabled:opacity-50 cursor-pointer">
+          <div className="mt-5 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+            <button type="button" disabled={!!busy} onClick={doPreview} className="inline-flex justify-center items-center gap-1.5 rounded-xl border border-slate-700 px-3.5 py-2 text-sm font-semibold text-slate-200 hover:bg-slate-800 disabled:opacity-50 cursor-pointer">
               {busy === "preview" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Eye className="w-4 h-4" />} Preview
             </button>
-            <button type="button" disabled={!!busy} onClick={doTest} className="inline-flex items-center gap-1.5 rounded-xl border border-slate-700 px-3.5 py-2 text-sm font-semibold text-slate-200 hover:bg-slate-800 disabled:opacity-50 cursor-pointer">
-              {busy === "test" ? <Loader2 className="w-4 h-4 animate-spin" /> : <FlaskConical className="w-4 h-4" />} Send me a test
+            <button type="button" disabled={!!busy} onClick={doTest} className="inline-flex justify-center items-center gap-1.5 rounded-xl border border-slate-700 px-3.5 py-2 text-sm font-semibold text-slate-200 hover:bg-slate-800 disabled:opacity-50 cursor-pointer">
+              {busy === "test" ? <Loader2 className="w-4 h-4 animate-spin" /> : <FlaskConical className="w-4 h-4" />} <span className="sm:hidden">Test to me</span><span className="hidden sm:inline">Send me a test</span>
             </button>
             <button
               type="button"
               disabled={!!busy || !canSend}
               onClick={() => setConfirming(true)}
-              className="ml-auto inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-500 disabled:opacity-40 cursor-pointer"
+              className="ml-auto hidden sm:inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-500 disabled:opacity-40 cursor-pointer"
             >
               {busy === "send" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
               Send{shownReach?.count ? ` to ${shownReach.count}` : ""}
             </button>
           </div>
         </section>
+      </div>
+
+      {/* on a phone: who it reaches and Send, always at hand */}
+      <div className="fixed inset-x-0 bottom-0 z-[70] flex items-center gap-3 border-t border-slate-800 bg-slate-900/95 px-4 py-3 backdrop-blur sm:hidden" style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}>
+        <div className="min-w-0 flex-1 text-xs">
+          <p className="font-bold text-white truncate">{shownReach ? `Reaches ${shownReach.count} ${shownReach.count === 1 ? "person" : "people"}` : audience === "one" ? "Choose the person" : "Pick people"}</p>
+          <p className="truncate text-slate-400">{subject.trim() || "No subject yet"}</p>
+        </div>
+        <button
+          type="button"
+          disabled={!!busy || !canSend}
+          onClick={() => setConfirming(true)}
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white disabled:opacity-40 cursor-pointer"
+        >
+          {busy === "send" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />} Send
+        </button>
       </div>
 
       {/* ---------------- sent ---------------- */}
@@ -418,7 +431,7 @@ export default function AdminMail({
                     {m.status === "sending" ? "Sending" : m.status === "paused" ? "Paused" : "Done"}
                   </span>
                   <span className="text-slate-400">{m.audienceLabel}</span>
-                  <span className="ml-auto text-slate-500">{new Date(m.createdAt).toLocaleString()}</span>
+                  <span className="ml-auto text-slate-500">{new Date(m.createdAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}</span>
                 </div>
                 <p className="mt-2 text-sm font-semibold text-white">{m.subject}</p>
                 <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-800">
@@ -452,23 +465,23 @@ export default function AdminMail({
 
       {/* ---------------- preview ---------------- */}
       {preview && (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 p-4" onClick={() => setPreview(null)}>
-          <div className="w-full max-w-2xl overflow-hidden rounded-2xl bg-slate-900" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center bg-black/60 sm:p-4" onClick={() => setPreview(null)}>
+          <div className="w-full max-w-2xl overflow-hidden rounded-t-2xl sm:rounded-2xl bg-slate-900" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b border-slate-800 px-5 py-3">
               <p className="truncate text-sm font-semibold text-white">{preview.subject}</p>
               <button type="button" aria-label="Close" onClick={() => setPreview(null)} className="rounded-lg p-1 text-slate-400 hover:text-white cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <iframe title="Email preview" sandbox="" srcDoc={preview.html} className="h-[65vh] w-full bg-white" />
+            <iframe title="Email preview" sandbox="" srcDoc={preview.html} className="h-[82vh] sm:h-[65vh] w-full bg-white" />
           </div>
         </div>
       )}
 
       {/* ---------------- are you sure ---------------- */}
       {confirming && shownReach && (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 p-4" onClick={() => setConfirming(false)}>
-          <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-6" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center bg-black/60 sm:p-4" onClick={() => setConfirming(false)}>
+          <div className="w-full max-w-md rounded-t-2xl sm:rounded-2xl border border-slate-800 bg-slate-900 p-6" style={{ paddingBottom: "max(24px, env(safe-area-inset-bottom))" }} onClick={(e) => e.stopPropagation()}>
             <p className="text-base font-bold text-white">
               Send to {shownReach.count} {shownReach.count === 1 ? "person" : "people"}?
             </p>
