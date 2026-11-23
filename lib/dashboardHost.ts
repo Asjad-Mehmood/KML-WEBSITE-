@@ -24,6 +24,12 @@ export function onDashboardHost(headers: Headers): boolean {
   return !!d && bare(headers.get("host") || "") === bare(d);
 }
 
+/** In the browser: is this page on the dashboard address? */
+export function inDashboardHost(): boolean {
+  const d = dashboardHost();
+  return !!d && typeof window !== "undefined" && window.location.hostname === bare(d);
+}
+
 /** The dashboard's pages */
 export const DASHBOARD_PAGE = /^\/dashboard(\/|$)/;
 
