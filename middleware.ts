@@ -45,7 +45,7 @@ export function middleware(req: NextRequest) {
     if (AUTH_PAGE.test(path)) return NextResponse.redirect(`${req.nextUrl.protocol}//${auth}${path}${req.nextUrl.search}`, 307);
   }
 
-  if (path === "/login" || path === "/login/") return toTwoStep(req);
+  if (STEPPED[path]) return toTwoStep(req, STEPPED[path]);
   if (!path.startsWith("/api/")) return NextResponse.next();
   return withCors(req);
 }
@@ -62,7 +62,7 @@ function dashboardSide(req: NextRequest, path: string) {
   const auth = authHost();
   // signing in: on the sign-in address when there is one, else here
   if (AUTH_PAGE.test(path) && auth) return NextResponse.redirect(`${req.nextUrl.protocol}//${auth}${path}${req.nextUrl.search}`, 307);
-  if (!auth && (path === "/login" || path === "/login/")) return toTwoStep(req);
+  if (!auth && STEPPED[path]) return toTwoStep(req, STEPPED[path]);
   const ownSignIn = !auth && (AUTH_PAGE.test(path) || path.startsWith("/api/auth/"));
   if (DASHBOARD_PAGE.test(path) || DASHBOARD_API.test(path) || ownSignIn || FILE.test(path)) {
     const res = NextResponse.next();
@@ -75,7 +75,7 @@ function dashboardSide(req: NextRequest, path: string) {
 
 /** The sign-in address: the sign-in pages, their APIs and files; nothing else of the site */
 function authSide(req: NextRequest, path: string) {
-  if (path === "/login" || path === "/login/") return toTwoStep(req);
+  if (STEPPED[path]) return toTwoStep(req, STEPPED[path]);
   if (path === "/robots.txt") {
     return new NextResponse("User-agent: *\nDisallow: /\n", { headers: { "Content-Type": "text/plain" } });
   }
@@ -107,18 +107,26 @@ function adminSide(req: NextRequest, path: string) {
   return NextResponse.redirect(`${SITE_URL}${path}${req.nextUrl.search}`, 307);
 }
 
+// the old sign-in and sign-up pages, and the first step of the new ones (app/signin, app/signup)
+const STEPPED: Record<string, string> = {
+  "/login": "/signin/identifier",
+  "/login/": "/signin/identifier",
+  "/register": "/signup/details",
+  "/register/": "/signup/details",
+};
+
 /**
  * /login?next=… → the two-step sign-in, /signin/identifier?continue=<full address>&flow=web
  * (app/signin; its page adds the signed state). Google's errors come along. The admin address
  * keeps its own /login.
  */
-function toTwoStep(req: NextRequest) {
+function toTwoStep(req: NextRequest, to: string) {
   const next = safeNextPath(req.nextUrl.searchParams.get("next"));
   const base = isDashboardPath(next) ? `${req.nextUrl.protocol}//${dashboardHost()}` : SITE_URL;
   const q = new URLSearchParams({ continue: `${base}${next}`, flow: "web" });
   const error = req.nextUrl.searchParams.get("error");
   if (error) q.set("error", error);
-  return NextResponse.redirect(`${req.nextUrl.protocol}//${req.headers.get("host")}/signin/identifier?${q}`, 307);
+  return NextResponse.redirect(`${req.nextUrl.protocol}//${req.headers.get("host")}${to}?${q}`, 307);
 }
 
 function withCors(req: NextRequest) {

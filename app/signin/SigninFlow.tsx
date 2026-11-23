@@ -16,10 +16,10 @@ import OtpForm from "@/components/OtpForm";
 
 const EMAIL_KEY = "kml_signin_email";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-const DONE_MS = 1400;
+export const DONE_MS = 1400;
 
 /** Where they are being taken, in words */
-function destination(next: string): string {
+export function destination(next: string): string {
   const p = next.split("?")[0];
   if (p.startsWith("/dashboard")) return "your dashboard";
   if (p === "/app") return "the Excel to KML web app";
@@ -246,6 +246,38 @@ export default function SigninFlow({ step, next, query, error }: { step: "identi
     );
   }
 
+  return <AuthCard>{body}</AuthCard>;
+}
+
+export const primary = "w-full rounded-full bg-[#0071e3] py-3 text-[14px] font-semibold text-white transition-colors hover:bg-[#0077ed]";
+export const input =
+  "mt-5 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3.5 text-[15px] text-[#1d1d1f] outline-none transition focus:border-[#0071e3] focus:ring-4 focus:ring-[#0071e3]/15";
+
+export function Avatar({ email, big = false }: { email: string; big?: boolean }) {
+  const letter = (email.trim()[0] || "?").toUpperCase();
+  return (
+    <span
+      aria-hidden
+      className={`mx-auto flex shrink-0 items-center justify-center rounded-full bg-[#071a44] font-semibold text-[#ffd21f] ${big ? "h-16 w-16 text-[26px]" : "h-7 w-7 text-[13px]"}`}
+    >
+      {letter}
+    </span>
+  );
+}
+
+export function Status({ icon, title, text, children }: { icon: React.ReactNode; title: string; text: string; children?: React.ReactNode }) {
+  return (
+    <div className="si-in py-6 text-center" role="status" aria-live="polite">
+      <div className="flex justify-center">{icon}</div>
+      <p className="mt-4 text-[20px] font-semibold text-[#1d1d1f]">{title}</p>
+      <p className="mt-1 text-[14px] text-slate-500">{text}</p>
+      {children}
+    </div>
+  );
+}
+
+/** The card the sign-in and sign-up steps are shown in, with their motion */
+export function AuthCard({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-[#f5f5f7] flex flex-col items-center justify-center px-4 py-10">
       <div className="w-full max-w-[440px] overflow-hidden rounded-[28px] border border-slate-200/70 bg-white px-6 py-9 shadow-[0_24px_60px_-20px_rgba(7,26,68,0.18)] sm:px-10">
@@ -254,7 +286,7 @@ export default function SigninFlow({ step, next, query, error }: { step: "identi
             <Image src="/assets/icon.png" alt="Excel to KML" width={26} height={26} className="object-contain" priority />
           </span>
         </div>
-        {body}
+        {children}
       </div>
       <p className="mt-6 flex items-center gap-1.5 text-[12px] text-slate-500">
         <Lock className="w-3.5 h-3.5" aria-hidden /> Secure sign-in · Excel to KML
@@ -270,33 +302,6 @@ export default function SigninFlow({ step, next, query, error }: { step: "identi
         @keyframes si-bar { to { width: 100%; } }
         @media (prefers-reduced-motion: reduce) { .si-in, .si-out, .si-pop { animation: none; } }
       `}</style>
-    </div>
-  );
-}
-
-const primary = "w-full rounded-full bg-[#0071e3] py-3 text-[14px] font-semibold text-white transition-colors hover:bg-[#0077ed]";
-const input =
-  "mt-5 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3.5 text-[15px] text-[#1d1d1f] outline-none transition focus:border-[#0071e3] focus:ring-4 focus:ring-[#0071e3]/15";
-
-function Avatar({ email, big = false }: { email: string; big?: boolean }) {
-  const letter = (email.trim()[0] || "?").toUpperCase();
-  return (
-    <span
-      aria-hidden
-      className={`mx-auto flex shrink-0 items-center justify-center rounded-full bg-[#071a44] font-semibold text-[#ffd21f] ${big ? "h-16 w-16 text-[26px]" : "h-7 w-7 text-[13px]"}`}
-    >
-      {letter}
-    </span>
-  );
-}
-
-function Status({ icon, title, text, children }: { icon: React.ReactNode; title: string; text: string; children?: React.ReactNode }) {
-  return (
-    <div className="si-in py-6 text-center" role="status" aria-live="polite">
-      <div className="flex justify-center">{icon}</div>
-      <p className="mt-4 text-[20px] font-semibold text-[#1d1d1f]">{title}</p>
-      <p className="mt-1 text-[14px] text-slate-500">{text}</p>
-      {children}
     </div>
   );
 }
