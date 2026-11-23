@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ACTIVITY_APPS, appOfRequest, tagActivity } from "@/lib/activityTags";
 import { trackAppUse } from "@/lib/appUsage";
 import { db } from "@/lib/db";
+import { getAdminSession } from "@/lib/adminAuth";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -37,7 +38,7 @@ export async function GET(req: NextRequest) {
 
     // If admin is requesting a specific user, or admin querying all
     let activities: unknown[] = [];
-    if (user && db.isAdmin(user) && userParam) {
+    if (user && userParam && (await getAdminSession(req))) {
       activities = await db.getUserActivities(userParam, limit);
     } else if (user) {
       activities = await db.getUserActivities(user.id, limit);

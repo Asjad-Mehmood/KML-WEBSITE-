@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { db } from "@/lib/db";
+import { onAdminHost, sessionHasAdminPower } from "@/lib/adminHost";
 import AdminClient from "./AdminClient";
 
 // Checked on every request
@@ -20,7 +21,7 @@ async function visitor(): Promise<"signed-out" | "admin" | "other"> {
   try {
     const session = await db.validateSession(token);
     if (!session) return "signed-out"; // expired or signed out elsewhere
-    return db.isAdmin(session.user) ? "admin" : "other";
+    return sessionHasAdminPower(session.session, db.isAdmin(session.user)) ? "admin" : "other";
   } catch (err) {
     console.error("Admin page: session check failed:", err);
     throw new Error("The admin page couldn't check your sign-in. Please try again.");
@@ -36,7 +37,8 @@ export async function generateMetadata(): Promise<Metadata> {
 // normal "page not found".
 export default async function AdminPage() {
   const who = await visitor();
-  if (who === "signed-out") redirect(ADMIN_LOGIN_URL);
+  // on the admin address the sign-in goes back here by itself, and its address doesn't say "admin"
+  if (who === "signed-out") redirect(onAdminHost(await headers()) ? "/login" : ADMIN_LOGIN_URL);
   if (who !== "admin") notFound();
   return <AdminClient />;
 }

@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { jobBytes } from "@/lib/userJobs";
 import { isAdminUser } from "@/lib/adminRole";
+import { ADMIN_SESSION_PREFIX } from "@/lib/adminHost";
 
 /* ==========================================================================
    TYPE INTERFACES  (kept identical so callers don't break)
@@ -358,7 +359,8 @@ export const db = {
 
   // ─── Sessions ───────────────────────────────────────────────────────────
 
-  async createSession(userId: string): Promise<SessionRecord> {
+  /** opts.admin: a session made on the admin address (lib/adminHost), the only kind with admin rights there */
+  async createSession(userId: string, opts: { admin?: boolean } = {}): Promise<SessionRecord> {
     // a blocked account (Admin → Surveyors → Controls) gets no new session, whichever way it signs in
     if (await isBlocked(userId)) throw new AccountBlocked();
     const token = crypto.randomBytes(32).toString("hex");
@@ -366,7 +368,7 @@ export const db = {
 
     const s = await prisma.session.create({
       data: {
-        id: "sess_" + crypto.randomBytes(8).toString("hex"),
+        id: (opts.admin ? ADMIN_SESSION_PREFIX : "sess_") + crypto.randomBytes(8).toString("hex"),
         token,
         userId,
         expiresAt,

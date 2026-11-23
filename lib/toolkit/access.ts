@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { db } from "@/lib/db";
+import { sessionHasAdminPower } from "@/lib/adminHost";
 import { getExtraSettings } from "@/lib/siteSettings";
 import { isTester } from "@/lib/toolkit/store";
 
@@ -13,7 +14,7 @@ export async function adminVisitor(): Promise<"signed-out" | "admin" | "other"> 
   try {
     const session = await db.validateSession(token);
     if (!session) return "signed-out";
-    return db.isAdmin(session.user) ? "admin" : "other";
+    return sessionHasAdminPower(session.session, db.isAdmin(session.user)) ? "admin" : "other";
   } catch (err) {
     console.error("Toolkit page: session check failed:", err);
     throw new Error("The page couldn't check your sign-in. Please try again.");
