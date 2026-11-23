@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminHost, onAdminHost } from "@/lib/adminHost";
 import { AUTH_PAGE, authHost, onAuthHost } from "@/lib/authHost";
+import { DASHBOARD_PAGE, dashboardHost, onDashboardHost } from "@/lib/dashboardHost";
 import { SITE_URL } from "@/lib/site";
 
 // Admin's pages and APIs (lib/adminHost: they live on ADMIN_HOST once it is set)
@@ -29,6 +30,13 @@ export function middleware(req: NextRequest) {
     if (ADMIN_API.test(path)) return notFound();
   }
 
+  const dash = dashboardHost();
+  if (dash) {
+    if (onDashboardHost(req.headers)) return dashboardSide(req, path);
+    // the main site: the dashboard is elsewhere
+    if (DASHBOARD_PAGE.test(path)) return NextResponse.redirect(`${req.nextUrl.protocol}//${dash}${path}${req.nextUrl.search}`, 307);
+  }
+
   const auth = authHost();
   if (auth) {
     if (onAuthHost(req.headers)) return authSide(req, path);
@@ -38,6 +46,28 @@ export function middleware(req: NextRequest) {
 
   if (!path.startsWith("/api/")) return NextResponse.next();
   return withCors(req);
+}
+
+// what the dashboard uses: its account, files, jobs and Traverse jobs (with their shares)
+const DASHBOARD_API = /^\/api\/(user\/|traverse\/jobs|auth\/(me|logout|handoff|signout)$|settings\/public$)/;
+
+/** The dashboard address: the dashboard, its APIs and files; its own sign-in without a sign-in address */
+function dashboardSide(req: NextRequest, path: string) {
+  if (path === "/") return NextResponse.redirect(`${req.nextUrl.protocol}//${dashboardHost()}/dashboard`, 307);
+  if (path === "/robots.txt") {
+    return new NextResponse("User-agent: *\nDisallow: /\n", { headers: { "Content-Type": "text/plain" } });
+  }
+  const auth = authHost();
+  // signing in: on the sign-in address when there is one, else here
+  if (AUTH_PAGE.test(path) && auth) return NextResponse.redirect(`${req.nextUrl.protocol}//${auth}${path}${req.nextUrl.search}`, 307);
+  const ownSignIn = !auth && (AUTH_PAGE.test(path) || path.startsWith("/api/auth/"));
+  if (DASHBOARD_PAGE.test(path) || DASHBOARD_API.test(path) || ownSignIn || FILE.test(path)) {
+    const res = NextResponse.next();
+    res.headers.set("X-Robots-Tag", "noindex, nofollow");
+    return res;
+  }
+  if (path.startsWith("/api/")) return notFound();
+  return NextResponse.redirect(`${SITE_URL}${path}${req.nextUrl.search}`, 307);
 }
 
 /** The sign-in address: the sign-in pages, their APIs and files; nothing else of the site */

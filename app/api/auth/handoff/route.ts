@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { safeNextPath } from "@/lib/authRedirect";
 import { takeHandoff } from "@/lib/toolkit/store";
 import { SITE_URL } from "@/lib/site";
+import { dashboardOrigin, onDashboardHost } from "@/lib/dashboardHost";
 
 // The main site's half of signing in on the sign-in address (lib/authHost):
 //   GET ?code=… (from /api/auth/continue there) → this browser signed in here, then on to the
@@ -10,6 +11,10 @@ import { SITE_URL } from "@/lib/site";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
+  // the main site, or the dashboard address (lib/dashboardHost): a code only works where it was made for
+  const dash = onDashboardHost(req.headers);
+  const home = dash ? dashboardOrigin(req.nextUrl.protocol) : SITE_URL;
+  const kind = dash ? "dash:" : "site:";
   const code = req.nextUrl.searchParams.get("code") || "";
   let taken: { userId: string; next: string } | null = null;
   try {
@@ -17,11 +22,11 @@ export async function GET(req: NextRequest) {
   } catch (e) {
     console.error("[auth handoff]", e);
   }
-  if (!taken || !taken.next.startsWith("site:")) {
-    return NextResponse.redirect(new URL("/login?error=handoff-failed", SITE_URL), 303);
+  if (!taken || !taken.next.startsWith(kind)) {
+    return NextResponse.redirect(new URL("/login?error=handoff-failed", home), 303);
   }
-  const next = safeNextPath(taken.next.slice("site:".length));
-  const res = NextResponse.redirect(new URL(next, SITE_URL), 303);
+  const next = safeNextPath(taken.next.slice(kind.length));
+  const res = NextResponse.redirect(new URL(next, home), 303);
   res.headers.set("Cache-Control", "no-store");
   res.headers.set("Referrer-Policy", "no-referrer");
   try {
@@ -36,7 +41,7 @@ export async function GET(req: NextRequest) {
     });
   } catch (e) {
     console.error("[auth handoff] session", e);
-    return NextResponse.redirect(new URL("/login?error=blocked", SITE_URL), 303);
+    return NextResponse.redirect(new URL("/login?error=blocked", home), 303);
   }
   return res;
 }

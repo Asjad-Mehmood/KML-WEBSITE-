@@ -15,6 +15,8 @@
 // NEXT_PUBLIC_: the browser needs it too (set it in Vercel, then deploy). No database or Node
 // imports: middleware.ts and client components use this file.
 
+import { dashboardHost } from "./dashboardHost";
+
 /** The sign-in address in lower case ("auth.exceltokml.com"), or null while sign-in is on the main site */
 export function authHost(): string | null {
   const h = (process.env.NEXT_PUBLIC_AUTH_HOST || "").trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "");
@@ -38,6 +40,19 @@ export function authOrigin(proto = "https:"): string {
 export function inAuthHost(): boolean {
   const auth = authHost();
   return !!auth && typeof window !== "undefined" && window.location.hostname === bare(auth);
+}
+
+/**
+ * In the browser, after signing out here: where to go to sign out of the site's other addresses
+ * too (/api/auth/signout), or null when the site has only one address. On the sign-in address
+ * itself ("Use another account") only that address signs out.
+ */
+export function signOutEverywherePath(): string | null {
+  if (typeof window === "undefined" || inAuthHost()) return null;
+  const dash = dashboardHost();
+  const onDash = !!dash && window.location.hostname === bare(dash);
+  const rest = [onDash ? "site" : dash ? "dash" : null, authHost() ? "auth" : null].filter(Boolean);
+  return rest.length ? `/api/auth/signout?rest=${rest.join(",")}` : null;
 }
 
 /** The sign-in pages */
