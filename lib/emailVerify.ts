@@ -180,7 +180,7 @@ export async function sendVerification(user: { id: string; name: string; email: 
     VALUES (${id}, ${user.id}, ${hash("challenge", challenge)}, ${hash("code:" + challenge, code)}, ${hash("link", linkToken)},
             ${new Date(Date.now() + VALID_HOURS * 3600_000)})`;
   try {
-    await sendMail({ to: user.email, ...verifyEmail(user.name, code, `${SITE_URL}/api/auth/verify-email?t=${linkToken}`) });
+    await sendMail({ to: user.email, ...verifyEmail(user.name, code, `${SITE_URL}/confirm-email?t=${linkToken}`) });
   } catch (err) {
     // not sent: it mustn't count against the few codes allowed
     await prisma.$executeRaw`DELETE FROM "email_verify_codes" WHERE "id" = ${id}`;
