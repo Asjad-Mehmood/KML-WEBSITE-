@@ -56,7 +56,7 @@ export function signOutEverywherePath(): string | null {
 }
 
 /** The sign-in pages */
-export const AUTH_PAGE = /^\/(login|register|forgot-password|reset-password|verify-email|signin\/(identifier|password))\/?$/;
+export const AUTH_PAGE = /^\/(login|register|forgot-password|reset-password|verify-email|signin\/(identifier|password)|signup\/(details|password|about))\/?$/;
 
 /** Where the sign-in address hands a signed-in visitor back to the main site, at the path `next` */
 export const continuePath = (next: string) => `/api/auth/continue?next=${encodeURIComponent(next)}`;
