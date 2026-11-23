@@ -35,17 +35,6 @@ export async function getAdminSession(req?: NextRequest | Request) {
           }
         }
       }
-
-      // Check query parameter ?token=
-      if (!token && "url" in req) {
-        try {
-          const urlObj = new URL(req.url);
-          const qToken = urlObj.searchParams.get("token") || urlObj.searchParams.get("adminToken");
-          if (qToken) token = qToken.trim();
-        } catch {
-          // ignore
-        }
-      }
     }
 
     // 2. Fallback to cookies() from next/headers
