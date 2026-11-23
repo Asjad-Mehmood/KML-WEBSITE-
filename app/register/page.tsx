@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 import { safeNextPath } from "../../lib/authRedirect";
+import { continuePath, inAuthHost } from "../../lib/authHost";
 import GoogleSignIn, { GOOGLE_ERRORS } from "../../components/GoogleSignIn";
 import OtpForm from "../../components/OtpForm";
 import { OCCUPATIONS, OCCUPATION_MAX } from "../../lib/occupations";
@@ -45,7 +46,12 @@ export default function RegisterPage() {
   const agreeId = useId();
 
   // Back to where the visitor was headed (e.g. /app or /dashboard), else home
-  const goOn = () => router.push(safeNextPath(new URLSearchParams(window.location.search).get("next")));
+  // on the sign-in address (lib/authHost) the main site is signed in by a handover
+  const goOn = () => {
+    const dest = safeNextPath(new URLSearchParams(window.location.search).get("next"));
+    if (inAuthHost()) window.location.assign(continuePath(dest));
+    else router.push(dest);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

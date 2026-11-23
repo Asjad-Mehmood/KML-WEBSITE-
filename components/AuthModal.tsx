@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useId } from "react";
+import React, { useEffect, useState, useId } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -10,6 +10,7 @@ import { X, Lock } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { OCCUPATIONS, OCCUPATION_MAX } from "../lib/occupations";
 import { usePublicSettings } from "../lib/publicSettings";
+import { authHost, inAuthHost } from "../lib/authHost";
 
 export default function AuthModal() {
   const router = useRouter();
@@ -24,7 +25,17 @@ export default function AuthModal() {
   const [submitting, setSubmitting] = useState(false);
   const signupsClosed = usePublicSettings()?.signupsOpen === false;
 
-  if (!authModalOpen) return null;
+  // with a sign-in address (lib/authHost), signing in happens there, and comes back to this page
+  const auth = authHost();
+  const elsewhere = !!auth && !inAuthHost();
+  useEffect(() => {
+    if (!authModalOpen || !elsewhere) return;
+    const back = window.location.pathname + window.location.search;
+    const page = authModalMode === "login" ? "login" : "register";
+    window.location.assign(`${window.location.protocol}//${auth}/${page}?next=${encodeURIComponent(back)}`);
+  }, [authModalOpen, authModalMode, auth, elsewhere]);
+
+  if (!authModalOpen || elsewhere) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
