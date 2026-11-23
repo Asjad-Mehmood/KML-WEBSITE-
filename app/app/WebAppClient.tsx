@@ -12,7 +12,9 @@ export default function WebAppClient({ inToolkit = false }: { inToolkit?: boolea
   const { user, isLoading: authLoading } = useAuth();
   const frameRef = useRef<HTMLIFrameElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [reloadKey, setReloadKey] = useState(() => Date.now());
+  // 0 on opening: the same address every time, so the browser keeps the app and only checks it is
+  // still the newest (app/api/app-html answers "not changed" when it is); Reload asks afresh
+  const [reloadKey, setReloadKey] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isReloading, setIsReloading] = useState(false);
   useEffect(() => {
@@ -157,7 +159,7 @@ export default function WebAppClient({ inToolkit = false }: { inToolkit?: boolea
         <iframe
           key={reloadKey}
           ref={frameRef}
-          src={`/api/app-html?v=${reloadKey}`}
+          src={reloadKey ? `/api/app-html?v=${reloadKey}` : "/api/app-html"}
           title="Excel to KML"
           className="w-full h-full border-0 absolute inset-0"
           allow="clipboard-read; clipboard-write; geolocation"
