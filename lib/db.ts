@@ -3,7 +3,7 @@ import { AccountBlocked, isBlocked } from "@/lib/accountControls";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { jobBytes } from "@/lib/userJobs";
-import { isAdminUser } from "@/lib/adminRole";
+import { ADMIN_EMAIL, isAdminUser } from "@/lib/adminRole";
 import { ADMIN_SESSION_PREFIX } from "@/lib/adminHost";
 
 /* ==========================================================================
@@ -149,11 +149,27 @@ function randomSecret(): string {
 
 /** Roles that grant admin rights; never accepted from public sign-up */
 /** The filter shared by the activity list and its count. */
-function activityWhere(opts: { action?: string; user?: string }) {
+/** The admin accounts' ids and emails: what they do is in Admin → Admin log, not in Activity */
+async function adminAccounts(): Promise<{ ids: string[]; emails: string[] }> {
+  const rows = await prisma.user.findMany({
+    where: { OR: [{ role: { in: ["ADMIN", "Super Admin"] } }, { email: { equals: ADMIN_EMAIL, mode: "insensitive" } }] },
+    select: { id: true, email: true },
+  });
+  return { ids: rows.map((r) => r.id), emails: [...new Set([ADMIN_EMAIL, ...rows.map((r) => r.email.toLowerCase())])] };
+}
+
+async function activityWhere(opts: { action?: string; user?: string }) {
   const where: Prisma.ActivityWhereInput = {};
   if (opts.action && opts.action !== "all") where.action = opts.action;
   if (opts.user) {
+    // one person's activity: theirs, admin or not
     where.OR = [{ userId: opts.user }, { userEmail: { equals: opts.user, mode: "insensitive" } }];
+  } else {
+    const admins = await adminAccounts();
+    where.AND = [
+      { OR: [{ userId: null }, { userId: { notIn: admins.ids } }] },
+      { NOT: admins.emails.map((e) => ({ userEmail: { equals: e, mode: "insensitive" as const } })) },
+    ];
   }
   return where;
 }
@@ -956,7 +972,7 @@ export const db = {
 
   /** Newest first. action / user (id or email) filter in the database, before the limit. */
   async countActivities(opts: { action?: string; user?: string } = {}): Promise<number> {
-    return prisma.activity.count({ where: activityWhere(opts) });
+    return prisma.activity.count({ where: await activityWhere(opts) });
   },
 
   async getAllActivities(
@@ -964,7 +980,7 @@ export const db = {
     opts: { action?: string; user?: string; skip?: number } = {}
   ): Promise<UserActivityRecord[]> {
     const rows = await prisma.activity.findMany({
-      where: activityWhere(opts),
+      where: await activityWhere(opts),
       orderBy: { timestamp: "desc" },
       take: limit,
       skip: opts.skip || 0,

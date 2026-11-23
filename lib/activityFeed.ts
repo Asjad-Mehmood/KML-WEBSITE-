@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { ensureActivityColumns } from "@/lib/activityTags";
+import { ADMIN_EMAIL } from "@/lib/adminRole";
 import { ensureToolkitTables } from "@/lib/toolkit/store";
 
 // Admin → Activity: one list of everything that happens across the apps and tools, newest first:
@@ -88,6 +89,14 @@ function unionSql(): string {
       FROM "toolkit_events" e LEFT JOIN "users" u ON u."id" = e."userId" LEFT JOIN "toolkit_devices" d ON d."id" = e."deviceId"`;
 }
 
+/** A line not made by an admin account (as lib/adminRole.ts decides who is one), by account or by email */
+// (the accounts' columns are renamed, so "userId" and "email" can only be the line's own)
+const NOT_ADMIN = `NOT EXISTS (
+    SELECT 1 FROM (SELECT "id" AS adm_id, lower("email") AS adm_email, "role" AS adm_role FROM "users") au
+    WHERE (au.adm_id = "userId" OR au.adm_email = lower("email"))
+      AND (au.adm_role IN ('ADMIN', 'Super Admin') OR au.adm_email = '${ADMIN_EMAIL.toLowerCase()}'))
+  AND lower(coalesce("email", '')) <> '${ADMIN_EMAIL.toLowerCase()}'`;
+
 function where(f: FeedFilter, params: unknown[]): string {
   const w: string[] = [];
   const p = (v: unknown) => {
@@ -100,7 +109,9 @@ function where(f: FeedFilter, params: unknown[]): string {
     w.push(`("app" = ${a} OR "tool" = ${a})`);
   }
   if (f.action) w.push(`"action" = ${p(f.action)}`);
+  // one person's lines: theirs, admin or not; otherwise what admins did isn't here (Admin log has it)
   if (f.userId) w.push(`"userId" = ${p(f.userId)}`);
+  else w.push(NOT_ADMIN);
   if (f.errorsOnly) w.push(`"status" IN ('error','failed','warning')`);
   if (f.from) w.push(`"at" >= ${p(f.from)}`);
   if (f.to) w.push(`"at" < ${p(f.to)}`);
