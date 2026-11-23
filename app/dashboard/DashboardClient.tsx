@@ -40,6 +40,7 @@ import type { TraverseJobCard } from "@/lib/traverseJobs";
 import AppVersions from "@/components/AppVersions";
 import ConfirmEmailBanner from "@/components/ConfirmEmailBanner";
 import type { ProgramVersions } from "@/lib/appUsage";
+import ProgramsHub from "@/components/dashboard/ProgramsHub";
 
 export interface DashboardData {
   user: {
@@ -103,6 +104,10 @@ export interface DashboardData {
   traverse: { own: TraverseJobCard[]; shared: TraverseJobCard[] };
   /** Which version of each program this account has, and whether it is the newest */
   programs: ProgramVersions[];
+  /** How much they have done in each app, and when last (activities by app) */
+  usage: Record<string, { count: number; last: string }>;
+  /** Slope Calculator calculations kept in the account */
+  slopeCalcs: number;
   /** false: the dashboard asks them to confirm their email */
   emailConfirmed: boolean;
   /** Converted points of the files saved while signed in, newest first. */
@@ -214,35 +219,6 @@ function When({ iso, withTime = true }: { iso: string; withTime?: boolean }) {
     <time dateTime={iso} title={full}>
       {rel && withTime ? rel : withTime ? full : dateOnly}
     </time>
-  );
-}
-
-function StatCard({
-  icon: Icon,
-  label,
-  value,
-  sub,
-  tint,
-  className = "",
-}: {
-  icon: React.ElementType;
-  label: string;
-  value: string;
-  sub?: string;
-  tint: string;
-  className?: string;
-}) {
-  return (
-    <div className={`bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-5 ${className}`}>
-      <div className="flex items-center gap-2 mb-3">
-        <span className={`w-8 h-8 rounded-lg flex items-center justify-center ${tint}`}>
-          <Icon className="w-4 h-4" aria-hidden />
-        </span>
-        <span className="text-[12px] font-semibold text-slate-500">{label}</span>
-      </div>
-      <div className="text-2xl sm:text-[26px] font-extrabold tracking-tight text-slate-900 tabular-nums">{value}</div>
-      {sub && <div className="text-[11.5px] text-slate-500 mt-0.5">{sub}</div>}
-    </div>
   );
 }
 
@@ -511,49 +487,42 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
   ];
 
   return (
-    <div className="min-h-screen bg-[#fafbfc] text-slate-900">
+    <div className="min-h-screen bg-[#f6f7f9] text-slate-900">
       <Navbar onDownloadClick={() => router.push("/download")} />
 
       <main id="main-content" className="pt-24 sm:pt-28 pb-16">
         <div className="max-w-[1140px] mx-auto px-4 sm:px-8">
           {/* Header */}
-          <section className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-7 flex flex-col lg:flex-row lg:items-center gap-5 lg:gap-8">
+          <section className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
             <div className="flex items-center gap-4 min-w-0 flex-1">
-              <span className="w-14 h-14 shrink-0 rounded-2xl bg-gradient-to-br from-[#0071e3] to-[#0ea5e9] text-white text-lg font-bold flex items-center justify-center">
+              <span className="w-14 h-14 shrink-0 rounded-2xl bg-[#071a44] text-[#ffd21f] text-lg font-bold flex items-center justify-center">
                 {initials}
               </span>
               <div className="min-w-0">
-                <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight">Welcome back, {firstName}</h1>
+                <h1 className="text-[22px] sm:text-[28px] font-extrabold tracking-tight leading-tight">Welcome back, {firstName}</h1>
                 <p className="text-[13px] text-slate-500 mt-0.5 break-words">
                   {user.email}
                   {user.organization && <> · {user.organization}</>}
                   {user.role && <> · {user.role}</>}
                 </p>
-                <div className="flex flex-wrap items-center gap-2 mt-2.5">
-                  <span className="text-[11.5px] text-slate-500">
-                    Member since <When iso={user.createdAt} withTime={false} />
-                  </span>
+                <p className="text-[12px] text-slate-400 mt-1">
+                  Member since <When iso={user.createdAt} withTime={false} />
                   {user.lastLoginAt && (
-                    <span className="text-[11.5px] text-slate-500">
-                      Last sign-in <When iso={user.lastLoginAt} />
-                    </span>
+                    <>
+                      {" "}· Last sign-in <When iso={user.lastLoginAt} />
+                    </>
                   )}
-                </div>
+                </p>
               </div>
             </div>
-            <div className="flex flex-col sm:flex-row gap-2 shrink-0">
-              <Link
-                href="/app"
-                className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-[13px] font-semibold"
+            <div className="flex gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => setTab("account")}
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-[13px] font-semibold cursor-pointer"
               >
-                Open web app <ArrowRight className="w-4 h-4" aria-hidden />
-              </Link>
-              <Link
-                href="/download"
-                className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-[13px] font-semibold"
-              >
-                <Download className="w-4 h-4" aria-hidden /> Windows app
-              </Link>
+                <UserRound className="w-4 h-4" aria-hidden /> Account
+              </button>
               {user.isAdmin && (
                 <Link
                   href="/admin"
@@ -567,32 +536,24 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
 
           {!data.emailConfirmed && <ConfirmEmailBanner email={user.email} />}
 
-          {/* Totals */}
-          <section aria-label="Your totals" className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4 mt-4 sm:mt-5">
-            <StatCard icon={RefreshCw} label="Conversions" value={num(stats.conversions)} tint="bg-blue-50 text-blue-600" />
-            <StatCard icon={MapPinned} label="Points converted" value={num(stats.pointsConverted)} tint="bg-indigo-50 text-indigo-600" />
-            <StatCard icon={FileDown} label="Exports" value={num(stats.exports)} tint="bg-emerald-50 text-emerald-600" />
-            <StatCard
-              icon={Files}
-              label="Saved files"
-              value={num(files.length)}
-              sub={`${num(imported)} imported · ${num(exported)} exported`}
-              tint="bg-amber-50 text-amber-600"
-            />
-            <StatCard
-              icon={Download}
-              label="App downloads"
-              value={num(user.downloadCount)}
-              tint="bg-rose-50 text-rose-600"
-            />
-            <StatCard
-              icon={Waypoints}
-              label="Traverses & levels"
-              value={num(stats.traverses + stats.levelRuns)}
-              sub={`${num(stats.traverses)} traverse${stats.traverses === 1 ? "" : "s"} · ${num(stats.levelRuns)} level run${stats.levelRuns === 1 ? "" : "s"}`}
-              tint="bg-orange-50 text-orange-600"
-            />
-          </section>
+          {/* every program, with what they have done in it */}
+          <ProgramsHub
+            programs={data.programs}
+            When={When}
+            stats={{
+              conversions: stats.conversions,
+              points: stats.pointsConverted,
+              exports: stats.exports,
+              traverses: stats.traverses,
+              levelRuns: stats.levelRuns,
+              traverseJobs: data.traverse.own.length,
+              slopeCalcs: data.slopeCalcs,
+              usage: data.usage,
+            }}
+          />
+
+          <h2 className="mt-10 text-[18px] font-bold tracking-tight text-slate-900">Your work</h2>
+          <p className="text-[13px] text-slate-500">Jobs, files and points you keep in your account, and everything you did.</p>
 
           {notice && (
             <p
@@ -609,7 +570,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
           <div
             role="tablist"
             aria-label="Dashboard sections"
-            className="mt-6 flex gap-1 overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden border-b border-slate-200"
+            className="mt-4 flex gap-1 overflow-x-auto rounded-2xl border border-slate-200 bg-white p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             {TABS.map((t) => {
               const active = tab === t.id;
@@ -621,14 +582,14 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
                   aria-selected={active}
                   aria-controls={`panel-${t.id}`}
                   onClick={() => setTab(t.id)}
-                  className={`shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2.5 -mb-px border-b-2 text-[13px] font-semibold cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-t-lg ${
-                    active ? "border-[#0071e3] text-[#0071e3]" : "border-transparent text-slate-500 hover:text-slate-800"
+                  className={`shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[13px] font-semibold cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+                    active ? "bg-[#071a44] text-white" : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                   }`}
                 >
                   <t.icon className="w-4 h-4" aria-hidden />
                   {t.label}
                   {t.count !== undefined && (
-                    <span className={`px-1.5 rounded-full text-[10.5px] tabular-nums ${active ? "bg-blue-50" : "bg-slate-100"}`}>{t.count}</span>
+                    <span className={`px-1.5 rounded-full text-[10.5px] tabular-nums ${active ? "bg-white/15" : "bg-slate-100"}`}>{t.count}</span>
                   )}
                 </button>
               );
@@ -1035,7 +996,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
             {tab === "account" && (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
                 <section aria-labelledby="acc-apps-h" className="lg:col-span-3 bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6">
-                  <h2 id="acc-apps-h" className="text-[15px] font-bold">Your programs</h2>
+                  <h2 id="acc-apps-h" className="text-[15px] font-bold">Where you use them</h2>
                   <p className="mt-1 mb-4 text-[13px] text-slate-500">
                     The version you have of each program, where you last opened it, and whether a newer one is out.
                   </p>
