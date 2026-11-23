@@ -23,6 +23,14 @@ export const ACTION_LABEL: Record<string, string> = {
   tl_simulation: "Simulator run",
   tl_import: "Traverse & Level file opened",
   tl_export: "Traverse & Level export",
+  // Slope Calculator
+  slope_new: "Slope calculation saved",
+  slope_update: "Slope calculation changed",
+  slope_delete: "Slope calculation deleted",
+  // the account itself
+  sign_in: "Signed in",
+  sign_out: "Signed out",
+  sign_up: "Account made",
 };
 
 /** Everything the Traverse & Level app records (its saves are "traverse" and "levelling") */

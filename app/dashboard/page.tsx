@@ -6,7 +6,8 @@ import { sessionForToken } from "@/lib/serverSession";
 import { listJobs } from "@/lib/userJobs";
 import { cardsOwn, cardsShared } from "@/lib/traverseJobs";
 import DashboardClient, { type DashboardData } from "./DashboardClient";
-import { programVersionsFor } from "@/lib/appUsage";
+import { appActivityFor, programVersionsFor } from "@/lib/appUsage";
+import { countOwn as countSlopeJobs } from "@/lib/slopeJobs";
 import { emailStatus, verificationActive } from "@/lib/emailVerify";
 
 // Checked on every request: each visitor only ever sees their own account
@@ -35,7 +36,12 @@ export default async function DashboardPage() {
 
   const isAdmin = db.isAdmin(user);
   // which version of each program they have, for the Account tab
-  const programs = await programVersionsFor(user.id, downloads).catch(() => []);
+  const [programs, usage, slopeCalcs] = await Promise.all([
+    programVersionsFor(user.id, downloads).catch(() => []),
+    // what they have done in each app, and how many Slope calculations they keep
+    appActivityFor(user.id).catch(() => ({})),
+    countSlopeJobs(user.id).catch(() => 0),
+  ]);
   // an account whose email isn't confirmed is asked to confirm it (not admins: they have their own code)
   const emailConfirmed =
     isAdmin || !(await verificationActive().catch(() => false)) || Boolean((await emailStatus(user.id).catch(() => null))?.verifiedAt);
@@ -110,6 +116,8 @@ export default async function DashboardPage() {
     jobs,
     traverse: { own: tlOwn, shared: tlShared },
     programs,
+    usage,
+    slopeCalcs,
     emailConfirmed,
     points: {
       total: points.total,

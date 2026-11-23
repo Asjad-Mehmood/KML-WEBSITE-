@@ -203,3 +203,19 @@ export async function programVersionsFor(
     return { id: a.id, name: a.name, latest: a.current, uses: mine, lastDownload, status, version, source };
   });
 }
+
+/** How much this account has done in each app, and when last: for the dashboard's programs */
+export async function appActivityFor(userId: string): Promise<Record<string, { count: number; last: string }>> {
+  const { ensureActivityColumns } = await import("@/lib/activityTags");
+  await ensureActivityColumns();
+  // the app an activity came from; older lines without one are told apart by their action
+  const rows = await prisma.$queryRawUnsafe<{ app: string; c: bigint; last: Date }[]>(
+    `SELECT COALESCE("app", CASE WHEN "action" LIKE 'tl\\_%' OR "action" IN ('traverse','levelling') THEN 'traverse'
+              WHEN "action" LIKE 'slope\\_%' THEN 'slope'
+              WHEN "action" IN ('conversion','export','file_upload','batch_process','photos_attached','project_save','drag_drop_import','file_import','browser_export') THEN 'excel-to-kml'
+              ELSE 'website' END) app, COUNT(*) c, MAX("timestamp") "last"
+       FROM "activities" WHERE "userId" = $1 GROUP BY 1`,
+    userId
+  );
+  return Object.fromEntries(rows.map((r) => [r.app, { count: Number(r.c), last: r.last.toISOString() }]));
+}

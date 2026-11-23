@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
+import { createHash } from "crypto";
 import path from "path";
 import { db } from "@/lib/db";
 import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
@@ -280,6 +281,22 @@ const MAINTENANCE_HTML = `<!doctype html>
 <p style="font-size:14px;color:#475569;line-height:1.5;margin:0">We'll be back shortly. The Windows app keeps working as usual.</p>
 </main></body></html>`;
 
+/**
+ * The app's page (about 5 MB): kept by the browser, and by the Survey Toolkit's window, and
+ * checked on every open. While it is the same page for the same sign-in, the answer is "not
+ * changed" (304) and the kept copy opens at once; a new version of the app, or another sign-in,
+ * sends the page again. Never kept by anything shared ("private"): it carries the sign-in.
+ */
+function keptOrSent(req: NextRequest, html: string, source: string): NextResponse {
+  const etag = `"${createHash("sha1").update(html).digest("base64url")}"`;
+  const headers = { "Cache-Control": "private, no-cache", ETag: etag, "X-App-Source": source };
+  const asked = req.headers.get("if-none-match");
+  if (asked && asked.split(",").some((t) => t.trim().replace(/^W\//, "") === etag)) {
+    return new NextResponse(null, { status: 304, headers });
+  }
+  return new NextResponse(html, { status: 200, headers: { ...headers, "Content-Type": "text/html; charset=utf-8" } });
+}
+
 export async function GET(req: NextRequest) {
   // 0. Web app is for signed-in users only
   const token = tokenFromRequest(req);
@@ -327,16 +344,7 @@ export async function GET(req: NextRequest) {
 
       const protectedContent = withSiteSession(withFileVault(rawContent), token, db.sanitizeUser(session.user), { traverse: (await getExtraSettings()).traverseEnabled });
 
-      return new NextResponse(protectedContent, {
-        status: 200,
-        headers: {
-          "Content-Type": "text/html; charset=utf-8",
-          "Cache-Control": "no-cache, no-store, must-revalidate",
-          "Pragma": "no-cache",
-          "Expires": "0",
-          "X-App-Source": "github",
-        },
-      });
+      return keptOrSent(req, protectedContent, "github");
     }
   } catch (err) {
     missReason = "GitHub didn't answer in time";
@@ -349,14 +357,7 @@ export async function GET(req: NextRequest) {
     if (fs.existsSync(localFilePath)) {
       const rawContent = await fs.promises.readFile(localFilePath, "utf-8");
       const protectedContent = withSiteSession(withFileVault(rawContent), token, db.sanitizeUser(session.user), { traverse: (await getExtraSettings()).traverseEnabled });
-      return new NextResponse(protectedContent, {
-        status: 200,
-        headers: {
-          "Content-Type": "text/html; charset=utf-8",
-          "Cache-Control": "no-cache, no-store, must-revalidate",
-          "X-App-Source": `saved-copy; ${missReason || "unknown"}`.slice(0, 200),
-        },
-      });
+      return keptOrSent(req, protectedContent, `saved-copy; ${missReason || "unknown"}`.slice(0, 200));
     }
   } catch (err) {
     console.warn("Failed reading local public/app.html:", err);
