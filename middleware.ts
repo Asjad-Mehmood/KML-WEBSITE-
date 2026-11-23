@@ -9,7 +9,7 @@ import { SITE_URL } from "@/lib/site";
 const ADMIN_PAGE = /^\/(admin|toolkit-beta\/admin)(\/|$)/;
 const ADMIN_API = /^\/api\/(admin|toolkit\/admin|toolkit\/testers)(\/|$)/;
 // what else the admin address serves: the sign-in, and what the admin pages use
-const ADMIN_SIDE_ALSO = /^\/login\/?$|^\/api\/(auth\/(login|verify-otp|resend-otp|logout|me)|settings\/public|user\/files)(\/|$)/;
+const ADMIN_SIDE_ALSO = /^\/login\/?$|^\/api\/(auth\/(login|verify-otp|resend-otp|logout|me)|settings\/public|user\/files|broadcasts|mail)(\/|$)/;
 // Next's own files, and files from public/ (images, fonts, scripts)
 const FILE = /^\/_next\/|^\/[^?]*\.[a-z0-9]{2,8}$/i;
 

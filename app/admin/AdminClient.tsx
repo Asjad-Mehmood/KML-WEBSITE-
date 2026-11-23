@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import AdminMessages from "../../components/admin/AdminMessages";
+import AdminMail from "../../components/admin/AdminMail";
 import AdminSurveyors from "@/components/admin/AdminSurveyors";
 import AdminDownloads, { DOWNLOAD_TABS } from "@/components/admin/AdminDownloads";
 import AdminReviews, { REVIEW_APPS } from "../../components/admin/AdminReviews";
@@ -37,6 +38,7 @@ import {
   BarChart3,
   Files,
   Inbox,
+  Send,
   Star,
   Megaphone,
   TrendingUp,
@@ -158,7 +160,7 @@ const RELEASE_TABS = [
   { id: "toolkit", name: "Survey Toolkit" },
 ];
 
-const ADMIN_TABS = ["overview", "users", "activities", "downloads", "files", "conversions", "excel", "traverse", "slope", "autodraft", "roadpro", "pfm", "toolkit", "releases", "reviews", "messages", "settings", "log"] as const;
+const ADMIN_TABS = ["overview", "users", "activities", "downloads", "files", "conversions", "excel", "traverse", "slope", "autodraft", "roadpro", "pfm", "toolkit", "releases", "reviews", "messages", "mail", "settings", "log"] as const;
 type AdminTab = (typeof ADMIN_TABS)[number];
 function tabFromAddress(): AdminTab {
   const id = typeof window === "undefined" ? "" : window.location.hash.slice(1);
@@ -663,6 +665,7 @@ export default function AdminClient() {
           sub: REVIEW_APPS.map((a) => ({ id: a.id, label: a.name, count: reviewWaiting[a.id] || undefined })),
         },
         { id: "messages", label: "Messages", icon: Inbox, text: "What people sent through the contact form", count: newMessages || undefined, attention: newMessages > 0 },
+        { id: "mail", label: "Email", icon: Send, text: "Write an email to one person, people you pick, everyone who uses an app, or everyone" },
       ],
     },
     {
@@ -1277,6 +1280,8 @@ export default function AdminClient() {
             }}
           />
         )}
+
+        {activeTab === "mail" && <AdminMail adminFetch={adminFetch} onToast={showToast} />}
 
         {activeTab === "messages" && (
           <AdminMessages adminFetch={adminFetch} onToast={showToast} onCounts={setNewMessages} />
