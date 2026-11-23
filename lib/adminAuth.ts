@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
+import { sessionHasAdminPower } from "@/lib/adminHost";
 
 export async function getAdminSession(req?: NextRequest | Request) {
   try {
@@ -54,7 +55,8 @@ export async function getAdminSession(req?: NextRequest | Request) {
     const sessionData = await db.validateSession(token);
     if (!sessionData) return null;
 
-    if (!db.isAdmin(sessionData.user)) {
+    // an admin account, signed in on the admin address once it has one (lib/adminHost)
+    if (!sessionHasAdminPower(sessionData.session, db.isAdmin(sessionData.user))) {
       return null;
     }
 

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { db } from "@/lib/db";
+import { sessionHasAdminPower } from "@/lib/adminHost";
 import AdminClient from "./AdminClient";
 
 // Checked on every request
@@ -20,7 +21,7 @@ async function visitor(): Promise<"signed-out" | "admin" | "other"> {
   try {
     const session = await db.validateSession(token);
     if (!session) return "signed-out"; // expired or signed out elsewhere
-    return db.isAdmin(session.user) ? "admin" : "other";
+    return sessionHasAdminPower(session.session, db.isAdmin(session.user)) ? "admin" : "other";
   } catch (err) {
     console.error("Admin page: session check failed:", err);
     throw new Error("The admin page couldn't check your sign-in. Please try again.");

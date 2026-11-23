@@ -22,6 +22,12 @@ export default function LoginPage() {
     () => new URLSearchParams(window.location.search).get("error"),
     () => null
   );
+  // the admin address (admin.…): admins only, so no Google sign-in and no new accounts there
+  const adminSide = useSyncExternalStore(
+    () => () => {},
+    () => window.location.hostname.startsWith("admin."),
+    () => false
+  );
   const googleError = googleErrorCode ? GOOGLE_ERRORS[googleErrorCode] ?? null : null;
   const { login, user, isLoading, otp } = useAuth();
 
@@ -63,7 +69,7 @@ export default function LoginPage() {
   // admins go to the admin dashboard and everyone else to the home page
   const goOn = (isAdmin?: boolean) => {
     const next = new URLSearchParams(window.location.search).get("next");
-    router.push(next ? safeNextPath(next) : isAdmin ? "/admin" : "/");
+    router.push(next ? safeNextPath(next) : isAdmin || adminSide ? "/admin" : "/");
   };
 
 
@@ -106,7 +112,7 @@ export default function LoginPage() {
         <>
         <div className="text-center mb-8">
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight">
-            Welcome Back
+            {adminSide ? "Admin sign-in" : "Welcome Back"}
           </h1>
           {nextParam === "/app" && (
             <p role="status" className="mt-3 text-xs sm:text-sm font-medium text-blue-800 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
@@ -115,7 +121,7 @@ export default function LoginPage() {
           )}
         </div>
 
-        <GoogleSignIn next={safeNextPath(nextParam)} />
+        {!adminSide && <GoogleSignIn next={safeNextPath(nextParam)} />}
 
         {(error || googleError) && (
           <div className="mb-5 p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 font-semibold">
@@ -168,6 +174,7 @@ export default function LoginPage() {
           </button>
         </form>
 
+        {!adminSide && (
         <div className="mt-6 pt-5 border-t border-slate-100 flex items-center justify-between text-xs">
           <span className="text-slate-500">Need an account?</span>
           <Link
@@ -177,6 +184,7 @@ export default function LoginPage() {
             Create Free Account &rarr;
           </Link>
         </div>
+        )}
         </>
         )}
 

@@ -2,6 +2,8 @@ import { after, NextResponse, type NextRequest } from "next/server";
 import { logEvent } from "@/lib/activityEvents";
 import { db, type UserRecord } from "@/lib/db";
 import { BLOCKED_MESSAGE, isBlocked } from "@/lib/accountControls";
+import { onAdminHost } from "@/lib/adminHost";
+import { SITE_URL } from "@/lib/site";
 
 /** Start a session for a user whose identity is already proven: cookies plus the signed-in reply. */
 export async function signedInResponse(user: UserRecord, req?: NextRequest, how = "password") {
@@ -9,9 +11,17 @@ export async function signedInResponse(user: UserRecord, req?: NextRequest, how 
     if (req) after(() => logEvent(req, user, "sign_in_refused", "Tried to sign in to a blocked account", { status: "warning" }));
     return NextResponse.json({ error: BLOCKED_MESSAGE, blocked: true }, { status: 403 });
   }
-  if (req) after(() => logEvent(req, user, "sign_in", `Signed in (${how})`));
+  // the admin address is for admins only; there, and only there, the session has admin rights
+  const adminSide = !!req && onAdminHost(req.headers);
+  if (adminSide && !db.isAdmin(user)) {
+    return NextResponse.json(
+      { error: `This address is for the site's admins. Please sign in at ${SITE_URL.replace(/^https?:\/\//, "")}.` },
+      { status: 403 }
+    );
+  }
+  if (req) after(() => logEvent(req, user, "sign_in", `Signed in (${how}${adminSide ? ", admin address" : ""})`));
   await db.touchUserLogin(user.id);
-  const session = await db.createSession(user.id);
+  const session = await db.createSession(user.id, { admin: adminSide });
 
   const response = NextResponse.json({
     success: true,
