@@ -21,6 +21,7 @@ const PROGRAMS: [string, string][] = [
   ["folder-manager", "Project Folder Manager"],
   ["slope", "Slope Calculator"],
   ["auto-draft", "Auto Drafting"],
+  ["toolkit", "Survey Toolkit"],
   ["website", "The website or my account"],
 ];
 
@@ -57,6 +58,17 @@ export default function ContactForm() {
     },
     () => "excel-to-kml"
   );
+  // ?version= and ?platform= come from a program's "Report a problem" link
+  const queryApp = useSyncExternalStore(
+    () => () => {},
+    () => {
+      const q = new URLSearchParams(window.location.search);
+      const clean = (v: string | null) => (v ?? "").replace(/[^\w .+()-]/g, "").slice(0, 40);
+      return `${clean(q.get("version"))}|${clean(q.get("platform"))}`;
+    },
+    () => "|"
+  );
+  const [appVersion, appPlatform] = queryApp.split("|");
   const [programIn, setProgram] = useState<string | null>(null);
   const program = programIn ?? queryProgram;
   const [topicIn, setTopic] = useState<string | null>(null);
@@ -79,7 +91,12 @@ export default function ContactForm() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, topic, message, website, details: { program: PROGRAMS.find(([k]) => k === program)?.[1] } }),
+        body: JSON.stringify({ name, email, topic, message, website, details: {
+            program: PROGRAMS.find(([k]) => k === program)?.[1],
+            version: programIn ? undefined : appVersion || undefined,
+            platform: programIn ? undefined : appPlatform || undefined,
+          },
+        }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Your message couldn't be sent. Please try again.");
@@ -122,6 +139,11 @@ export default function ContactForm() {
             <option key={k} value={k}>{label}</option>
           ))}
         </select>
+        {!programIn && (appVersion || appPlatform) && (
+          <span className="mt-1.5 block text-[12.5px] text-slate-500">
+            Sent with your message: {[appVersion && `version ${appVersion}`, appPlatform].filter(Boolean).join(" · ")}
+          </span>
+        )}
       </label>
 
       <fieldset>

@@ -1,5 +1,5 @@
 // Professional Traverse and Level Adjustment Software — app shell.
-import { SiteRemote, DemoRemote, JobStore, deviceUser, storage, validEmail, normEmail, AuthError } from './backend.js';
+import { SiteRemote, DemoRemote, JobStore, deviceUser, storage, validEmail, normEmail, AuthError, APP_VERSION, APP_PLATFORM } from './backend.js';
 import { initTools, openJob, newJob, loadTraverseData, refreshJobStates, recompute, openJobInfo } from './tools.js';
 import { initSimulator, stopSim } from './simulator.js';
 import { $, $$, esc, toast, relTime } from './util.js';
@@ -319,6 +319,32 @@ function netState() {
   el.classList.toggle('off', !on);
 }
 
+// ---------------------------------------------------------------- help
+// The user manual, What's new, Report a problem (the website's contact form with the version) and
+// the open-source licences; in the Windows program also the error log, and pages open in the browser
+function bindHelp() {
+  const btn = $('#help-btn'), menu = $('#help-menu');
+  const shut = () => { menu.hidden = true; btn.setAttribute('aria-expanded', 'false'); };
+  btn.addEventListener('click', e => { e.stopPropagation(); $('#user-menu').hidden = true; menu.hidden = !menu.hidden; btn.setAttribute('aria-expanded', String(!menu.hidden)); });
+  document.addEventListener('click', shut);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') shut(); });
+  const platform = window.kmlOpenLog ? 'Windows' : APP_PLATFORM === 'installed' ? 'Installed web app' : 'Web';
+  $('#help-report').href = '/contact?' + new URLSearchParams({ topic: 'problem', program: 'traverse', version: APP_VERSION, platform });
+  if (window.kmlOpenLog) {
+    $('#help-log').hidden = false;
+    $('#help-log').addEventListener('click', () => window.kmlOpenLog());
+  }
+  // the Windows program: its own licences file (the window's parts too), and pages in the browser
+  if (window.kmlOpenNotices) $('#help-licences').addEventListener('click', e => { e.preventDefault(); window.kmlOpenNotices(); });
+  if (window.kmlOpenUrl) {
+    menu.querySelectorAll('a[target=_blank]').forEach(a => a.addEventListener('click', e => {
+      if (e.defaultPrevented) return;
+      e.preventDefault();
+      window.kmlOpenUrl(new URL(a.getAttribute('href'), location.href).href);
+    }));
+  }
+}
+
 // ---------------------------------------------------------------- start
 function bind() {
   window.addEventListener('hashchange', route);
@@ -327,6 +353,7 @@ function bind() {
   document.addEventListener('click', () => { $('#user-menu').hidden = true; });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') { $('#user-menu').hidden = true; $('#share-modal').hidden = true; navOpen(false); } });
   $('#logout-btn').addEventListener('click', logout);
+  bindHelp();
   $('#closed-retry').addEventListener('click', async () => { await applyAllow(); if (allow.enabled) { location.hash = '#/' + home(); route(); toast('Traverse & Level is open again.'); } else toast('Still closed.'); });
   $('#login-form').addEventListener('submit', onLogin);
   $('#code-start').addEventListener('click', startCode);

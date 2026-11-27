@@ -61,8 +61,8 @@ const LOGQ = 'tl.activity.queue';
 // Sent with every request, so the website knows which version and device each account uses
 // (Admin → user profile). The version is filled in by build.mjs.
 /* global __TL_VERSION__ */
-const APP_VERSION = typeof __TL_VERSION__ === 'string' ? __TL_VERSION__ : '';
-const APP_PLATFORM = typeof location === 'undefined' ? 'web'
+export const APP_VERSION = typeof __TL_VERSION__ === 'string' ? __TL_VERSION__ : '';
+export const APP_PLATFORM = typeof location === 'undefined' ? 'web'
   : /[?&]app=1(&|$)/.test(location.search) ? 'windows'
   : (typeof matchMedia === 'function' && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true ? 'installed'
   : 'web';

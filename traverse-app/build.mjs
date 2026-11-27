@@ -9,6 +9,13 @@ fs.cpSync('public', out, { recursive: true });
 const version = (fs.readFileSync('../lib/traverse.ts', 'utf8').match(/TRAVERSE_VERSION = "([^"]+)"/) || [])[1] || '';
 await build({ entryPoints: ['src/app.js'], bundle: true, format: 'iife', target: 'es2020', minify: true, outfile: path.join(out, 'app.js'), legalComments: 'none', define: { __TL_VERSION__: JSON.stringify(version) } });
 fs.mkdirSync(path.join(out, 'vendor'), { recursive: true });
+// the open-source licences of what the app is built with (Help → Open-source licences)
+const lic = (name, url, file) => `${'-'.repeat(72)}\n${name}\n${url}\n${'-'.repeat(72)}\n\n${fs.readFileSync(file, 'utf8').trim()}\n\n`;
+fs.writeFileSync(path.join(out, 'vendor/LICENSES.txt'), 'Open-source software in Traverse & Level\n\nThe app is built with the free software below. Each part keeps its own licence, copied here in full.\n\n'
+  + lic('jsPDF', 'https://github.com/parallax/jsPDF (MIT)', 'node_modules/jspdf/LICENSE')
+  + lic('jsPDF-AutoTable', 'https://github.com/simonbengtsson/jsPDF-AutoTable (MIT)', 'node_modules/jspdf-autotable/LICENSE.txt')
+  + lic('fflate (inside jsPDF)', 'https://github.com/101arrowz/fflate (MIT)', 'node_modules/fflate/LICENSE')
+  + `${'-'.repeat(72)}\nIBM Plex Sans, IBM Plex Mono, Libre Caslon Text (the fonts)\nSIL Open Font License 1.1: https://openfontlicense.org\n`);
 fs.writeFileSync(path.join(out, 'vendor/pdf.js'), fs.readFileSync('node_modules/jspdf/dist/jspdf.umd.min.js', 'utf8') + '\n;\n' + fs.readFileSync('node_modules/jspdf-autotable/dist/jspdf.plugin.autotable.min.js', 'utf8'));
 // cache-busting version for the service worker
 const v = Date.now().toString(36);
