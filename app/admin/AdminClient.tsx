@@ -17,6 +17,7 @@ import AdminProgram from "@/components/admin/AdminProgram";
 import { AppSettings } from "@/components/admin/AppTab";
 import AdminLog from "@/components/admin/AdminLog";
 import AdminTrends from "@/components/admin/AdminTrends";
+import AdminUsage from "@/components/admin/AdminUsage";
 import AdminActivity, { APPS as ACTIVITY_APPS } from "@/components/admin/AdminActivity";
 import AdminSearch, { SearchButton } from "@/components/admin/AdminSearch";
 import AdminFiles, { FILE_APPS } from "../../components/admin/AdminFiles";
@@ -36,6 +37,7 @@ import {
   Server,
   Compass,
   BarChart3,
+  Gauge,
   Files,
   Inbox,
   Send,
@@ -160,7 +162,7 @@ const RELEASE_TABS = [
   { id: "toolkit", name: "Survey Toolkit" },
 ];
 
-const ADMIN_TABS = ["overview", "users", "activities", "downloads", "files", "conversions", "excel", "traverse", "slope", "autodraft", "roadpro", "pfm", "toolkit", "releases", "reviews", "messages", "mail", "settings", "log"] as const;
+const ADMIN_TABS = ["overview", "usage", "users", "activities", "downloads", "files", "conversions", "excel", "traverse", "slope", "autodraft", "roadpro", "pfm", "toolkit", "releases", "reviews", "messages", "mail", "settings", "log"] as const;
 type AdminTab = (typeof ADMIN_TABS)[number];
 function tabFromAddress(): AdminTab {
   const id = typeof window === "undefined" ? "" : window.location.hash.slice(1);
@@ -579,7 +581,10 @@ export default function AdminClient() {
   const groups: AdminGroup[] = [
     {
       label: "Overview",
-      sections: [{ id: "overview", label: "Dashboard", icon: BarChart3, text: "Accounts, downloads and what people did lately, at a glance" }],
+      sections: [
+        { id: "overview", label: "Dashboard", icon: BarChart3, text: "Accounts, downloads and what people did lately, at a glance" },
+        { id: "usage", label: "Usage", icon: Gauge, text: "Monthly active people against the goal before a paid plan, and who uses the programs most" },
+      ],
     },
     {
       label: "People",
@@ -1282,6 +1287,7 @@ export default function AdminClient() {
         )}
 
         {activeTab === "mail" && <AdminMail adminFetch={adminFetch} onToast={showToast} />}
+        {activeTab === "usage" && <AdminUsage adminFetch={adminFetch} />}
 
         {activeTab === "messages" && (
           <AdminMessages adminFetch={adminFetch} onToast={showToast} onCounts={setNewMessages} />
