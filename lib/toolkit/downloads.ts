@@ -22,7 +22,7 @@ type GhRelease = {
   assets?: { name?: string; download_count?: number; size?: number; browser_download_url?: string }[];
 };
 
-const HEADERS: Record<string, string> = { Accept: "application/vnd.github+json", "User-Agent": "exceltokml.com" };
+const HEADERS: Record<string, string> = { Accept: "application/vnd.github+json", "User-Agent": "surveyxdigital.com" };
 
 async function readReleases(): Promise<ToolkitDownloads | null> {
   const url = `https://api.github.com/repos/${TOOLKIT_REPO}/releases?per_page=50`;

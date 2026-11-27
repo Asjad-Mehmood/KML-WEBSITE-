@@ -8,7 +8,7 @@ export async function sendPasswordResetEmail(user: { id: string; email: string; 
   await sendMail({
     to: user.email,
     ...letterEmail({
-      subject: "Reset your Excel to KML password",
+      subject: "Reset your SurveyX Digital password",
       title: "Reset your password",
       first: (user.name || "").trim().split(/\s+/)[0] || "",
       blocks: [

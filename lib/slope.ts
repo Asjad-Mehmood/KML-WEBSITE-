@@ -2,7 +2,7 @@
 // engineers. A Flutter app built and released from Asjad-Mehmood/Slope-calculator-: a Windows
 // program (installer on its GitHub releases, updates itself) and the same app on the web at
 // /slope-calculation/app (public/slope-calculation/app, made there with tool/web_build.sh; don't
-// edit those files here). Calculations are kept in the exceltokml.com account (lib/slopeJobs.ts).
+// edit those files here). Calculations are kept in the SurveyX Digital account (lib/slopeJobs.ts).
 
 export const SLOPE_NAME = "Slope Calculator";
 export const SLOPE_VERSION = "1.1.0";
@@ -55,7 +55,7 @@ export const SLOPE_FEATURES: { title: string; text: string }[] = [
   { title: "Digital level run", text: "Watch a level run along your slope: setups, backsights, intermediates and foresights booked by HI or Rise & Fall, with the arithmetic check and closing error." },
   { title: "Optical level trainer", text: "An E-pattern staff to read through the telescope. Watch the readings or practise and get marked. Made for training." },
   { title: "Reports", text: "Excel with the project plate, summary, chainage levels, crossfall, level book and a QA/QC checklist; a PDF with the profile and sign-off boxes; CSV; print." },
-  { title: "Saved in your account", text: "Keep calculations in your exceltokml.com account and open them on Windows, in the browser or on a phone. Saving works offline and is sent when you are back online." },
+  { title: "Saved in your account", text: "Keep calculations in your SurveyX Digital account and open them on Windows, in the browser or on a phone. Saving works offline and is sent when you are back online." },
 ];
 
 export const SLOPE_STEPS: { title: string; text: string }[] = [
@@ -67,7 +67,7 @@ export const SLOPE_STEPS: { title: string; text: string }[] = [
 ];
 
 export const SLOPE_FAQ: { q: string; a: string }[] = [
-  { q: "Is it free?", a: "Yes. The web app and the Windows program are free. You sign in with a free exceltokml.com account (the same one as Excel to KML and Traverse & Level) the first time you open it; create one in a minute with your email or Google." },
+  { q: "Is it free?", a: "Yes. The web app and the Windows program are free. You sign in with a free SurveyX Digital account (the same one as Excel to KML and Traverse & Level) the first time you open it; create one in a minute with your email or Google." },
   { q: "Why do I have to sign in?", a: "Your account keeps your calculations, so they open on every device, and tells us who uses the app so we can keep improving it. After the first sign-in the app remembers you: it opens straight away, offline too, until you sign out." },
   { q: "Web app or Windows program?", a: "They are the same app. The web app runs in any modern browser, on a phone too, and can be installed from the browser. The Windows program runs in its own window and updates itself." },
   { q: "Does it work offline?", a: "Yes, after the first sign-in. The web app keeps its files and opens without a connection, and the Windows program never needs one to calculate. Calculations you save offline wait on the device and are sent to your account when you are back online." },

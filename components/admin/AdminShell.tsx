@@ -198,7 +198,7 @@ export default function AdminShell({
         <Shield className="w-4 h-4 text-white" aria-hidden />
       </span>
       <div className="leading-tight">
-        <p className="text-[14px] font-extrabold tracking-tight text-white">Excel to KML</p>
+        <p className="text-[14px] font-extrabold tracking-tight text-white">SurveyX Digital</p>
         <p className="text-[11px] font-semibold text-slate-500">Admin</p>
       </div>
     </div>

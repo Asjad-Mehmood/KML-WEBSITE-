@@ -44,7 +44,7 @@ export interface Feed {
   tools: FeedTool[];
 }
 
-const GH_HEADERS: Record<string, string> = { Accept: "application/vnd.github+json", "User-Agent": "exceltokml.com" };
+const GH_HEADERS: Record<string, string> = { Accept: "application/vnd.github+json", "User-Agent": "surveyxdigital.com" };
 const ghToken = () => (process.env.APP_SOURCE_TOKEN || process.env.GITHUB_TOKEN || "").trim();
 const isSha = (s: unknown): s is string => typeof s === "string" && /^[0-9a-f]{64}$/.test(s);
 const abs = (path: string) => new URL(path, SITE_URL).toString();
@@ -108,7 +108,7 @@ async function installerTool(t: ToolkitTool, s: InstallerTool): Promise<FeedTool
   const token = ghToken();
   const [rel, manifest] = await Promise.all([
     releaseOf(s.repo, token),
-    getJson<{ version?: unknown; sha256?: unknown }>(`https://github.com/${s.repo}/releases/latest/download/latest.json`, { "User-Agent": "exceltokml.com" }).catch(() => null),
+    getJson<{ version?: unknown; sha256?: unknown }>(`https://github.com/${s.repo}/releases/latest/download/latest.json`, { "User-Agent": "surveyxdigital.com" }).catch(() => null),
   ]);
   if (!rel) {
     // GitHub's API is busy or over its limit: latest.json alone still gives the version and
@@ -156,7 +156,7 @@ async function installerTool(t: ToolkitTool, s: InstallerTool): Promise<FeedTool
 // a new version is never offered with the hash of the zip before it.
 const zipFacts = unstable_cache(
   async (url: string, version: string): Promise<{ sha256: string; size: number } | null> => {
-    const res = await fetch(`${url}?v=${encodeURIComponent(version)}`, { headers: { "User-Agent": "exceltokml.com" }, cache: "no-store", signal: AbortSignal.timeout(20_000) });
+    const res = await fetch(`${url}?v=${encodeURIComponent(version)}`, { headers: { "User-Agent": "surveyxdigital.com" }, cache: "no-store", signal: AbortSignal.timeout(20_000) });
     if (!res.ok) return null;
     const buf = Buffer.from(await res.arrayBuffer());
     return { sha256: crypto.createHash("sha256").update(buf).digest("hex"), size: buf.length };

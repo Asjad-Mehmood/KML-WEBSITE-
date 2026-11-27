@@ -17,7 +17,7 @@ export interface ReleaseInfo {
   assets: ReleaseAsset[];
 }
 
-const GH_HEADERS: Record<string, string> = { Accept: "application/vnd.github+json", "User-Agent": "exceltokml.com" };
+const GH_HEADERS: Record<string, string> = { Accept: "application/vnd.github+json", "User-Agent": "surveyxdigital.com" };
 const ghToken = () => (process.env.APP_SOURCE_TOKEN || process.env.GITHUB_TOKEN || "").trim();
 
 // A file never changes under the same id and upload time, so its hash is kept for good
@@ -25,7 +25,7 @@ const ghToken = () => (process.env.APP_SOURCE_TOKEN || process.env.GITHUB_TOKEN 
 const hashOf = unstable_cache(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async (url: string, uploaded: string): Promise<string> => {
-    const res = await fetch(url, { headers: { "User-Agent": "exceltokml.com" }, cache: "no-store", redirect: "follow", signal: AbortSignal.timeout(45_000) });
+    const res = await fetch(url, { headers: { "User-Agent": "surveyxdigital.com" }, cache: "no-store", redirect: "follow", signal: AbortSignal.timeout(45_000) });
     if (!res.ok) throw new Error(`Download for hashing answered ${res.status}`);
     const buf = Buffer.from(await res.arrayBuffer());
     return crypto.createHash("sha256").update(buf).digest("hex");

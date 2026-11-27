@@ -439,7 +439,7 @@ function Testers({ data, onChanged, onToast }: { data: Data; onChanged: () => Pr
           <UserPlus className="w-4 h-4 text-blue-400" aria-hidden /> Add a tester
         </h2>
         <p className="text-[13px] text-slate-500">
-          They sign in to the Toolkit with their Excel to KML account. Someone without an account yet can create one in the Toolkit with this email.
+          They sign in to the Toolkit with their SurveyX Digital account. Someone without an account yet can create one in the Toolkit with this email.
         </p>
         <div className="flex flex-col sm:flex-row gap-3">
           <label className="flex-1">

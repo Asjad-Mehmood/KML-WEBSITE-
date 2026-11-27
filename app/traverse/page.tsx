@@ -40,18 +40,18 @@ import {
   TRAVERSE_STEPS,
   TRAVERSE_VERSION,
 } from "@/lib/traverse";
-import { SITE_URL, jsonLd, openGraphFor } from "@/lib/site";
+import { SITE_URL, jsonLd, openGraphFor, companyTitle } from "@/lib/site";
 
 const TITLE = "Traverse & Level Adjustment Software for Surveyors";
 const DESCRIPTION =
   "Traverse and levelling for surveyors, in the browser or on Windows: site coordinates or an angles-and-distances field book with side shots and levels, Bowditch, Transit, Equal or least squares adjustment, Qatar National Grid with latitude and longitude, Rise & Fall or HI, PDF reports, Google Earth export, a dashboard of saved jobs, sharing, a traverse simulator, offline use and dark mode.";
 
 export const metadata: Metadata = {
-  title: TITLE,
+  title: companyTitle(TITLE),
   description: DESCRIPTION,
   alternates: { canonical: "/traverse" },
   openGraph: {
-    ...openGraphFor("/traverse", `${TITLE} | Excel to KML`, DESCRIPTION),
+    ...openGraphFor("/traverse", `${TITLE} | SurveyX Digital`, DESCRIPTION),
     images: [{ url: TRAVERSE_FILES.video.poster, width: 1024, height: 576, alt: "Professional Traverse and Level Adjustment Software: precision in every point" }],
   },
 };
@@ -90,7 +90,7 @@ const structuredData = {
 
 // The hero: how the app is used, step by step (each screen flips over to the next)
 const HERO_STEPS: FlipStep[] = [
-  { src: "/traverse/screens/v2-register.webp", title: "Create your free account", text: "Register, or log in with your Excel to KML account.", alt: "Register screen of Traverse & Level" },
+  { src: "/traverse/screens/v2-register.webp", title: "Create your free account", text: "Register, or log in with your SurveyX Digital account.", alt: "Register screen of Traverse & Level" },
   { src: "/traverse/screens/v2-dashboard.webp", title: "All your jobs", text: "Recent jobs in the sidebar; every job, share and copy on the dashboard.", alt: "Dashboard: saved traverses and level runs with their status, a job shared by a colleague and the week's activity" },
   { src: "/traverse/screens/v2-traverse.webp", title: "Enter the traverse", text: "Known points and the coordinates you measured on site.", alt: "Traverse screen: known points, site coordinates and an Accepted result with precision 1 : 62,105 after a Bowditch adjustment" },
   { src: "/traverse/screens/v2-fieldbook.webp", title: "Or type the field book", text: "Angles and distances, with side shots and levels.", alt: "Field book with angles, distances, side shots and levels, accepted with the angular and level checks" },
@@ -157,7 +157,7 @@ export default function TraversePage() {
               </TrackedLink>
             </div>
             <p className="mt-3 text-[12.5px] text-slate-500">
-              Free with your Excel to KML account · Works offline after your first login ·{" "}
+              Free with your SurveyX Digital account · Works offline after your first login ·{" "}
               <a href="#video" className="text-[#0071e3] hover:underline">Watch the intro</a>
             </p>
           </div>
@@ -297,7 +297,7 @@ export default function TraversePage() {
             id="download-h"
             eyebrow="Get it"
             title={`Use Traverse & Level ${TRAVERSE_VERSION}`}
-            text="Free. Open it in the browser with your Excel to KML account, or download the Windows program."
+            text="Free. Open it in the browser with your SurveyX Digital account, or download the Windows program."
             Icon={Download}
           />
           <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -316,7 +316,7 @@ export default function TraversePage() {
               <Monitor className="w-6 h-6 text-slate-500" aria-hidden />
               <h3 className="mt-2 font-bold text-slate-900">{TRAVERSE_FILES.setup.label}</h3>
               <p className="text-[13.5px] text-slate-500 flex-1">
-                {comingSoon ? "Coming soon for Windows." : `${TRAVERSE_FILES.setup.detail}.`} Log in with your Excel to KML account: the same jobs as
+                {comingSoon ? "Coming soon for Windows." : `${TRAVERSE_FILES.setup.detail}.`} Log in with your SurveyX Digital account: the same jobs as
                 the web app.
               </p>
               <TraverseDownload className="mt-4 inline-flex justify-center items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50 cursor-pointer" label="Download for Windows" />

@@ -13,7 +13,7 @@ export default function ProductSpotlight() {
       <div className="absolute -top-24 right-0 w-[520px] h-[320px] bg-[#0071e3]/25 rounded-full blur-[120px] pointer-events-none" aria-hidden />
       <div className="relative max-w-[1140px] mx-auto px-5 sm:px-8">
         <p className="inline-flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wider text-sky-300">
-          <Sparkles className="w-4 h-4" aria-hidden /> {single ? "Spotlight" : "More from Excel to KML"}
+          <Sparkles className="w-4 h-4" aria-hidden /> {single ? "Spotlight" : "More from SurveyX Digital"}
         </p>
         {single ? (
           <Feature p={PRODUCTS[0]} />

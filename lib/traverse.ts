@@ -57,7 +57,7 @@ export const TRAVERSE_FEATURES: { title: string; text: string }[] = [
   { title: "Bowditch, Transit, Equal or least squares", text: "Spread the misclosure your way, with angular, linear and level checks against your tolerances, or adjust a field book by least squares with error ellipses." },
   { title: "Levelling", text: "Rise & Fall or Height of Instrument, arithmetic checks, misclosure against your allowable and adjusted RLs." },
   { title: "Signed PDF reports", text: "Report details, closure check, field book, input and output coordinates, bearings, sketch and signature boxes. Also CSV and Google Earth." },
-  { title: "Your dashboard", text: "Every traverse and level run saved to your exceltokml.com account, with status, search, copy and activity. Works offline after your first login." },
+  { title: "Your dashboard", text: "Every traverse and level run saved to your SurveyX Digital account, with status, search, copy and activity. Works offline after your first login." },
   { title: "Share with your team", text: "Send a job to a checker, engineer or client by email. They open a copy from their own dashboard." },
   { title: "Traverse simulator", text: "Watch a total station observe a traverse with realistic errors, then adjust it. Made for training." },
   { title: "Qatar National Grid", text: "The grid's scale factor is worked out where the traverse is, and every point gets its WGS84 latitude and longitude, as in Excel to KML." },
@@ -69,8 +69,8 @@ export const TRAVERSE_SCREENS: { group: string; items: { no: string; title: stri
   {
     group: "Start",
     items: [
-      { no: "01", title: "Log in", text: "The app opens on Log in. Use your exceltokml.com account, or sign in with your browser for Google and admin accounts.", img: "v2-front", page: 4 },
-      { no: "02", title: "Your account", text: "Register once with your name, email and password. It is the same account as exceltokml.com.", img: "v2-register", page: 5 },
+      { no: "01", title: "Log in", text: "The app opens on Log in. Use your SurveyX Digital account, or sign in with your browser for Google and admin accounts.", img: "v2-front", page: 4 },
+      { no: "02", title: "Your account", text: "Register once with your name, email and password. It is the same account as this website.", img: "v2-register", page: 5 },
       { no: "03", title: "Dashboard", text: "From the profile menu or All jobs: every saved traverse and level run, with its status and key result, plus jobs shared with you.", img: "v2-dashboard", page: 38 },
     ],
   },
@@ -117,7 +117,7 @@ export const TRAVERSE_SCREENS: { group: string; items: { no: string; title: stri
 
 export const TRAVERSE_STEPS: { title: string; text: string }[] = [
   { title: "Open the app", text: "Open the web app in Chrome, Edge, Safari or Firefox, or run the Windows program." },
-  { title: "Register or log in", text: "Use your exceltokml.com account, or create one free. After your first login the app also opens offline." },
+  { title: "Register or log in", text: "Use your SurveyX Digital account, or create one free. After your first login the app also opens offline." },
   { title: "Type the known points", text: "Station, backsight and closing point for a traverse; start and closing benchmark for a level run." },
   { title: "Enter the site data", text: "Type the measured coordinates or the field book (angles and distances), or the level book; paste the rows from Excel, or import a CSV." },
   { title: "Check and adjust", text: "Choose Bowditch, Transit, Equal or least squares, or Rise & Fall or HI, and read Accepted or Rejected at once." },
@@ -128,7 +128,7 @@ export const TRAVERSE_NOTES = [
   "A mathematical close is not an acceptance decision: you and your checker sign off the survey.",
   "Never lower the required precision just to make a traverse pass. Check the closing point, then each point against the field book.",
   "The plan sketch and the plots are guides, not certified drawings.",
-  "Jobs saved in the web app go to your exceltokml.com account. Jobs saved offline upload by themselves when you are back online.",
+  "Jobs saved in the web app go to your SurveyX Digital account. Jobs saved offline upload by themselves when you are back online.",
   "The Windows program is the web app in its own window: log in with the same account and you see the same jobs. Open it once with internet; after that it also opens offline.",
-  "Logging out of the app also logs you out of exceltokml.com. Change your password from your account page on this website.",
+  "Logging out of the app also logs you out of this website. Change your password from your account page on this website.",
 ];

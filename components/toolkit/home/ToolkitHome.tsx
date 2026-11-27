@@ -372,7 +372,7 @@ export default function ToolkitHome({
                 </div>
                 <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {[
-                    { Icon: Package, title: "Official installers", text: "Every download comes from exceltokml.com or our own GitHub releases, over HTTPS." },
+                    { Icon: Package, title: "Official installers", text: "Every download comes from surveyxdigital.com or our own GitHub releases, over HTTPS." },
                     { Icon: ShieldCheck, title: "Checked before it runs", text: "Its SHA-256 must match the published one. If it doesn't, nothing is installed." },
                     { Icon: HardDrive, title: "Your PC, your choice", text: "Installed for you alone, no administrator rights. Removing the Toolkit keeps your tools." },
                     { Icon: Lock, title: "Nothing of your files", text: "It tells us only this PC's name, Windows version and tool versions, so we can see updates arrive." },
@@ -404,7 +404,7 @@ export default function ToolkitHome({
                 <Point>Windows 10 or 11, 64-bit</Point>
                 <Point>Microsoft Edge WebView2, built into Windows 11 and an up-to-date Windows 10</Point>
                 <Point>An internet connection to install and update (the tools work offline as usual)</Point>
-                <Point>Your free Excel to KML account</Point>
+                <Point>Your free SurveyX Digital account</Point>
                 <Point>For RoadPro: full AutoCAD, Civil 3D or Map 3D 2013 or newer (not AutoCAD LT)</Point>
               </ul>
             </div>

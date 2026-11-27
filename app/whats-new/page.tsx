@@ -6,7 +6,7 @@ import { BreadcrumbStructuredData } from "../../components/StructuredData";
 import ReleaseList from "./ReleaseList";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { openGraphFor } from "@/lib/site";
+import { openGraphFor, companyTitle } from "@/lib/site";
 import { ROADPRO_RELEASE, ROADPRO_RELEASE_DATE } from "@/lib/roadpro";
 import { TRAVERSE_RELEASED, TRAVERSE_VERSION } from "@/lib/traverse";
 import { SLOPE_RELEASED, SLOPE_VERSION } from "@/lib/slope";
@@ -27,10 +27,10 @@ const OTHERS: { name: string; version: string | null; released: string | null; h
 const day = (iso: string) => new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 
 export const metadata: Metadata = {
-  title: TITLE,
+  title: companyTitle(TITLE),
   description: DESCRIPTION,
   alternates: { canonical: "/whats-new" },
-  openGraph: openGraphFor("/whats-new", `${TITLE} | Excel to KML`, DESCRIPTION),
+  openGraph: openGraphFor("/whats-new", `${TITLE} | SurveyX Digital`, DESCRIPTION),
 };
 
 export default function WhatsNewPage() {

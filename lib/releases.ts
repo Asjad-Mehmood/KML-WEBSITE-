@@ -5,7 +5,7 @@ import { introductionOf, releaseEmail, type ReleaseForEmail } from "@/lib/releas
 import { reviewRequestEmail } from "@/lib/reviewEmail";
 import { PRODUCTS } from "@/lib/products";
 import { ensureActivityColumns } from "@/lib/activityTags";
-import { LATEST_VERSION, SITE_NAME } from "@/lib/site";
+import { APP_NAME, LATEST_VERSION } from "@/lib/site";
 
 /**
  * Admin → Releases: every version of our software, grouped by app, and the emails that
@@ -44,7 +44,7 @@ const GITHUB_REPOS: Record<string, string> = {
 const GITHUB_MIN_VERSION: Record<string, string> = { roadpro: "3.6" };
 
 export const RELEASE_APPS: ReleaseApp[] = [
-  { id: "excel-to-kml", name: SITE_NAME, href: "/download", current: normVersion(LATEST_VERSION), github: "Asjad-Mehmood/kml-convertor" },
+  { id: "excel-to-kml", name: APP_NAME, href: "/download", current: normVersion(LATEST_VERSION), github: "Asjad-Mehmood/kml-convertor" },
   ...PRODUCTS.map((p) => ({
     id: p.id,
     name: p.name,
@@ -250,7 +250,7 @@ const SEED: { app: string; version: string; releasedAt: string; title: string; n
     app: "excel-to-kml",
     version: normVersion(LATEST_VERSION),
     releasedAt: new Date().toISOString().slice(0, 10),
-    title: `${SITE_NAME} ${normVersion(LATEST_VERSION)} is out`,
+    title: `${APP_NAME} ${normVersion(LATEST_VERSION)} is out`,
     notes: [],
   },
 ];
@@ -905,7 +905,7 @@ export async function importFromGitHub(appId: string) {
   const app = appById(appId);
   if (!app?.github) throw new Error("This app has no GitHub releases to import.");
   const res = await fetch(`https://api.github.com/repos/${app.github}/releases?per_page=30`, {
-    headers: { Accept: "application/vnd.github+json", "User-Agent": "exceltokml.com" },
+    headers: { Accept: "application/vnd.github+json", "User-Agent": "surveyxdigital.com" },
     cache: "no-store",
   });
   if (!res.ok) throw new Error(`GitHub answered ${res.status}. Try again in a minute.`);

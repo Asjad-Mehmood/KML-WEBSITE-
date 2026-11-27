@@ -15,7 +15,7 @@ import ToolkitBeta, { ToolkitBetaClosed } from "@/components/toolkit/ToolkitBeta
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Survey Toolkit (beta)",
-  description: "Every Excel to KML survey tool in one Windows program, kept up to date by itself. Private beta.",
+  description: "Every SurveyX Digital survey tool in one Windows program, kept up to date by itself. Private beta.",
   robots: { index: false, follow: false },
 };
 

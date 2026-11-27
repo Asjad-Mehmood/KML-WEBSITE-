@@ -4,7 +4,7 @@
 // Settings (Vercel → Environment Variables):
 //   GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET — from a Google Cloud "OAuth client ID"
 //   (Web application), with this Authorized redirect URI:
-//   https://www.exceltokml.com/api/auth/google/callback
+//   https://www.surveyxdigital.com/api/auth/google/callback (and auth.surveyxdigital.com with NEXT_PUBLIC_AUTH_HOST)
 import crypto from "crypto";
 
 export const GOOGLE_COOKIE = "g_oauth";

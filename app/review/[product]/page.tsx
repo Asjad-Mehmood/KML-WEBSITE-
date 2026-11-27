@@ -5,13 +5,14 @@ import PageShell from "../../../components/PageShell";
 import ReviewForm from "./ReviewForm";
 import { REVIEW_PRODUCTS, isReviewProduct, ownReview } from "@/lib/reviews";
 import { sessionForToken } from "@/lib/serverSession";
+import { companyTitle } from "@/lib/site";
 
 type Props = { params: Promise<{ product: string }>; searchParams: Promise<{ stars?: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { product } = await params;
   const name = isReviewProduct(product) ? REVIEW_PRODUCTS[product].name : "a program";
-  return { title: `Review ${name}`, robots: { index: false, follow: false } };
+  return { title: companyTitle(`Review ${name}`), robots: { index: false, follow: false } };
 }
 
 // Where the stars in a review request email lead: the form, set to the star that was pressed,

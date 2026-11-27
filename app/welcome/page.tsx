@@ -4,9 +4,10 @@ import { redirect } from "next/navigation";
 import { sessionForToken } from "@/lib/serverSession";
 import { safeNextPath } from "@/lib/authRedirect";
 import WelcomeClient from "./WelcomeClient";
+import { companyTitle } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Complete your account",
+  title: companyTitle("Complete your account"),
   robots: { index: false, follow: false },
 };
 

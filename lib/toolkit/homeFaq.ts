@@ -2,7 +2,7 @@
 // Toolkit). One list for the page and for its FAQ structured data, so the two always match.
 export const TOOLKIT_FAQS: { q: string; a: string }[] = [
   { q: "Is it free?", a: "Yes. The Toolkit is free, like the tools it installs." },
-  { q: "Do I need an account?", a: "Yes, your free Excel to KML account, the same one you use on this website and in the web apps." },
+  { q: "Do I need an account?", a: "Yes, your free SurveyX Digital account, the same one you use on this website and in the web apps." },
   {
     q: "I already have some of the tools. Will they be installed again?",
     a: "No. The Toolkit finds what is on your PC and only updates it when a new version comes out.",

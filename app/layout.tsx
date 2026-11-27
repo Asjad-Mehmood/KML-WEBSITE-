@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "../context/AuthContext";
 import SiteNotice from "../components/SiteNotice";
+import MovedNotice from "../components/MovedNotice";
 import AuthModal from "../components/AuthModal";
 import AdSenseScript from "../components/AdSenseScript";
 import SignupPrompt from "../components/SignupPrompt";
@@ -78,7 +79,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
   },
   formatDetection: { telephone: false, address: false, email: false },
-  // Proves to Meta that we own exceltokml.com (Business Suite → Brand safety → Domains)
+  // Proves to Meta that we own the site's domain (Business Suite → Brand safety → Domains)
   ...(FACEBOOK_DOMAIN_VERIFICATION ? { other: { "facebook-domain-verification": FACEBOOK_DOMAIN_VERIFICATION } } : {}),
 };
 
@@ -110,6 +111,7 @@ export default function RootLayout({
           {children}
           <AuthModal />
           <SiteNotice />
+          <MovedNotice />
           <SignupPrompt />
           {/* "Your download is starting": what Windows SmartScreen may show, for every program */}
           <DownloadNotice />

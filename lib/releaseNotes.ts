@@ -40,7 +40,7 @@ export interface ReleaseNote {
 
 type GhRelease = { tag_name?: string; name?: string | null; body?: string | null; published_at?: string | null; draft?: boolean; prerelease?: boolean };
 
-const GH_HEADERS: Record<string, string> = { Accept: "application/vnd.github+json", "User-Agent": "exceltokml.com" };
+const GH_HEADERS: Record<string, string> = { Accept: "application/vnd.github+json", "User-Agent": "surveyxdigital.com" };
 const ghToken = () => (process.env.APP_SOURCE_TOKEN || process.env.GITHUB_TOKEN || "").trim();
 
 const GH_URL = /https?:\/\/(?:[\w-]+\.)*github(?:usercontent)?\.com\/\S*/i;

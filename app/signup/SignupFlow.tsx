@@ -201,7 +201,7 @@ export default function SignupFlow({ step, next, query, error }: { step: SignupS
       <form onSubmit={submitDetails} noValidate className={leaving ? "si-out" : "si-in"}>
         {steps}
         <h1 className="text-center text-[24px] font-semibold text-[#1d1d1f]">Create your account</h1>
-        <p className="mt-1 text-center text-[14px] text-slate-500">Free, for every Excel to KML program</p>
+        <p className="mt-1 text-center text-[14px] text-slate-500">Free, for every SurveyX Digital program</p>
         <div className="mt-7">
           <GoogleSignIn next={next} />
         </div>

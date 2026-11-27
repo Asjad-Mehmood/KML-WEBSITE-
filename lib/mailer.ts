@@ -5,7 +5,7 @@ import nodemailer from "nodemailer";
 //   SMTP_PORT   587 (STARTTLS, default) or 465 (TLS)
 //   SMTP_USER   the mailbox login
 //   SMTP_PASS   its password (for Gmail: an App Password)
-//   MAIL_FROM   optional, e.g. "Excel to KML <hello@exceltokml.com>" (defaults to SMTP_USER)
+//   MAIL_FROM   optional, e.g. "SurveyX Digital <hello@surveyxdigital.com>" (defaults to SMTP_USER)
 //   MAIL_REPLY_TO optional, where replies go when MAIL_FROM isn't a mailbox you read
 //   MAIL_GAP_MS optional, the pause between emails to many people (default 4000)
 //

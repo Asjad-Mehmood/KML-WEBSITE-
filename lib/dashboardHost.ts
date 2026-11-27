@@ -1,5 +1,5 @@
 // The users' dashboard on an address of its own (NEXT_PUBLIC_DASHBOARD_HOST, e.g.
-// account.exceltokml.com).
+// dashboard.surveyxdigital.com).
 //
 // With it set, /dashboard and what it uses (its APIs, the file and job downloads) answer only
 // there; on the main site /dashboard goes there. The dashboard address gets its own session

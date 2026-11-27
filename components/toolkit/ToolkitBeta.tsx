@@ -62,7 +62,7 @@ const FEATURES = [
 const STEPS = [
   { title: "Download", text: "The installer below, for Windows 10 and 11. No administrator rights needed." },
   { title: "Run it", text: "Windows may warn that it doesn't know the program: choose More info, then Run anyway." },
-  { title: "Sign in", text: "With your Excel to KML account, the one you use on this website." },
+  { title: "Sign in", text: "With your SurveyX Digital account, the one you use on this website." },
   { title: "Pick your tools", text: "Home shows what is on your PC. Install what you need; the rest is optional." },
 ];
 

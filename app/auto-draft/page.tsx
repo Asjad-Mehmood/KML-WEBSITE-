@@ -36,18 +36,18 @@ import {
   AUTO_DRAFT_STEPS,
   AUTO_DRAFT_VERSION,
 } from "@/lib/autoDraft";
-import { SITE_URL, jsonLd, openGraphFor } from "@/lib/site";
+import { SITE_URL, jsonLd, openGraphFor, companyTitle } from "@/lib/site";
 
 const TITLE = "Auto Drafting: survey points to a finished CAD drawing";
 const DESCRIPTION =
   "Free Windows program for surveyors: open the day's survey (CSV, Excel, Leica GSI, Sokkia SDR, Nikon RAW) and Auto Drafting joins the lines by their field codes, places the symbols, writes the levels, draws contours and saves a DXF for AutoCAD, a PDF on a sheet with your title block and a KML for Google Earth.";
 
 export const metadata: Metadata = {
-  title: TITLE,
+  title: companyTitle(TITLE),
   description: DESCRIPTION,
   alternates: { canonical: AUTO_DRAFT_PAGE },
   openGraph: {
-    ...openGraphFor(AUTO_DRAFT_PAGE, `${TITLE} | Excel to KML`, DESCRIPTION),
+    ...openGraphFor(AUTO_DRAFT_PAGE, `${TITLE} | SurveyX Digital`, DESCRIPTION),
     images: [{ url: AUTO_DRAFT_FILES.shots.contours.src, width: 1360, height: 860, alt: "Auto Drafting: a surveyed plot drawn from its field codes, with contours, on an A3 sheet" }],
   },
 };
@@ -277,7 +277,7 @@ export default function AutoDraftPage() {
               Free for Windows
             </h2>
             <p className="mt-2 max-w-3xl text-[15px] text-blue-100/85">
-              Sign in once with your free exceltokml.com account. Your surveys and drawings stay on your PC. Also in the Survey Toolkit, which installs it and keeps it up to date.
+              Sign in once with your free SurveyX Digital account. Your surveys and drawings stay on your PC. Also in the Survey Toolkit, which installs it and keeps it up to date.
             </p>
             <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="rounded-2xl border border-white/15 bg-white/5 p-6 flex flex-col">

@@ -13,7 +13,7 @@ export type TraverseControls = {
 };
 
 export const TL_CLOSED_TEXT = "Traverse & Level is closed for maintenance. Your jobs are safe; please try again later.";
-export const TL_BLOCKED_TEXT = "Traverse & Level is not available for this account. Write to us from exceltokml.com/contact if you think this is a mistake.";
+export const TL_BLOCKED_TEXT = "Traverse & Level is not available for this account. Write to us from surveyxdigital.com/contact if you think this is a mistake.";
 
 export const blockedIds = (csv: string) => csv.split(",").map((s) => s.trim()).filter(Boolean);
 

@@ -1,7 +1,7 @@
 {
-  "name": "Excel to KML — Survey Benchmark Converter",
-  "short_name": "Excel to KML",
-  "description": "Convert Excel & CSV survey coordinates to Google Earth KML, KMZ & DXF on 5,800+ EPSG grids.",
+  "name": "SurveyX Digital \u2014 Survey Software",
+  "short_name": "SurveyX Digital",
+  "description": "Free survey and engineering software: Excel to KML, RoadPro, Traverse & Level, Slope Calculator, Auto Drafting, Project Folder Manager and the Survey Toolkit.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

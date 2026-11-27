@@ -25,7 +25,9 @@ export async function GET(req: NextRequest) {
   const app = req.nextUrl.searchParams.get("app") || "";
   const start = WEB_WINDOW_START[app];
   if (!start) return NextResponse.json({ error: "Unknown program." }, { status: 400 });
-  const res = NextResponse.redirect(new URL(start, req.nextUrl.origin), 303);
+  // a relative address, so the window stays on the address it asked on: the old exceltokml.com
+  // passes this request on to the site and the Traverse & Level window keeps its data there
+  const res = new NextResponse(null, { status: 303, headers: { Location: start } });
   res.headers.set("Cache-Control", "no-store");
   res.headers.set("Referrer-Policy", "no-referrer");
   // the window is signed in already: that sign-in stays, and the code is left unused (it runs out)

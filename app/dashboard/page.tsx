@@ -11,12 +11,13 @@ import DashboardClient, { type DashboardData } from "./DashboardClient";
 import { appActivityFor, programVersionsFor } from "@/lib/appUsage";
 import { countOwn as countSlopeJobs } from "@/lib/slopeJobs";
 import { emailStatus, verificationActive } from "@/lib/emailVerify";
+import { companyTitle } from "@/lib/site";
 
 // Checked on every request: each visitor only ever sees their own account
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Your dashboard",
+  title: companyTitle("Your dashboard"),
   robots: { index: false, follow: false },
 };
 
