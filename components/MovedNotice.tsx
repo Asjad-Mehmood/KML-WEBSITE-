@@ -5,16 +5,26 @@ import { ArrowRight, X } from "lucide-react";
 
 // Someone who came from the old address: exceltokml.com sends every page to the same page here
 // with ?from=exceltokml (the Old-website-redirecting- repository). A short note says the site
-// has moved, and the address bar loses the ?from= so a copied link is clean.
+// has moved, and the address bar loses the ?from= so a copied link is clean. Only until
+// MOVED_NOTICE_UNTIL (five days); after that people arriving from the old address see the page only.
 const listeners = new Set<() => void>();
 let closed = false;
+
+/** The note shows for five days after the move (27 November 2026), then never again */
+export const MOVED_NOTICE_UNTIL = Date.parse("2026-12-02T23:59:59Z");
+
+// read once, when the page opens: the ?from= is taken off the address straight after
+let arrived: boolean | null = null;
 const fromOldSite = () => {
-  if (closed) return false;
-  try {
-    return new URLSearchParams(window.location.search).get("from") === "exceltokml";
-  } catch {
-    return false;
+  if (closed || Date.now() > MOVED_NOTICE_UNTIL) return false;
+  if (arrived === null) {
+    try {
+      arrived = new URLSearchParams(window.location.search).get("from") === "exceltokml";
+    } catch {
+      arrived = false;
+    }
   }
+  return arrived;
 };
 
 export default function MovedNotice() {
@@ -27,16 +37,17 @@ export default function MovedNotice() {
     () => false
   );
 
+  // the ?from= comes off the address in any case, also once the five days are over
   useEffect(() => {
-    if (!show) return;
     try {
       const u = new URL(window.location.href);
+      if (u.searchParams.get("from") !== "exceltokml") return;
       u.searchParams.delete("from");
       window.history.replaceState(window.history.state, "", u.pathname + u.search + u.hash);
     } catch {
       // the note still shows; the address keeps ?from=
     }
-  }, [show]);
+  }, []);
 
   if (!show) return null;
   const close = () => {

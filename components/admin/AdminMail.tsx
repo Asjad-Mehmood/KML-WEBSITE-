@@ -5,6 +5,7 @@
 // send yourself a test, see how many it reaches, then watch it go out (it carries on when this
 // page is closed) with pause, resume and stop.
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { MAIL_TEMPLATES, type MailTemplate } from "@/lib/mailTemplates";
 import { CheckCircle2, Eye, Loader2, Mail, Pause, Play, RefreshCw, Search, Send, Square, User, Users, X, AppWindow, Globe2, FlaskConical } from "lucide-react";
 
 type Audience = "one" | "selected" | "app" | "all";
@@ -132,6 +133,19 @@ export default function AdminMail({
   const [buttonLabel, setButtonLabel] = useState("");
   const [buttonUrl, setButtonUrl] = useState("");
   const draft = { subject, title, body, buttonLabel, buttonUrl };
+  const [template, setTemplate] = useState("");
+  // a template fills the email; what was typed is replaced only after a yes
+  const applyTemplate = (t: MailTemplate) => {
+    const typed = subject.trim() || title.trim() || body.trim();
+    if (typed && !window.confirm(`Replace what you wrote with "${t.label}"?`)) return;
+    setTemplate(t.id);
+    setSubject(t.subject);
+    setTitle(t.title);
+    setBody(t.body);
+    setButtonLabel(t.buttonLabel);
+    setButtonUrl(t.buttonUrl);
+    setPreview(null);
+  };
   const [busy, setBusy] = useState<"" | "preview" | "test" | "send">("");
   const [preview, setPreview] = useState<{ subject: string; html: string } | null>(null);
   const [confirming, setConfirming] = useState(false);
@@ -330,6 +344,27 @@ export default function AdminMail({
         {/* ---------------- what ---------------- */}
         <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 sm:p-5">
           <p className="text-sm font-bold text-white">2. The email</p>
+          <div className="mt-3">
+            <p className={label}>Start from a template</p>
+            <div className="mt-1 -mx-1 flex gap-2 overflow-x-auto px-1 pb-1 sm:flex-wrap sm:overflow-visible">
+              {MAIL_TEMPLATES.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => applyTemplate(t)}
+                  className={`shrink-0 rounded-xl border px-3 py-2 text-left cursor-pointer ${
+                    template === t.id ? "border-blue-500 bg-blue-600/15" : "border-slate-700 hover:bg-slate-800"
+                  }`}
+                >
+                  <span className="block text-[13px] font-semibold text-white">{t.label}</span>
+                  <span className="block text-[11.5px] text-slate-400">{t.hint}</span>
+                </button>
+              ))}
+            </div>
+            {template && template !== "blank" && /…/.test(subject + title + body) && (
+              <p className="mt-1.5 text-[12px] text-amber-300">Fill in the … before you send.</p>
+            )}
+          </div>
           <div className="mt-3 space-y-3">
             <div>
               <label className={label} htmlFor="mail-subject">Subject</label>
