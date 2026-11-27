@@ -62,7 +62,7 @@ Something not working? Reply to this email instead: we'd rather fix it than read
   {
     id: "update",
     label: "New versions",
-    hint: "What's new in the programs",
+    hint: "Pick a release: filled from its notes",
     subject: "New versions of our survey programs",
     title: "What's new",
     body: `New versions of … are out:

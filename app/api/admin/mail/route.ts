@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/adminAuth";
 import { logAdmin } from "@/lib/adminLog";
 import { kickMail } from "@/lib/broadcastRunner";
+import { prisma } from "@/lib/prisma";
+import { RELEASE_APPS, appById, ensureReleaseTables, importFromGitHub } from "@/lib/releases";
 import {
   type AudienceInput,
   type MailAudience,
@@ -24,6 +26,8 @@ import {
 //   POST {action:"preview", draft}                       the email's HTML, as {name} would be filled for the admin
 //   POST {action:"test", draft}                          a test copy to the admin
 //   POST {action:"send", draft, audience, userIds, app}  start sending
+//   POST {action:"releases"}                            the releases in Admin → Releases, newest first (New versions)
+//   POST {action:"import", app}                         add an app's GitHub releases first, then the same list
 //   PATCH {id, action: "pause" | "resume" | "stop"}
 export const dynamic = "force-dynamic";
 
@@ -62,6 +66,30 @@ export async function POST(req: NextRequest) {
   const b = ((await req.json().catch(() => null)) || {}) as Record<string, unknown>;
   const action = String(b.action || "");
   try {
+    if (action === "releases" || action === "import") {
+      if (action === "import") {
+        const app = String(b.app || "");
+        if (!appById(app)) return NextResponse.json({ error: "Choose the app." }, { status: 400 });
+        const r = await importFromGitHub(app);
+        await logAdmin(admin.user, "release.save", app, `Imported from GitHub for an email: ${r.added} added`, req);
+      }
+      await ensureReleaseTables();
+      const rows = await prisma.productRelease.findMany({ orderBy: { releasedAt: "desc" }, take: 300 });
+      return NextResponse.json({
+        apps: RELEASE_APPS.map((a) => ({ id: a.id, name: a.name })),
+        releases: rows.map((r) => ({
+          id: r.id,
+          app: r.app,
+          appName: appById(r.app)?.name || r.app,
+          version: r.version,
+          releasedAt: r.releasedAt.toISOString(),
+          title: r.title,
+          notes: r.notes,
+          link: r.link,
+          linkLabel: r.linkLabel,
+        })),
+      });
+    }
     if (action === "count") {
       const r = await countAudience(audienceOf(b));
       return "error" in r ? NextResponse.json(r, { status: 400 }) : NextResponse.json(r);
