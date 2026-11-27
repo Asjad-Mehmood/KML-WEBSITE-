@@ -10,15 +10,16 @@
 import { prisma } from "@/lib/prisma";
 import { NEVER_EMAIL } from "@/lib/releases";
 import { ADMIN_EMAIL } from "@/lib/adminRole";
+import { FREE_LIMITS } from "@/lib/plans";
 
 /** The goal: monthly active people before a paid plan */
 export const USAGE_GOAL = 1000;
 
-/** Example free limits: how many accounts would pass each one today */
-export const FREE_LIMITS = { savedJobs: 10, monthlyWork: 30, activeDays: 12 };
+/** The free plan's limits (lib/plans): how many accounts would pass each one today */
+export { FREE_LIMITS };
 
 /** What counts as work (not signing in or changing settings) */
-const WORK_ACTIONS = [
+export const WORK_ACTIONS = [
   "conversion", "export", "batch_process", "photos_attached", "project_save", "file_upload", "file_import", "drag_drop_import", "browser_export",
   "traverse", "levelling", "tl_open", "tl_update", "tl_share", "tl_simulation", "tl_import", "tl_export",
   "slope_new", "slope_update",

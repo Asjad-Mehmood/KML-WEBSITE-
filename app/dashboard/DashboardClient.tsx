@@ -41,6 +41,7 @@ import AppVersions from "@/components/AppVersions";
 import ConfirmEmailBanner from "@/components/ConfirmEmailBanner";
 import type { ProgramVersions } from "@/lib/appUsage";
 import ProgramsHub from "@/components/dashboard/ProgramsHub";
+import PlanCard from "@/components/dashboard/PlanCard";
 
 export interface DashboardData {
   user: {
@@ -551,6 +552,8 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
               usage: data.usage,
             }}
           />
+
+          <PlanCard />
 
           <h2 className="mt-10 text-[18px] font-bold tracking-tight text-slate-900">Your work</h2>
           <p className="text-[13px] text-slate-500">Jobs, files and points you keep in your account, and everything you did.</p>

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
 import { logTraverseActivity } from "@/lib/traverseActivity";
 import { traverseControls } from "@/lib/traverseControls";
+import { checkLimit } from "@/lib/billing";
 import { MAX_TRAVERSE_JOB_BYTES, countOwn, jobForDownload, jobInfo, ownerOf, remove, upsert } from "@/lib/traverseJobs";
 import { getAdminSession } from "@/lib/adminAuth";
 
@@ -60,6 +61,9 @@ export async function PUT(req: NextRequest, ctx: Ctx) {
   try {
     const owner = await ownerOf(id);
     if (owner && owner !== s.user.id) return NextResponse.json({ error: "This job belongs to someone else." }, { status: 403 });
+    // the free plan's job limit (only while the paid plans are switched on)
+    const plan = await checkLimit(s.user, "jobs:traverse", !owner);
+    if (!plan.ok) return NextResponse.json({ error: plan.error, limit: plan.meter, upgradeUrl: plan.upgradeUrl }, { status: 402 });
     if (!owner && (await countOwn(s.user.id)) >= allow.maxJobs) {
       return NextResponse.json({ error: `You can keep up to ${allow.maxJobs} jobs. Delete some old ones first.` }, { status: 409 });
     }

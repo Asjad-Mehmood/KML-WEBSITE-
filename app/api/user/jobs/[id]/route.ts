@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
 import { countJobs, deleteJob, getJob, jobFileResponse, putJob } from "@/lib/userJobs";
 import { surveySummary } from "@/lib/activityKinds";
+import { checkLimit } from "@/lib/billing";
 import { MAX_JOB_BYTES, MAX_USER_JOBS, MAX_USER_STORAGE_BYTES, formatBytes } from "@/lib/uploadLimits";
 
 const CORS_HEADERS = {
@@ -76,6 +77,9 @@ export async function PUT(req: NextRequest, ctx: Ctx) {
     try { parsed = JSON.parse(body.state); } catch { return json({ error: "state is not a job." }, 400); }
 
     const existing = await getJob(user.id, id);
+    // the free plan's job limit (only while the paid plans are switched on)
+    const plan = await checkLimit(user, "jobs:kml", !existing);
+    if (!plan.ok) return json({ error: plan.error, limit: plan.meter, upgradeUrl: plan.upgradeUrl }, 402);
     if (!existing && (await countJobs(user.id)) >= MAX_USER_JOBS) {
       return json({ error: `Your account already keeps ${MAX_USER_JOBS} jobs. Delete some to keep more.` }, 413);
     }

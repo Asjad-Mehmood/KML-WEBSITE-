@@ -7,6 +7,7 @@ import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
 import { WEB_APP_LOGIN_URL } from "@/lib/authRedirect";
 import { getExtraSettings } from "@/lib/siteSettings";
 import { appSourceToken, fetchAppSource } from "@/lib/appSource";
+import { checkLimit } from "@/lib/billing";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +31,8 @@ function withSiteSession(html: string, token: string, user: unknown, features: {
   return m ? html.slice(0, m.index + m[0].length) + tag + html.slice(m.index + m[0].length) : tag + html;
 }
 
-// The web app has no usage limits: every signed-in user gets all of it. What
+// Every signed-in user gets all of the web app (the only limit is the paid plans'
+// monthly one, checked in GET, and only while they are switched on). What
 // is injected here is the file vault, which saves each imported and exported
 // file to the user's account (Dashboard → Files).
 function withFileVault(html: string): string {
@@ -281,6 +283,24 @@ const MAINTENANCE_HTML = `<!doctype html>
 <p style="font-size:14px;color:#475569;line-height:1.5;margin:0">We'll be back shortly. The Windows app keeps working as usual.</p>
 </main></body></html>`;
 
+const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c] as string);
+
+/** The free plan's monthly limit is used up (only while the paid plans are switched on) */
+function limitHtml(text: string, upgradeUrl: string): string {
+  return `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Monthly limit reached — Excel to KML</title></head>
+<body style="margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:system-ui,-apple-system,sans-serif;background:#f8fafc;color:#0f172a">
+<main style="max-width:420px;padding:32px;text-align:center">
+<h1 style="font-size:20px;margin:0 0 8px">This month's free use is used up</h1>
+<p style="font-size:14px;color:#475569;line-height:1.55;margin:0 0 20px">${esc(text)} Your jobs and files stay in your account.</p>
+<p style="margin:0;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+<a href="${esc(upgradeUrl)}" target="_top" style="background:#0071e3;color:#fff;text-decoration:none;font-weight:600;font-size:14px;padding:10px 18px;border-radius:999px">See Pro</a>
+<a href="/dashboard" target="_top" style="color:#0f172a;text-decoration:none;font-weight:600;font-size:14px;padding:10px 18px;border-radius:999px;border:1px solid #cbd5e1">Your account</a>
+</p>
+</main></body></html>`;
+}
+
 /**
  * The app's page (about 5 MB): kept by the browser, and by the Survey Toolkit's window, and
  * checked on every open. While it is the same page for the same sign-in, the answer is "not
@@ -317,6 +337,15 @@ export async function GET(req: NextRequest) {
     return new NextResponse(MAINTENANCE_HTML, {
       status: 503,
       headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "Retry-After": "600" },
+    });
+  }
+
+  // the free plan's monthly limit (always passes while the paid plans are switched off)
+  const plan = await checkLimit(session.user, "monthlyWork");
+  if (!plan.ok) {
+    return new NextResponse(limitHtml(plan.error, plan.upgradeUrl), {
+      status: 402,
+      headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" },
     });
   }
 
