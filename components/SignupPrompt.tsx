@@ -16,7 +16,10 @@ const COUNT_KEY = "kml.signup.dismissed";
 const PAGES_KEY = "kml.visit.pages";
 const SHOWN_KEY = "kml.signup.shown";
 
-const QUIET = ["/login", "/register", "/forgot-password", "/reset-password", "/dashboard", "/admin", "/app", "/link", "/app-signin", "/welcome", "/unsubscribe", "/review"];
+// the sign-in and sign-up pages: never shown there, and once one has been opened, not shown
+// for the rest of the visit (they already went to sign in themselves)
+const AUTH_PAGES = ["/login", "/register", "/signin", "/signup", "/app-signin", "/verify-email", "/forgot-password", "/reset-password"];
+const QUIET = [...AUTH_PAGES, "/dashboard", "/admin", "/app", "/link", "/welcome", "/unsubscribe", "/review"];
 
 const store = {
   get(k: string, s: Storage | undefined) { try { return s?.getItem(k) ?? null; } catch { return null; } },
@@ -41,8 +44,19 @@ export default function SignupPrompt() {
   const [show, setShow] = useState(false);
   const fired = useRef(false);
 
-  const quiet = QUIET.some((p) => path === p || path.startsWith(`${p}/`));
+  const under = (list: string[]) => list.some((p) => path === p || path.startsWith(`${p}/`));
+  const quiet = under(QUIET);
+  const onAuthPage = under(AUTH_PAGES);
   const allowed = !isLoading && !user && settings?.signupPrompt !== false && settings !== null && !quiet;
+
+  // went to sign in by themselves (a sign-in page, or the sign-in window opened from the menu or
+  // a download) before the invitation was due: none later in this visit
+  useEffect(() => {
+    if (onAuthPage || (authModalOpen && !fired.current)) {
+      fired.current = true;
+      store.set(SHOWN_KEY, "1", ss());
+    }
+  }, [onAuthPage, authModalOpen]);
 
   // pages viewed in this visit
   useEffect(() => {
