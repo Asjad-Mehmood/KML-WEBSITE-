@@ -5,14 +5,14 @@
 // even then, unless BILLING_IN_PRODUCTION=1 is set too. While it is off, every check answers
 // "allowed" and nothing about plans shows anywhere: the site behaves exactly as before.
 //
-// Payments: no provider is wired in yet. Until one is, Pro is given by an admin
-// (Admin → Usage → Plans), and the pricing page asks people to write to us. A provider (for
-// example Paddle, Lemon Squeezy or Stripe) only has to call setPlan() from
-// its webhook, with provider and providerRef set.
+// Payments: Paddle (lib/paddle.ts), once its settings are in Vercel. Its webhook
+// (/api/billing/paddle) keeps each subscription here up to date. Until Paddle is set up, and for
+// anyone paying another way, an admin gives Pro (Admin → Usage → Paid plans).
 import { prisma } from "@/lib/prisma";
 import { isAdminUser } from "@/lib/adminRole";
 import { PLANS, limitText, UPGRADE_PATH, type Meter, type PlanId } from "@/lib/plans";
 import { WORK_ACTIONS } from "@/lib/usageStats";
+import { paddleReady, type PaddleSubscription } from "@/lib/paddle";
 
 export function billingEnabled(): boolean {
   if (process.env.BILLING_ENABLED !== "1") return false;
@@ -20,9 +20,9 @@ export function billingEnabled(): boolean {
   return true;
 }
 
-/** A payment provider is set up (none is yet: Pro is given by an admin) */
+/** Paddle is set up, so people can pay online */
 export function checkoutReady(): boolean {
-  return false;
+  return paddleReady();
 }
 
 let ready: Promise<void> | null = null;
@@ -46,6 +46,11 @@ function ensureTable(): Promise<void> {
         ALTER TABLE "subscriptions" ADD CONSTRAINT "subscriptions_userId_fkey" FOREIGN KEY ("userId")
           REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
       EXCEPTION WHEN duplicate_object THEN NULL; END $$`);
+      // the payment provider's customer (for its billing page), and the time of the last event
+      // applied, so an older event arriving late never undoes a newer one
+      await prisma.$executeRawUnsafe(`ALTER TABLE "subscriptions" ADD COLUMN IF NOT EXISTS "customerRef" TEXT NOT NULL DEFAULT ''`);
+      await prisma.$executeRawUnsafe(`ALTER TABLE "subscriptions" ADD COLUMN IF NOT EXISTS "eventAt" TIMESTAMP(3)`);
+      await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "subscriptions_providerRef_idx" ON "subscriptions"("providerRef")`);
     })().catch((e) => {
       ready = null;
       throw e;
@@ -61,16 +66,23 @@ export type Subscription = {
   periodEnd: string | null;
   provider: string;
   providerRef: string;
+  customerRef: string;
   note: string;
   updatedBy: string;
   updatedAt: string;
 };
 
-type Row = Omit<Subscription, "periodEnd" | "updatedAt" | "plan"> & { plan: string; periodEnd: Date | null; updatedAt: Date };
+type Row = Omit<Subscription, "periodEnd" | "updatedAt" | "plan"> & { plan: string; periodEnd: Date | null; updatedAt: Date; eventAt?: Date | null; createdAt?: Date };
 const toSub = (r: Row): Subscription => ({
-  ...r,
+  userId: r.userId,
   plan: r.plan === "pro" ? "pro" : "free",
+  status: r.status,
   periodEnd: r.periodEnd ? new Date(r.periodEnd).toISOString() : null,
+  provider: r.provider,
+  providerRef: r.providerRef,
+  customerRef: r.customerRef ?? "",
+  note: r.note,
+  updatedBy: r.updatedBy,
   updatedAt: new Date(r.updatedAt).toISOString(),
 });
 
@@ -97,15 +109,24 @@ export async function planOf(user: Who): Promise<PlanId> {
 export async function setPlan(
   userId: string,
   plan: PlanId,
-  opts: { periodEnd?: Date | null; status?: string; provider?: string; providerRef?: string; note?: string; by?: string } = {}
+  opts: {
+    periodEnd?: Date | null;
+    status?: string;
+    provider?: string;
+    providerRef?: string;
+    customerRef?: string;
+    note?: string;
+    by?: string;
+    eventAt?: Date | null;
+  } = {}
 ): Promise<Subscription> {
   await ensureTable();
   const rows = await prisma.$queryRawUnsafe<Row[]>(
-    `INSERT INTO "subscriptions" ("userId", "plan", "status", "periodEnd", "provider", "providerRef", "note", "updatedBy", "updatedAt")
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, now())
+    `INSERT INTO "subscriptions" ("userId", "plan", "status", "periodEnd", "provider", "providerRef", "note", "updatedBy", "customerRef", "eventAt", "updatedAt")
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, now())
      ON CONFLICT ("userId") DO UPDATE SET "plan" = EXCLUDED."plan", "status" = EXCLUDED."status", "periodEnd" = EXCLUDED."periodEnd",
        "provider" = EXCLUDED."provider", "providerRef" = EXCLUDED."providerRef", "note" = EXCLUDED."note",
-       "updatedBy" = EXCLUDED."updatedBy", "updatedAt" = now()
+       "updatedBy" = EXCLUDED."updatedBy", "customerRef" = EXCLUDED."customerRef", "eventAt" = EXCLUDED."eventAt", "updatedAt" = now()
      RETURNING *`,
     userId,
     plan,
@@ -114,9 +135,63 @@ export async function setPlan(
     opts.provider ?? "manual",
     (opts.providerRef ?? "").slice(0, 200),
     (opts.note ?? "").slice(0, 500),
-    (opts.by ?? "").slice(0, 200)
+    (opts.by ?? "").slice(0, 200),
+    (opts.customerRef ?? "").slice(0, 200),
+    opts.eventAt ?? null
   );
   return toSub(rows[0]);
+}
+
+/** Days of Pro kept past the end of a paid period, while the renewal goes through */
+const RENEWAL_GRACE_DAYS = 3;
+/** Days of Pro kept while Paddle retries a card that was declined */
+const PAST_DUE_GRACE_DAYS = 7;
+
+/**
+ * A subscription event from Paddle's webhook. The account comes from the checkout's custom data
+ * (userId), or else from the subscription already on file. Returns what was done, for the log.
+ */
+export async function applyPaddleSubscription(sub: PaddleSubscription, occurredAt: string): Promise<string> {
+  await ensureTable();
+  let userId = typeof sub.custom_data?.userId === "string" ? sub.custom_data.userId : "";
+  if (!userId) {
+    const r = await prisma.$queryRawUnsafe<{ userId: string }[]>(`SELECT "userId" FROM "subscriptions" WHERE "providerRef" = $1 LIMIT 1`, sub.id);
+    userId = r[0]?.userId ?? "";
+  }
+  if (!userId) return `no account for ${sub.id}`;
+  const exists = await prisma.$queryRawUnsafe<{ id: string }[]>(`SELECT "id" FROM "users" WHERE "id" = $1`, userId);
+  if (!exists[0]) return `account ${userId} not found`;
+
+  const when = new Date(occurredAt);
+  const at = Number.isNaN(when.getTime()) ? new Date() : when;
+  const cur = await prisma.$queryRawUnsafe<{ eventAt: Date | null; provider: string; providerRef: string }[]>(
+    `SELECT "eventAt", "provider", "providerRef" FROM "subscriptions" WHERE "userId" = $1`,
+    userId
+  );
+  // an older event than the one already applied to this same subscription: nothing to do
+  if (cur[0]?.eventAt && cur[0].providerRef === sub.id && new Date(cur[0].eventAt) > at) return "older event, skipped";
+
+  const ends = sub.current_billing_period?.ends_at ? new Date(sub.current_billing_period.ends_at) : null;
+  const plus = (d: Date | null, days: number) => (d ? new Date(d.getTime() + days * 864e5) : null);
+  const interval = sub.items?.[0]?.price?.billing_cycle?.interval;
+  const base = { provider: "paddle", providerRef: sub.id, customerRef: sub.customer_id || "", eventAt: at, by: "paddle" };
+
+  if (sub.status === "active" || sub.status === "trialing") {
+    const cancelling = sub.scheduled_change?.action === "cancel";
+    await setPlan(userId, "pro", {
+      ...base,
+      periodEnd: plus(ends, RENEWAL_GRACE_DAYS),
+      note: `${interval === "year" ? "Yearly" : "Monthly"}${cancelling ? ", cancelled: ends with this period" : ""}`,
+    });
+    return `pro until ${ends?.toISOString().slice(0, 10) ?? "?"}`;
+  }
+  if (sub.status === "past_due") {
+    await setPlan(userId, "pro", { ...base, status: "active", periodEnd: plus(ends ?? new Date(), PAST_DUE_GRACE_DAYS), note: "Payment failed: Paddle is retrying the card" });
+    return "past due, grace";
+  }
+  // canceled, paused: back to Free (anything kept stays in the account)
+  await setPlan(userId, "free", { ...base, status: sub.status, periodEnd: null, note: sub.status === "paused" ? "Paused" : "Cancelled" });
+  return `free (${sub.status})`;
 }
 
 export async function listSubscriptions(): Promise<(Subscription & { name: string; email: string; active: boolean })[]> {
@@ -194,6 +269,8 @@ export async function planSummary(user: Who) {
     limits: PLANS[plan].limits,
     used,
     checkout: checkoutReady(),
+    /** paying through Paddle: it has a page to change the card, see invoices or cancel */
+    manage: plan === "pro" && sub?.provider === "paddle" && Boolean(sub.customerRef),
     upgradeUrl: UPGRADE_PATH,
   };
 }

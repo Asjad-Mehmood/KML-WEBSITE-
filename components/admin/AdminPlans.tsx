@@ -11,6 +11,7 @@ type Data = {
   enabled: boolean;
   production: boolean;
   checkout: boolean;
+  paddle: { env: "sandbox" | "production"; missing: string[] };
   plans: { free: Plan; pro: Plan };
   prices: { monthly: number; yearly: number; currency: string };
   pro: Sub[];
@@ -93,8 +94,16 @@ export default function AdminPlans({ adminFetch }: { adminFetch: (url: string, o
         {data.enabled
           ? "Free accounts are held to the limits below in the web apps; Pro and admins are not. "
           : "Nobody is limited and the pricing page doesn't exist. To try it, set BILLING_ENABLED=1 in a preview or on your computer; the live site also needs BILLING_IN_PRODUCTION=1. "}
-        {data.checkout ? "Payments are taken online." : "No payment provider yet: people ask for Pro from the contact page and you give it here."}
+        {data.checkout
+          ? `Payments are taken online by Paddle (${data.paddle.env === "sandbox" ? "sandbox: test cards, no real money" : "live"}). You can still give Pro here to anyone who pays another way.`
+          : "Paddle isn't set up yet: people ask for Pro from the contact page and you give it here."}
       </p>
+      {!data.checkout && data.paddle.missing.length > 0 && (
+        <p className="mt-2 text-[11.5px] text-amber-200/90">
+          For Paddle, add in Vercel: {data.paddle.missing.join(", ")}
+          {data.paddle.env === "sandbox" ? " (and PADDLE_ENV=production for real payments)" : ""}.
+        </p>
+      )}
 
       <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
         <div className="rounded-xl border border-[var(--adm-line)] p-3">

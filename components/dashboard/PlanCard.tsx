@@ -13,6 +13,7 @@ type Summary =
       periodEnd: string | null;
       limits: Record<Meter, number | null>;
       used: Record<Meter, number>;
+      manage?: boolean;
       upgradeUrl: string;
     };
 
@@ -22,17 +23,44 @@ const METERS: Meter[] = ["monthlyWork", "jobs:kml", "jobs:traverse", "jobs:slope
 // Shows nothing while the paid plans are switched off (lib/billing).
 export default function PlanCard() {
   const [s, setS] = useState<Summary | null>(null);
+  const [opening, setOpening] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  // back from Paddle's checkout (?upgraded=1): Paddle tells the site within a few seconds
+  const [justPaid] = useState(() => typeof window !== "undefined" && new URLSearchParams(window.location.search).has("upgraded"));
 
   useEffect(() => {
     let live = true;
-    fetch("/api/billing/me", { cache: "no-store" })
-      .then((r) => (r.ok ? r.json() : { enabled: false }))
-      .then((d) => live && setS(d))
-      .catch(() => live && setS({ enabled: false }));
+    let tries = 0;
+    const load = () =>
+      fetch("/api/billing/me", { cache: "no-store" })
+        .then((r) => (r.ok ? r.json() : { enabled: false }))
+        .then((d: Summary) => {
+          if (!live) return;
+          setS(d);
+          // still Free just after paying: look again a few times
+          if (justPaid && d.enabled && d.plan === "free" && tries++ < 6) setTimeout(load, 5000);
+        })
+        .catch(() => live && setS({ enabled: false }));
+    void load();
     return () => {
       live = false;
     };
-  }, []);
+  }, [justPaid]);
+
+  const manage = async () => {
+    setOpening(true);
+    setErr(null);
+    try {
+      const r = await fetch("/api/billing/portal", { method: "POST" });
+      const d = await r.json().catch(() => ({}));
+      if (d.url) window.location.href = d.url;
+      else setErr(d.error || "The billing page couldn't be opened.");
+    } catch {
+      setErr("No connection. Try again in a moment.");
+    } finally {
+      setOpening(false);
+    }
+  };
 
   if (!s || !s.enabled) return null;
   const pro = s.plan === "pro";
@@ -45,8 +73,13 @@ export default function PlanCard() {
           Your plan: {pro ? "Pro" : "Free"}
         </h2>
         {pro ? (
-          <span className="text-[13px] text-slate-500">
-            {s.periodEnd ? `Until ${new Date(s.periodEnd).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}` : "No limits"}
+          <span className="flex items-center gap-3 text-[13px] text-slate-500">
+            {s.periodEnd ? `Renews or ends by ${new Date(s.periodEnd).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}` : "No limits"}
+            {s.manage && (
+              <button type="button" onClick={() => void manage()} disabled={opening} className="rounded-full border border-slate-300 px-3.5 py-1.5 font-semibold text-slate-900 hover:bg-slate-50 cursor-pointer disabled:opacity-60">
+                {opening ? "Opening…" : "Manage billing"}
+              </button>
+            )}
           </span>
         ) : (
           <Link href={s.upgradeUrl} className="rounded-full bg-[#0071e3] px-4 py-2 text-[13px] font-semibold text-white hover:bg-[#0062c4]">
@@ -54,6 +87,12 @@ export default function PlanCard() {
           </Link>
         )}
       </div>
+      {justPaid && (
+        <p role="status" className="mt-3 rounded-xl bg-emerald-50 px-3 py-2 text-[13px] text-emerald-800">
+          {pro ? "Thank you! Pro is on: no limits in the web apps." : "Thank you! Your payment is going through; Pro turns on in a moment."}
+        </p>
+      )}
+      {err && <p role="alert" className="mt-3 text-[13px] text-red-600">{err}</p>}
       {!pro && (
         <ul className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
           {METERS.map((m) => {

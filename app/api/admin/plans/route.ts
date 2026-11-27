@@ -4,6 +4,7 @@ import { logAdmin } from "@/lib/adminLog";
 import { db } from "@/lib/db";
 import { billingEnabled, checkoutReady, listSubscriptions, setPlan } from "@/lib/billing";
 import { PLANS, PRICES } from "@/lib/plans";
+import { paddleEnv, paddleMissing } from "@/lib/paddle";
 
 // Admin → Usage → Plans: whether the paid plans are on, who is on Pro, and giving or taking Pro
 export const dynamic = "force-dynamic";
@@ -16,6 +17,7 @@ export async function GET(req: NextRequest) {
         enabled: billingEnabled(),
         production: process.env.VERCEL_ENV === "production",
         checkout: checkoutReady(),
+        paddle: { env: paddleEnv(), missing: paddleMissing() },
         plans: PLANS,
         prices: PRICES,
         pro: await listSubscriptions(),

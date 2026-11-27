@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
 import { billingEnabled, checkoutReady, planOf } from "@/lib/billing";
+import { paddleConfig } from "@/lib/paddle";
 
 // POST { interval: "monthly" | "yearly" }: start paying for Pro.
-// No payment provider is wired in yet, so the answer is where to ask for Pro instead
-// (an admin gives it from Admin → Usage → Plans). A provider's checkout link goes here.
+// With Paddle set up: what the page needs to open Paddle's checkout, with this account's id as
+// custom data (the webhook gives Pro to that account). Without it: where to ask for Pro instead.
 export async function POST(req: NextRequest) {
   if (!billingEnabled()) return NextResponse.json({ error: "Not found." }, { status: 404 });
   const s = await sessionForToken(tokenFromRequest(req));
@@ -15,5 +16,15 @@ export async function POST(req: NextRequest) {
   if (!checkoutReady()) {
     return NextResponse.json({ manual: true, url: `/contact?topic=business&program=website&plan=pro-${interval}` });
   }
-  return NextResponse.json({ error: "Checkout isn't available yet." }, { status: 503 });
+  const c = paddleConfig();
+  return NextResponse.json({
+    paddle: {
+      environment: c.env,
+      token: c.clientToken,
+      priceId: c.prices[interval],
+      email: s.user.email,
+      customData: { userId: s.user.id },
+      successUrl: "/dashboard?upgraded=1",
+    },
+  });
 }

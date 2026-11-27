@@ -8,6 +8,43 @@ import type { Plan, PRICES } from "@/lib/plans";
 
 type Prices = typeof PRICES;
 
+type PaddleCheckout = {
+  environment: "sandbox" | "production";
+  token: string;
+  priceId: string;
+  email: string;
+  customData: Record<string, string>;
+  successUrl: string;
+};
+type PaddleJs = {
+  Environment: { set: (env: string) => void };
+  Initialize: (o: { token: string }) => void;
+  Checkout: { open: (o: unknown) => void };
+};
+
+// Paddle.js, loaded once, only when someone presses Upgrade
+let paddleLoad: Promise<PaddleJs> | null = null;
+function loadPaddle(cfg: PaddleCheckout): Promise<PaddleJs> {
+  paddleLoad ??= new Promise<PaddleJs>((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = "https://cdn.paddle.com/paddle/v2/paddle.js";
+    s.async = true;
+    s.onload = () => {
+      const P = (window as unknown as { Paddle?: PaddleJs }).Paddle;
+      if (!P) return reject(new Error("Paddle didn't load"));
+      if (cfg.environment === "sandbox") P.Environment.set("sandbox");
+      P.Initialize({ token: cfg.token });
+      resolve(P);
+    };
+    s.onerror = () => reject(new Error("Paddle didn't load"));
+    document.head.appendChild(s);
+  }).catch((e) => {
+    paddleLoad = null;
+    throw e;
+  });
+  return paddleLoad;
+}
+
 // The two plans on /pricing, with a monthly / yearly choice and the button to upgrade
 export default function PricingPlans({ free, pro, prices }: { free: Plan; pro: Plan; prices: Prices }) {
   const { user, setAuthModalMode, setAuthModalOpen, setAuthIntentText } = useAuth();
@@ -31,10 +68,19 @@ export default function PricingPlans({ free, pro, prices }: { free: Plan; pro: P
         body: JSON.stringify({ interval: yearly ? "yearly" : "monthly" }),
       });
       const data = await res.json().catch(() => ({}));
-      if (data.url) window.location.href = data.url;
+      if (data.paddle) {
+        const cfg = data.paddle as PaddleCheckout;
+        const Paddle = await loadPaddle(cfg);
+        Paddle.Checkout.open({
+          items: [{ priceId: cfg.priceId, quantity: 1 }],
+          customer: { email: cfg.email },
+          customData: cfg.customData,
+          settings: { displayMode: "overlay", theme: "light", successUrl: new URL(cfg.successUrl, window.location.origin).href },
+        });
+      } else if (data.url) window.location.href = data.url;
       else setMsg(data.error || "Something went wrong. Try again in a moment.");
     } catch {
-      setMsg("No connection. Try again in a moment.");
+      setMsg("The payment window couldn't open. Check your connection and try again.");
     } finally {
       setBusy(false);
     }
