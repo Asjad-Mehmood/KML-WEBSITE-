@@ -33,7 +33,7 @@ export const normVersion = (v: string) => String(v || "").trim().replace(/^v(?=\
 /** The products published as GitHub releases: Admin → Releases can import them */
 const GITHUB_REPOS: Record<string, string> = {
   traverse: "Asjad-Mehmood/Traiverse",
-  slope: "Asjad-Mehmood/Slope-calculator-",
+  slope: "Asjad-Mehmood/slope-calculator-releases",
   "auto-draft": "Asjad-Mehmood/auto-draft-app",
   "folder-manager": "Asjad-Mehmood/Project-manager",
   toolkit: "Asjad-Mehmood/Survey-Toolkit",

@@ -1,5 +1,5 @@
 // Slope Calculator: slope, gradient and the level at every chainage, for surveyors and site
-// engineers. A Flutter app built and released from Asjad-Mehmood/Slope-calculator-: a Windows
+// engineers. A Flutter app built from Asjad-Mehmood/Slope-calculator- and released from Asjad-Mehmood/slope-calculator-releases: a Windows
 // program (installer on its GitHub releases, updates itself) and the same app on the web at
 // /slope-calculation/app (public/slope-calculation/app, made there with tool/web_build.sh; don't
 // edit those files here). Calculations are kept in the exceltokml.com account (lib/slopeJobs.ts).
@@ -11,8 +11,8 @@ export const SLOPE_RELEASED = "2026-11-11";
 export const SLOPE_PAGE = "/slope-calculation";
 export const SLOPE_APP = "/slope-calculation/app";
 
-export const SLOPE_RELEASES = "https://github.com/Asjad-Mehmood/Slope-calculator-/releases";
-export const SLOPE_RELEASES_API = "https://api.github.com/repos/Asjad-Mehmood/Slope-calculator-/releases/latest";
+export const SLOPE_RELEASES = "https://github.com/Asjad-Mehmood/slope-calculator-releases/releases";
+export const SLOPE_RELEASES_API = "https://api.github.com/repos/Asjad-Mehmood/slope-calculator-releases/releases/latest";
 export const SLOPE_INSTALLER = "SlopeCalculator-Setup.exe";
 
 export const SLOPE_FILES = {

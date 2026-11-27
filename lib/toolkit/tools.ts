@@ -134,7 +134,7 @@ export const TOOLKIT_TOOLS: ToolkitTool[] = [
     webApp: "/slope-calculation/app",
     source: {
       kind: "installer",
-      repo: "Asjad-Mehmood/Slope-calculator-",
+      repo: "Asjad-Mehmood/slope-calculator-releases",
       installer: "SlopeCalculator-Setup.exe",
       registryKey: "SlopeCalculator",
       exe: ["SlopeCalculator.exe"],
