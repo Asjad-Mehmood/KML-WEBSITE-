@@ -37,6 +37,7 @@ export const REVIEW_APPS = [
   { id: "auto-draft", name: "Auto Drafting", release: "auto-draft" },
   { id: "roadpro", name: "RoadPro", release: "roadpro" },
   { id: "project-folder-manager", name: "Project Folder Manager", release: "folder-manager" },
+  { id: "toolkit", name: "Survey Toolkit", release: "toolkit" },
 ];
 const NAME: Record<string, string> = Object.fromEntries(REVIEW_APPS.map((a) => [a.id, a.name]));
 const STATUS_TAG: Record<Status, string> = {
