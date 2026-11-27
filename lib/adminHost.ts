@@ -1,4 +1,4 @@
-// Admin on an address of its own (ADMIN_HOST, e.g. admin.exceltokml.com).
+// Admin on an address of its own (ADMIN_HOST, e.g. admin.surveyxdigital.com).
 //
 // With ADMIN_HOST set:
 // - the admin pages and APIs answer only there; on the public site /admin goes there and the
@@ -13,7 +13,7 @@
 /** Sessions made on the admin address start with this */
 export const ADMIN_SESSION_PREFIX = "sess_adm_";
 
-/** The admin address in lower case ("admin.exceltokml.com"), or null while admin is on the main site */
+/** The admin address in lower case ("admin.surveyxdigital.com"), or null while admin is on the main site */
 export function adminHost(): string | null {
   const h = (process.env.ADMIN_HOST || "").trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "");
   return h || null;

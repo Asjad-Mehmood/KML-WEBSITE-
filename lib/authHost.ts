@@ -1,4 +1,4 @@
-// Sign-in on an address of its own (NEXT_PUBLIC_AUTH_HOST, e.g. auth.exceltokml.com).
+// Sign-in on an address of its own (NEXT_PUBLIC_AUTH_HOST, e.g. auth.surveyxdigital.com).
 //
 // With it set:
 // - the sign-in pages (/login, /register, /forgot-password, /reset-password, /verify-email) and
@@ -17,7 +17,7 @@
 
 import { dashboardHost } from "./dashboardHost";
 
-/** The sign-in address in lower case ("auth.exceltokml.com"), or null while sign-in is on the main site */
+/** The sign-in address in lower case ("auth.surveyxdigital.com"), or null while sign-in is on the main site */
 export function authHost(): string | null {
   const h = (process.env.NEXT_PUBLIC_AUTH_HOST || "").trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "");
   return h || null;
@@ -31,7 +31,7 @@ export function onAuthHost(headers: Headers): boolean {
   return !!auth && bare(headers.get("host") || "") === bare(auth);
 }
 
-/** The sign-in address as an origin ("https://auth.exceltokml.com"); `proto` as the request's */
+/** The sign-in address as an origin ("https://auth.surveyxdigital.com"); `proto` as the request's */
 export function authOrigin(proto = "https:"): string {
   return `${proto}//${authHost()}`;
 }
