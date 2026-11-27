@@ -145,7 +145,9 @@ export default function PricingPlans({ free, pro, prices }: { free: Plan; pro: P
         </div>
       </div>
       <p className="mt-6 text-sm text-slate-500 max-w-2xl">
-        Prices in {prices.currency}. Reaching a limit never deletes anything: your jobs and files stay in your account, ready to open and download.
+        Prices in {prices.currency}, plus sales tax or VAT where it applies. Payments are handled by Paddle, our reseller. Cancel any time;
+        a full refund within 14 days (<Link href="/refund-policy" className="underline hover:text-slate-700">refund policy</Link>). Reaching a
+        limit never deletes anything: your jobs and files stay in your account, ready to open and download.
       </p>
     </section>
   );

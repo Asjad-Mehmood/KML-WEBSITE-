@@ -11,7 +11,7 @@ import { SITE_URL } from "@/lib/site";
 export const dynamic = "force-dynamic";
 
 /** The refund policy page, once there is one (Paddle asks for it before going live) */
-const REFUND_POLICY_PATH: string | null = null;
+const REFUND_POLICY_PATH: string | null = "/refund-policy";
 
 type Check = { id: string; label: string; state: "ok" | "warn" | "bad" | "off"; detail: string; fix?: string };
 

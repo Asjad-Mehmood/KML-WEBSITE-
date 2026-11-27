@@ -71,6 +71,13 @@ export default function TermsPage() {
         running, but we can&apos;t promise it will always be available or free of errors.
       </p>
 
+      <h2>Pro</h2>
+      <p>
+        Pro, the paid plan for the web apps, is billed monthly or yearly through our reseller Paddle.com, the Merchant of Record for all
+        our orders, and renews until you cancel. You can cancel any time; refunds are described in our{" "}
+        <Link href="/refund-policy">Refund Policy</Link>.
+      </p>
+
       <h2>Other services</h2>
       <p>
         Maps come from Esri and OpenStreetMap, and output files are made for Google Earth and other GIS software. Those are separate

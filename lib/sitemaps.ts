@@ -51,6 +51,7 @@ export function priorityEntries(): Entry[] {
     ...GUIDES.map((g) => page(`/guides/${g.slug}`, 0.7, "monthly", g.published)),
     page("/privacy", 0.2, "yearly"),
     page("/terms", 0.2, "yearly"),
+    page("/refund-policy", 0.2, "yearly"),
   ];
 }
 
