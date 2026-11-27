@@ -150,6 +150,7 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
             <Link href="/contact" className="inline-block py-1.5 sm:py-0 hover:text-blue-600 transition-colors">Contact</Link>
             <Link href="/privacy" className="inline-block py-1.5 sm:py-0 hover:text-blue-600 transition-colors">Privacy</Link>
             <Link href="/terms" className="inline-block py-1.5 sm:py-0 hover:text-blue-600 transition-colors">Terms</Link>
+            <Link href="/refund-policy" className="inline-block py-1.5 sm:py-0 hover:text-blue-600 transition-colors">Refunds</Link>
             {FACEBOOK_URL && (
               <a
                 href={FACEBOOK_URL}

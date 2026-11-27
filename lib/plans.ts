@@ -1,8 +1,8 @@
 // The plans for the web apps (Excel to KML, Traverse & Level, Slope Calculator): what each one
 // allows, and its price. Safe to import from the browser: no database, no secrets.
 //
-// Nothing here is enforced unless the paid plans are switched on (lib/billing billingEnabled):
-// off by default, and off on the live site unless BILLING_IN_PRODUCTION=1 is set as well.
+// Nothing here is enforced unless the limits are switched on in Admin → Payments (lib/billingConfig),
+// where the free limits and the prices shown are set too; the numbers here are only the defaults.
 
 export type PlanId = "free" | "pro";
 
@@ -18,20 +18,26 @@ export type Plan = {
   points: string[];
 };
 
-/** Prices in US dollars. Placeholders: set the real ones before the plans go live. */
-export const PRICES = { monthly: 6, yearly: 60, currency: "USD" } as const;
+/** Prices in US dollars (defaults: Admin → Payments sets the ones shown) */
+export const PRICES = { monthly: 6, yearly: 60, currency: "USD" };
+export type Prices = { monthly: number; yearly: number; currency: string };
+
+/** What the free plan gives, in words, for these limits */
+export function freePoints(work: number, jobs: number): string[] {
+  return [
+    `${work} conversions, exports and calculations a month`,
+    `${jobs} jobs kept in your account in each app`,
+    "Every grid, every format",
+    "The Windows programs",
+  ];
+}
 
 export const PLANS: Record<PlanId, Plan> = {
   free: {
     id: "free",
     name: "Free",
     limits: { monthlyWork: 30, "jobs:kml": 10, "jobs:traverse": 10, "jobs:slope": 10 },
-    points: [
-      "30 conversions, exports and calculations a month",
-      "10 jobs kept in your account in each app",
-      "Every grid, every format",
-      "The Windows programs",
-    ],
+    points: freePoints(30, 10),
   },
   pro: {
     id: "pro",

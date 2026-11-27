@@ -4,7 +4,6 @@
 // before a paid plan, who uses them most, and how many would pass example free limits.
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Gauge, Loader2, RefreshCw, Target, TrendingUp, Users } from "lucide-react";
-import AdminPlans from "./AdminPlans";
 
 type Person = {
   id: string;
@@ -204,7 +203,6 @@ export default function AdminUsage({ adminFetch }: { adminFetch: (url: string, o
         )}
       </section>
 
-      <AdminPlans adminFetch={adminFetch} />
     </div>
   );
 }

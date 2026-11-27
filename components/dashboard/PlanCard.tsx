@@ -14,6 +14,7 @@ type Summary =
       limits: Record<Meter, number | null>;
       used: Record<Meter, number>;
       manage?: boolean;
+      enforced?: boolean;
       upgradeUrl: string;
     };
 
@@ -124,7 +125,13 @@ export default function PlanCard() {
           })}
         </ul>
       )}
-      {!pro && <p className="mt-4 text-[12.5px] text-slate-500">Work this month starts again on the 1st. Reaching a limit never deletes your jobs or files.</p>}
+      {!pro && (
+        <p className="mt-4 text-[12.5px] text-slate-500">
+          {s.enforced === false
+            ? "These limits aren't applied yet: everything still works as before."
+            : "Work this month starts again on the 1st. Reaching a limit never deletes your jobs or files."}
+        </p>
+      )}
     </section>
   );
 }

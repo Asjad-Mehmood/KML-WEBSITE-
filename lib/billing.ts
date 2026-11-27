@@ -1,28 +1,57 @@
 // Paid plans for the web apps: who is on which plan, how much they have used, and whether a
 // limit stops them. Server only.
 //
-// SWITCHED OFF unless BILLING_ENABLED=1. On the live site (Vercel production) it stays off
-// even then, unless BILLING_IN_PRODUCTION=1 is set too. While it is off, every check answers
-// "allowed" and nothing about plans shows anywhere: the site behaves exactly as before.
+// Switched on and off in Admin → Payments (lib/billingConfig.ts): everything starts OFF, and
+// while the limits are off every check answers "allowed": the site behaves exactly as before.
+// BILLING_FORCE_OFF=1 in Vercel is the emergency stop for all of it.
 //
-// Payments: Paddle (lib/paddle.ts), once its settings are in Vercel. Its webhook
-// (/api/billing/paddle) keeps each subscription here up to date. Until Paddle is set up, and for
-// anyone paying another way, an admin gives Pro (Admin → Usage → Paid plans).
+// Payments: Paddle (lib/paddle.ts), once its settings are in Vercel and online payments are
+// switched on. Its webhook (/api/billing/paddle) keeps each subscription here up to date. For
+// anyone paying another way, an admin gives Pro (Admin → Payments).
 import { prisma } from "@/lib/prisma";
 import { isAdminUser } from "@/lib/adminRole";
-import { PLANS, limitText, UPGRADE_PATH, type Meter, type PlanId } from "@/lib/plans";
+import { limitText, UPGRADE_PATH, type Meter, type PlanId } from "@/lib/plans";
+import { billingConfig, devOn, forcedOff, type BillingConfig } from "@/lib/billingConfig";
 import { WORK_ACTIONS } from "@/lib/usageStats";
 import { paddleReady, type PaddleSubscription } from "@/lib/paddle";
 
-export function billingEnabled(): boolean {
-  if (process.env.BILLING_ENABLED !== "1") return false;
-  if (process.env.VERCEL_ENV === "production" && process.env.BILLING_IN_PRODUCTION !== "1") return false;
-  return true;
+/** What is switched on right now (Admin → Payments, the emergency stop and BILLING_ENABLED for development) */
+export async function billingState(cfg?: BillingConfig) {
+  const c = cfg ?? (await billingConfig());
+  const off = forcedOff();
+  const dev = devOn();
+  const limits = !off && (c.limits || dev);
+  return {
+    config: c,
+    forcedOff: off,
+    dev,
+    /** free accounts are held to the limits */
+    limits,
+    /** the pricing page and Upgrade buttons show */
+    pricing: !off && (limits || c.pricing || dev),
+    /** people can pay online (switched on, and Paddle's settings are all there) */
+    checkout: !off && (c.checkout || dev) && paddleReady(),
+    freeLimits: freeLimitsOf(c),
+  };
 }
 
-/** Paddle is set up, so people can pay online */
-export function checkoutReady(): boolean {
-  return paddleReady();
+export function freeLimitsOf(c: BillingConfig): Record<Meter, number> {
+  return { monthlyWork: c.freeWork, "jobs:kml": c.freeJobs, "jobs:traverse": c.freeJobs, "jobs:slope": c.freeJobs };
+}
+
+/** Free accounts are held to the limits */
+export async function billingEnabled(): Promise<boolean> {
+  return (await billingState()).limits;
+}
+
+/** The pricing page shows */
+export async function pricingVisible(): Promise<boolean> {
+  return (await billingState()).pricing;
+}
+
+/** People can pay online with Paddle */
+export async function checkoutReady(): Promise<boolean> {
+  return (await billingState()).checkout;
 }
 
 let ready: Promise<void> | null = null;
@@ -243,11 +272,12 @@ export type LimitCheck =
  * for Pro. `adding` is false when an existing job is only being saved again (never stopped).
  */
 export async function checkLimit(user: Who, meter: Meter, adding = true): Promise<LimitCheck> {
-  if (!billingEnabled() || !adding) return { ok: true };
+  if (!adding) return { ok: true };
   try {
+    const state = await billingState();
+    if (!state.limits) return { ok: true };
     if ((await planOf(user)) === "pro") return { ok: true };
-    const limit = PLANS.free.limits[meter];
-    if (limit == null) return { ok: true };
+    const limit = state.freeLimits[meter];
     const used = (await usageOf(user.id))[meter];
     if (used < limit) return { ok: true };
     return { ok: false, meter, limit, used, error: limitText(meter, limit), upgradeUrl: UPGRADE_PATH };
@@ -260,15 +290,20 @@ export async function checkLimit(user: Who, meter: Meter, adding = true): Promis
 
 /** The account's plan and usage, for the dashboard and the apps */
 export async function planSummary(user: Who) {
-  if (!billingEnabled()) return { enabled: false as const };
+  const state = await billingState();
+  // shown once the pricing is out, even before the limits are on
+  if (!state.pricing) return { enabled: false as const };
   const [plan, sub, used] = await Promise.all([planOf(user), getSubscription(user.id), usageOf(user.id)]);
+  const none: Record<Meter, null> = { monthlyWork: null, "jobs:kml": null, "jobs:traverse": null, "jobs:slope": null };
   return {
     enabled: true as const,
+    /** the limits are applied (otherwise they are only shown) */
+    enforced: state.limits,
     plan,
     periodEnd: plan === "pro" && sub ? sub.periodEnd : null,
-    limits: PLANS[plan].limits,
+    limits: plan === "pro" ? none : state.freeLimits,
     used,
-    checkout: checkoutReady(),
+    checkout: state.checkout,
     /** paying through Paddle: it has a page to change the card, see invoices or cancel */
     manage: plan === "pro" && sub?.provider === "paddle" && Boolean(sub.customerRef),
     upgradeUrl: UPGRADE_PATH,
