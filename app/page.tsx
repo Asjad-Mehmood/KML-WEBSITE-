@@ -24,10 +24,10 @@ async function heroOf() {
 export async function generateMetadata(): Promise<Metadata> {
   if ((await heroOf().catch(() => "new")) === "toolkit") {
     return {
-      title: { absolute: `${TOOLKIT_TITLE} | Excel to KML` },
+      title: { absolute: `${TOOLKIT_TITLE} | SurveyX Digital` },
       description: TOOLKIT_DESCRIPTION,
       alternates: { canonical: "/" },
-      openGraph: openGraphFor("/", `${TOOLKIT_TITLE} | Excel to KML`, TOOLKIT_DESCRIPTION),
+      openGraph: openGraphFor("/", `${TOOLKIT_TITLE} | SurveyX Digital`, TOOLKIT_DESCRIPTION),
     };
   }
   return { alternates: { canonical: "/" }, openGraph: openGraphFor("/", DEFAULT_TITLE, SITE_DESCRIPTION) };

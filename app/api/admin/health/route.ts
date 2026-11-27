@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
   try {
     await sendMail({
       to: session.user.email,
-      subject: "Excel to KML: test email",
+      subject: "SurveyX Digital: test email",
       text: `This is a test from Admin → Settings → System health.\n\nIf you're reading it, the site can send email: download thank-yous, password resets and admin sign-in codes will arrive.\n\n${SITE_URL}`,
       html: `<p>This is a test from <strong>Admin → Settings → System health</strong>.</p><p>If you're reading it, the site can send email: download thank-yous, password resets and admin sign-in codes will arrive.</p><p><a href="${SITE_URL}">${SITE_URL}</a></p>`,
     });

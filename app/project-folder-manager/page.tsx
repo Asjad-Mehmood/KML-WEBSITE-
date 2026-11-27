@@ -31,18 +31,18 @@ import {
   PFM_REQUIREMENTS,
   PFM_VERSION,
 } from "@/lib/folderManager";
-import { SITE_URL, jsonLd, openGraphFor } from "@/lib/site";
+import { SITE_URL, jsonLd, openGraphFor, companyTitle } from "@/lib/site";
 
 const TITLE = "Project Folder Manager for Windows";
 const DESCRIPTION =
   "One screen for your project's master folder: every module from Admin to Archive by discipline, instant search, copy, move and bulk rename, and drive space. Free for Windows.";
 
 export const metadata: Metadata = {
-  title: TITLE,
+  title: companyTitle(TITLE),
   description: DESCRIPTION,
   alternates: { canonical: "/project-folder-manager" },
   openGraph: {
-    ...openGraphFor("/project-folder-manager", `${TITLE} | Excel to KML`, DESCRIPTION),
+    ...openGraphFor("/project-folder-manager", `${TITLE} | SurveyX Digital`, DESCRIPTION),
     images: [{ url: PFM_FILES.shots.main.src, width: PFM_FILES.shots.main.width, height: PFM_FILES.shots.main.height, alt: "Project Folder Manager: the project's eleven modules by discipline" }],
   },
 };

@@ -51,18 +51,18 @@ import {
   ROADPRO_STEPS,
   ROADPRO_VERSION,
 } from "@/lib/roadpro";
-import { SITE_URL, jsonLd, openGraphFor } from "@/lib/site";
+import { SITE_URL, jsonLd, openGraphFor, companyTitle } from "@/lib/site";
 
 const TITLE = "RoadPro: Road Builder Plugin for AutoCAD";
 const DESCRIPTION =
   "Build a complete road in AutoCAD from one centre line: edges, turning radius, barricades, signs, junctions, roundabouts, cross sections, widening and an Excel report. Free download.";
 
 export const metadata: Metadata = {
-  title: TITLE,
+  title: companyTitle(TITLE),
   description: DESCRIPTION,
   alternates: { canonical: "/roadpro" },
   openGraph: {
-    ...openGraphFor("/roadpro", `${TITLE} | Excel to KML`, DESCRIPTION),
+    ...openGraphFor("/roadpro", `${TITLE} | SurveyX Digital`, DESCRIPTION),
     images: [{ url: "/roadpro/demo-cover.webp", width: 1280, height: 720, alt: "RoadPro road built in AutoCAD with barricades, lane arrows and chainage" }],
   },
 };

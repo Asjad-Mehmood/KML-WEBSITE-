@@ -1,6 +1,6 @@
 import React from "react";
 import { FAQS, HOME_FAQS, faqHighlights } from "@/lib/faqs";
-import { FACEBOOK_URL, GITHUB_REPO_URL, INSTALLER_URL, LATEST_VERSION, SITE_DESCRIPTION, SITE_NAME, SITE_URL, jsonLd } from "@/lib/site";
+import { APP_NAME, FACEBOOK_URL, GITHUB_REPO_URL, INSTALLER_URL, LATEST_VERSION, SITE_DESCRIPTION, SITE_NAME, SITE_URL, jsonLd } from "@/lib/site";
 
 // Schema.org JSON-LD. Everything here must match what the page visibly shows:
 // no made-up ratings or reviews, and FAQ answers come from the same data as the FAQ section.
@@ -25,6 +25,7 @@ export function HomeStructuredData() {
             url: SITE_URL,
             logo: { "@type": "ImageObject", url: `${SITE_URL}/assets/icon-512.png`, width: 512, height: 512 },
             founder: { "@type": "Person", name: "Asjad Mehmood" },
+            alternateName: "Excel to KML",
             sameAs: [GITHUB_REPO_URL, ...(FACEBOOK_URL ? [FACEBOOK_URL] : [])],
           },
           {
@@ -39,7 +40,7 @@ export function HomeStructuredData() {
           {
             "@type": "SoftwareApplication",
             "@id": `${SITE_URL}/#software`,
-            name: SITE_NAME,
+            name: APP_NAME,
             description: SITE_DESCRIPTION,
             url: SITE_URL,
             applicationCategory: "BusinessApplication",

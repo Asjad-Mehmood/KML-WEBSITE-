@@ -781,7 +781,7 @@ function openReport(title: string, body: string) {
     .pass{color:#157A45;font-weight:700} .fail{color:#B5302F;font-weight:700} .note{color:#5A6E77;font-size:11px}
     .sign{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px} .sign div{border:1px solid #E2E8F0;padding:8px 10px;height:64px}
     @media print{body{margin:12mm} button{display:none}}
-  </style></head><body>${body}<p class="note">Worked out at exceltokml.com/tools/traverse-adjustment.</p>
+  </style></head><body>${body}<p class="note">Worked out at surveyxdigital.com/tools/traverse-adjustment.</p>
   <h2>Sign-off</h2><div class="sign"><div><b>Computed by</b></div><div><b>Checked by</b></div><div><b>Approved by</b></div></div>
   <script>setTimeout(function(){window.print()},300)<\/script></body></html>`);
   w.document.close();

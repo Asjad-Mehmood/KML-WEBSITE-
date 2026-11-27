@@ -21,7 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: TOOLKIT_TITLE,
     description: TOOLKIT_DESCRIPTION,
     alternates: { canonical },
-    openGraph: openGraphFor(canonical, `${TOOLKIT_TITLE} | Excel to KML`, TOOLKIT_DESCRIPTION),
+    openGraph: openGraphFor(canonical, `${TOOLKIT_TITLE} | SurveyX Digital`, TOOLKIT_DESCRIPTION),
   };
 }
 

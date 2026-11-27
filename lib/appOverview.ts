@@ -534,7 +534,7 @@ export async function programExtras(id: string, days: number) {
       ? safe(
           (async () => {
             const r = await fetch(`https://api.github.com/repos/${release.github}/releases?per_page=10`, {
-              headers: { Accept: "application/vnd.github+json", "User-Agent": "exceltokml.com" },
+              headers: { Accept: "application/vnd.github+json", "User-Agent": "surveyxdigital.com" },
               next: { revalidate: 900 },
               signal: AbortSignal.timeout(4000),
             });

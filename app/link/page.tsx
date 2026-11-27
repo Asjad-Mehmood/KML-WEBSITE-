@@ -5,9 +5,10 @@ import AuthShell from "../../components/AuthShell";
 import { sessionForToken } from "@/lib/serverSession";
 import { normCode } from "@/lib/deviceLink";
 import LinkForm from "./LinkForm";
+import { companyTitle } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Sign in an app with a code",
+  title: companyTitle("Sign in an app with a code"),
   robots: { index: false, follow: false },
 };
 

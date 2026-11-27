@@ -1,6 +1,6 @@
 # Rebrand: Excel to KML → SurveyX Digital
 
-Status: **planned, not started** (agreed in principle on 2026-11-23). Update the checklist below
+Status: **in progress** (decided 2026-11-27; see "Decided" below). Update the checklist below
 as phases land, and keep this file the single source of truth for the rebrand.
 
 ## 1. The decision
@@ -14,12 +14,25 @@ as phases land, and keep this file the single source of truth for the rebrand.
 - **The domain stays exceltokml.com for now.** Its search ranking for "excel to kml" and
   "convert excel to kml" brings most visitors; moving it is Phase 6 and optional.
 
+### Decided (owner, 2026-11-27)
+- **Domain: www.surveyxdigital.com.** The website moves there. exceltokml.com becomes a separate
+  "we've moved" site (its own repository, made by the owner) that sends every page to the same page
+  on surveyxdigital.com. It must keep forwarding `/api/*` and the web-app paths (`/app`,
+  `/traverse/app`, `/slope-calculation/app`, `/get/toolkit`, `/api/toolkit/*`) to the new site,
+  because every installed program still talks to `www.exceltokml.com` until its next version.
+- **Copyright and owner: SurveyX Digital** (© 2026 SurveyX Digital) in the website and every program.
+- **Excel to KML is only the name of one program**; the company, the account, the emails and the
+  publisher are SurveyX Digital. Excel to KML's own pages and search pages keep "| Excel to KML".
+- **Logo: the owner sends the file.** Until then the site keeps the current icon.
+- Account and support emails stay as they are (`admin@exceltokml.com` is the admin account's
+  identity: never change it); the sender name in `MAIL_FROM` becomes "SurveyX Digital".
+
 ### Still to decide (ask the owner before starting each)
 - [ ] The logo: owner's file, or one designed here (navy `#071a44` + yellow `#ffd21f`, a mark
       built from a survey crosshair/"X")
-- [ ] Whether the new domain is bought (`surveyxdigital.com`?) and when
+- [x] The new domain: surveyxdigital.com (bought)
 - [ ] The support/sender email for mail (e.g. `hello@surveyxdigital.com` or keep `@exceltokml.com`)
-- [ ] The legal owner name in copyrights (today "Asjad Mehmood" in the Windows resources)
+- [x] The legal owner name in copyrights: SurveyX Digital
 
 ## 2. Rules that must not break
 
@@ -144,8 +157,8 @@ each app repo.
 
 ## 6. Progress
 - [ ] Phase 0 Brand kit
-- [ ] Phase 1 Website brand layer
-- [ ] Phase 2 Emails
+- [~] Phase 1 Website brand layer (text, titles, legal, structured data done; logo waits for the file)
+- [~] Phase 2 Emails (templates done; owner sets MAIL_FROM)
 - [ ] Phase 3 Survey Toolkit
 - [ ] Phase 4 Other programs (Excel to KML · Traverse · Slope · Auto Drafting · Folder Manager · RoadPro)
 - [ ] Phase 5 Outside the code (owner)

@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: { params: Promise<{ app: stri
   const title = `${app.name}: What's New`;
   const description = `What changed in each version of ${app.name}.`;
   const path = `/whats-new/${app.slug}`;
-  return { title, description, alternates: { canonical: path }, openGraph: openGraphFor(path, `${title} | Excel to KML`, description) };
+  return { title, description, alternates: { canonical: path }, openGraph: openGraphFor(path, `${title} | SurveyX Digital`, description) };
 }
 
 const day = (iso: string) => new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });

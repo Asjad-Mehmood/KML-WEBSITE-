@@ -51,14 +51,14 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
           <div className="col-span-2 md:col-span-4 lg:col-span-2 space-y-3.5">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center shadow-xs">
-                <Image src="/assets/icon.png" alt="Excel to KML — Geomatics Coordinate Software" width={20} height={20} className="object-contain" />
+                <Image src="/assets/icon.png" alt="SurveyX Digital" width={20} height={20} className="object-contain" />
               </div>
               <span className="text-base font-bold text-slate-900">
-                Excel to KML
+                SurveyX Digital
               </span>
             </div>
             <p className="text-xs sm:text-sm text-slate-500 leading-relaxed max-w-[320px]">
-              Free survey and engineering software: Excel to KML, RoadPro, Traverse &amp; Level, Slope Calculator and Project Folder Manager.
+              Free survey and engineering software by SurveyX Digital: Excel to KML, RoadPro, Traverse &amp; Level, Slope Calculator and Project Folder Manager.
             </p>
             <Link href="/#download" className="inline-flex items-center gap-1.5 py-1 text-xs sm:text-sm font-semibold text-[#0071e3] hover:underline">
               Every download in one place <ArrowRight className="w-3.5 h-3.5" aria-hidden />
@@ -143,7 +143,7 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
         {/* Bottom Copyright Strip */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <p className="text-center sm:text-left">
-            Copyright &copy; {new Date().getFullYear()} Excel to KML. All rights reserved.
+            Copyright &copy; {new Date().getFullYear()} SurveyX Digital. All rights reserved.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-slate-600">
             <Link href="/#download" className="inline-block py-1.5 sm:py-0 hover:text-blue-600 transition-colors">Downloads</Link>
@@ -155,7 +155,7 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
                 href={FACEBOOK_URL}
                 target="_blank"
                 rel="noopener noreferrer me"
-                aria-label="Excel to KML on Facebook"
+                aria-label="SurveyX Digital on Facebook"
                 className="inline-flex items-center gap-1.5 py-1.5 sm:py-0 hover:text-blue-600 transition-colors"
               >
                 <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="currentColor" aria-hidden>

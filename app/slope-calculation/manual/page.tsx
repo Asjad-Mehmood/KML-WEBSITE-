@@ -4,7 +4,7 @@ import Link from "next/link";
 import { BookOpen, Download, FileSpreadsheet, FileText } from "lucide-react";
 import PageShell from "../../../components/PageShell";
 import { SLOPE_APP, SLOPE_FILES, SLOPE_PAGE, SLOPE_VERSION } from "@/lib/slope";
-import { openGraphFor } from "@/lib/site";
+import { openGraphFor, companyTitle } from "@/lib/site";
 
 // The Slope Calculator user manual. scripts/slope-manual-pdf.mjs prints this page to
 // public/slope-calculation/Slope-Calculator-User-Manual.pdf; the screenshots come from the app's
@@ -15,10 +15,10 @@ const DESCRIPTION =
   "How to use Slope Calculator: sign in, enter levels and chainages, read the slope, gradient and chainage levels, fill the project plate, export Excel, PDF and CSV, crossfall, the digital level run, the optical trainer, saved calculations and offline use, with worked examples.";
 
 export const metadata: Metadata = {
-  title: TITLE,
+  title: companyTitle(TITLE),
   description: DESCRIPTION,
   alternates: { canonical: SLOPE_FILES.manual.href },
-  openGraph: openGraphFor(SLOPE_FILES.manual.href, `${TITLE} | Excel to KML`, DESCRIPTION),
+  openGraph: openGraphFor(SLOPE_FILES.manual.href, `${TITLE} | SurveyX Digital`, DESCRIPTION),
 };
 
 const SECTIONS = [
@@ -116,7 +116,7 @@ export default function SlopeManualPage() {
           </div>
           <p className="mt-4 max-w-2xl text-blue-50/90">
             Slope, gradient and the level at every chainage, with crossfall, a digital level run, an optical level trainer and professional reports. For
-            surveyors and site engineers, in the browser and on Windows. By Excel to KML.
+            surveyors and site engineers, in the browser and on Windows. By SurveyX Digital.
           </p>
           <div className="mt-6 flex flex-wrap gap-3 print:hidden">
             <a href={SLOPE_FILES.manual.pdf} download={SLOPE_FILES.manual.pdfName} className="inline-flex items-center gap-2 rounded-full bg-[#ffd21f] px-5 py-2.5 text-[15px] font-extrabold text-[#071a44] hover:bg-[#ffdc4d]">
@@ -153,7 +153,7 @@ export default function SlopeManualPage() {
         </ul>
         <h3 className="mt-6 font-bold text-slate-900">Signing in</h3>
         <p>
-          The app opens on the sign-in. Use your free <strong>Excel to KML account</strong>, the same one as exceltokml.com and Traverse &amp; Level, or create one:
+          The app opens on the sign-in. Use your free <strong>SurveyX Digital account</strong>, the same one as this website and Traverse &amp; Level, or create one:
         </p>
         <ul className="list-disc pl-6">
           <li><strong>Sign in</strong> with your email and password.</li>
@@ -348,12 +348,12 @@ export default function SlopeManualPage() {
         <H2 id="help">13. Questions and fixes</H2>
         <dl className="space-y-4">
           {[
-            ["Windows says it protected my PC", "The program isn't code-signed yet. Choose More info, then Run anyway. Download it only from exceltokml.com; the product page shows its SHA-256."],
+            ["Windows says it protected my PC", "The program isn't code-signed yet. Choose More info, then Run anyway. Download it only from surveyxdigital.com; the product page shows its SHA-256."],
             ["The email code didn't arrive", "Look in Spam or Junk, then press Send a new code. Codes are valid for a short time; the newest one counts."],
             ["The app says it can't reach exceltokml.com", "You are offline or the connection is blocked. The calculator, reports and tools keep working once you have signed in; saving waits and is sent later."],
             ["I want my calculations on another device", "Save them under Saved, then sign in with the same account on the other device and open them."],
             ["The text is too small or too large", "Use A− / A+ at the top or Settings → Text size; the app also follows your computer's or phone's text size."],
-            ["How do I uninstall it?", "Windows Settings → Apps → Slope Calculator → Uninstall. Your account and saved calculations stay on exceltokml.com."],
+            ["How do I uninstall it?", "Windows Settings → Apps → Slope Calculator → Uninstall. Your account and saved calculations stay on surveyxdigital.com."],
           ].map(([q, a]) => (
             <div key={q} className="break-inside-avoid">
               <dt className="font-bold text-slate-900">{q}</dt>
@@ -363,7 +363,7 @@ export default function SlopeManualPage() {
         </dl>
         <p className="mt-8 text-[13.5px] text-slate-500">
           Questions or ideas? <Link href="/contact?topic=question&program=slope" className="text-[#1e4fd8] underline">Write to us</Link>. Slope Calculator {SLOPE_VERSION} · ©
-          2026 Excel to KML.
+          2026 SurveyX Digital.
         </p>
 
         <div className="mt-10 flex flex-wrap gap-3 print:hidden">

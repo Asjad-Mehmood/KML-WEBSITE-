@@ -5,16 +5,16 @@ import ContactForm from "../../components/ContactForm";
 import PageShell from "../../components/PageShell";
 import PageIntro from "../../components/PageIntro";
 import { BreadcrumbStructuredData } from "../../components/StructuredData";
-import { SUPPORT_EMAIL, openGraphFor } from "@/lib/site";
+import { SUPPORT_EMAIL, openGraphFor, companyTitle } from "@/lib/site";
 
 const TITLE = "Contact & Support";
 const DESCRIPTION = "Send us a message about Excel to KML, RoadPro, Traverse & Level or Project Folder Manager: questions, problems, requests or ideas. We reply by email, usually within one to two working days.";
 
 export const metadata: Metadata = {
-  title: TITLE,
+  title: companyTitle(TITLE),
   description: DESCRIPTION,
   alternates: { canonical: "/contact" },
-  openGraph: openGraphFor("/contact", `${TITLE} | Excel to KML`, DESCRIPTION),
+  openGraph: openGraphFor("/contact", `${TITLE} | SurveyX Digital`, DESCRIPTION),
 };
 
 export default function ContactPage() {

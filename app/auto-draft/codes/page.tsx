@@ -15,17 +15,17 @@ import {
   AUTO_DRAFT_POINT_CODES,
   type AutoDraftCode,
 } from "@/lib/autoDraft";
-import { openGraphFor } from "@/lib/site";
+import { openGraphFor, companyTitle } from "@/lib/site";
 
 const TITLE = "Auto Drafting code guide: field codes for survey drawings";
 const DESCRIPTION =
   "How to code a topographic survey for Auto Drafting: line codes and numbers (RE1, WL2), the control words ST, END, CLS, RECT, ARC and EARC, and every line and point code with its layer, colour, line type, symbol and how it is used for contours.";
 
 export const metadata: Metadata = {
-  title: TITLE,
+  title: companyTitle(TITLE),
   description: DESCRIPTION,
   alternates: { canonical: AUTO_DRAFT_CODES_PAGE },
-  openGraph: openGraphFor(AUTO_DRAFT_CODES_PAGE, `${TITLE} | Excel to KML`, DESCRIPTION),
+  openGraph: openGraphFor(AUTO_DRAFT_CODES_PAGE, `${TITLE} | SurveyX Digital`, DESCRIPTION),
 };
 
 const CONTOURS: Record<AutoDraftCode["contours"], { label: string; cls: string }> = {

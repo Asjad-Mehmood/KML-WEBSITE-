@@ -4,9 +4,10 @@ import PageIntro from "../../components/PageIntro";
 import UnsubscribeForm from "./UnsubscribeForm";
 import { verifyUnsubscribeToken } from "@/lib/releaseEmail";
 import { isOptedOut } from "@/lib/releases";
+import { companyTitle } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Release emails",
+  title: companyTitle("Release emails"),
   robots: { index: false, follow: false },
 };
 

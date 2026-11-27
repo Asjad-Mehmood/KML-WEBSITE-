@@ -33,7 +33,7 @@ type GhRelease = { tag_name: string; name: string | null; body: string | null; p
 async function githubReleases(repo: string): Promise<GhRelease[] | null> {
   try {
     const r = await fetch(`https://api.github.com/repos/${repo}/releases?per_page=30`, {
-      headers: { Accept: "application/vnd.github+json", "User-Agent": "exceltokml.com" },
+      headers: { Accept: "application/vnd.github+json", "User-Agent": "surveyxdigital.com" },
       next: { revalidate: 900 },
       signal: AbortSignal.timeout(5000),
     });

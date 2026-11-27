@@ -27,7 +27,7 @@ export function destination(next: string): string {
   if (p.startsWith("/slope-calculation/app")) return "the Slope Calculator";
   if (p.startsWith("/link") || p.startsWith("/app-signin")) return "your program";
   if (p.startsWith("/download") || p.startsWith("/toolkit")) return "your download";
-  if (p === "/") return "Excel to KML";
+  if (p === "/") return "SurveyX Digital";
   return "where you were";
 }
 
@@ -283,13 +283,13 @@ export function AuthCard({ children }: { children: React.ReactNode }) {
       <div className="w-full max-w-[440px] overflow-hidden rounded-[28px] border border-slate-200/70 bg-white px-6 py-9 shadow-[0_24px_60px_-20px_rgba(7,26,68,0.18)] sm:px-10">
         <div className="mb-6 flex justify-center">
           <span className="flex h-11 w-11 items-center justify-center rounded-[13px] bg-[#071a44]">
-            <Image src="/assets/icon.png" alt="Excel to KML" width={26} height={26} className="object-contain" priority />
+            <Image src="/assets/icon.png" alt="SurveyX Digital" width={26} height={26} className="object-contain" priority />
           </span>
         </div>
         {children}
       </div>
       <p className="mt-6 flex items-center gap-1.5 text-[12px] text-slate-500">
-        <Lock className="w-3.5 h-3.5" aria-hidden /> Secure sign-in · Excel to KML
+        <Lock className="w-3.5 h-3.5" aria-hidden /> Secure sign-in · SurveyX Digital
       </p>
       <style>{`
         .si-in { animation: si-in .32s cubic-bezier(.2,.7,.2,1) both; }

@@ -50,7 +50,7 @@ const PROGRAMS: Record<string, { intro: string; sources: { label: string; href: 
     note: "Every Survey Toolkit reports its PC, its version and the apps on it: the PCs below are all of them. Below the page are the accounts, every PC, every event and the testers.",
   },
   "auto-draft": {
-    intro: "Survey points to a finished drawing: the Windows program with its installer, released on GitHub. Signed in with the exceltokml.com account; each drawing saved (DXF, PDF, KML) is in Activity.",
+    intro: "Survey points to a finished drawing: the Windows program with its installer, released on GitHub. Signed in with the SurveyX Digital account; each drawing saved (DXF, PDF, KML) is in Activity.",
     sources: [
       { label: "Auto Drafting Setup", href: "https://github.com/Asjad-Mehmood/auto-draft-app/releases/latest", detail: "The installer on GitHub, linked from /auto-draft" },
       { label: "Its page", href: "/auto-draft", detail: "Where people download it from the site, with the code guide" },

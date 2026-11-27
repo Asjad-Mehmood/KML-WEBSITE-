@@ -154,7 +154,7 @@ async function twoFactorNotice(to: string, on: boolean, ip: string, ua: string |
     ? "Browsers new to admin must enter a 6-digit code emailed to you again."
     : "Admin sign-in is now password only: no emailed code is asked for.";
   const text = [
-    `Two-factor sign-in for Excel to KML admin was ${state}.`,
+    `Two-factor sign-in for SurveyX Digital admin was ${state}.`,
     what,
     "",
     `When: ${when}`,
@@ -169,7 +169,7 @@ async function twoFactorNotice(to: string, on: boolean, ip: string, ua: string |
   <p style="margin:0 0 16px;color:#555;font-size:13px">When: ${when}<br>From: ${where.replace(/&/g, "&amp;").replace(/</g, "&lt;")}</p>
   <p style="color:#b42318;font-size:13px">If this wasn't you, <a href="${SITE_URL}/forgot-password">change your admin password now</a> and switch it back in Admin → Settings → Security.</p>
 </div>`;
-  await sendMail({ to, subject: `Excel to KML admin: two-factor sign-in ${state}`, text, html }).catch((e) =>
+  await sendMail({ to, subject: `SurveyX Digital admin: two-factor sign-in ${state}`, text, html }).catch((e) =>
     console.error("Couldn't send the two-factor notice:", e)
   );
 }

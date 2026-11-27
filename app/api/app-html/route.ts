@@ -49,7 +49,7 @@ function withFileVault(html: string): string {
       } else {
         var savedApi = localStorage.getItem("surveyor_api_url");
         if (savedApi && savedApi !== "http://localhost:3000") base = savedApi.replace(/\\/+$/, "");
-        else if (window.location.hostname === "www.exceltokml.com" || window.location.hostname === "exceltokml.com") base = "";
+        else if (/(^|\.)(surveyxdigital|exceltokml)\.com$/.test(window.location.hostname)) base = "";
         else base = "https://www.exceltokml.com";
       }
 

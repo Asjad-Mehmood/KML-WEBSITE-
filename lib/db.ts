@@ -246,7 +246,7 @@ async function seedDefaultUsersIfEmpty(): Promise<void> {
         email: "admin@exceltokml.com",
         passwordHash: adminHash,
         salt: adminSalt,
-        organization: "Excel to KML Core Team",
+        organization: "SurveyX Digital",
         role: "ADMIN",
         downloadCount: 0,
         hasFullAccess: true,

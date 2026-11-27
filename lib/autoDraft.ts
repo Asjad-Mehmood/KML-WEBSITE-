@@ -1,6 +1,6 @@
 // Auto Drafting: field-coded survey points to a finished CAD drawing. A Windows program (Flutter)
 // built and released from Asjad-Mehmood/auto-draft-app: the installer is on its GitHub releases
-// and the program updates itself. Used with the exceltokml.com account (sign-in, activity), like
+// and the program updates itself. Used with the SurveyX Digital account (sign-in, activity), like
 // Slope Calculator. The code tables below follow docs/CODES.md in that repository (made there from
 // the app's own code list); keep them the same when the default codes change.
 
@@ -99,7 +99,7 @@ export const AUTO_DRAFT_STEPS: { title: string; text: string }[] = [
 ];
 
 export const AUTO_DRAFT_FAQ: { q: string; a: string }[] = [
-  { q: "Is it free?", a: "Yes. You sign in with a free exceltokml.com account (the same one as Excel to KML, Traverse & Level and Slope Calculator) the first time you open it; create one in a minute with your email or Google." },
+  { q: "Is it free?", a: "Yes. You sign in with a free SurveyX Digital account (the same one as Excel to KML, Traverse & Level and Slope Calculator) the first time you open it; create one in a minute with your email or Google." },
   { q: "Do my survey files go to the internet?", a: "No. Your points, drawings and code lists stay on your PC. The app only signs you in and notes each file you save: its name, its kind (DXF, PDF or KML) and how many points and lines it has, so we know how the program is used." },
   { q: "Does it work offline?", a: "Yes, after the first sign-in. It remembers you and opens without a connection." },
   { q: "Which CAD programs open the DXF?", a: "AutoCAD and AutoCAD LT (any version), Civil 3D, BricsCAD, ZWCAD, DraftSight, QGIS and Global Mapper. It is a DXF R12 file, the version every program reads." },

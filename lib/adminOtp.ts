@@ -162,7 +162,7 @@ function codeEmail(code: string, ip: string, ua: string | null) {
   const when = new Date().toUTCString();
   const where = `${browserLabel(ua)}${ip !== "unknown" ? `, IP ${ip}` : ""}`;
   const text = [
-    `Your Excel to KML admin sign-in code is ${code}`,
+    `Your SurveyX Digital admin sign-in code is ${code}`,
     "",
     `It works for ${CODE_MINUTES} minutes and only once.`,
     `Requested: ${when}`,
@@ -179,7 +179,7 @@ function codeEmail(code: string, ip: string, ua: string | null) {
   <p style="margin:0 0 16px;color:#555;font-size:13px">Requested ${when}<br>From ${where.replace(/&/g, "&amp;").replace(/</g, "&lt;")}</p>
   <p style="color:#b42318;font-size:13px">If this wasn't you, someone knows your admin password. Don't share this code, and <a href="${SITE_URL}/forgot-password">change your password now</a>.</p>
 </div>`;
-  return { subject: `${code} is your Excel to KML admin sign-in code`, text, html };
+  return { subject: `${code} is your SurveyX Digital admin sign-in code`, text, html };
 }
 
 async function issue(userId: string, email: string, ip: string, ua: string | null): Promise<string> {

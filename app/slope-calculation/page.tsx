@@ -25,18 +25,18 @@ import PageShell from "../../components/PageShell";
 import ProductReviews from "../../components/ProductReviews";
 import SlopeDownload, { SlopeReleaseInfo } from "../../components/SlopeDownload";
 import { SLOPE_APP, SLOPE_FAQ, SLOPE_FEATURES, SLOPE_FILES, SLOPE_NAME, SLOPE_PAGE, SLOPE_RELEASED, SLOPE_STEPS, SLOPE_VERSION } from "@/lib/slope";
-import { SITE_URL, jsonLd, openGraphFor } from "@/lib/site";
+import { SITE_URL, jsonLd, openGraphFor, companyTitle } from "@/lib/site";
 
 const TITLE = "Slope Calculator: slope, gradient and chainage levels";
 const DESCRIPTION =
   "Free slope calculator for surveyors and site engineers: slope %, slope per metre and 1 in N from two levels and chainages, the level at every chainage, a live profile, crossfall, a level book with checks, and Excel, PDF and CSV reports. In the browser, offline, and on Windows.";
 
 export const metadata: Metadata = {
-  title: TITLE,
+  title: companyTitle(TITLE),
   description: DESCRIPTION,
   alternates: { canonical: SLOPE_PAGE },
   openGraph: {
-    ...openGraphFor(SLOPE_PAGE, `${TITLE} | Excel to KML`, DESCRIPTION),
+    ...openGraphFor(SLOPE_PAGE, `${TITLE} | SurveyX Digital`, DESCRIPTION),
     images: [{ url: SLOPE_FILES.shots.calculator.src, width: 1440, height: 900, alt: "Slope Calculator: a falling slope of −1.500 % from 1+000 to 1+250 with its profile" }],
   },
 };
@@ -130,7 +130,7 @@ export default function SlopeCalculatorPage() {
                 <BookOpen className="w-4 h-4" aria-hidden /> User manual
               </Link>
             </div>
-            <p className="mt-3 text-[12.5px] text-slate-500">Free with your Excel to KML account · Works offline after your first sign-in</p>
+            <p className="mt-3 text-[12.5px] text-slate-500">Free with your SurveyX Digital account · Works offline after your first sign-in</p>
           </div>
           <figure className="rounded-2xl border border-slate-200 bg-slate-900 p-1.5 shadow-[0_16px_40px_rgba(15,23,42,0.18)]">
             <Image
@@ -218,7 +218,7 @@ export default function SlopeCalculatorPage() {
             id="download-h"
             eyebrow="Get it"
             title="In your browser or on Windows. Free."
-            text="The same app either way. Sign in with your free exceltokml.com account: it keeps your calculations, ready to open on any device."
+            text="The same app either way. Sign in with your free SurveyX Digital account: it keeps your calculations, ready to open on any device."
             Icon={Download}
           />
           <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">

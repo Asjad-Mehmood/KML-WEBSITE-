@@ -88,7 +88,7 @@ export default function AdminMessages({
 
   const replyHref = (m: Message) => {
     const quoted = m.message.split("\n").map((l) => `> ${l}`).join("\n");
-    return `mailto:${encodeURIComponent(m.email)}?subject=${encodeURIComponent(`Re: ${m.ref} — your message to Excel to KML Pro`)}&body=${encodeURIComponent(`Hi ${m.name.split(" ")[0]},\n\n\n\n—\n${quoted}`)}`;
+    return `mailto:${encodeURIComponent(m.email)}?subject=${encodeURIComponent(`Re: ${m.ref} — your message to SurveyX Digital`)}&body=${encodeURIComponent(`Hi ${m.name.split(" ")[0]},\n\n\n\n—\n${quoted}`)}`;
   };
 
   return (

@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CheckCircle2, Clock, AlertTriangle } from "lucide-react";
 import AuthShell, { buttonClass } from "../../components/AuthShell";
+import { companyTitle } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Confirm your email",
+  title: companyTitle("Confirm your email"),
   robots: { index: false, follow: false },
 };
 

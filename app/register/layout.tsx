@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import { companyTitle } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Create account",
+  title: companyTitle("Create account"),
   robots: { index: false, follow: true },
 };
 

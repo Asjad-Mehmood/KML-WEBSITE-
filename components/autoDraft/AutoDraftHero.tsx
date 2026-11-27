@@ -64,7 +64,7 @@ export default function AutoDraftHero() {
         </div>
         <AutoDraftReleaseInfo className="mt-3 text-slate-500" />
         <p className="mt-3 text-[12.5px] text-slate-500">
-          Sign in with a free exceltokml.com account. Your surveys stay on your PC ·{" "}
+          Sign in with a free SurveyX Digital account. Your surveys stay on your PC ·{" "}
           <a href="#video" className="text-[#0071e3] hover:underline">Watch the video</a>
         </p>
       </div>

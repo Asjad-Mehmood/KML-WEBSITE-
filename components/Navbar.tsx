@@ -152,14 +152,14 @@ export default function Navbar({ onDownloadClick }: { onDownloadClick: () => voi
           {/* Logo */}
           <Link
             href={site("/")}
-            aria-label="Excel to KML — home"
+            aria-label="SurveyX Digital — home"
             className="flex items-center pl-1.5 pr-3 sm:pr-4 py-1 rounded-full hover:bg-black/[0.04] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           >
             <span className="relative w-8 h-8 shrink-0 rounded-full overflow-hidden bg-gradient-to-tr from-slate-800 to-slate-950 shadow-inner flex items-center justify-center">
               <Image src="/assets/icon.png" alt="" width={32} height={32} className="w-full h-full object-contain p-0.5" priority />
             </span>
             <span className="ml-2.5 hidden sm:inline-flex items-center gap-1.5 whitespace-nowrap">
-              <span className="font-extrabold text-[15px] tracking-tight text-slate-900">Excel to KML</span>
+              <span className="font-extrabold text-[15px] tracking-tight text-slate-900">SurveyX Digital</span>
             </span>
           </Link>
 

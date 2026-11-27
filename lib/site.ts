@@ -1,21 +1,33 @@
-// Public address of the site. exceltokml.com redirects to www.exceltokml.com, so
-// www is the canonical host: links, canonicals and the sitemap must use it or
-// search engines see every URL as a redirect. NEXT_PUBLIC_SITE_URL can point
-// elsewhere (e.g. a staging domain); the bare domain is upgraded to www.
+// Public address of the site: www.surveyxdigital.com (SurveyX Digital). The bare domain
+// redirects to www, so www is the canonical host: links, canonicals and the sitemap must use it
+// or search engines see every URL as a redirect. NEXT_PUBLIC_SITE_URL can point elsewhere (e.g. a
+// staging domain); a bare domain is upgraded to www. The old address, exceltokml.com, sends people
+// here; the installed apps still reach the API there until their next versions (docs/REBRAND.md).
 function siteUrl(): string {
-  const raw = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.exceltokml.com").trim().replace(/\/+$/, "");
+  const raw = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.surveyxdigital.com").trim().replace(/\/+$/, "");
   try {
     const url = new URL(raw);
-    if (url.hostname === "exceltokml.com") url.hostname = "www.exceltokml.com";
+    if (url.hostname === "surveyxdigital.com" || url.hostname === "exceltokml.com") url.hostname = `www.${url.hostname}`;
     return url.origin;
   } catch {
-    return "https://www.exceltokml.com";
+    return "https://www.surveyxdigital.com";
   }
 }
 
 export const SITE_URL = siteUrl();
 
-export const SITE_NAME = "Excel to KML";
+/** The company: the site's name, emails, copyright and the publisher of every program */
+export const SITE_NAME = "SurveyX Digital";
+
+/** The Excel to KML program (one of the company's tools): its own pages keep this name */
+export const APP_NAME = "Excel to KML";
+
+/** The site's old address, which now sends people to SITE_URL */
+export const OLD_HOSTS = ["www.exceltokml.com", "exceltokml.com"];
+
+/** The title of a company page (about, contact, legal, the other programs): "Contact | SurveyX Digital".
+ *  Pages about Excel to KML keep the layout's "%s | Excel to KML", which search engines know them by. */
+export const companyTitle = (title: string) => ({ absolute: `${title} | ${SITE_NAME}` });
 
 /**
  * The Excel to KML Android app is hidden for now: no page, link, button or email mentions it.
@@ -23,7 +35,7 @@ export const SITE_NAME = "Excel to KML";
  */
 export const SHOW_ANDROID = false;
 
-export const DEFAULT_TITLE = "Excel to KML — Survey Coordinates to KML, KMZ & DXF";
+export const DEFAULT_TITLE = "SurveyX Digital — Excel to KML and Free Survey Software";
 
 export const SITE_DESCRIPTION =
   "Convert Excel & CSV survey coordinates on 5,800+ EPSG grids into Google Earth KML, KMZ and DXF, with site photos and PDF reports. Free for Windows and the web.";
@@ -47,7 +59,7 @@ export const GITHUB_REPO_URL = "https://github.com/Asjad-Mehmood/kml-convertor";
 
 // The official Facebook Page (SurveyX Digital). Linked from the footer and
 // listed in the site's structured data, so Facebook and Google can tie
-// exceltokml.com to the Page. NEXT_PUBLIC_FACEBOOK_URL in Vercel overrides it;
+// the site to the Page. NEXT_PUBLIC_FACEBOOK_URL in Vercel overrides it;
 // only a facebook.com address is accepted.
 export const FACEBOOK_URL = (() => {
   const raw = (process.env.NEXT_PUBLIC_FACEBOOK_URL || "https://www.facebook.com/RealAm025/").trim();
@@ -62,7 +74,7 @@ export const FACEBOOK_URL = (() => {
 })();
 
 // The SurveyX Digital Page's numeric ID, sent as <meta property="fb:pages"> so
-// Facebook knows which Page is the official one for exceltokml.com
+// Facebook knows which Page is the official one for the site
 export const FACEBOOK_PAGE_ID = "302259400276782";
 
 // Meta's domain verification code (FACEBOOK_DOMAIN_VERIFICATION in Vercel):
@@ -105,6 +117,6 @@ export function openGraphFor(path: string, title: string, description: string) {
 export const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "exceltokml0@gmail.com";
 
 /** Date shown as "Last updated" on the Terms (they now cover every program on the site) */
-export const LEGAL_UPDATED = "24 October 2026";
+export const LEGAL_UPDATED = "27 November 2026";
 /** Date shown as "Last updated" on the Privacy Policy (Traverse & Level jobs, reviews) */
-export const PRIVACY_UPDATED = "24 October 2026";
+export const PRIVACY_UPDATED = "27 November 2026";

@@ -78,7 +78,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
   },
   formatDetection: { telephone: false, address: false, email: false },
-  // Proves to Meta that we own exceltokml.com (Business Suite → Brand safety → Domains)
+  // Proves to Meta that we own the site's domain (Business Suite → Brand safety → Domains)
   ...(FACEBOOK_DOMAIN_VERIFICATION ? { other: { "facebook-domain-verification": FACEBOOK_DOMAIN_VERIFICATION } } : {}),
 };
 
