@@ -726,6 +726,7 @@
       box-shadow: 0 14px 36px rgba(6, 24, 31, .28)
     }
 
+    .helpmenu button[hidden],
     .helpmenu[hidden] {
       display: none
     }
@@ -6270,6 +6271,62 @@
       max-width: 480px;
     }
 
+    /* Windows program: the screen shown until the user signs in (it can't be closed) */
+    .signin-gate {
+      position: fixed;
+      inset: 0;
+      z-index: 9995;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background: radial-gradient(70% 80% at 50% 0%, var(--chrome-hi), var(--chrome) 55%, #061820);
+      color: #e8eefc;
+    }
+    .signin-gate[hidden] { display: none; }
+    .signin-gate-card {
+      width: 100%;
+      max-width: 440px;
+      text-align: center;
+      background: #0B131E;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 14px;
+      padding: 32px 28px 24px;
+      box-shadow: 0 30px 70px rgba(0, 0, 0, 0.55);
+      animation: authZoomIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .signin-gate-icon {
+      width: 56px;
+      height: 56px;
+      margin: 0 auto 16px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: var(--hivis);
+    }
+    .signin-gate h2 { margin: 0; font-size: 22px; font-weight: 800; color: #fff; }
+    .signin-gate p { margin: 10px 0 0; font-size: 14px; line-height: 1.55; color: rgba(232, 238, 252, 0.78); }
+    .signin-gate-actions { display: grid; gap: 10px; margin-top: 22px; }
+    .signin-gate-actions button {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.06);
+      color: #fff;
+    }
+    .signin-gate-actions button:hover { background: rgba(255, 255, 255, 0.12); }
+    .signin-gate-actions button:focus-visible { outline: 3px solid var(--hivis); outline-offset: 2px; }
+    .signin-gate-actions .signin-gate-primary { background: var(--hivis); border-color: var(--hivis); color: var(--ink); }
+    .signin-gate-actions .signin-gate-primary:hover { background: var(--hivis-dk); }
+    .signin-gate-note { font-size: 12.5px !important; color: rgba(232, 238, 252, 0.55) !important; margin-top: 18px !important; }
+
     .auth-modal-overlay {
       position: fixed;
       inset: 0;
@@ -8793,6 +8850,29 @@
 
 <body>
 
+  <!-- The start screen in the Windows program (it has window.kmlToolkitCode): on top while the
+       app starts and finds the sign-in, the same as the screen the window opened with -->
+  <div id="appStarting" hidden role="status" aria-label="Excel to KML is starting"
+    style="position:fixed;inset:0;z-index:2147483647;background:#0A1A36;color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Segoe UI',system-ui,sans-serif;cursor:progress;user-select:none">
+    <style>#appStarting[hidden]{display:none!important}@keyframes appStartingGo{from{transform:translateX(-100%)}to{transform:translateX(300%)}}</style>
+    <div style="text-align:center">
+      <img src="/icon.ico" alt="" style="width:88px;height:88px;display:block;margin:0 auto 18px">
+      <div style="font-size:24px;font-weight:600">Excel to KML</div>
+      <div style="margin:6px 0 22px;font-size:14px;color:#A9B8D3">Starting&hellip;</div>
+      <div style="width:220px;height:4px;margin:0 auto;background:#17386B;border-radius:2px;overflow:hidden"><i style="display:block;width:33%;height:100%;background:#5B9BFF;border-radius:2px;animation:appStartingGo 1.2s ease-in-out infinite"></i></div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var el = document.getElementById("appStarting");
+      if (typeof window.kmlToolkitCode !== "function") return;
+      el.hidden = false;
+      // never longer than this, whatever happens while starting
+      window.__kmlStartingDone = function () { el.hidden = true; };
+      setTimeout(window.__kmlStartingDone, 30000);
+    })();
+  </script>
+
   <!-- Auto-Update Progress Overlay -->
   <div id="updateModalOverlay" class="update-modal-overlay" style="display:none;" aria-live="assertive" role="alert">
     <div class="update-modal-card">
@@ -8849,6 +8929,30 @@
     </button>
   </div>
 
+  <!-- Windows program: sign in to use it (shown by the script below, only in the program) -->
+  <div id="signinGate" class="signin-gate" role="dialog" aria-modal="true" aria-labelledby="signinGateTitle" hidden>
+    <div class="signin-gate-card">
+      <div class="signin-gate-icon" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <circle cx="12" cy="12" r="3"></circle>
+          <line x1="12" y1="2" x2="12" y2="6"></line>
+          <line x1="12" y1="18" x2="12" y2="22"></line>
+          <line x1="2" y1="12" x2="6" y2="12"></line>
+          <line x1="18" y1="12" x2="22" y2="12"></line>
+        </svg>
+      </div>
+      <h2 id="signinGateTitle">Sign in to use Excel to KML</h2>
+      <p>Sign in with your SurveyX Digital account, or create one for free. One account works on surveyxdigital.com and in all our programs. Opened from the Survey Toolkit, you're signed in already.</p>
+      <div class="signin-gate-actions">
+        <button type="button" id="signinGateLogin" class="signin-gate-primary">Sign in</button>
+        <button type="button" id="signinGateGoogle" hidden>Continue with Google (in your browser)</button>
+        <button type="button" id="signinGateRegister">Create a free account</button>
+      </div>
+      <p class="signin-gate-note">Your points and files stay on this computer.</p>
+    </div>
+  </div>
+
   <!-- Authentication Modal (Sign In & Register) -->
   <div id="authModalOverlay" class="auth-modal-overlay" role="dialog" aria-modal="true">
     <div class="auth-modal-card">
@@ -8865,7 +8969,7 @@
           </svg>
         </div>
         <div style="flex:1;">
-          <h3 class="auth-modal-title" id="authModalTitle">Excel to KML Account</h3>
+          <h3 class="auth-modal-title" id="authModalTitle">SurveyX Digital Account</h3>
 
         </div>
         <button type="button" class="auth-modal-close" id="authModalClose" title="Close">
@@ -9085,10 +9189,38 @@
           </svg>
           <span><b>About Excel to KML</b><small>The version and the first steps</small></span>
         </button>
+        <button type="button" role="menuitem" id="newsBtn">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.4 7.2 17.9l.9-5.4-3.9-3.8 5.4-.8z" />
+          </svg>
+          <span><b>What&rsquo;s new</b><small>The changes in each version</small></span>
+        </button>
+        <button type="button" role="menuitem" id="reportBtn">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4v16M4 4h12l-2 4 2 4H4" />
+          </svg>
+          <span><b>Report a problem</b><small>Tell us what went wrong; the version is sent with it</small></span>
+        </button>
+        <button type="button" role="menuitem" id="logBtn" hidden>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          </svg>
+          <span><b>Error log</b><small>The file to attach when you report a problem</small></span>
+        </button>
+        <button type="button" role="menuitem" id="licBtn" hidden>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3v18M5 7h14M7 7l-3 7h6zM17 7l-3 7h6z" />
+          </svg>
+          <span><b>Open-source licences</b><small>The free software this program is built with</small></span>
+        </button>
       </div>
     </span>
 
-    <button class="auth-btn" id="authBtn" title="Excel to KML Account">
+    <button class="auth-btn" id="authBtn" title="SurveyX Digital Account">
       <span class="auth-avatar" id="authBtnAvatar">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
           stroke-linecap="round" stroke-linejoin="round">
@@ -10106,9 +10238,9 @@ PC-01,229045.640,392414.010"></textarea>
     <span class="bad">left out <b id="stBad">0</b></span>
     <span class="sys" id="stSys">Latitude and longitude from the sheet</span>
     <span class="help">Ctrl+O open · Ctrl+S save · Ctrl+L clear</span>
-    <span class="ver">Excel to KML v4.4.1</span>
+    <span class="ver">Excel to KML v4.6.0</span>
     <span class="today" id="clkDate"></span>
-    <span class="by">developed by Asjad Mehmood</span>
+    <span class="by">by SurveyX Digital</span>
   </div>
 
   <div class="mobar">
@@ -10238,20 +10370,21 @@ PC-01,229045.640,392414.010"></textarea>
     }
 
     /* build the active settings from the panel */
+    function qndConfig() {
+      return {
+        sys: "qnd", label: "Qatar National Grid (QND95)",
+        p: {
+          a: ELL.intl24.a, invf: ELL.intl24.invf, k0: 0.99999, lat0: 24.45,
+          lon0: 51.2166666666667, FE: 200000, FN: 300000
+        },
+        dx: -128.033, dy: -283.697, dz: 21.052,
+        base: { lat: 0.44, lon: -0.20 }
+      };
+    }
     function config() {
       var sys = $("sys").value;
       if (sys === "geo") return { sys: "geo", label: "Latitude and longitude from the sheet" };
-      if (sys === "qnd") {
-        return {
-          sys: "qnd", label: "Qatar National Grid (QND95)",
-          p: {
-            a: ELL.intl24.a, invf: ELL.intl24.invf, k0: 0.99999, lat0: 24.45,
-            lon0: 51.2166666666667, FE: 200000, FN: 300000
-          },
-          dx: -128.033, dy: -283.697, dz: 21.052,
-          base: { lat: 0.44, lon: -0.20 }
-        };
-      }
+      if (sys === "qnd") return qndConfig();
       if (sys === "epsg") {
         if (!CRSSEL) return { sys: "bad", label: "Pick a system from the world list" };
         var ce = CRSSEL.e;
@@ -10761,8 +10894,10 @@ PC-01,229045.640,392414.010"></textarea>
       "easting": "EASTING", "east": "EASTING", "e": "EASTING", "x": "EASTING",
       "northing": "NORTHING", "north": "NORTHING", "n": "NORTHING", "y": "NORTHING",
       "elevation": "ELEVATION", "elev": "ELEVATION", "level": "ELEVATION", "rl": "ELEVATION", "z": "ELEVATION", "height": "ELEVATION",
-      "latitude": "LATITUDE", "lat": "LATITUDE", "northings": "LATITUDE",
-      "longitude": "LONGITUDE", "long": "LONGITUDE", "lon": "LONGITUDE", "lng": "LONGITUDE", "eastings": "LONGITUDE",
+      /* "Eastings" / "Northings" (plural) are grid columns too, as on most as-built sheets */
+      "eastings": "EASTING", "northings": "NORTHING",
+      "latitude": "LATITUDE", "lat": "LATITUDE",
+      "longitude": "LONGITUDE", "long": "LONGITUDE", "lon": "LONGITUDE", "lng": "LONGITUDE",
       "remarks": "REMARKS", "remark": "REMARKS", "source": "REMARKS", "description": "REMARKS",
       "code": "CODE", "featurecode": "CODE", "feature": "CODE", "type": "CODE", "pointcode": "CODE",
       "layer": "CODE", "symbol": "CODE", "class": "CODE",
@@ -10790,7 +10925,8 @@ PC-01,229045.640,392414.010"></textarea>
     function parse(text) {
       var lines = text.replace(/\r/g, "").split("\n").filter(function (l) { return l.trim() !== ""; });
       if (!lines.length) return { err: "Nothing pasted yet." };
-      var sep = lines[0].indexOf("\t") > -1 ? "\t" : ",";
+      /* tabs anywhere near the top: a sheet can open with a title line of one cell, no tab in it */
+      var sep = lines.slice(0, 12).some(function (l) { return l.indexOf("\t") > -1; }) ? "\t" : ",";
       var hIdx = -1;
       for (var i = 0; i < Math.min(lines.length, 12); i++) {
         var cells = splitLine(lines[i], sep).map(key);
@@ -10984,6 +11120,25 @@ PC-01,229045.640,392414.010"></textarea>
       }, 3000);
     }
 
+    /* Rows with eastings and northings while the grid is still "latitude and longitude" (the
+       default) give no point at all. When they fit the Qatar National Grid (inside Qatar once
+       converted), the grid is set to QND95 by itself, once for these rows, and the log says so.
+       Only when the rows are new (opened, pasted, typed): a grid the user picks for rows already
+       there is never changed. Otherwise the log says which setting is missing. */
+    var GRIDHINT = { tried: {}, note: null, seen: null };
+    function gridGuess(recs) {
+      var en = recs.filter(function (o) {
+        return (isNaN(num(o.d["LATITUDE"])) || isNaN(num(o.d["LONGITUDE"]))) && !isNaN(num(o.d["EASTING"])) && !isNaN(num(o.d["NORTHING"]));
+      });
+      if (!en.length || en.length < recs.length * 0.6) return null;
+      var q = qndConfig(), fit = 0;
+      en.forEach(function (o) {
+        var c = gridToLatLon(num(o.d["EASTING"]), num(o.d["NORTHING"]), 0, q);
+        if (c[0] > 24.3 && c[0] < 26.4 && c[1] > 50.6 && c[1] < 51.9) fit++;
+      });
+      return { n: en.length, qnd: fit >= en.length * 0.8, e: num(en[0].d["EASTING"]), nn: num(en[0].d["NORTHING"]) };
+    }
+
     function refreshCore() {
       zoneUI();
       var txt = $("data").value, rep = $("report"), save = $("save");
@@ -11010,6 +11165,19 @@ PC-01,229045.640,392414.010"></textarea>
 
       var cfg = config();
       if (cfg.sys === "bad") { rep.innerHTML = logLine("bad", "<b>Check the coordinate system.</b> " + esc(cfg.label)); setStatus(p.recs.length, 0, p.recs.length); return; }
+      var rowsKey = textHash(txt), gridMiss = null, newRows = GRIDHINT.seen !== rowsKey;
+      GRIDHINT.seen = rowsKey;
+      if (cfg.sys === "geo") {
+        var gg = gridGuess(p.recs);
+        if (gg && gg.qnd && newRows && !GRIDHINT.tried[rowsKey]) {
+          GRIDHINT.tried[rowsKey] = 1;
+          GRIDHINT.note = rowsKey;
+          $("sys").value = "qnd";
+          $("sys").dispatchEvent(new Event("change", { bubbles: true }));
+          return;
+        }
+        gridMiss = gg;
+      }
 
       var good = [], probs = [], derived = 0, badConv = 0;
       p.recs.forEach(function (o) {
@@ -11034,6 +11202,14 @@ PC-01,229045.640,392414.010"></textarea>
       good.forEach(function (g) { var s = g.d["STATION"]; if (seen[s]) dups.push(s); else seen[s] = 1; });
 
       var h = "";
+      if (cfg.sys === "qnd" && GRIDHINT.note === rowsKey) {
+        h += logLine("ok", "<b>Grid set to the Qatar National Grid (QND95).</b> These rows have eastings and northings that fall in Qatar. " +
+          "Not right? Choose another grid under Coordinate system.");
+      }
+      if (gridMiss && !good.length) {
+        h += logLine("bad", "<b>These rows have eastings and northings</b> (E " + esc(String(gridMiss.e)) + ", N " + esc(String(gridMiss.nn)) +
+          "), but the grid is set to latitude and longitude. Choose their grid under Coordinate system.");
+      }
       if (good.length) {
         h += logLine("ok", "<b>" + good.length + " point" + (good.length === 1 ? "" : "s") + " ready.</b>" +
           (derived ? " " + derived + " converted from " + esc(cfg.label) +
@@ -11561,7 +11737,7 @@ PC-01,229045.640,392414.010"></textarea>
         '<button class="go" id="slideGo">Start</button>' +
         '<button id="slideMan">Open the manual</button>' +
         '<button id="slideSample">Try the sample</button>' +
-        '<span class="by">' + esc(appVer()) + ' &middot; developed by Asjad Mehmood</span>' +
+        '<span class="by">' + esc(appVer()) + ' &middot; by SurveyX Digital</span>' +
         "</div></div>";
       document.body.appendChild(wrap);
       $("slideGo").onclick = slideShut;
@@ -11627,7 +11803,9 @@ PC-01,229045.640,392414.010"></textarea>
          ["Show or hide labels on the map", "", "mapLbl", "names"],
          ["Satellite on the map", "", "mapSat", "imagery aerial"],
          ["Open the manual", "Every section, A to Z", "manBtn", "help guide"],
-         ["About Excel to KML", "The version and the first steps", "aboutBtn", "version help"]
+         ["About Excel to KML", "The version and the first steps", "aboutBtn", "version help"],
+         ["Report a problem", "The contact form, with the version", "reportBtn", "bug support help contact"],
+         ["What's new", "The changes in each version", "newsBtn", "release notes changelog"]
         ].forEach(function (a) { items.push({ g: "Action", t: a[0], d: a[1], w: a[3], run: click(a[2]), dis: function () { var b = $(a[2]); return !b || b.disabled; } }); });
         [["split", "Split view: table and map"], ["table", "Table only"], ["map", "Map only"], ["radar", "Radar"]].forEach(function (v) {
           items.push({ g: "View", t: v[1], d: "", w: "view " + v[0], run: function () { if (typeof viewSet === "function") viewSet(v[0]); } });
@@ -11730,7 +11908,7 @@ PC-01,229045.640,392414.010"></textarea>
       });
       menu.addEventListener("click", function () { shut(); });
       menu.addEventListener("keydown", function (e) {
-        var items = [].slice.call(menu.querySelectorAll("button")), i = items.indexOf(document.activeElement);
+        var items = [].slice.call(menu.querySelectorAll("button:not([hidden])")), i = items.indexOf(document.activeElement);
         if (e.key === "ArrowDown" || e.key === "ArrowUp") {
           e.preventDefault();
           items[(i + (e.key === "ArrowDown" ? 1 : items.length - 1)) % items.length].focus();
@@ -11738,6 +11916,24 @@ PC-01,229045.640,392414.010"></textarea>
         else if (e.key === "Tab") shut();
       });
       document.addEventListener("click", function (ev) { if (!$("helpWrap").contains(ev.target)) shut(); });
+    })();
+
+    /* Help: What's new, Report a problem (the website's contact form with the version), and on
+       Windows the error log and the open-source licences (the program opens them) */
+    (function () {
+      var site = "https://www.surveyxdigital.com", desktop = !!window.kmlOpenUrl;
+      function version() { return window.__APP_VERSION__ || String(appVer()).replace(/^(BM2KML|Excel to KML)\s*v?/i, "").trim().split(/\s/)[0]; }
+      function go(u) {
+        if (desktop) window.kmlOpenUrl(u).catch(function () { window.open(u, "_blank", "noopener"); });
+        else window.open(u, "_blank", "noopener");
+      }
+      $("newsBtn").addEventListener("click", function () { go(site + "/whats-new/excel-to-kml"); });
+      $("reportBtn").addEventListener("click", function () {
+        go(site + "/contact?topic=problem&program=excel-to-kml&version=" + encodeURIComponent(version()) +
+          "&platform=" + (desktop ? "Windows" : "Web"));
+      });
+      if (window.kmlOpenLog) { $("logBtn").hidden = false; $("logBtn").addEventListener("click", function () { window.kmlOpenLog(); }); }
+      if (window.kmlOpenNotices) { $("licBtn").hidden = false; $("licBtn").addEventListener("click", function () { window.kmlOpenNotices(); }); }
     })();
     document.addEventListener("keydown", function (e) { if (e.key === "Escape") manualShut(); });
 
@@ -17827,7 +18023,7 @@ PC-01,229045.640,392414.010"></textarea>
           saved = null;
         }
         if (saved) return saved.replace(/\/+$/, "");
-        if (window.location.hostname === "www.exceltokml.com" || window.location.hostname === "exceltokml.com") {
+        if (/(^|\.)(surveyxdigital|exceltokml)\.com$/.test(window.location.hostname)) {
           return "";
         }
         /* served by the website itself (its /app page), on any address — a preview or a local
@@ -17835,7 +18031,7 @@ PC-01,229045.640,392414.010"></textarea>
         if (/^https?:$/.test(window.location.protocol) && /^\/(api\/app-html|app)(\/|$)/.test(window.location.pathname)) {
           return "";
         }
-        return "https://www.exceltokml.com";
+        return "https://www.surveyxdigital.com";
       }
 
       window.bm2kmlApiBase = getApiBase;
@@ -18181,7 +18377,7 @@ PC-01,229045.640,392414.010"></textarea>
 
       if (tabBtnLogin) tabBtnLogin.addEventListener("click", function () { switchTab("login"); });
 
-      /* Continue with Google (Windows program): the program opens exceltokml.com in
+      /* Continue with Google (Windows program): the program opens the website in
          the default browser; after sign-in there it passes the new session back
          and calls window.__kmlBrowserSignedIn(token). */
       (function () {
@@ -19167,7 +19363,15 @@ PC-01,229045.640,392414.010"></textarea>
               "Accept": "application/json"
             }
           });
-          if (res.ok) {
+          if (res.status === 401) {
+            // signed out on the website, or the session ran out: sign in again
+            authToken = null;
+            currentUser = null;
+            try {
+              localStorage.removeItem(STORAGE_KEY_TOKEN);
+              localStorage.removeItem(STORAGE_KEY_USER);
+            } catch (e) { }
+          } else if (res.ok) {
             var data = await res.json();
             if (data && data.user) {
               currentUser = data.user;
@@ -19201,7 +19405,86 @@ PC-01,229045.640,392414.010"></textarea>
         logout: function () { if (logoutBtn) logoutBtn.click(); }
       };
 
-      verifySession();
+      /* Windows program: it can't be used without signing in (the web app asks on the website
+         already). The program binds kmlBrowserSignIn before the page loads, so that marks it; a
+         browser or a phone never has it. Until the user is signed in, the sign-in screen covers
+         the app, which takes no clicks or keys. A sign-in is remembered, so the program opens
+         straight away next time, offline too; signing out, or a sign-in the website no longer
+         accepts, brings the screen back. */
+      (function () {
+        var gate = document.getElementById("signinGate");
+        if (!gate || typeof window.kmlBrowserSignIn !== "function") return;
+        var updateOverlay = document.getElementById("updateModalOverlay");
+        var locked = null;
+        function lock(on) {
+          if (on === locked) return;
+          locked = on;
+          gate.hidden = !on;
+          // everything else on the page: out of reach while locked
+          Array.prototype.forEach.call(document.body.children, function (el) {
+            if (el === gate || el === authModalOverlay || el === updateOverlay || el.tagName === "SCRIPT" || el.tagName === "STYLE") return;
+            if (on) el.setAttribute("inert", ""); else el.removeAttribute("inert");
+          });
+          if (on) {
+            if (authDropdown) authDropdown.style.display = "none";
+            setTimeout(function () { var b = document.getElementById("signinGateLogin"); if (b) b.focus(); }, 60);
+          } else {
+            closeAuthModal();
+          }
+        }
+        function check() { lock(!(currentUser && authToken)); }
+        document.getElementById("signinGateLogin").addEventListener("click", function () { openAuthModal("login"); });
+        document.getElementById("signinGateRegister").addEventListener("click", function () { openAuthModal("register"); });
+        var google = document.getElementById("signinGateGoogle");
+        if (google && document.getElementById("authGoogleBtn")) {
+          google.hidden = false;
+          google.addEventListener("click", function () {
+            openAuthModal("login");
+            document.getElementById("authGoogleBtn").click();
+          });
+        }
+        window.addEventListener("bm2kml:auth", check);
+        // the app's keyboard shortcuts (Ctrl+O, Ctrl+S…) do nothing while locked
+        document.addEventListener("keydown", function (e) {
+          if (!locked) return;
+          var t = e.target;
+          if (t && t.nodeType === 1 && (gate.contains(t) || (authModalOverlay && authModalOverlay.contains(t)))) return;
+          e.stopPropagation();
+          e.preventDefault();
+        }, true);
+        check();
+      })();
+
+      /* Opened from the Survey Toolkit: the window was started with a one-use code for the
+         Toolkit's account (window.__KML_SIGNIN_CODE__). It is swapped for a sign-in here, so
+         the user doesn't sign in twice. When the code can't be used, the app carries on as
+         before (the remembered sign-in, or the sign-in screen). */
+      (async function () {
+        var code = window.__KML_SIGNIN_CODE__;
+        /* opened from a shortcut and nobody signed in on this PC: the Survey Toolkit on this PC,
+           when there is one and it is signed in, gives a one-use code for its account */
+        if (!code && !authToken && typeof window.kmlToolkitCode === "function") {
+          try { code = await window.kmlToolkitCode(); } catch (e) { code = ""; }
+        }
+        if (typeof code === "string" && /^[0-9a-f]{64}$/.test(code)) {
+          try {
+            var res = await fetch(getApiBase() + "/api/toolkit/app-code/redeem", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "Accept": "application/json" },
+              body: JSON.stringify({ code: code, app: "excel-to-kml" })
+            });
+            var data = res.ok ? await res.json() : null;
+            if (data && typeof data.token === "string" && data.user) {
+              authToken = data.token;
+              currentUser = null;
+              try { localStorage.setItem(STORAGE_KEY_TOKEN, authToken); localStorage.removeItem(STORAGE_KEY_USER); } catch (e) { }
+            }
+          } catch (e) { }
+        }
+        try { await verifySession(); } finally {
+          if (typeof window.__kmlStartingDone === "function") window.__kmlStartingDone();
+        }
+      })();
     })();
 
     refresh();
@@ -21069,7 +21352,7 @@ PC-01,229045.640,392414.010"></textarea>
       else {
         tvFeature(lastOn, false);
         try {
-          var base = typeof window.bm2kmlApiBase === "function" ? window.bm2kmlApiBase() : "https://www.exceltokml.com";
+          var base = typeof window.bm2kmlApiBase === "function" ? window.bm2kmlApiBase() : "https://www.surveyxdigital.com";
           if (window.fetch && /^https?:/.test(base || window.location.protocol)) {
             var ctl = window.AbortController ? new AbortController() : null;
             if (ctl) setTimeout(function () { ctl.abort(); }, 8000);
