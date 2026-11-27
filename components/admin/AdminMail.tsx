@@ -6,6 +6,8 @@
 // page is closed) with pause, resume and stop.
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MAIL_TEMPLATES, type MailTemplate } from "@/lib/mailTemplates";
+import { releaseDraft, type ReleaseForMail } from "@/lib/releaseMailDraft";
+import ReleasePicker from "./ReleasePicker";
 import { CheckCircle2, Eye, Loader2, Mail, Pause, Play, RefreshCw, Search, Send, Square, User, Users, X, AppWindow, Globe2, FlaskConical } from "lucide-react";
 
 type Audience = "one" | "selected" | "app" | "all";
@@ -35,6 +37,7 @@ const APPS = [
   { id: "auto-draft", name: "Auto Drafting" },
   { id: "roadpro", name: "RoadPro" },
   { id: "folder-manager", name: "Project Folder Manager" },
+  { id: "toolkit", name: "Survey Toolkit" },
 ];
 const AUDIENCES: { id: Audience; label: string; Icon: typeof User }[] = [
   { id: "one", label: "One person", Icon: User },
@@ -134,17 +137,33 @@ export default function AdminMail({
   const [buttonUrl, setButtonUrl] = useState("");
   const draft = { subject, title, body, buttonLabel, buttonUrl };
   const [template, setTemplate] = useState("");
-  // a template fills the email; what was typed is replaced only after a yes
+  const [pickingRelease, setPickingRelease] = useState(false);
+  const fill = (id: string, d: { subject: string; title: string; body: string; buttonLabel: string; buttonUrl: string }) => {
+    setTemplate(id);
+    setSubject(d.subject);
+    setTitle(d.title);
+    setBody(d.body);
+    setButtonLabel(d.buttonLabel);
+    setButtonUrl(d.buttonUrl);
+    setPreview(null);
+  };
+  // a template fills the email; what was typed is replaced only after a yes. New versions first
+  // asks which release, and is filled from its notes
   const applyTemplate = (t: MailTemplate) => {
     const typed = subject.trim() || title.trim() || body.trim();
     if (typed && !window.confirm(`Replace what you wrote with "${t.label}"?`)) return;
-    setTemplate(t.id);
-    setSubject(t.subject);
-    setTitle(t.title);
-    setBody(t.body);
-    setButtonLabel(t.buttonLabel);
-    setButtonUrl(t.buttonUrl);
-    setPreview(null);
+    if (t.id === "update") {
+      setPickingRelease(true);
+      return;
+    }
+    fill(t.id, t);
+  };
+  const pickRelease = (r: ReleaseForMail) => {
+    setPickingRelease(false);
+    fill("update", releaseDraft(r));
+    // "Users of an app" goes to the users of this program
+    if (APPS.some((a) => a.id === r.app)) setApp(r.app);
+    toast.current(`Filled from ${r.appName} ${r.version}'s release notes`, "success");
   };
   const [busy, setBusy] = useState<"" | "preview" | "test" | "send">("");
   const [preview, setPreview] = useState<{ subject: string; html: string } | null>(null);
@@ -497,6 +516,8 @@ export default function AdminMail({
           })}
         </ul>
       </section>
+
+      {pickingRelease && <ReleasePicker adminFetch={adminFetch} onPick={pickRelease} onClose={() => setPickingRelease(false)} />}
 
       {/* ---------------- preview ---------------- */}
       {preview && (
