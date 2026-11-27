@@ -1,6 +1,7 @@
 import { after, NextRequest, NextResponse } from "next/server";
 import { logEvent } from "@/lib/activityEvents";
 import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
+import { checkLimit } from "@/lib/billing";
 import { MAX_SLOPE_JOB_BYTES, countOwn, ownerOf, remove, upsert } from "@/lib/slopeJobs";
 import { getExtraSettings } from "@/lib/siteSettings";
 
@@ -36,6 +37,9 @@ export async function PUT(req: NextRequest, ctx: Ctx) {
   try {
     const owner = await ownerOf(id);
     if (owner && owner !== s.user.id) return NextResponse.json({ error: "This calculation belongs to someone else." }, { status: 403 });
+    // the free plan's limit (only while the paid plans are switched on)
+    const plan = await checkLimit(s.user, "jobs:slope", !owner);
+    if (!plan.ok) return NextResponse.json({ error: plan.error, limit: plan.meter, upgradeUrl: plan.upgradeUrl }, { status: 402 });
     if (!owner && (await countOwn(s.user.id)) >= maxJobs) {
       return NextResponse.json({ error: `You can keep up to ${maxJobs} calculations. Delete some old ones first.` }, { status: 409 });
     }
