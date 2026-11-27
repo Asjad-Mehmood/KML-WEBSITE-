@@ -4,9 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Check } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import type { Plan, PRICES } from "@/lib/plans";
-
-type Prices = typeof PRICES;
+import type { Plan, Prices } from "@/lib/plans";
 
 type PaddleCheckout = {
   environment: "sandbox" | "production";
@@ -88,7 +86,8 @@ export default function PricingPlans({ free, pro, prices }: { free: Plan; pro: P
 
   const price = yearly ? prices.yearly : prices.monthly;
   const card = "rounded-2xl border bg-white p-6 sm:p-8 flex flex-col";
-  const choices: [string, boolean][] = [["Monthly", false], ["Yearly (2 months free)", true]];
+  const save = prices.monthly > 0 ? Math.round((1 - prices.yearly / (prices.monthly * 12)) * 100) : 0;
+  const choices: [string, boolean][] = [["Monthly", false], [save > 0 ? `Yearly (save ${save}%)` : "Yearly", true]];
 
   return (
     <section className="mt-10 mb-16">

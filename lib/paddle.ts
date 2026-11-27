@@ -74,6 +74,19 @@ async function paddleApi<T>(path: string, init: RequestInit = {}): Promise<T> {
   return body as T;
 }
 
+export type PaddlePrice = {
+  id: string;
+  status: string;
+  unit_price?: { amount: string; currency_code: string };
+  billing_cycle?: { interval: string; frequency: number } | null;
+};
+
+/** One price from Paddle (to check the price ids and the API key in Admin → Payments) */
+export async function getPrice(id: string): Promise<PaddlePrice> {
+  const r = await paddleApi<{ data: PaddlePrice }>(`/prices/${encodeURIComponent(id)}`);
+  return r.data;
+}
+
 /** A link to Paddle's page where the customer changes card, sees invoices or cancels */
 export async function portalUrl(customerId: string, subscriptionId?: string): Promise<string | null> {
   const r = await paddleApi<{ data?: { urls?: { general?: { overview?: string } } } }>(

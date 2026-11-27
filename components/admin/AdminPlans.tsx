@@ -1,21 +1,11 @@
 "use client";
 
-// Admin → Usage → Plans: whether the paid plans are switched on, the free limits and the
-// prices, who is on Pro, and giving or taking away Pro by email (lib/billing).
+// Admin → Payments: who is on Pro, and giving or taking away Pro by email (lib/billing).
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CreditCard, Loader2 } from "lucide-react";
-import { METER_LABEL, type Meter, type Plan } from "@/lib/plans";
 
 type Sub = { userId: string; name: string; email: string; plan: string; periodEnd: string | null; provider: string; note: string; updatedBy: string; updatedAt: string; active: boolean };
-type Data = {
-  enabled: boolean;
-  production: boolean;
-  checkout: boolean;
-  paddle: { env: "sandbox" | "production"; missing: string[] };
-  plans: { free: Plan; pro: Plan };
-  prices: { monthly: number; yearly: number; currency: string };
-  pro: Sub[];
-};
+type Data = { pro: Sub[] };
 
 const card = "rounded-2xl border border-[var(--adm-line)] bg-[var(--adm-card)] p-4";
 const field = "rounded-xl border border-[var(--adm-line)] bg-slate-900/60 px-3 py-2 text-sm text-white placeholder:text-slate-500";
@@ -76,58 +66,16 @@ export default function AdminPlans({ adminFetch }: { adminFetch: (url: string, o
 
   if (error) return <p className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{error}</p>;
   if (!data) return null;
-  const meters = Object.keys(data.plans.free.limits) as Meter[];
 
   return (
     <section className={card} aria-labelledby="plans-title">
-      <div className="flex flex-wrap items-center gap-2 justify-between">
-        <h3 id="plans-title" className="text-sm font-bold text-white flex items-center gap-2">
-          <CreditCard className="w-4 h-4 text-emerald-300" aria-hidden /> Paid plans
-        </h3>
-        <span
-          className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${data.enabled ? "bg-emerald-500/15 text-emerald-300" : "bg-slate-700/60 text-slate-300"}`}
-        >
-          {data.enabled ? "On: limits are applied" : data.production ? "Off on the live site" : "Off"}
-        </span>
-      </div>
-      <p className="mt-2 text-xs text-slate-400 leading-relaxed">
-        {data.enabled
-          ? "Free accounts are held to the limits below in the web apps; Pro and admins are not. "
-          : "Nobody is limited and the pricing page doesn't exist. To try it, set BILLING_ENABLED=1 in a preview or on your computer; the live site also needs BILLING_IN_PRODUCTION=1. "}
-        {data.checkout
-          ? `Payments are taken online by Paddle (${data.paddle.env === "sandbox" ? "sandbox: test cards, no real money" : "live"}). You can still give Pro here to anyone who pays another way.`
-          : "Paddle isn't set up yet: people ask for Pro from the contact page and you give it here."}
-      </p>
-      {!data.checkout && data.paddle.missing.length > 0 && (
-        <p className="mt-2 text-[11.5px] text-amber-200/90">
-          For Paddle, add in Vercel: {data.paddle.missing.join(", ")}
-          {data.paddle.env === "sandbox" ? " (and PADDLE_ENV=production for real payments)" : ""}.
-        </p>
-      )}
-
-      <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-        <div className="rounded-xl border border-[var(--adm-line)] p-3">
-          <p className="font-bold text-slate-200">Free limits</p>
-          <ul className="mt-1.5 space-y-1 text-slate-300">
-            {meters.map((m) => (
-              <li key={m} className="flex justify-between gap-2">
-                <span>{METER_LABEL[m]}</span>
-                <span className="tabular-nums">{data.plans.free.limits[m] ?? "no limit"}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="rounded-xl border border-[var(--adm-line)] p-3">
-          <p className="font-bold text-slate-200">Pro price</p>
-          <p className="mt-1.5 text-slate-300">
-            ${data.prices.monthly} a month · ${data.prices.yearly} a year ({data.prices.currency})
-          </p>
-          <p className="mt-1 text-slate-500">Set in lib/plans.ts. Placeholders until you choose.</p>
-        </div>
-      </div>
+      <h3 id="plans-title" className="text-sm font-bold text-white flex items-center gap-2">
+        <CreditCard className="w-4 h-4 text-emerald-300" aria-hidden /> Give Pro
+      </h3>
+      <p className="mt-1 text-xs text-slate-400">For anyone who pays another way (bank transfer, a team), a trial, or a thank-you. Paddle payments show here by themselves.</p>
 
       <form
-        className="mt-4 flex flex-wrap gap-2"
+        className="mt-3 flex flex-wrap gap-2"
         onSubmit={(e) => {
           e.preventDefault();
           void set("pro");

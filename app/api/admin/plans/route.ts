@@ -2,26 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/adminAuth";
 import { logAdmin } from "@/lib/adminLog";
 import { db } from "@/lib/db";
-import { billingEnabled, checkoutReady, listSubscriptions, setPlan } from "@/lib/billing";
-import { PLANS, PRICES } from "@/lib/plans";
-import { paddleEnv, paddleMissing } from "@/lib/paddle";
+import { listSubscriptions, setPlan } from "@/lib/billing";
 
-// Admin → Usage → Plans: whether the paid plans are on, who is on Pro, and giving or taking Pro
+// Admin → Payments: who is on Pro, and giving or taking away Pro by email
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   if (!(await getAdminSession(req))) return NextResponse.json({ error: "Admins only." }, { status: 401 });
   try {
     return NextResponse.json(
-      {
-        enabled: billingEnabled(),
-        production: process.env.VERCEL_ENV === "production",
-        checkout: checkoutReady(),
-        paddle: { env: paddleEnv(), missing: paddleMissing() },
-        plans: PLANS,
-        prices: PRICES,
-        pro: await listSubscriptions(),
-      },
+      { pro: await listSubscriptions() },
       { headers: { "Cache-Control": "no-store" } }
     );
   } catch (e) {
