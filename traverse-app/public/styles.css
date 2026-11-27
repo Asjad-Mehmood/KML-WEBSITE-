@@ -76,7 +76,7 @@ body:not(.authed) .user-only, body.authed .guest-only { display: none !important
 .menu a, .menu button { text-align: left; padding: 8px 10px; border-radius: 8px; border: 0; background: none; color: var(--ink); text-decoration: none; cursor: pointer; }
 .menu a:hover, .menu button:hover { background: var(--surface-2); }
 
-.menu a small { display: block; font-size: 12px; color: var(--muted); font-weight: 400; }
+.menu a small, .menu button small { display: block; font-size: 12px; color: var(--muted); font-weight: 400; }
 .top-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .nav-toggle { display: none; }
 .nav-toggle svg { fill: none; stroke: var(--ink); stroke-width: 1.8; stroke-linecap: round; }
