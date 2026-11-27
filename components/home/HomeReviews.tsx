@@ -18,6 +18,7 @@ const NAMES: Record<ReviewProduct, string> = {
   "project-folder-manager": "Project Folder Manager",
   "slope-calculator": "Slope Calculator",
   "auto-draft": "Auto Drafting",
+  toolkit: "Survey Toolkit",
 };
 
 // Home page: what people who downloaded our programs say (reviews published in Admin → Reviews).
