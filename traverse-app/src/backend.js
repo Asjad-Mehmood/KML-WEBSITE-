@@ -54,7 +54,7 @@ export class SupabaseRemote {
 }
 
 // ---------------------------------------------------------------- Excel to KML website accounts
-// On exceltokml.com the app is served from the same site, so the website's sign-in cookie
+// On the website the app is served from the same site, so the website's sign-in cookie
 // carries the session and jobs are kept in the website's database (/api/traverse/jobs).
 const LOGQ = 'tl.activity.queue';
 
@@ -79,7 +79,7 @@ export class SiteRemote {
         headers: body ? { 'Content-Type': 'application/json', ...APP_HEADERS } : { ...APP_HEADERS },
         body: body ? JSON.stringify(body) : undefined,
       });
-    } catch (e) { throw new AuthError('Could not reach exceltokml.com. Check your connection and try again.', 'network'); }
+    } catch (e) { throw new AuthError('Could not reach the website. Check your connection and try again.', 'network'); }
     let j = {};
     try { j = await r.json(); } catch (e) { /* empty reply */ }
     if (!r.ok) { const e = new AuthError(j.error || `The server answered ${r.status}.`, r.status); e.data = j; throw e; }
@@ -115,11 +115,11 @@ export class SiteRemote {
   /** A new confirmation code; returns the new challenge */
   async resendConfirm(challenge) { const j = await this.call('POST', '/api/auth/resend-verify', { challenge }); return { challenge: j.challenge, sentTo: j.sentTo }; }
   async signOut() { await this.call('POST', '/api/auth/logout'); }
-  /** Sign in with a code confirmed in the browser at exceltokml.com/link (Google and admin accounts). */
+  /** Sign in with a code confirmed in the browser at the website's /link (Google and admin accounts). */
   async startCode(app) { return this.call('POST', '/api/auth/device/start', { app }); }
   async pollCode(poll) { const j = await this.call('POST', '/api/auth/device/poll', { poll }); return j.user ? { user: SiteRemote.userFrom(j.user) } : { state: j.state }; }
   async resetPassword(email) { await this.call('POST', '/api/auth/forgot-password', { email: normEmail(email) }); }
-  async setPassword() { throw new AuthError('Change your password from your account page on exceltokml.com.'); }
+  async setPassword() { throw new AuthError('Change your password from your account page on the website.'); }
   /**
    * Record what the user did (a report downloaded, a file imported, a simulator run…) in the
    * website's activity log, the same one Excel to KML writes to. Offline, entries wait on this

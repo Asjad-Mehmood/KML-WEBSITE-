@@ -5,7 +5,7 @@ import { initSimulator, stopSim } from './simulator.js';
 import { $, $$, esc, toast, relTime } from './util.js';
 
 const CFG = window.APP_CONFIG || {};
-// On exceltokml.com the app uses the website's own accounts; anywhere else it runs in demo mode.
+// On the website (surveyxdigital.com or exceltokml.com) the app uses the website's own accounts; anywhere else it runs in demo mode.
 const remote = CFG.backend === 'site' ? new SiteRemote(CFG.apiBase || '') : new DemoRemote();
 let user = null, store = null, recovery = false;
 // what the admin allows (Admin → Settings → Traverse & Level); read at sign-in
@@ -193,7 +193,8 @@ async function startCode() {
   try { c = await remote.startCode(WHERE === 'Web browser' ? 'Traverse & Level' : `Traverse & Level (${WHERE})`); }
   catch (err) { msg('#code-msg', err.message); return; }
   if (run !== codeRun) return;
-  const origin = location.origin.includes('localhost') ? location.origin : 'https://www.exceltokml.com';
+  // the code is confirmed on the website this app is on (the old address while the Windows program uses it)
+  const origin = location.origin.includes('localhost') || /(^|\.)(surveyxdigital|exceltokml)\.com$/.test(location.hostname) ? location.origin : 'https://www.surveyxdigital.com';
   const link = `${origin}/link?code=${c.code.replace('-', '')}`;
   $('#code-value').textContent = c.code; $('#code-url').textContent = `${origin.replace(/^https?:\/\/(www\.)?/, '')}/link`; $('#code-copy').dataset.link = link;
   msg('#code-msg', 'Waiting for you to confirm the code in the browser…', true);

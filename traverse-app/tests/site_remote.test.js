@@ -66,5 +66,5 @@ test('jobs and sharing use /api/traverse/jobs', async () => {
 
 test('offline gives a clear message', async () => {
   globalThis.fetch = async () => { throw new TypeError('Failed to fetch'); };
-  await assert.rejects(new SiteRemote().session(), /Could not reach exceltokml.com/);
+  await assert.rejects(new SiteRemote().session(), /Could not reach the website/);
 });
