@@ -77,7 +77,7 @@ export default function WebAppClient({ inToolkit = false }: { inToolkit?: boolea
             <div className="flex items-center gap-2 min-w-0">
               <div className="shrink-0 w-7 h-7 rounded-lg bg-blue-50 border border-blue-200 flex items-center justify-center p-1">
                 <Image
-                  src="/assets/icon.png"
+                  src="/assets/excel-to-kml-icon.png"
                   alt="Excel to KML"
                   width={20}
                   height={20}

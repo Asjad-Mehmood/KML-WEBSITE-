@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Cpu, Globe2, HeartHandshake, Lock, MapPinned, Wallet } from "lucide-react";
 import PageShell from "../../components/PageShell";
@@ -58,6 +59,15 @@ export default function AboutPage() {
       <BreadcrumbStructuredData name="About" path="/about" />
       <div className="max-w-[1140px] mx-auto px-5 sm:px-8">
         <PageIntro eyebrow="About" title="Software for survey and site engineering work" lead={DESCRIPTION} />
+
+        <Image
+          src="/assets/surveyx-digital-logo.jpg"
+          alt="SurveyX Digital: Survey Smart, Work Digital"
+          width={1200}
+          height={800}
+          priority
+          className="mt-8 w-full max-w-[720px] h-auto rounded-2xl border border-slate-200/80"
+        />
 
         <ul className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {POINTS.map((p) => (
