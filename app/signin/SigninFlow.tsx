@@ -282,9 +282,7 @@ export function AuthCard({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-[#f5f5f7] flex flex-col items-center justify-center px-4 py-10">
       <div className="w-full max-w-[440px] overflow-hidden rounded-[28px] border border-slate-200/70 bg-white px-6 py-9 shadow-[0_24px_60px_-20px_rgba(7,26,68,0.18)] sm:px-10">
         <div className="mb-6 flex justify-center">
-          <span className="flex h-11 w-11 items-center justify-center rounded-[13px] bg-[#071a44]">
-            <Image src="/assets/icon.png" alt="SurveyX Digital" width={26} height={26} className="object-contain" priority />
-          </span>
+          <Image src="/assets/surveyx-icon.png" alt="SurveyX Digital" width={56} height={56} className="h-14 w-14 object-contain" priority />
         </div>
         {children}
       </div>

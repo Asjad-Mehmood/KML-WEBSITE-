@@ -23,13 +23,14 @@ as phases land, and keep this file the single source of truth for the rebrand.
 - **Copyright and owner: SurveyX Digital** (© 2026 SurveyX Digital) in the website and every program.
 - **Excel to KML is only the name of one program**; the company, the account, the emails and the
   publisher are SurveyX Digital. Excel to KML's own pages and search pages keep "| Excel to KML".
-- **Logo: the owner sends the file.** Until then the site keeps the current icon.
+- **Logo: the owner's file** (Nov 2026): the round "S" with the surveyor is the icon
+  (`public/assets/surveyx-icon.png`, favicons, app and email icons); the full round logo with
+  "Survey Smart · Work Digital" is the share picture and the About page.
 - Account and support emails stay as they are (`admin@exceltokml.com` is the admin account's
   identity: never change it); the sender name in `MAIL_FROM` becomes "SurveyX Digital".
 
 ### Still to decide (ask the owner before starting each)
-- [ ] The logo: owner's file, or one designed here (navy `#071a44` + yellow `#ffd21f`, a mark
-      built from a survey crosshair/"X")
+- [x] The logo: the owner's file
 - [x] The new domain: surveyxdigital.com (bought)
 - [ ] The support/sender email for mail (e.g. `hello@surveyxdigital.com` or keep `@exceltokml.com`)
 - [x] The legal owner name in copyrights: SurveyX Digital
@@ -157,7 +158,7 @@ each app repo.
 
 ## 6. Progress
 - [ ] Phase 0 Brand kit
-- [~] Phase 1 Website brand layer (text, titles, legal, structured data done; logo waits for the file)
+- [x] Phase 1 Website brand layer (text, titles, legal, structured data, logo)
 - [~] Phase 2 Emails (templates done; owner sets MAIL_FROM)
 - [ ] Phase 3 Survey Toolkit
 - [ ] Phase 4 Other programs (Excel to KML · Traverse · Slope · Auto Drafting · Folder Manager · RoadPro)

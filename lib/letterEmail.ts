@@ -183,7 +183,7 @@ ${
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:580px">
 <tr><td bgcolor="${NAVY}" style="background:${NAVY};border-radius:16px 16px 0 0;padding:18px 32px">
 <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
-<td valign="middle"><img src="${escHtml(`${SITE_URL}/assets/icon.png`)}" width="36" height="36" alt="" style="display:block;width:36px;height:36px;border:1px solid #3b5b8f;border-radius:9px"></td>
+<td valign="middle"><img src="${escHtml(`${SITE_URL}/assets/email-logo.png`)}" width="36" height="36" alt="" style="display:block;width:36px;height:36px;border-radius:50%"></td>
 <td valign="middle" style="padding-left:11px;font-size:16px;font-weight:700;color:#ffffff;letter-spacing:-.01em">${escHtml(SITE_NAME)}</td>
 </tr></table>
 </td></tr>

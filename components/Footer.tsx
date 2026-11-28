@@ -50,8 +50,8 @@ export default function Footer({ versionTag, releaseNotesUrl, onDownloadClick }:
           {/* Brand */}
           <div className="col-span-2 md:col-span-4 lg:col-span-2 space-y-3.5">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center shadow-xs">
-                <Image src="/assets/icon.png" alt="SurveyX Digital" width={20} height={20} className="object-contain" />
+              <div className="w-8 h-8 flex items-center justify-center">
+                <Image src="/assets/surveyx-icon.png" alt="SurveyX Digital" width={32} height={32} className="object-contain" />
               </div>
               <span className="text-base font-bold text-slate-900">
                 SurveyX Digital

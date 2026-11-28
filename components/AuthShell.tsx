@@ -8,8 +8,8 @@ export default function AuthShell({ title, subtitle, children }: { title: string
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 flex flex-col justify-between p-4 sm:p-8 font-sans">
       <div className="max-w-7xl mx-auto w-full flex items-center justify-between py-2">
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center p-1.5 shadow-xs transition-transform group-hover:scale-105">
-            <Image src="/assets/icon.png" alt="SurveyX Digital" width={32} height={32} className="object-contain" />
+          <div className="w-10 h-10 flex items-center justify-center transition-transform group-hover:scale-105">
+            <Image src="/assets/surveyx-icon.png" alt="SurveyX Digital" width={40} height={40} className="object-contain" />
           </div>
           <span className="font-extrabold text-lg tracking-tight text-slate-900">
             SurveyX Digital
