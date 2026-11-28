@@ -14,7 +14,7 @@ let allow = { enabled: true, sharing: true, keepFiles: true, message: '' };
 // ---------------------------------------------------------------- theme
 function currentTheme() { const t = document.documentElement.getAttribute('data-theme'); if (t) return t; return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; }
 function setTheme(t) { document.documentElement.setAttribute('data-theme', t); storage.set('sx.theme', t); themeLabel(); }
-function themeLabel() { const dark = currentTheme() === 'dark'; $('#theme-btn').setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode'); $('meta[name="theme-color"]').setAttribute('content', dark ? '#0a1424' : '#0b1a2e'); }
+function themeLabel() { const dark = currentTheme() === 'dark'; $('#theme-btn').setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode'); $('meta[name="theme-color"]').setAttribute('content', dark ? '#071e26' : '#0b2a35'); }
 
 // ---------------------------------------------------------------- routing
 const PRIVATE = ['dashboard', 'traverse', 'level', 'simulator'];

@@ -14,8 +14,7 @@ const lic = (name, url, file) => `${'-'.repeat(72)}\n${name}\n${url}\n${'-'.repe
 fs.writeFileSync(path.join(out, 'vendor/LICENSES.txt'), 'Open-source software in Traverse & Level\n\nThe app is built with the free software below. Each part keeps its own licence, copied here in full.\n\n'
   + lic('jsPDF', 'https://github.com/parallax/jsPDF (MIT)', 'node_modules/jspdf/LICENSE')
   + lic('jsPDF-AutoTable', 'https://github.com/simonbengtsson/jsPDF-AutoTable (MIT)', 'node_modules/jspdf-autotable/LICENSE.txt')
-  + lic('fflate (inside jsPDF)', 'https://github.com/101arrowz/fflate (MIT)', 'node_modules/fflate/LICENSE')
-  + `${'-'.repeat(72)}\nIBM Plex Sans, IBM Plex Mono, Libre Caslon Text (the fonts)\nSIL Open Font License 1.1: https://openfontlicense.org\n`);
+  + lic('fflate (inside jsPDF)', 'https://github.com/101arrowz/fflate (MIT)', 'node_modules/fflate/LICENSE'));
 fs.writeFileSync(path.join(out, 'vendor/pdf.js'), fs.readFileSync('node_modules/jspdf/dist/jspdf.umd.min.js', 'utf8') + '\n;\n' + fs.readFileSync('node_modules/jspdf-autotable/dist/jspdf.plugin.autotable.min.js', 'utf8'));
 // cache-busting version for the service worker
 const v = Date.now().toString(36);
