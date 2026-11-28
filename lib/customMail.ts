@@ -205,6 +205,29 @@ export async function countAudience(a: AudienceInput): Promise<{ count: number; 
   return { count: n.n, sample, label: c.label };
 }
 
+/** Everyone an audience reaches now, by email (Admin → Email: "Show all") */
+export async function audiencePeople(a: AudienceInput, limit = 5000): Promise<{ people: { email: string; name: string }[]; count: number } | { error: string }> {
+  await ensureMailTables();
+  const c = checkAudience(a);
+  if (!c.ok) return { error: c.error };
+  const sql = await peopleSql(a.audience, c.app, c.days);
+  const people = await prisma.$queryRawUnsafe<{ email: string; name: string }[]>(`SELECT * FROM (${sql}) e ORDER BY e.email LIMIT $3`, NEVER_EMAIL, c.ids, limit);
+  const [n] = await prisma.$queryRawUnsafe<{ n: number }[]>(`SELECT count(*)::int AS n FROM (${sql}) e`, NEVER_EMAIL, c.ids);
+  return { people, count: n.n };
+}
+
+/** Who one email went to, and how it went for each (sent, failed, still to go) */
+export async function recipientsOf(id: string, limit = 5000) {
+  await ensureMailTables();
+  const rows = await prisma.$queryRawUnsafe<{ email: string; name: string; status: string; error: string | null; sentAt: Date | null }[]>(
+    `SELECT "email", "name", "status", "error", "sentAt" FROM "custom_mail_recipients" WHERE "mailId" = $1
+     ORDER BY CASE "status" WHEN 'failed' THEN 0 WHEN 'sent' THEN 2 ELSE 1 END, "email" LIMIT $2`,
+    id,
+    limit
+  );
+  return rows.map((r) => ({ ...r, sentAt: r.sentAt ? new Date(r.sentAt).toISOString() : null }));
+}
+
 /** Start sending: the people are worked out now and kept with the email */
 export async function startMail(d: MailDraft, a: AudienceInput, createdBy: string): Promise<string> {
   await ensureMailTables();

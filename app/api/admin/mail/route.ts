@@ -8,7 +8,9 @@ import {
   type AudienceInput,
   type MailAudience,
   checkDraft,
+  audiencePeople,
   countAudience,
+  recipientsOf,
   customEmail,
   failedOf,
   listMails,
@@ -22,6 +24,8 @@ import {
 // Admin → Email (lib/customMail.ts):
 //   GET                         the emails sent, newest first (and restarts a run that stopped)
 //   GET ?id=…                   one email's counts and the addresses that failed
+//   GET ?id=…&people=1          everyone that email went to, with how it went for each
+//   POST {action:"list", audience, userIds, app, days}   everyone an audience reaches now
 //   POST {action:"count", audience, userIds, app}        how many it reaches now, and a few of them
 //   POST {action:"preview", draft}                       the email's HTML, as {name} would be filled for the admin
 //   POST {action:"test", draft}                          a test copy to the admin
@@ -50,6 +54,7 @@ export async function GET(req: NextRequest) {
     if (id) {
       const mail = await mailStatus(id);
       if (!mail) return NextResponse.json({ error: "Not found" }, { status: 404 });
+      if (req.nextUrl.searchParams.get("people")) return NextResponse.json({ mail, people: await recipientsOf(id) });
       return NextResponse.json({ mail, failed: mail.failed ? await failedOf(id) : [] });
     }
     // a run that stopped (a deploy in between) carries on when the page is opened
@@ -90,6 +95,10 @@ export async function POST(req: NextRequest) {
           linkLabel: r.linkLabel,
         })),
       });
+    }
+    if (action === "list") {
+      const r = await audiencePeople(audienceOf(b));
+      return "error" in r ? NextResponse.json(r, { status: 400 }) : NextResponse.json(r);
     }
     if (action === "count") {
       const r = await countAudience(audienceOf(b));

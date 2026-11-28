@@ -8,6 +8,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MAIL_TEMPLATES, type MailTemplate } from "@/lib/mailTemplates";
 import { releaseDraft, type ReleaseForMail } from "@/lib/releaseMailDraft";
 import ReleasePicker from "./ReleasePicker";
+import MailPeople, { type MailPerson } from "./MailPeople";
 import { CheckCircle2, Clock, Eye, Loader2, Mail, Pause, Play, RefreshCw, Search, Send, Square, User, Users, X, AppWindow, Globe2, FlaskConical } from "lucide-react";
 
 type Audience = "one" | "selected" | "app" | "all" | "inactive";
@@ -72,6 +73,11 @@ export default function AdminMail({
   const [found, setFound] = useState<Person[]>([]);
   const [searching, setSearching] = useState(false);
   const [reach, setReach] = useState<{ count: number; sample: { email: string; name: string }[] } | null>(null);
+  // "Show all": everyone the email would reach, for the audience it was asked for
+  const [allPeople, setAllPeople] = useState<{ key: string; people: MailPerson[]; count: number } | null>(null);
+  const [listing, setListing] = useState(false);
+  // a sent email's list: who it went to, and how it went
+  const [sentPeople, setSentPeople] = useState<Record<string, MailPerson[] | "loading">>({});
   const [reachError, setReachError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -252,6 +258,44 @@ export default function AdminMail({
     void loadList();
   };
 
+  const showAll = async () => {
+    setListing(true);
+    try {
+      const r = await adminFetch("/api/admin/mail", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "list", ...audienceBody }) });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || "The list couldn't be read.");
+      setAllPeople({ key: JSON.stringify(audienceBody), people: j.people, count: j.count });
+    } catch (e) {
+      toast.current((e as Error).message, "error");
+    } finally {
+      setListing(false);
+    }
+  };
+  const toggleSent = async (id: string) => {
+    if (sentPeople[id]) {
+      setSentPeople((x) => {
+        const next = { ...x };
+        delete next[id];
+        return next;
+      });
+      return;
+    }
+    setSentPeople((x) => ({ ...x, [id]: "loading" }));
+    try {
+      const r = await adminFetch(`/api/admin/mail?id=${encodeURIComponent(id)}&people=1`);
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || "The list couldn't be read.");
+      setSentPeople((x) => ({ ...x, [id]: j.people }));
+    } catch (e) {
+      setSentPeople((x) => {
+        const next = { ...x };
+        delete next[id];
+        return next;
+      });
+      toast.current((e as Error).message, "error");
+    }
+  };
+
   const canSend = subject.trim() && body.trim() && !needsPick && reach && reach.count > 0;
 
   return (
@@ -260,7 +304,7 @@ export default function AdminMail({
         It goes out in the background (closing this page doesn&apos;t stop it) and skips anyone who stopped our emails.
       </p>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         {/* ---------------- who ---------------- */}
         <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 sm:p-5">
           <p className="text-sm font-bold text-white">1. Who gets it</p>
@@ -374,7 +418,31 @@ export default function AdminMail({
                 <span className="font-bold text-white">
                   Reaches {shownReach.count} {shownReach.count === 1 ? "person" : "people"}
                 </span>
-                {shownReach.sample.length > 0 && <span className="block truncate text-xs text-slate-500">{shownReach.sample.map((s) => s.email).join(", ")}{shownReach.count > shownReach.sample.length ? ", …" : ""}</span>}
+                {shownReach.sample.length > 0 && allPeople?.key !== JSON.stringify(audienceBody) && (
+                  <span className="block truncate text-xs text-slate-500">
+                    {shownReach.sample.map((s) => s.email).join(", ")}
+                    {shownReach.count > shownReach.sample.length ? ", …" : ""}
+                  </span>
+                )}
+                {shownReach.count > 0 &&
+                  (allPeople?.key === JSON.stringify(audienceBody) ? (
+                    <>
+                      <MailPeople people={allPeople.people} total={allPeople.count} />
+                      <button type="button" onClick={() => setAllPeople(null)} className="mt-2 text-xs font-semibold text-slate-400 hover:text-white cursor-pointer">
+                        Hide the list
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={listing}
+                      onClick={() => void showAll()}
+                      className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-blue-300 hover:text-blue-200 cursor-pointer disabled:opacity-60"
+                    >
+                      {listing ? <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden /> : null}
+                      Show all {shownReach.count} {shownReach.count === 1 ? "address" : "addresses"}
+                    </button>
+                  ))}
                 {shownReach.count === 0 && <span className="block text-xs text-slate-500">They stopped our emails, or have no valid address.</span>}
               </>
             ) : (
@@ -518,6 +586,11 @@ export default function AdminMail({
                   {m.sent} of {m.total} sent{m.failed ? ` · ${m.failed} failed` : ""}
                   {m.lastError && m.status !== "done" ? ` · ${m.lastError}` : ""}
                 </p>
+                <button type="button" onClick={() => void toggleSent(m.id)} className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-blue-300 hover:text-blue-200 cursor-pointer">
+                  {sentPeople[m.id] === "loading" && <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden />}
+                  {sentPeople[m.id] && sentPeople[m.id] !== "loading" ? "Hide the list" : `See who got it (${m.total})`}
+                </button>
+                {Array.isArray(sentPeople[m.id]) && <MailPeople people={sentPeople[m.id] as MailPerson[]} total={m.total} />}
                 {m.status !== "done" && (
                   <div className="mt-3 flex gap-2">
                     {m.status === "sending" ? (
