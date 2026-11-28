@@ -1,5 +1,5 @@
 // How-to guides at /guides/<slug> (the page files live in app/guides/<slug>/page.tsx)
-export type GuideCategory = "Getting started" | "Coordinates" | "Checking the work" | "Deliverables" | "Traverse and levelling" | "Roads in AutoCAD";
+export type GuideCategory = "Getting started" | "Coordinates" | "Checking the work" | "Deliverables" | "Traverse and levelling" | "Roads in AutoCAD" | "Site and office";
 
 export interface Guide {
   slug: string;
@@ -8,10 +8,10 @@ export interface Guide {
   category: GuideCategory;
   published: string; // ISO date
   /** The program the guide is about, for its closing panel (Excel to KML when left out) */
-  product?: "traverse" | "roadpro";
+  product?: "traverse" | "roadpro" | "slope" | "pfm";
 }
 
-export const GUIDE_CATEGORIES: GuideCategory[] = ["Getting started", "Coordinates", "Checking the work", "Deliverables", "Traverse and levelling", "Roads in AutoCAD"];
+export const GUIDE_CATEGORIES: GuideCategory[] = ["Getting started", "Coordinates", "Checking the work", "Deliverables", "Traverse and levelling", "Roads in AutoCAD", "Site and office"];
 
 export const GUIDES: Guide[] = [
   {
@@ -252,6 +252,56 @@ export const GUIDES: Guide[] = [
     category: "Roads in AutoCAD",
     published: "2026-10-24",
     product: "roadpro",
+  },
+  {
+    slug: "plot-coordinates-on-google-maps",
+    title: "How to Plot Survey Coordinates on Google Maps",
+    description:
+      "Show eastings and northings, or latitudes and longitudes, as pins on Google Maps with My Maps: convert to WGS 84, import a CSV or KML, and share the map.",
+    category: "Deliverables",
+    published: "2026-11-28",
+  },
+  {
+    slug: "area-from-coordinates",
+    title: "How to Calculate Area from Coordinates (with an Excel Formula)",
+    description:
+      "The shoelace formula for the area of a plot from its corner coordinates, a one-line Excel formula, square metres to hectares and acres, and the mistakes to avoid.",
+    category: "Checking the work",
+    published: "2026-11-28",
+  },
+  {
+    slug: "points-in-wrong-place-google-earth",
+    title: "Why Are My Survey Points in the Wrong Place in Google Earth?",
+    description:
+      "Points in the sea, in another country or a few hundred metres off: the usual causes (zone, hemisphere, swapped columns, datum, units, a local grid) and how to tell which one it is.",
+    category: "Coordinates",
+    published: "2026-11-28",
+  },
+  {
+    slug: "open-kmz-on-phone",
+    title: "How to Open a KML or KMZ File on a Phone and Share It with a Client",
+    description:
+      "Open survey KML and KMZ files on Android and iPhone with Google Earth, send them by email, WhatsApp or Drive, and make sure the photos and labels come through.",
+    category: "Deliverables",
+    published: "2026-11-28",
+  },
+  {
+    slug: "slope-percentage-degrees-ratio",
+    title: "Slope in Percent, Degrees and 1 in N: How to Convert",
+    description:
+      "Work out a slope from two levels and a distance, and convert between percent, degrees, 1 in N and V:H, with a table of common road and drain slopes and the Excel formulas.",
+    category: "Site and office",
+    published: "2026-11-28",
+    product: "slope",
+  },
+  {
+    slug: "survey-project-folder-structure",
+    title: "A Folder Structure for Survey and Engineering Projects",
+    description:
+      "A project folder layout that works from tender to archive: numbered top folders, where raw data and deliverables go, file naming with dates and revisions, and keeping it tidy.",
+    category: "Site and office",
+    published: "2026-11-28",
+    product: "pfm",
   },
 ];
 

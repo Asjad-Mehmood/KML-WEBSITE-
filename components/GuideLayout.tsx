@@ -6,6 +6,7 @@ import { GUIDES, guideBySlug } from "@/lib/guides";
 import { SITE_NAME, SITE_URL, jsonLd } from "@/lib/site";
 import WebAppLink from "./WebAppLink";
 import { TRAVERSE_APP } from "@/lib/traverse";
+import { SLOPE_APP } from "@/lib/slope";
 
 const primary = "!no-underline inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] !text-white text-[14px] font-semibold";
 const secondary = "!no-underline inline-flex items-center px-5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 !text-slate-700 text-[14px] font-semibold";
@@ -48,6 +49,30 @@ export default function GuideLayout({ slug, children }: { slug: string; children
               </Link>
               <Link href="/tools/traverse-adjustment" className={secondary}>
                 Free traverse calculator
+              </Link>
+            </div>
+          </>
+        ) : guide.product === "slope" ? (
+          <>
+            <p className="!mb-3 font-semibold text-slate-900">Work out your slopes and levels</p>
+            <div className="flex flex-wrap gap-2.5">
+              <Link href={SLOPE_APP} className={primary}>
+                Open Slope Calculator <ArrowRight className="w-4 h-4" aria-hidden />
+              </Link>
+              <Link href="/tools/slope-calculator" className={secondary}>
+                Quick slope calculator
+              </Link>
+            </div>
+          </>
+        ) : guide.product === "pfm" ? (
+          <>
+            <p className="!mb-3 font-semibold text-slate-900">Keep every project folder in order</p>
+            <div className="flex flex-wrap gap-2.5">
+              <Link href="/project-folder-manager#download" className={primary}>
+                Get Project Folder Manager free <ArrowRight className="w-4 h-4" aria-hidden />
+              </Link>
+              <Link href="/project-folder-manager#screens" className={secondary}>
+                See how it looks
               </Link>
             </div>
           </>
