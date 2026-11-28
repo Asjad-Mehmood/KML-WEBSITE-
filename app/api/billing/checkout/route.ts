@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
-import { billingState, getSubscription, isActivePro } from "@/lib/billing";
+import { billingState, planOf } from "@/lib/billing";
 import { paddleConfig } from "@/lib/paddle";
 
 // POST { interval: "monthly" | "yearly" }: start paying for Pro.
@@ -11,8 +11,7 @@ export async function POST(req: NextRequest) {
   if (!state.pricing) return NextResponse.json({ error: "Not found." }, { status: 404 });
   const s = await sessionForToken(tokenFromRequest(req));
   if (!s?.user) return NextResponse.json({ error: "Sign in first.", signIn: true }, { status: 401 });
-  // already paying (months earned by invites don't stop anyone from paying)
-  if (isActivePro(await getSubscription(s.user.id))) return NextResponse.json({ error: "Your account is already on Pro.", already: true }, { status: 409 });
+  if ((await planOf(s.user)) === "pro") return NextResponse.json({ error: "Your account is already on Pro.", already: true }, { status: 409 });
   const body = await req.json().catch(() => ({}));
   const interval = body?.interval === "yearly" ? "yearly" : "monthly";
   if (!state.checkout) {

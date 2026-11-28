@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
     // came from someone's invite link (the cookie from /r/<code>, or "ref" from an app)
     if (!existing && user) {
       const ref = req.cookies.get(REF_COOKIE)?.value || (typeof body.ref === "string" ? body.ref : "");
-      if (ref) await recordReferral(user.id, ref, geo.ip);
+      if (ref) await recordReferral(user.id, ref);
     }
 
     // Email-and-password accounts confirm their address before they can sign in. The reply says

@@ -14,7 +14,6 @@ import { limitText, UPGRADE_PATH, type Meter, type PlanId } from "@/lib/plans";
 import { billingConfig, devOn, forcedOff, type BillingConfig } from "@/lib/billingConfig";
 import { WORK_ACTIONS } from "@/lib/usageStats";
 import { paddleReady, type PaddleSubscription } from "@/lib/paddle";
-import { referralProUntil } from "@/lib/referrals";
 
 /** What is switched on right now (Admin → Payments, the emergency stop and BILLING_ENABLED for development) */
 export async function billingState(cfg?: BillingConfig) {
@@ -130,12 +129,9 @@ export function isActivePro(s: Subscription | null, now = Date.now()): boolean {
 
 type Who = { id: string; role?: string | null; email?: string | null };
 
-/** Pro: admins, a paid (or given) subscription, or months earned by inviting friends */
-export async function planOf(user: Who, limitsOn?: boolean): Promise<PlanId> {
+export async function planOf(user: Who): Promise<PlanId> {
   if (isAdminUser(user)) return "pro";
-  if (isActivePro(await getSubscription(user.id))) return "pro";
-  const on = limitsOn ?? (await billingState()).limits;
-  return (await referralProUntil(user.id, on)) ? "pro" : "free";
+  return isActivePro(await getSubscription(user.id)) ? "pro" : "free";
 }
 
 /** Give or take away a plan (an admin, or a payment provider's webhook) */
@@ -280,7 +276,7 @@ export async function checkLimit(user: Who, meter: Meter, adding = true): Promis
   try {
     const state = await billingState();
     if (!state.limits) return { ok: true };
-    if ((await planOf(user, true)) === "pro") return { ok: true };
+    if ((await planOf(user)) === "pro") return { ok: true };
     const limit = state.freeLimits[meter];
     const used = (await usageOf(user.id))[meter];
     if (used < limit) return { ok: true };
@@ -297,14 +293,14 @@ export async function planSummary(user: Who) {
   const state = await billingState();
   // shown once the pricing is out, even before the limits are on
   if (!state.pricing) return { enabled: false as const };
-  const [plan, sub, used, earned] = await Promise.all([planOf(user, state.limits), getSubscription(user.id), usageOf(user.id), referralProUntil(user.id, state.limits)]);
+  const [plan, sub, used] = await Promise.all([planOf(user), getSubscription(user.id), usageOf(user.id)]);
   const none: Record<Meter, null> = { monthlyWork: null, "jobs:kml": null, "jobs:traverse": null, "jobs:slope": null };
   return {
     enabled: true as const,
     /** the limits are applied (otherwise they are only shown) */
     enforced: state.limits,
     plan,
-    periodEnd: plan === "pro" ? (isActivePro(sub) ? sub!.periodEnd : earned ? earned.toISOString() : null) : null,
+    periodEnd: plan === "pro" && sub ? sub.periodEnd : null,
     limits: plan === "pro" ? none : state.freeLimits,
     used,
     checkout: state.checkout,

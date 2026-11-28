@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
       user = await db.createUser({ name: profile.name, email: profile.email, ipAddress: geo.ip, location: geo.location });
       // came from someone's invite link (/r/<code>)
       const ref = req.cookies.get(REF_COOKIE)?.value;
-      if (ref && user) await recordReferral(user.id, ref, geo.ip);
+      if (ref && user) await recordReferral(user.id, ref);
     }
 
 

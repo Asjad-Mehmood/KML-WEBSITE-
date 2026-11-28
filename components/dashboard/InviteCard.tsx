@@ -3,23 +3,12 @@
 import { useEffect, useState } from "react";
 import { Check, Copy, Gift, Mail, Share2 } from "lucide-react";
 
-type Invites = {
-  code: string;
-  link: string;
-  joined: number;
-  waiting: number;
-  rewarded: number;
-  bankedDays: number;
-  proUntil: string | null;
-  maxRewards: number;
-  rewardDays: number;
-  proLive: boolean;
-};
+type Invites = { code: string; link: string; joined: number; active: number };
 
 const MESSAGE =
   "I use SurveyX Digital's free survey tools: Excel to KML (survey points into Google Earth on any grid), Traverse & Level, Slope Calculator and more. Make a free account here:";
 
-// Dashboard: the account's invite link, ways to send it, and what invites have earned
+// Dashboard: the account's invite link, ways to send it, and how many colleagues joined from it
 export default function InviteCard() {
   const [d, setD] = useState<Invites | null>(null);
   const [copied, setCopied] = useState(false);
@@ -52,17 +41,15 @@ export default function InviteCard() {
   const share = () => navigator.share?.({ title: "SurveyX Digital", text: MESSAGE, url: d.link }).catch(() => {});
   const whatsapp = `https://wa.me/?text=${encodeURIComponent(`${MESSAGE} ${d.link}`)}`;
   const email = `mailto:?subject=${encodeURIComponent("Free survey tools: SurveyX Digital")}&body=${encodeURIComponent(`${MESSAGE}\n\n${d.link}`)}`;
-  const months = Math.round(d.bankedDays / 30);
   const btn = "inline-flex items-center gap-1.5 rounded-full border border-slate-300 px-3.5 py-2 text-[13px] font-semibold text-slate-900 hover:bg-slate-50 cursor-pointer";
 
   return (
     <section className="mt-6 bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6" aria-labelledby="invite-title">
       <h2 id="invite-title" className="text-[15px] font-bold flex items-center gap-2">
-        <Gift className="w-4 h-4 text-[#0071e3]" aria-hidden /> Invite a colleague, get a month of Pro
+        <Gift className="w-4 h-4 text-[#0071e3]" aria-hidden /> Invite a colleague
       </h2>
       <p className="mt-1 text-[13px] text-slate-600">
-        When someone signs up from your link and uses one of the apps, you get {d.rewardDays} days of Pro, up to {d.maxRewards} months.
-        {!d.proLive && " Pro isn't out yet: the months you earn are saved and start when it is."}
+        Send your link to someone who works with survey data. They get a free account, and you can see here who joined.
       </p>
 
       <div className="mt-4 flex flex-col sm:flex-row gap-2">
@@ -92,11 +79,10 @@ export default function InviteCard() {
         )}
       </div>
 
-      <dl className="mt-4 grid grid-cols-3 gap-2 text-center">
+      <dl className="mt-4 grid grid-cols-2 gap-2 text-center">
         {[
-          ["Signed up", d.joined],
-          ["Months earned", d.rewarded],
-          ["Waiting for first use", d.waiting],
+          ["Joined from your link", d.joined],
+          ["Already using an app", d.active],
         ].map(([label, n]) => (
           <div key={label as string} className="rounded-xl bg-slate-50 px-2 py-2.5">
             <dd className="text-[18px] font-extrabold text-slate-900 tabular-nums">{n}</dd>
@@ -104,14 +90,6 @@ export default function InviteCard() {
           </div>
         ))}
       </dl>
-      {(d.proUntil || months > 0) && (
-        <p className="mt-3 text-[12.5px] text-emerald-700">
-          {d.proUntil
-            ? `Pro from invites until ${new Date(d.proUntil).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}.`
-            : ""}
-          {months > 0 ? ` ${months} month${months === 1 ? "" : "s"} of Pro saved for when it starts.` : ""}
-        </p>
-      )}
     </section>
   );
 }

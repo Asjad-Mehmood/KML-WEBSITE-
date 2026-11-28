@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runCleanup } from "@/lib/cleanup";
 import { kickStalled } from "@/lib/broadcastRunner";
-import { billingState } from "@/lib/billing";
-import { processRewards } from "@/lib/referrals";
 
 // Called nightly by Vercel Cron (vercel.json). With CRON_SECRET set, Vercel
 // sends it as a Bearer token and nothing else is accepted.
@@ -18,14 +16,7 @@ export async function GET(req: NextRequest) {
   try {
     // and a broadcast whose run stopped carries on
     const restarted = await kickStalled(req.nextUrl.origin);
-    // invited friends who have used an app since: their inviters get their month of Pro
-    const inviteRewards = await billingState()
-      .then((st) => processRewards(undefined, st.limits))
-      .catch((e) => {
-        console.error("Invite rewards failed:", e);
-        return 0;
-      });
-    return NextResponse.json({ ok: true, restartedBroadcasts: restarted, inviteRewards, ...(await runCleanup("schedule")) });
+    return NextResponse.json({ ok: true, restartedBroadcasts: restarted, ...(await runCleanup("schedule")) });
   } catch (err) {
     console.error("Clean-up failed:", err);
     return NextResponse.json({ error: "Clean-up failed" }, { status: 500 });
