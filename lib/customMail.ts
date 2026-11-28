@@ -18,8 +18,10 @@ import { absoluteLink, unsubscribeEndpoint, unsubscribePage } from "@/lib/releas
 import { NEVER_EMAIL, appById, ensureReleaseTables, recipientsSql } from "@/lib/releases";
 import { SITE_URL } from "@/lib/site";
 
-export type MailAudience = "one" | "selected" | "app" | "all";
-export const MAIL_AUDIENCES: MailAudience[] = ["one", "selected", "app", "all"];
+export type MailAudience = "one" | "selected" | "app" | "all" | "inactive";
+export const MAIL_AUDIENCES: MailAudience[] = ["one", "selected", "app", "all", "inactive"];
+/** "Not seen lately": no sign-in, no app use and no work for this many days */
+export const INACTIVE_DAYS = [30, 60, 90, 180] as const;
 
 export interface MailDraft {
   subject: string;
@@ -130,8 +132,22 @@ export function customEmail(d: MailDraft, to: { name: string; email: string }) {
   };
 }
 
+/** People not seen for `days` days: an account at least that old, no sign-in, no work in an app and
+ *  no program use since then (the usual "everyone" rules still apply: confirmed, not opted out) */
+async function inactiveSql(days: number): Promise<string> {
+  const since = `now() - interval '${Math.round(days)} days'`;
+  const [t] = await prisma.$queryRawUnsafe<{ ok: boolean }[]>(`SELECT to_regclass('public."app_usage"') IS NOT NULL AS ok`);
+  return `${await recipientsSql("", "all")}
+    AND u."createdAt" < ${since}
+    AND coalesce(u."lastLoginAt", u."createdAt") < ${since}
+    AND NOT EXISTS (SELECT 1 FROM "activities" a WHERE a."userId" = u."id" AND a."timestamp" >= ${since})
+    ${t?.ok ? `AND NOT EXISTS (SELECT 1 FROM "app_usage" x WHERE x."userId" = u."id" AND x."lastSeen" >= ${since})` : ""}
+    AND $2::text[] IS NOT NULL`;
+}
+
 /** SQL for the people of an audience ($1: never-email list, $2: the picked ids) */
-async function peopleSql(audience: MailAudience, app: string): Promise<string> {
+async function peopleSql(audience: MailAudience, app: string, days = 60): Promise<string> {
+  if (audience === "inactive") return inactiveSql(days);
   // ($2 is unused there; named so the query keeps the same parameters)
   if (audience === "all") return `${await recipientsSql("", "all")}
     AND $2::text[] IS NOT NULL`;
@@ -151,9 +167,11 @@ export interface AudienceInput {
   audience: MailAudience;
   userIds?: string[];
   app?: string;
+  /** for "inactive": not seen for this many days */
+  days?: number;
 }
 
-function checkAudience(a: AudienceInput): { ok: true; ids: string[]; app: string; label: string } | { ok: false; error: string } {
+function checkAudience(a: AudienceInput): { ok: true; ids: string[]; app: string; days: number; label: string } | { ok: false; error: string } {
   if (!MAIL_AUDIENCES.includes(a.audience)) return { ok: false, error: "Choose who gets it." };
   const ids = [...new Set((a.userIds || []).filter((x) => typeof x === "string" && /^[A-Za-z0-9_-]{1,80}$/.test(x)))];
   if (a.audience === "one" && ids.length !== 1) return { ok: false, error: "Choose the person." };
@@ -161,9 +179,19 @@ function checkAudience(a: AudienceInput): { ok: true; ids: string[]; app: string
   if (ids.length > MAX_PICKED) return { ok: false, error: `Pick at most ${MAX_PICKED} people, or send to everyone.` };
   const app = a.app || "";
   if (a.audience === "app" && !appById(app)) return { ok: false, error: "Choose the app." };
+  const days = Number(a.days) || 60;
+  if (a.audience === "inactive" && !(INACTIVE_DAYS as readonly number[]).includes(days)) return { ok: false, error: "Choose how long they've been away." };
   const label =
-    a.audience === "all" ? "Everyone" : a.audience === "app" ? `Everyone who uses ${appById(app)?.name}` : a.audience === "one" ? "One person" : `${ids.length} people picked`;
-  return { ok: true, ids, app, label };
+    a.audience === "all"
+      ? "Everyone"
+      : a.audience === "app"
+        ? `Everyone who uses ${appById(app)?.name}`
+        : a.audience === "inactive"
+          ? `Not seen for ${days} days`
+          : a.audience === "one"
+            ? "One person"
+            : `${ids.length} people picked`;
+  return { ok: true, ids, app, days, label };
 }
 
 /** How many people an audience reaches now, and a few of them */
@@ -171,7 +199,7 @@ export async function countAudience(a: AudienceInput): Promise<{ count: number; 
   await ensureMailTables();
   const c = checkAudience(a);
   if (!c.ok) return { error: c.error };
-  const sql = await peopleSql(a.audience, c.app);
+  const sql = await peopleSql(a.audience, c.app, c.days);
   const [n] = await prisma.$queryRawUnsafe<{ n: number }[]>(`SELECT count(*)::int AS n FROM (${sql}) e`, NEVER_EMAIL, c.ids);
   const sample = await prisma.$queryRawUnsafe<{ email: string; name: string }[]>(`SELECT * FROM (${sql}) e ORDER BY e.email LIMIT 8`, NEVER_EMAIL, c.ids);
   return { count: n.n, sample, label: c.label };
@@ -188,7 +216,7 @@ export async function startMail(d: MailDraft, a: AudienceInput, createdBy: strin
     `INSERT INTO "custom_mails" ("id","subject","title","body","buttonLabel","buttonUrl","audience","audienceLabel","createdBy") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
     id, d.subject, d.title, d.body, d.buttonLabel, d.buttonUrl, a.audience, c.label, createdBy
   );
-  const sql = await peopleSql(a.audience, c.app);
+  const sql = await peopleSql(a.audience, c.app, c.days);
   const inserted = await prisma.$executeRawUnsafe(
     `INSERT INTO "custom_mail_recipients" ("id","mailId","email","name","status")
      SELECT gen_random_uuid()::text, $3, e.email, e.name, 'pending' FROM (${sql}) e
