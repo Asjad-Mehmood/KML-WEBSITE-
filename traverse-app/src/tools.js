@@ -52,7 +52,7 @@ function toggleClosed(panel, closed) { $$(`#${panel} .closed-only`).forEach(e =>
 function markBadNumbers(panel) { $$(`#${panel} input.num`).forEach(i => i.classList.toggle('bad', !isBlank(i.value) && Number.isNaN(num(i.value)))); }
 function statusBox(kind, icon, title, sub, extra = '') { return `<div class="status ${kind}"><div class="ic" aria-hidden="true">${icon}</div><div><h3>${esc(title)}</h3>${sub ? `<p>${sub}</p>` : ''}${extra}</div></div>`; }
 function stat(label, value, unit = '', hl = false) { return `<div class="stat${hl ? ' hl' : ''}"><span>${esc(label)}</span><b>${esc(value)}${unit ? ` <small>${esc(unit)}</small>` : ''}</b></div>`; }
-function exampleNote(on) { return on ? `<p class="hint example-note">Example data is loaded. Type over it, or press <b>New</b> to start your own job.</p>` : ''; }
+function exampleNote(on) { return on ? `<p class="hint example-note">Example data. Type over it, or press <b>New</b>.</p>` : ''; }
 
 // ================= TRAVERSE =================
 function renderTGrid() {
