@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { TooManyVerifyCodes, challengeOwner, emailStatus, sendVerification } from "@/lib/emailVerify";
-import { isAdminChallenge } from "@/lib/adminOtp";
-import { resendAdminCode } from "@/lib/adminCodeStep";
+import { TooManyVerifyCodes, challengeOwner, emailStatus, sendVerification } from "@/lib/auth/emailVerify";
+import { isAdminChallenge } from "@/lib/auth/adminOtp";
+import { resendAdminCode } from "@/lib/auth/adminCodeStep";
 
 // "Send a new code" on the confirm-your-email step (in the apps, also on an admin's sign-in code)
 export async function POST(req: NextRequest) {

@@ -61,7 +61,7 @@ as phases land, and keep this file the single source of truth for the rebrand.
 | Excel to KML (Go lite + web app, `kml-convertor-src`) | ~35 files | product keeps its name; Publisher/Company only |
 | Traverse & Level (`Traiverse`) | ~8 files | Publisher already "SurveyX Digital" |
 | Slope Calculator, Auto Drafting, Project Folder Manager, RoadPro | to inventory | CompanyName/Publisher, About screens |
-| Emails (`lib/mailer.ts`, `*Email.ts`) | sender name via `MAIL_FROM` env | Vercel env var, not code |
+| Emails (`lib/mail/mailer.ts`, `*Email.ts`) | sender name via `MAIL_FROM` env | Vercel env var, not code |
 | Images (`public/assets`) | icon.png, favicon.ico, apple-touch-icon, icon-192/512, og-image.png | the site's mark |
 
 Re-run the inventory before each phase:
@@ -84,7 +84,7 @@ each app repo.
 - **Header** (`components/Navbar.tsx`): the SurveyX Digital mark + name; products stay in the menu.
 - **Footer** (`components/Footer.tsx`): "© 2026 SurveyX Digital", "Excel to KML is a SurveyX
   Digital tool", company links (About, Contact, Privacy, Terms).
-- **Root metadata** (`app/layout.tsx`, `lib/site.ts`): `siteName` and title template
+- **Root metadata** (`app/layout.tsx`, `lib/content/site.ts`): `siteName` and title template
   `"%s · SurveyX Digital"` for company pages; product pages keep "… | Excel to KML" where SEO wants it.
 - **Structured data**: `Organization` = SurveyX Digital (name, logo, url, sameAs); every
   `SoftwareApplication` gets `publisher: SurveyX Digital`. Keep product names.
@@ -104,7 +104,7 @@ each app repo.
 
 ### Phase 2: Emails
 - `MAIL_FROM` in Vercel: `"SurveyX Digital <hello@…>"` (env var, owner sets it).
-- Email templates (`lib/mailer.ts` layout, `downloadEmail`, `releaseEmail`, `resetEmail`,
+- Email templates (`lib/mail/mailer.ts` layout, `downloadEmail`, `releaseEmail`, `resetEmail`,
   `reviewEmail`, `letterEmail`, `emailVerify`, `adminOtp`, contact replies): header logo, footer
   "SurveyX Digital", sign-off "The SurveyX Digital team", subjects like
   "Your SurveyX Digital sign-in code". Product names in release emails stay.

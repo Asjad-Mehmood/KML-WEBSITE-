@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { describeAccountChanges } from "@/lib/accountChanges";
-import { revokeTrustedBrowsers } from "@/lib/adminOtp";
+import { describeAccountChanges } from "@/lib/auth/accountChanges";
+import { revokeTrustedBrowsers } from "@/lib/auth/adminOtp";
 import { db, isAdminRole } from "@/lib/db";
-import { userFromRequest } from "@/lib/serverSession";
-import { cleanOccupation } from "@/lib/occupations";
+import { userFromRequest } from "@/lib/auth/serverSession";
+import { cleanOccupation } from "@/lib/account/occupations";
 
 export async function OPTIONS() {
   return new NextResponse(null, {

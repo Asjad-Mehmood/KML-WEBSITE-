@@ -6,8 +6,8 @@ import PageShell from "../../../components/PageShell";
 import PageIntro from "../../../components/PageIntro";
 import ReleaseNotes from "../../../components/ReleaseNotes";
 import { BreadcrumbStructuredData } from "../../../components/StructuredData";
-import { openGraphFor } from "@/lib/site";
-import { NOTES_APPS, releaseNotesOf } from "@/lib/releaseNotes";
+import { openGraphFor } from "@/lib/content/site";
+import { NOTES_APPS, releaseNotesOf } from "@/lib/products/releaseNotes";
 
 // One program's release notes, read from GitHub by the server and shown here (the Toolkit's
 // "What's new" opens this page). Kept for ten minutes.

@@ -1,6 +1,6 @@
-import type { EpsgSystem } from "@/lib/epsgCatalog";
-import { examplePoints, fmtDeg, fmtGrid } from "@/lib/epsgExample";
-import { unitLabel } from "@/lib/gridParams";
+import type { EpsgSystem } from "@/lib/geo/epsgCatalog";
+import { examplePoints, fmtDeg, fmtGrid } from "@/lib/geo/epsgExample";
+import { unitLabel } from "@/lib/geo/gridParams";
 
 /** Five points in the grid's area in latitude/longitude and easting/northing, to test a conversion against */
 export default function GridCheckPoints({ s, name }: { s: EpsgSystem; name: string }) {

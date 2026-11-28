@@ -1,6 +1,6 @@
 import Link from "next/link";
 import GuideLayout from "../../../components/GuideLayout";
-import { guideMetadata } from "@/lib/guideMeta";
+import { guideMetadata } from "@/lib/content/guideMeta";
 
 const SLUG = "dms-to-decimal-degrees";
 export const metadata = guideMetadata(SLUG);

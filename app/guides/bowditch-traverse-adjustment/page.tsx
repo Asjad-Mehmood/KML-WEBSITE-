@@ -1,7 +1,7 @@
 import Link from "next/link";
 import GuideLayout from "../../../components/GuideLayout";
 import GuideTable from "../../../components/GuideTable";
-import { guideMetadata } from "@/lib/guideMeta";
+import { guideMetadata } from "@/lib/content/guideMeta";
 
 const SLUG = "bowditch-traverse-adjustment";
 export const metadata = guideMetadata(SLUG);

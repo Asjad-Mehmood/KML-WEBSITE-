@@ -1,6 +1,6 @@
 import React from "react";
-import { FAQS, HOME_FAQS, faqHighlights } from "@/lib/faqs";
-import { APP_NAME, FACEBOOK_URL, GITHUB_REPO_URL, INSTALLER_URL, LATEST_VERSION, SITE_DESCRIPTION, SITE_NAME, SITE_URL, jsonLd } from "@/lib/site";
+import { FAQS, HOME_FAQS, faqHighlights } from "@/lib/content/faqs";
+import { APP_NAME, FACEBOOK_URL, GITHUB_REPO_URL, INSTALLER_URL, LATEST_VERSION, SITE_DESCRIPTION, SITE_NAME, SITE_URL, jsonLd } from "@/lib/content/site";
 
 // Schema.org JSON-LD. Everything here must match what the page visibly shows:
 // no made-up ratings or reviews, and FAQ answers come from the same data as the FAQ section.

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { verifyResetToken } from "@/lib/passwordReset";
-import { revokeTrustedBrowsers } from "@/lib/adminOtp";
-import { markVerified } from "@/lib/emailVerify";
+import { verifyResetToken } from "@/lib/auth/passwordReset";
+import { revokeTrustedBrowsers } from "@/lib/auth/adminOtp";
+import { markVerified } from "@/lib/auth/emailVerify";
 
 export async function POST(req: NextRequest) {
   const { token, password } = await req.json().catch(() => ({}));

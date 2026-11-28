@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
+import { sessionForToken, tokenFromRequest } from "@/lib/auth/serverSession";
 import { toolkitDownloads } from "@/lib/toolkit/downloads";
 import { mayUseToolkit, toolkitIsPublic } from "@/lib/toolkit/access";
-import { getClientIp, getIpGeoLocation } from "@/lib/geo";
+import { getClientIp, getIpGeoLocation } from "@/lib/geo/geo";
 
 // Survey Toolkit: the Download button (/toolkit, the home page, /toolkit-beta). Sends anyone who
 // may have it on to the newest installer on GitHub; anyone else back to the page, which says why.

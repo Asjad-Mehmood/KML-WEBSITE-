@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminSession } from "@/lib/adminAuth";
-import { getJob, jobFileResponse, listJobs } from "@/lib/userJobs";
+import { getAdminSession } from "@/lib/auth/adminAuth";
+import { getJob, jobFileResponse, listJobs } from "@/lib/account/userJobs";
 
 // GET ?userId=  → that surveyor's kept jobs (no contents)
 // GET ?userId=&jobId=  → one job as a .bm2job file, to open in the app

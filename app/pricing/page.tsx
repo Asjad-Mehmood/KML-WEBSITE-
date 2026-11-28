@@ -3,9 +3,9 @@ import { notFound } from "next/navigation";
 import PageShell from "../../components/PageShell";
 import PageIntro from "../../components/PageIntro";
 import PricingPlans from "../../components/PricingPlans";
-import { companyTitle } from "@/lib/site";
-import { billingState } from "@/lib/billing";
-import { PLANS, freePoints } from "@/lib/plans";
+import { companyTitle } from "@/lib/content/site";
+import { billingState } from "@/lib/billing/billing";
+import { PLANS, freePoints } from "@/lib/billing/plans";
 
 // /pricing: only while the pricing is switched on in Admin → Payments; otherwise there is no such page
 export const dynamic = "force-dynamic";

@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from "react";
 import { Card, CopyButton, Field, ResultRow, Tabs, inputCls } from "@/components/tools/ui";
 import { ShareButton, useShared } from "@/components/tools/share";
-import { formatDdm, formatDms, parseDms, parsePair, validLat, validLon } from "@/lib/toolMath";
+import { formatDdm, formatDms, parseDms, parsePair, validLat, validLon } from "@/lib/geo/toolMath";
 
 type Mode = "one" | "list";
 

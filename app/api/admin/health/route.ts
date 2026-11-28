@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminSession } from "@/lib/adminAuth";
-import { prisma } from "@/lib/prisma";
-import { isMailConfigured, sendMail } from "@/lib/mailer";
-import { isGoogleConfigured } from "@/lib/googleAuth";
-import { otpAvailable, otpEnabled } from "@/lib/adminOtp";
-import { SITE_URL } from "@/lib/site";
+import { getAdminSession } from "@/lib/auth/adminAuth";
+import { prisma } from "@/lib/db/prisma";
+import { isMailConfigured, sendMail } from "@/lib/mail/mailer";
+import { isGoogleConfigured } from "@/lib/auth/googleAuth";
+import { otpAvailable, otpEnabled } from "@/lib/auth/adminOtp";
+import { SITE_URL } from "@/lib/content/site";
 
 export const dynamic = "force-dynamic";
 

@@ -24,8 +24,8 @@ import {
 import PageShell from "../../components/PageShell";
 import ProductReviews from "../../components/ProductReviews";
 import SlopeDownload, { SlopeReleaseInfo } from "../../components/SlopeDownload";
-import { SLOPE_APP, SLOPE_FAQ, SLOPE_FEATURES, SLOPE_FILES, SLOPE_NAME, SLOPE_PAGE, SLOPE_RELEASED, SLOPE_STEPS, SLOPE_VERSION } from "@/lib/slope";
-import { SITE_URL, jsonLd, openGraphFor, companyTitle } from "@/lib/site";
+import { SLOPE_APP, SLOPE_FAQ, SLOPE_FEATURES, SLOPE_FILES, SLOPE_NAME, SLOPE_PAGE, SLOPE_RELEASED, SLOPE_STEPS, SLOPE_VERSION } from "@/lib/products/slope";
+import { SITE_URL, jsonLd, openGraphFor, companyTitle } from "@/lib/content/site";
 
 const TITLE = "Slope Calculator: slope, gradient and chainage levels";
 const DESCRIPTION =

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminSession } from "@/lib/adminAuth";
-import { appOverview, excelToKmlExtras, programExtras, slopeExtras, traverseExtras } from "@/lib/appOverview";
+import { getAdminSession } from "@/lib/auth/adminAuth";
+import { appOverview, excelToKmlExtras, programExtras, slopeExtras, traverseExtras } from "@/lib/products/appOverview";
 
 // Admin → an app's own tab: GET ?app=excel-to-kml|traverse|slope|auto-draft|roadpro|folder-manager|toolkit &days=7|30|90|365
 export async function GET(req: NextRequest) {

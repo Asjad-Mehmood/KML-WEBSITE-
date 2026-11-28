@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, ChevronDown, Mail } from "lucide-react";
-import { HOME_FAQS } from "@/lib/faqs";
+import { HOME_FAQS } from "@/lib/content/faqs";
 
 // Home page: a question or two about every program. Its FAQPage data (FaqStructuredData home)
 // reads the same list, so the two always match.

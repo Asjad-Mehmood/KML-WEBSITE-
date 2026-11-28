@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse, after } from "next/server";
-import { kickMail, validStepToken } from "@/lib/broadcastRunner";
-import { sendMailStep } from "@/lib/customMail";
+import { kickMail, validStepToken } from "@/lib/mail/broadcastRunner";
+import { sendMailStep } from "@/lib/mail/customMail";
 
 type Ctx = { params: Promise<{ id: string }> };
 
-// One step of an admin email (Admin → Email, lib/customMail.ts) run on the server, as a release
+// One step of an admin email (Admin → Email, lib/mail/customMail.ts) run on the server, as a release
 // broadcast's step (app/api/broadcasts/[id]/step): started only by the site itself (a token for
 // this email), it answers at once, sends a batch after the answer and starts the next step while
 // emails are left.

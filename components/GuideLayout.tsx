@@ -2,11 +2,11 @@ import React from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import LegalShell from "./LegalShell";
-import { GUIDES, guideBySlug } from "@/lib/guides";
-import { SITE_NAME, SITE_URL, jsonLd } from "@/lib/site";
+import { GUIDES, guideBySlug } from "@/lib/content/guides";
+import { SITE_NAME, SITE_URL, jsonLd } from "@/lib/content/site";
 import WebAppLink from "./WebAppLink";
-import { TRAVERSE_APP } from "@/lib/traverse";
-import { SLOPE_APP } from "@/lib/slope";
+import { TRAVERSE_APP } from "@/lib/products/traverse";
+import { SLOPE_APP } from "@/lib/products/slope";
 
 const primary = "!no-underline inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] !text-white text-[14px] font-semibold";
 const secondary = "!no-underline inline-flex items-center px-5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 !text-slate-700 text-[14px] font-semibold";

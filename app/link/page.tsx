@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import AuthShell from "../../components/AuthShell";
-import { sessionForToken } from "@/lib/serverSession";
-import { normCode } from "@/lib/deviceLink";
+import { sessionForToken } from "@/lib/auth/serverSession";
+import { normCode } from "@/lib/auth/deviceLink";
 import LinkForm from "./LinkForm";
-import { companyTitle } from "@/lib/site";
+import { companyTitle } from "@/lib/content/site";
 
 export const metadata: Metadata = {
   title: companyTitle("Sign in an app with a code"),

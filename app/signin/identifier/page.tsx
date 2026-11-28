@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { SigninStep } from "../step";
-import { companyTitle } from "@/lib/site";
+import { companyTitle } from "@/lib/content/site";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: companyTitle("Sign in"), robots: { index: false, follow: false } };

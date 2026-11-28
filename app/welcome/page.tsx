@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { sessionForToken } from "@/lib/serverSession";
-import { safeNextPath } from "@/lib/authRedirect";
+import { sessionForToken } from "@/lib/auth/serverSession";
+import { safeNextPath } from "@/lib/auth/authRedirect";
 import WelcomeClient from "./WelcomeClient";
-import { companyTitle } from "@/lib/site";
+import { companyTitle } from "@/lib/content/site";
 
 export const metadata: Metadata = {
   title: companyTitle("Complete your account"),

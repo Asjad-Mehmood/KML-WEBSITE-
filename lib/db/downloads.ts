@@ -1,6 +1,6 @@
 // Downloads of the programs (part of db, lib/db/index.ts)
 import crypto from "crypto";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import type { DownloadRecord } from "./core";
 
 export const downloadsRepo = {
@@ -53,8 +53,9 @@ export const downloadsRepo = {
     };
   },
 
-  async getAllDownloads(): Promise<DownloadRecord[]> {
-    const rows = await prisma.download.findMany({ orderBy: { timestamp: "desc" } });
+  /** The newest downloads (all of them when no limit is given) */
+  async getAllDownloads(limit?: number): Promise<DownloadRecord[]> {
+    const rows = await prisma.download.findMany({ orderBy: { timestamp: "desc" }, ...(limit ? { take: limit } : {}) });
     return rows.map((d) => ({
       id: d.id,
       userId: d.userId,
@@ -100,5 +101,22 @@ export const downloadsRepo = {
 
   async clearDownloads(): Promise<void> {
     await prisma.download.deleteMany({});
+  },
+
+  /** Counted in the database: every download, per file type and per place */
+  async downloadCounts(): Promise<{ total: number; byAsset: Record<string, number>; byLocation: Record<string, number> }> {
+    const [total, assets, places] = await Promise.all([
+      prisma.download.count(),
+      prisma.download.groupBy({ by: ["assetType"], _count: { _all: true } }),
+      prisma.download.groupBy({ by: ["location"], _count: { _all: true } }),
+    ]);
+    const byAsset: Record<string, number> = {};
+    for (const a of assets) byAsset[a.assetType] = a._count._all;
+    const byLocation: Record<string, number> = {};
+    for (const p of places) {
+      const k = p.location || "Unknown Origin";
+      byLocation[k] = (byLocation[k] || 0) + p._count._all;
+    }
+    return { total, byAsset, byLocation };
   },
 };

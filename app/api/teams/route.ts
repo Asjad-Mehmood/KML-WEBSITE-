@@ -1,7 +1,7 @@
 import { after, NextRequest, NextResponse } from "next/server";
-import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
-import { logEvent } from "@/lib/activityEvents";
-import { SITE_URL } from "@/lib/site";
+import { sessionForToken, tokenFromRequest } from "@/lib/auth/serverSession";
+import { logEvent } from "@/lib/admin/activityEvents";
+import { SITE_URL } from "@/lib/content/site";
 import {
   KIND_LABEL,
   SHARE_KINDS,
@@ -18,9 +18,9 @@ import {
   shareItem,
   unshare,
   type ShareKind,
-} from "@/lib/teams";
+} from "@/lib/account/teams";
 
-// Teams (lib/teams.ts), for the signed-in account.
+// Teams (lib/account/teams.ts), for the signed-in account.
 //   GET                                         my teams (members, shared jobs, invite link) and my jobs that can be shared
 //   POST {action:"create", name}                a new team, with me as its owner
 //   POST {action:"join", code}                  join from an invite link

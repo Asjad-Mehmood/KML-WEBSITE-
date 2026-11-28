@@ -1,9 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, PlayCircle, Sparkles } from "lucide-react";
-import { PRODUCTS, badgeLabel, type Product } from "@/lib/products";
+import { PRODUCTS, badgeLabel, type Product } from "@/lib/products/products";
 
-// Home page, right after the hero: our other software (lib/products.ts).
+// Home page, right after the hero: our other software (lib/products/products.ts).
 // One product gets the full spotlight; several are shown as a grid of cards.
 export default function ProductSpotlight() {
   if (PRODUCTS.length === 0) return null;

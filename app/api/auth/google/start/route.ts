@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GOOGLE_COOKIE, isGoogleConfigured, newAuthRequest } from "@/lib/googleAuth";
-import { safeNextPath } from "@/lib/authRedirect";
-import { getExtraSettings } from "@/lib/siteSettings";
+import { GOOGLE_COOKIE, isGoogleConfigured, newAuthRequest } from "@/lib/auth/googleAuth";
+import { safeNextPath } from "@/lib/auth/authRedirect";
+import { getExtraSettings } from "@/lib/content/siteSettings";
 
 // "Continue with Google": off to Google's account picker, remembering where to
 // come back to (?next=) in a short-lived cookie with the state and PKCE verifier

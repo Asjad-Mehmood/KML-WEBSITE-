@@ -1,8 +1,8 @@
 "use client";
 
-import { useLatestRelease } from "@/lib/useLatestRelease";
-import { goToDownload } from "@/lib/downloadHandoff";
-import { directDownloadAllowed } from "@/lib/publicSettings";
+import { useLatestRelease } from "@/lib/products/useLatestRelease";
+import { goToDownload } from "@/lib/products/downloadHandoff";
+import { directDownloadAllowed } from "@/lib/content/publicSettings";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import Navbar from "../components/Navbar";
@@ -30,8 +30,8 @@ import DownloadCentre from "../components/home/DownloadCentre";
 import HomeFaq from "../components/home/HomeFaq";
 import AccountCta from "../components/home/AccountCta";
 import { useAuth } from "../context/AuthContext";
-import type { HomeHero } from "@/lib/siteSettings";
-import type { PublicStats } from "@/lib/publicCounts";
+import type { HomeHero } from "@/lib/content/siteSettings";
+import type { PublicStats } from "@/lib/content/publicCounts";
 
 // heroStyle (Admin → Settings → Home page): "new" is the home page for every program (a tab
 // for each in the hero, then a section for each, every download and questions about them all);
@@ -44,7 +44,7 @@ export default function HomeClient({ heroStyle = "new", stats = null }: { heroSt
   const { requireAuth, trackDownload } = useAuth();
   const router = useRouter();
 
-  // The latest release (lib/useLatestRelease.ts): shared with the download page
+  // The latest release (lib/products/useLatestRelease.ts): shared with the download page
   const { versionTag, downloadUrl, fileName, releaseNotesUrl, fileSizeText, bytesText, releaseDateText, sha256Hash } =
     useLatestRelease();
 
@@ -90,7 +90,7 @@ export default function HomeClient({ heroStyle = "new", stats = null }: { heroSt
           <>
             {/* The earlier home page, all about Excel to KML */}
             <HeroClassic versionTag={versionTag} fileSizeText={fileSizeText} onDownloadClick={handleDownloadApp} />
-            {/* Spotlight on our other software (lib/products.ts) */}
+            {/* Spotlight on our other software (lib/products/products.ts) */}
             <ProductSpotlight />
             <Showcase versionTag={versionTag} onToast={showToast} />
             <Features />

@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminSession } from "@/lib/adminAuth";
+import { getAdminSession } from "@/lib/auth/adminAuth";
 import { db } from "@/lib/db";
-import { ADMIN_EMAIL, isAdminUser } from "@/lib/adminRole";
-import { activeSessions, controlOf, rememberRole, setBlocked } from "@/lib/accountControls";
-import { logAdmin } from "@/lib/adminLog";
-import { isMailConfigured } from "@/lib/mailer";
-import { sendPasswordResetEmail } from "@/lib/resetEmail";
+import { ADMIN_EMAIL, isAdminUser } from "@/lib/auth/adminRole";
+import { activeSessions, controlOf, rememberRole, setBlocked } from "@/lib/auth/accountControls";
+import { logAdmin } from "@/lib/admin/adminLog";
+import { isMailConfigured } from "@/lib/mail/mailer";
+import { sendPasswordResetEmail } from "@/lib/mail/resetEmail";
 
 // Admin → Surveyors → an account → Controls
 // GET                         → blocked or not (why, by whom, when), sessions signed in now, admin or not

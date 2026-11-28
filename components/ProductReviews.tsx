@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { MessageSquareQuote, Star } from "lucide-react";
-import type { PublicReview } from "@/lib/reviews";
+import type { PublicReview } from "@/lib/content/reviews";
 
 // What people who downloaded a program say about it: the average and the latest published
 // reviews (Admin → Reviews). Shows nothing until a review has been published.

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { resendAdminCode } from "@/lib/adminCodeStep";
+import { resendAdminCode } from "@/lib/auth/adminCodeStep";
 
 // "Resend code" on the admin code step: a new code for the same sign-in
 export async function POST(req: NextRequest) {

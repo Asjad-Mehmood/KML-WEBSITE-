@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { signedInResponse } from "@/lib/loginResponse";
-import { checkVerifyCode, confirmByLink } from "@/lib/emailVerify";
-import { isAdminChallenge } from "@/lib/adminOtp";
-import { checkAdminCode } from "@/lib/adminCodeStep";
+import { signedInResponse } from "@/lib/auth/loginResponse";
+import { checkVerifyCode, confirmByLink } from "@/lib/auth/emailVerify";
+import { isAdminChallenge } from "@/lib/auth/adminOtp";
+import { checkAdminCode } from "@/lib/auth/adminCodeStep";
 
 // The 6-digit code from the confirmation email, typed in after signing up or signing in:
 // confirms the address and signs the account in. The apps send an admin's sign-in code here too.

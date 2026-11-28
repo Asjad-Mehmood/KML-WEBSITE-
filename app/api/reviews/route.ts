@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { getExtraSettings } from "@/lib/siteSettings";
-import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
-import { REVIEW_PRODUCTS, isReviewProduct, publishedReviews, publishedReviewsAll, saveReview } from "@/lib/reviews";
+import { getExtraSettings } from "@/lib/content/siteSettings";
+import { sessionForToken, tokenFromRequest } from "@/lib/auth/serverSession";
+import { REVIEW_PRODUCTS, isReviewProduct, publishedReviews, publishedReviewsAll, saveReview } from "@/lib/content/reviews";
 
 // GET ?product=: the published reviews of a program and their average (public).
 // ?product=all: every program's average and the latest reviews of any of them (the home page).

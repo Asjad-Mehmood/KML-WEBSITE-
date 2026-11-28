@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { clientIp, recordFailure, tooManyFailures } from "@/lib/loginThrottle";
-import { signedInResponse } from "@/lib/loginResponse";
-import { TooManyCodes, isTrustedBrowser, maskEmail, otpEnabled, startChallenge } from "@/lib/adminOtp";
-import { adminCodeNeeded } from "@/lib/adminCodeStep";
-import { TooManyVerifyCodes, confirmMessage, mustVerify, sendVerification } from "@/lib/emailVerify";
+import { clientIp, recordFailure, tooManyFailures } from "@/lib/auth/loginThrottle";
+import { signedInResponse } from "@/lib/auth/loginResponse";
+import { TooManyCodes, isTrustedBrowser, maskEmail, otpEnabled, startChallenge } from "@/lib/auth/adminOtp";
+import { adminCodeNeeded } from "@/lib/auth/adminCodeStep";
+import { TooManyVerifyCodes, confirmMessage, mustVerify, sendVerification } from "@/lib/auth/emailVerify";
 
 // An account made with Google has no password of its own until "Forgot password" sets one
 const WRONG_PASSWORD =

@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { logAdmin } from "@/lib/adminLog";
-import { getAdminSession } from "@/lib/adminAuth";
+import { logAdmin } from "@/lib/admin/adminLog";
+import { getAdminSession } from "@/lib/auth/adminAuth";
 import { db } from "@/lib/db";
-import { listJobs } from "@/lib/userJobs";
-import { countOwn } from "@/lib/traverseJobs";
-import { describeAccountChanges } from "@/lib/accountChanges";
-import { programVersionsFor } from "@/lib/appUsage";
-import { emailStatus } from "@/lib/emailVerify";
-import { downloadsOf, personExtras } from "@/lib/personProfile";
+import { listJobs } from "@/lib/account/userJobs";
+import { countOwn } from "@/lib/products/traverseJobs";
+import { describeAccountChanges } from "@/lib/auth/accountChanges";
+import { programVersionsFor } from "@/lib/products/appUsage";
+import { emailStatus } from "@/lib/auth/emailVerify";
+import { downloadsOf, personExtras } from "@/lib/admin/personProfile";
 
 export async function GET(
   req: NextRequest,

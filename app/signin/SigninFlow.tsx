@@ -10,7 +10,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Check, Eye, EyeOff, Loader2, Lock } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { continuePath, inAuthHost } from "@/lib/authHost";
+import { continuePath, inAuthHost } from "@/lib/auth/authHost";
 import GoogleSignIn, { GOOGLE_ERRORS } from "@/components/GoogleSignIn";
 import OtpForm from "@/components/OtpForm";
 

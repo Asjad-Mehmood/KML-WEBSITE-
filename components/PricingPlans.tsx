@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Check } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import type { Plan, Prices } from "@/lib/plans";
+import type { Plan, Prices } from "@/lib/billing/plans";
 
 type PaddleCheckout = {
   environment: "sandbox" | "production";

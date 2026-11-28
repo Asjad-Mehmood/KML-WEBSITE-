@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyUnsubscribeToken } from "@/lib/releaseEmail";
-import { optIn, optOut } from "@/lib/releases";
+import { verifyUnsubscribeToken } from "@/lib/mail/releaseEmail";
+import { optIn, optOut } from "@/lib/products/releases";
 
 // The link in every release email (?t=signed token). Mail apps' own "Unsubscribe" button
 // POSTs here with List-Unsubscribe=One-Click (RFC 8058); the /unsubscribe page POSTs JSON

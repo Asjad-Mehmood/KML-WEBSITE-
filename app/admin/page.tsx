@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { cookies, headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { db } from "@/lib/db";
-import { onAdminHost, sessionHasAdminPower } from "@/lib/adminHost";
+import { onAdminHost, sessionHasAdminPower } from "@/lib/auth/adminHost";
 import AdminClient from "./AdminClient";
 
 // Checked on every request

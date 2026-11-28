@@ -1,6 +1,6 @@
 import Link from "next/link";
 import GuideLayout from "../../../components/GuideLayout";
-import { guideMetadata } from "@/lib/guideMeta";
+import { guideMetadata } from "@/lib/content/guideMeta";
 import WebAppLink from "@/components/WebAppLink";
 
 const SLUG = "point-codes-and-symbols-in-google-earth";

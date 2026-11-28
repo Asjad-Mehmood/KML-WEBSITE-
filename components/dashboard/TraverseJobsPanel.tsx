@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Compass, Download, ExternalLink, Loader2, Search, Share2, Trash2, Users } from "lucide-react";
-import type { TraverseJobCard } from "@/lib/traverseJobs";
+import type { TraverseJobCard } from "@/lib/products/traverseJobs";
 
 // Dashboard → Traverse & Level: the jobs kept in the account by the Traverse & Level app
 // (web app and Windows program), and the jobs colleagues shared with this account.

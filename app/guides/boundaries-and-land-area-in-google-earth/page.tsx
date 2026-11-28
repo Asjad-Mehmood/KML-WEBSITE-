@@ -1,5 +1,5 @@
 import GuideLayout from "../../../components/GuideLayout";
-import { guideMetadata } from "@/lib/guideMeta";
+import { guideMetadata } from "@/lib/content/guideMeta";
 import WebAppLink from "@/components/WebAppLink";
 
 const SLUG = "boundaries-and-land-area-in-google-earth";

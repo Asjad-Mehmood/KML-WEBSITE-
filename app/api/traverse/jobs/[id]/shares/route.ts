@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
-import { logTraverseActivity } from "@/lib/traverseActivity";
-import { traverseControls } from "@/lib/traverseControls";
-import { MAX_TRAVERSE_SHARES, jobInfo, share, sharesOf, unshare } from "@/lib/traverseJobs";
+import { sessionForToken, tokenFromRequest } from "@/lib/auth/serverSession";
+import { logTraverseActivity } from "@/lib/products/traverseActivity";
+import { traverseControls } from "@/lib/products/traverseControls";
+import { MAX_TRAVERSE_SHARES, jobInfo, share, sharesOf, unshare } from "@/lib/products/traverseJobs";
 
 type Ctx = { params: Promise<{ id: string }> };
 const ID = /^[A-Za-z0-9-]{8,64}$/;

@@ -2,16 +2,16 @@ import type { Metadata } from "next";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
-import { sessionForToken } from "@/lib/serverSession";
-import { authHost, authOrigin, continuePath } from "@/lib/authHost";
-import { onDashboardHost } from "@/lib/dashboardHost";
-import { listJobs } from "@/lib/userJobs";
-import { cardsOwn, cardsShared } from "@/lib/traverseJobs";
+import { sessionForToken } from "@/lib/auth/serverSession";
+import { authHost, authOrigin, continuePath } from "@/lib/auth/authHost";
+import { onDashboardHost } from "@/lib/auth/dashboardHost";
+import { listJobs } from "@/lib/account/userJobs";
+import { cardsOwn, cardsShared } from "@/lib/products/traverseJobs";
 import DashboardClient, { type DashboardData } from "./DashboardClient";
-import { appActivityFor, programVersionsFor } from "@/lib/appUsage";
-import { countOwn as countSlopeJobs } from "@/lib/slopeJobs";
-import { emailStatus, verificationActive } from "@/lib/emailVerify";
-import { companyTitle } from "@/lib/site";
+import { appActivityFor, programVersionsFor } from "@/lib/products/appUsage";
+import { countOwn as countSlopeJobs } from "@/lib/products/slopeJobs";
+import { emailStatus, verificationActive } from "@/lib/auth/emailVerify";
+import { companyTitle } from "@/lib/content/site";
 
 // Checked on every request: each visitor only ever sees their own account
 export const dynamic = "force-dynamic";

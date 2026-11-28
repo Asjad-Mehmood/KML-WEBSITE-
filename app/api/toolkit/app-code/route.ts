@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
+import { sessionForToken, tokenFromRequest } from "@/lib/auth/serverSession";
 import { APP_CODE_PROGRAMS, createHandoff } from "@/lib/toolkit/store";
 import { mayUseToolkit } from "@/lib/toolkit/access";
 

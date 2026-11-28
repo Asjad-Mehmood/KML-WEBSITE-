@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { REF_COOKIE, cleanCode, referrerOfCode } from "@/lib/referrals";
+import { REF_COOKIE, cleanCode, referrerOfCode } from "@/lib/account/referrals";
 
 // /r/<code>: someone's invite link. The code is kept for 30 days in a cookie (on the whole
 // surveyxdigital.com, so the sign-in address sees it too), then it's on to sign up.

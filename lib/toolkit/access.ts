@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { db } from "@/lib/db";
-import { sessionHasAdminPower } from "@/lib/adminHost";
-import { getExtraSettings } from "@/lib/siteSettings";
+import { sessionHasAdminPower } from "@/lib/auth/adminHost";
+import { getExtraSettings } from "@/lib/content/siteSettings";
 import { isTester } from "@/lib/toolkit/store";
 
 // Survey Toolkit: who may use it, and who is looking at one of its pages. Not sessionForToken, which reads a

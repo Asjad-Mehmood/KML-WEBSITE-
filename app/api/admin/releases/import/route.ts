@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { logAdmin } from "@/lib/adminLog";
-import { getAdminSession } from "@/lib/adminAuth";
-import { importFromGitHub } from "@/lib/releases";
+import { logAdmin } from "@/lib/admin/adminLog";
+import { getAdminSession } from "@/lib/auth/adminAuth";
+import { importFromGitHub } from "@/lib/products/releases";
 
 // Add an app's published GitHub releases (with their notes) that aren't in the list yet
 export async function POST(req: NextRequest) {

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { logAdmin } from "@/lib/adminLog";
-import { getAdminSession } from "@/lib/adminAuth";
-import { adminJobsOf, adminRemove, adminSummary } from "@/lib/slopeJobs";
+import { logAdmin } from "@/lib/admin/adminLog";
+import { getAdminSession } from "@/lib/auth/adminAuth";
+import { adminJobsOf, adminRemove, adminSummary } from "@/lib/products/slopeJobs";
 
 // Admin → Slope Calculator
 // GET            → one row per surveyor: how many calculations they keep and when last saved

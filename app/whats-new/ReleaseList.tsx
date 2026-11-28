@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ArrowUpRight, Loader2 } from "lucide-react";
-import { GITHUB_REPO_URL } from "@/lib/site";
+import { GITHUB_REPO_URL } from "@/lib/content/site";
 import Notes from "@/components/ReleaseNotes";
 
 type Release = { id: number; tag_name: string; name: string | null; body: string | null; html_url: string; published_at: string; draft: boolean; prerelease: boolean };

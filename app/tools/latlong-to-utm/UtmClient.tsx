@@ -4,7 +4,7 @@ import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import { Card, Choice, CopyButton, Field, ResultRow, Tabs, inputCls } from "@/components/tools/ui";
 import { ShareButton, useShared } from "@/components/tools/share";
-import { formatDms, fromUtm, parseDms, parseNumber, parsePair, toUtm, utmZone, validLat, validLon } from "@/lib/toolMath";
+import { formatDms, fromUtm, parseDms, parseNumber, parsePair, toUtm, utmZone, validLat, validLon } from "@/lib/geo/toolMath";
 
 type Mode = "toUtm" | "fromUtm" | "list";
 

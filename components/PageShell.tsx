@@ -4,7 +4,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
-import { GITHUB_REPO_URL, LATEST_VERSION } from "@/lib/site";
+import { GITHUB_REPO_URL, LATEST_VERSION } from "@/lib/content/site";
 
 // Site navbar and footer around a content page (grid pages, guides)
 export default function PageShell({ children }: { children: React.ReactNode }) {

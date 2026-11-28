@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminSession } from "@/lib/adminAuth";
-import { isMailConfigured } from "@/lib/mailer";
-import { sendReviewTest } from "@/lib/releases";
+import { getAdminSession } from "@/lib/auth/adminAuth";
+import { isMailConfigured } from "@/lib/mail/mailer";
+import { sendReviewTest } from "@/lib/products/releases";
 
 // POST { app }: send the review request to the signed-in admin only, to check it in a real inbox
 export async function POST(req: NextRequest) {

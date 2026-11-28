@@ -2,7 +2,7 @@
 
 // Admin → Files: everything people keep in their accounts, for every app or one (chosen in the
 // menu under Files): files opened and saved in Excel to KML and Traverse & Level, jobs kept from
-// both, and calculations kept from Slope Calculator (app/api/admin/data, lib/adminData.ts).
+// both, and calculations kept from Slope Calculator (app/api/admin/data, lib/admin/adminData.ts).
 // The numbers at the top, then filters (kind, Windows or web, file type, period, search), sorting,
 // a list that loads 50 at a time as you scroll or one row per person, and select-and-delete and
 // CSV export of whatever the filters show.

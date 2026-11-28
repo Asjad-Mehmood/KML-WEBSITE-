@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { runCleanup } from "@/lib/cleanup";
-import { kickStalled } from "@/lib/broadcastRunner";
+import { runCleanup } from "@/lib/admin/cleanup";
+import { kickStalled } from "@/lib/mail/broadcastRunner";
 
 // Called nightly by Vercel Cron (vercel.json). With CRON_SECRET set, Vercel
 // sends it as a Bearer token and nothing else is accepted.

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminSession } from "@/lib/adminAuth";
-import { prisma } from "@/lib/prisma";
+import { getAdminSession } from "@/lib/auth/adminAuth";
+import { prisma } from "@/lib/db/prisma";
 
 // Admin → search (Ctrl+K): accounts, downloads, messages, files, releases, reviews and Toolkit PCs
 // that match what was typed. A few of each; the palette (components/admin/AdminSearch.tsx) opens them.

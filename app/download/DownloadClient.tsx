@@ -5,8 +5,8 @@ import Link from "next/link";
 import { ArrowUpRight, Globe, RefreshCw, Smartphone, Wrench } from "lucide-react";
 import DownloadHub from "../../components/DownloadHub";
 import WebAppLink from "../../components/WebAppLink";
-import { useLatestRelease } from "@/lib/useLatestRelease";
-import { SHOW_ANDROID } from "@/lib/site";
+import { useLatestRelease } from "@/lib/products/useLatestRelease";
+import { SHOW_ANDROID } from "@/lib/content/site";
 
 /** The download section with the live release details, and the other ways to get the program. */
 export default function DownloadClient() {
@@ -35,7 +35,7 @@ export default function DownloadClient() {
 
       <div className="max-w-[1140px] mx-auto px-5 sm:px-8 mt-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-{/* The Android app is hidden for now (lib/site.ts SHOW_ANDROID) */}
+{/* The Android app is hidden for now (lib/content/site.ts SHOW_ANDROID) */}
           {SHOW_ANDROID && (
                     <section id="android" className={`${card} scroll-mt-28`}>
             <Smartphone className="w-5 h-5 text-[#0071e3]" aria-hidden />

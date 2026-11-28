@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import HomeClient from "./HomeClient";
 import { FaqStructuredData, HomeStructuredData } from "../components/StructuredData";
-import { DEFAULT_TITLE, SITE_DESCRIPTION, openGraphFor } from "@/lib/site";
-import { HOME_HEROES, getExtraSettings } from "@/lib/siteSettings";
-import { publicStats } from "@/lib/publicStats";
+import { DEFAULT_TITLE, SITE_DESCRIPTION, openGraphFor } from "@/lib/content/site";
+import { HOME_HEROES, getExtraSettings } from "@/lib/content/siteSettings";
+import { publicStats } from "@/lib/content/publicStats";
 import { frontPageData } from "@/lib/toolkit/frontPage";
 import ToolkitHome from "@/components/toolkit/home/ToolkitHome";
 import ToolkitStructuredData from "@/components/toolkit/home/ToolkitStructuredData";

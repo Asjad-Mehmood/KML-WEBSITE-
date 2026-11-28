@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { logAdmin } from "@/lib/adminLog";
-import { getAdminSession } from "@/lib/adminAuth";
+import { logAdmin } from "@/lib/admin/adminLog";
+import { getAdminSession } from "@/lib/auth/adminAuth";
 import { db } from "@/lib/db";
 
 export async function GET(req: NextRequest) {
@@ -10,35 +10,13 @@ export async function GET(req: NextRequest) {
   }
 
   const { searchParams } = new URL(req.url);
-  const format = searchParams.get("format");
-  const downloads = await db.getAllDownloads();
-
-  if (format === "csv") {
-    // Generate CSV string
-    const headers = ["ID", "Timestamp", "User Email", "User Name", "Asset Type", "File Name", "Version", "IP Address", "Location"];
-    const rows = downloads.map((d) => [
-      `"${d.id}"`,
-      `"${d.timestamp}"`,
-      `"${d.userEmail || "Anonymous"}"`,
-      `"${d.userName || "Anonymous"}"`,
-      `"${d.assetType}"`,
-      `"${d.fileName}"`,
-      `"${d.version}"`,
-      `"${d.ipAddress || ""}"`,
-      `"${d.location || "Unknown"}"`,
-    ]);
-
-    const csvContent = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
-
-    return new NextResponse(csvContent, {
-      status: 200,
-      headers: {
-        "Content-Type": "text/csv; charset=utf-8",
-        "Content-Disposition": `attachment; filename="surveyor_downloads_${Date.now()}.csv"`,
-      },
-    });
+  // the spreadsheet comes from Admin → Downloads' own export (escaped cells, every filter)
+  if (searchParams.get("format") === "csv") {
+    return NextResponse.redirect(new URL("/api/admin/download-log?format=csv", req.url), 307);
   }
-
+  // the newest downloads for the dashboard; the full list is /api/admin/download-log
+  const limit = Math.max(1, Math.min(200, parseInt(searchParams.get("limit") || "50", 10) || 50));
+  const downloads = await db.getAllDownloads(limit);
   return NextResponse.json({ success: true, downloads });
 }
 

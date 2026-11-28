@@ -2,7 +2,7 @@ import React, { Suspense } from "react";
 import Link from "next/link";
 import { ArrowLeft, Info } from "lucide-react";
 import PageShell from "../PageShell";
-import { TOOLS, toolBySlug } from "@/lib/tools";
+import { TOOLS, toolBySlug } from "@/lib/geo/tools";
 import ToolCta from "./ToolCta";
 
 /** The tool itself, full width and ready to use; its front page is one click away. */

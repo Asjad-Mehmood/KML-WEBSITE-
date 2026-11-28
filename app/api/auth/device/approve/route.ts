@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
-import { clientIp, recordFailure, tooManyFailures } from "@/lib/loginThrottle";
-import { approve, findOpen, showCode } from "@/lib/deviceLink";
+import { sessionForToken, tokenFromRequest } from "@/lib/auth/serverSession";
+import { clientIp, recordFailure, tooManyFailures } from "@/lib/auth/loginThrottle";
+import { approve, findOpen, showCode } from "@/lib/auth/deviceLink";
 
 // POST { code, confirm }: the signed-in person at /link enters the code their app window shows.
 // confirm false: just check it (and say which app asked); confirm true: let the app sign in.

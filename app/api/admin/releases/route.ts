@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse, after } from "next/server";
-import { logAdmin } from "@/lib/adminLog";
-import { kickStalled } from "@/lib/broadcastRunner";
-import { getAdminSession } from "@/lib/adminAuth";
-import { checkRelease, createRelease, listReleases } from "@/lib/releases";
+import { logAdmin } from "@/lib/admin/adminLog";
+import { kickStalled } from "@/lib/mail/broadcastRunner";
+import { getAdminSession } from "@/lib/auth/adminAuth";
+import { checkRelease, createRelease, listReleases } from "@/lib/products/releases";
 
 // Admin → Releases: every release, grouped by app, with its broadcasts and the audience
 export async function GET(req: NextRequest) {

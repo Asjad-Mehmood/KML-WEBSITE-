@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { trackAppUse } from "@/lib/appUsage";
+import { trackAppUse } from "@/lib/products/appUsage";
 import { db } from "@/lib/db";
 
 export async function GET(req: NextRequest) {

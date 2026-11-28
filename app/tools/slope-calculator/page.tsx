@@ -1,5 +1,5 @@
 import ToolLanding from "../../../components/tools/ToolLanding";
-import { toolMetadata } from "@/lib/toolMeta";
+import { toolMetadata } from "@/lib/geo/toolMeta";
 
 const SLUG = "slope-calculator";
 export const metadata = toolMetadata(SLUG);

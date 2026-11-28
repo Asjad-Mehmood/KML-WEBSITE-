@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { latestRelease } from "@/lib/latestReleaseServer";
+import { latestRelease } from "@/lib/products/latestReleaseServer";
 
-// The latest Excel to KML release for the download buttons and page (lib/useLatestRelease.ts):
+// The latest Excel to KML release for the download buttons and page (lib/products/useLatestRelease.ts):
 // GitHub's release details with the installer's SHA-256 always filled in
 export async function GET() {
   const release = await latestRelease().catch((err) => {

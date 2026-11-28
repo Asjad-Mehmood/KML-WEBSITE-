@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { attachment } from "@/lib/attachment";
+import { attachment } from "@/lib/http/attachment";
 import { db } from "@/lib/db";
-import { userFromRequest } from "@/lib/serverSession";
-import { getAdminSession } from "@/lib/adminAuth";
+import { userFromRequest } from "@/lib/auth/serverSession";
+import { getAdminSession } from "@/lib/auth/adminAuth";
 
 export async function OPTIONS() {
   return new NextResponse(null, { status: 204 });

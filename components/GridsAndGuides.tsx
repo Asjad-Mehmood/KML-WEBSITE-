@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { ArrowRight, BookOpen, MapPin } from "lucide-react";
 import GridSearch from "./GridSearch";
-import { GRID_PAGES } from "@/lib/gridPages";
-import { GUIDES } from "@/lib/guides";
+import { GRID_PAGES } from "@/lib/geo/gridPages";
+import { GUIDES } from "@/lib/content/guides";
 
 const POPULAR = ["qatar-national-grid", "dubai-dltm", "utm-zone-40n", "utm-zone-39n", "utm-zone-42n", "utm-zone-43n", "british-national-grid", "australia-mga-zone-56"];
 const FEATURED = ["survey-points-to-google-earth", "find-your-utm-zone", "total-station-csv-to-kmz-with-photos", "kml-vs-kmz"];

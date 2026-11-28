@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { logAdmin } from "@/lib/adminLog";
-import { getAdminSession } from "@/lib/adminAuth";
+import { logAdmin } from "@/lib/admin/adminLog";
+import { getAdminSession } from "@/lib/auth/adminAuth";
 import { db } from "@/lib/db";
-import { TooManyVerifyCodes, emailStatus, markUnverified, markVerified, sendVerification } from "@/lib/emailVerify";
+import { TooManyVerifyCodes, emailStatus, markUnverified, markVerified, sendVerification } from "@/lib/auth/emailVerify";
 
 type Ctx = { params: Promise<{ id: string }> };
 

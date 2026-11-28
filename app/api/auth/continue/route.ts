@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { safeNextPath } from "@/lib/authRedirect";
-import { authOrigin, onAuthHost } from "@/lib/authHost";
-import { sessionForToken } from "@/lib/serverSession";
-import { SITE_URL } from "@/lib/site";
+import { safeNextPath } from "@/lib/auth/authRedirect";
+import { authOrigin, onAuthHost } from "@/lib/auth/authHost";
+import { sessionForToken } from "@/lib/auth/serverSession";
+import { SITE_URL } from "@/lib/content/site";
 import { createHandoff } from "@/lib/toolkit/store";
-import { dashboardOrigin, isDashboardPath } from "@/lib/dashboardHost";
+import { dashboardOrigin, isDashboardPath } from "@/lib/auth/dashboardHost";
 
 // The sign-in address (lib/authHost) hands a signed-in visitor back to the main site:
 //   GET ?next=/path → the main site's /api/auth/handoff?code=… (one use, 60 seconds), which

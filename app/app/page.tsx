@@ -3,9 +3,9 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import WebAppClient from "./WebAppClient";
 import { db } from "@/lib/db";
-import { sessionForToken } from "@/lib/serverSession";
-import { WEB_APP_LOGIN_URL } from "@/lib/authRedirect";
-import { getExtraSettings } from "@/lib/siteSettings";
+import { sessionForToken } from "@/lib/auth/serverSession";
+import { WEB_APP_LOGIN_URL } from "@/lib/auth/authRedirect";
+import { getExtraSettings } from "@/lib/content/siteSettings";
 import { IN_TOOLKIT_COOKIE } from "@/lib/toolkit/inToolkit";
 
 // Checked on every request: the web app is for signed-in users only

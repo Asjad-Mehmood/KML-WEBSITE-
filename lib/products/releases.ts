@@ -1,0 +1,949 @@
+import { prisma } from "@/lib/db/prisma";
+import { ensureVerifyTables } from "@/lib/auth/emailVerify";
+import { mailFrom, mailGapMs, mailReplyTo, mailTransport, isMailConfigured, sendsFromFreeMailbox } from "@/lib/mail/mailer";
+import { introductionOf, releaseEmail, type ReleaseForEmail } from "@/lib/mail/releaseEmail";
+import { reviewRequestEmail } from "@/lib/mail/reviewEmail";
+import { PRODUCTS } from "@/lib/products/products";
+import { ensureActivityColumns } from "@/lib/admin/activityTags";
+import { APP_NAME, LATEST_VERSION } from "@/lib/content/site";
+import { STAFF_EMAILS } from "@/lib/admin/staffAccounts";
+
+/**
+ * Admin → Releases: every version of our software, grouped by app, and the emails that
+ * announce one to everyone with an account. Sending runs in small batches that the admin
+ * page asks for one after another, so it fits the server's time limit, survives a closed
+ * tab (press Continue) and stops cleanly at the mail provider's daily limit.
+ *
+ * The tables match the models in prisma/schema.prisma and are created here on first use.
+ */
+
+// ---------- apps ----------
+export interface ReleaseApp {
+  id: string;
+  name: string;
+  /** Download page on this site */
+  href: string;
+  /** The newest version the site offers */
+  current: string;
+  /** Public GitHub repository whose releases can be imported */
+  github?: string;
+}
+
+export const normVersion = (v: string) => String(v || "").trim().replace(/^v(?=\d)/i, "");
+
+/** The products published as GitHub releases: Admin → Releases can import them */
+const GITHUB_REPOS: Record<string, string> = {
+  traverse: "Asjad-Mehmood/Traiverse",
+  slope: "Asjad-Mehmood/Slope-calculator-",
+  "auto-draft": "Asjad-Mehmood/auto-draft-app",
+  "folder-manager": "Asjad-Mehmood/Project-manager",
+  toolkit: "Asjad-Mehmood/Survey-Toolkit",
+  roadpro: "Asjad-Mehmood/Road-pro",
+};
+
+/** Tags below this are not real releases of the app (Road-pro has a stray v0.1.1) */
+const GITHUB_MIN_VERSION: Record<string, string> = { roadpro: "3.6" };
+
+export const RELEASE_APPS: ReleaseApp[] = [
+  { id: "excel-to-kml", name: APP_NAME, href: "/download", current: normVersion(LATEST_VERSION), github: "Asjad-Mehmood/kml-convertor" },
+  ...PRODUCTS.map((p) => ({
+    id: p.id,
+    name: p.name,
+    href: p.href,
+    current: normVersion(p.version),
+    ...(GITHUB_REPOS[p.id] ? { github: GITHUB_REPOS[p.id] } : {}),
+  })),
+];
+export const appById = (id: string) => RELEASE_APPS.find((a) => a.id === id);
+
+// Accounts the site creates itself (lib/db.ts, scripts/set-password.mjs): not real mailboxes
+export const NEVER_EMAIL: string[] = [...STAFF_EMAILS];
+
+// ---------- tables ----------
+let ready: Promise<void> | null = null;
+export function ensureReleaseTables(): Promise<void> {
+  if (!ready) {
+    ready = (async () => {
+      const run = (sql: string) => prisma.$executeRawUnsafe(sql);
+      // accounts that never confirmed their email are left out of every send
+      await ensureVerifyTables();
+      await run(`CREATE TABLE IF NOT EXISTS "product_releases" (
+        "id" TEXT NOT NULL,
+        "app" TEXT NOT NULL,
+        "version" TEXT NOT NULL,
+        "releasedAt" TIMESTAMP(3) NOT NULL,
+        "title" TEXT NOT NULL,
+        "notes" TEXT NOT NULL,
+        "link" TEXT NOT NULL,
+        "linkLabel" TEXT NOT NULL DEFAULT '',
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL,
+        CONSTRAINT "product_releases_pkey" PRIMARY KEY ("id")
+      )`);
+      await run(`CREATE UNIQUE INDEX IF NOT EXISTS "product_releases_app_version_key" ON "product_releases"("app", "version")`);
+      await run(`CREATE TABLE IF NOT EXISTS "release_broadcasts" (
+        "id" TEXT NOT NULL,
+        "releaseId" TEXT NOT NULL,
+        "subject" TEXT NOT NULL,
+        "status" TEXT NOT NULL DEFAULT 'sending',
+        "total" INTEGER NOT NULL DEFAULT 0,
+        "sent" INTEGER NOT NULL DEFAULT 0,
+        "failed" INTEGER NOT NULL DEFAULT 0,
+        "lastError" TEXT,
+        "createdBy" TEXT NOT NULL,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "finishedAt" TIMESTAMP(3),
+        CONSTRAINT "release_broadcasts_pkey" PRIMARY KEY ("id")
+      )`);
+      await run(`ALTER TABLE "release_broadcasts" ADD COLUMN IF NOT EXISTS "audience" TEXT NOT NULL DEFAULT 'all'`);
+      // release: a version announcement; review: asking an app's users to rate it (tied to the app's newest release)
+      await run(`ALTER TABLE "release_broadcasts" ADD COLUMN IF NOT EXISTS "kind" TEXT NOT NULL DEFAULT 'release'`);
+      await run(`CREATE INDEX IF NOT EXISTS "release_broadcasts_releaseId_idx" ON "release_broadcasts"("releaseId")`);
+      await run(`DO $$ BEGIN
+        ALTER TABLE "release_broadcasts" ADD CONSTRAINT "release_broadcasts_releaseId_fkey" FOREIGN KEY ("releaseId")
+          REFERENCES "product_releases"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+      EXCEPTION WHEN duplicate_object THEN NULL; END $$`);
+      await run(`CREATE TABLE IF NOT EXISTS "release_recipients" (
+        "id" TEXT NOT NULL,
+        "broadcastId" TEXT NOT NULL,
+        "email" TEXT NOT NULL,
+        "name" TEXT NOT NULL,
+        "status" TEXT NOT NULL DEFAULT 'pending',
+        "error" TEXT,
+        "claimedAt" TIMESTAMP(3),
+        "sentAt" TIMESTAMP(3),
+        CONSTRAINT "release_recipients_pkey" PRIMARY KEY ("id")
+      )`);
+      await run(`CREATE INDEX IF NOT EXISTS "release_recipients_broadcastId_status_idx" ON "release_recipients"("broadcastId", "status")`);
+      await run(`CREATE UNIQUE INDEX IF NOT EXISTS "release_recipients_broadcastId_email_key" ON "release_recipients"("broadcastId", "email")`);
+      await run(`DO $$ BEGIN
+        ALTER TABLE "release_recipients" ADD CONSTRAINT "release_recipients_broadcastId_fkey" FOREIGN KEY ("broadcastId")
+          REFERENCES "release_broadcasts"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+      EXCEPTION WHEN duplicate_object THEN NULL; END $$`);
+      await run(`CREATE TABLE IF NOT EXISTS "email_optouts" (
+        "email" TEXT NOT NULL,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "email_optouts_pkey" PRIMARY KEY ("email")
+      )`);
+      await seedIfEmpty();
+    })().catch((e) => {
+      ready = null;
+      throw e;
+    });
+  }
+  return ready;
+}
+
+// The releases already on the site when this was built, so they can be announced too.
+// Excel to KML's own notes come from its GitHub releases (Import from GitHub).
+const SEED: { app: string; version: string; releasedAt: string; title: string; notes: string[] }[] = [
+  {
+    app: "roadpro",
+    version: "3.6.1",
+    releasedAt: "2026-11-11",
+    title: "RoadPro 3.6.1: RoadPro Setup and automatic updates",
+    notes: [
+      "RoadPro Setup: one installer for RoadPro Hub and the AutoCAD plugin, with no administrator rights; it replaces any older RoadPro by itself",
+      "Automatic updates: RoadPro Hub checks for a new version when you open it and once a day, then downloads, checks (size and SHA-256) and installs it in one click; the previous version can be restored",
+      "AutoCAD tells you at start-up when an update is waiting; the new command RDHUB opens RoadPro Hub for updates, repair, the user guide and the shortcut keys",
+    ],
+  },
+  {
+    app: "roadpro",
+    version: "3.6",
+    releasedAt: "2026-11-10",
+    title: "RoadPro 3.6: clean junctions, roundabouts on a road and professional cross sections",
+    notes: [
+      "Clean junction tie-in (RDJ): the side road starts where the kerb returns end, with one mouth surface joined to the main road, and shoulders, barricades and edge lines cut to fit, also on skewed junctions",
+      "Roundabouts on a road (RDRB): 2-way, 3-way and 4-way, with side roads drawn, picked or added automatically; the main road is cut at the ring and full marking is drawn on every approach",
+      "Edits follow: after a grip edit the curve is refitted at its radius and the barricades and corridor follow; moving a centre line carries its junctions and roundabouts with it",
+      "Professional cross sections (RDX): drawn to the corridor limit, with named component dimensions, carriageway and corridor widths, and an offset and finished level table",
+    ],
+  },
+  {
+    app: "roadpro",
+    version: "3.5",
+    releasedAt: "2026-11-03",
+    title: "RoadPro 3.5: roundabouts, Saudi junctions, concrete pavement and live update",
+    notes: [
+      "Roundabouts: twelve FHWA 2000 and NCHRP 672 designs, from mini to multilane with spiral marking, with islands, apron, crossings, signs and setting-out (RDRB, or Roundabout as the junction type in RDJ)",
+      "Saudi Arabia junction standard: RDJ fills the corner radius, auxiliary lane, tapers, storage and island from the road class and design vehicle, and draws sight triangles",
+      "Live update: edit a centre line with grips, MOVE, ROTATE, STRETCH or PEDIT and the road rebuilds itself with its widenings, tapers, junctions and roundabouts (RDLIVE)",
+      "Concrete pavement: JPCP / JRCP with dowels, tie bars and mesh on plan, in section and in the report (RDPV); sidewalks, walkways and drains wrap round junction corners",
+      "Installs itself: load RoadPro.lsp with APPLOAD once and it loads in every drawing; RDHELP lists every command",
+    ],
+  },
+  {
+    app: "roadpro",
+    version: "3.4",
+    releasedAt: "2026-10-23",
+    title: "RoadPro 3.4: lanes, median, sidewalks and LandXML for Civil 3D",
+    notes: [
+      "The full corridor: single or dual carriageway, lanes by hand or automatic, a flush or raised median, sidewalks and walkways, drains and utility corridors (RDC / RDU)",
+      "Interlocking paver hatch: an I-shape paver (RP_PAVER) on sidewalks and walkways that turns with the road",
+      "Edit the radius later: RDER changes any curve radius after the road is built; RDB rebuilds after you edit the centre line by hand",
+      "Civil 3D and LandXML: export the centre line as LandXML 1.2 (RDLX), import LandXML alignments (RDLXI), or select a Civil 3D alignment in RDP",
+    ],
+  },
+  {
+    app: "roadpro",
+    version: "3.3",
+    releasedAt: "2026-10-12",
+    title: "RoadPro 3.3: a single line of barricades, cones or kerb",
+    notes: [
+      "RDL, a single line: one run of barricades, traffic cones or kerb stone along any line, polyline, arc, spline, circle or ellipse, with a quantity label",
+      "Junction corner treatment: RDJ lines the kerb returns with barricades, traffic cones or kerb stone, or the same as the main road",
+      "Cones and kerb follow changes: lane widening (RDW) and road tapers (RDT) now move traffic cones and kerb stone to the new edge",
+      "Kerb units and cone band: kerb stone drawn as separate units, cones with their white band, and cones and kerb per side in the report",
+    ],
+  },
+  {
+    app: "roadpro",
+    version: "3.2",
+    releasedAt: "2026-10-09",
+    title: "RoadPro 3.2: signs and markings to standard",
+    notes: [
+      "Signs and markings to standard: sign plate sizes and warning distances by speed limit, L1 / L2 / L2A centre lines, yellow L4 edge lines, stop and give-way lines, delineator posts on curves",
+      "Auxiliary lane and island: RDJ can add a turning lane with tapers and storage, plus a kerbed or painted splitter island",
+      "Cones, kerb and shoulder: edge with barricades, traffic cones or kerb stone, add a paved shoulder, and use barricades or cones as a median",
+      "Match the existing radius: the turning radius can match the existing road or be typed in",
+    ],
+  },
+  {
+    app: "traverse",
+    version: "2.1",
+    releasedAt: "2026-10-23",
+    title: "Traverse & Level 2.1: angles and distances, explained step by step",
+    notes: [
+      "Updated user manual (41 pages) with a new Angles & distances section: the field book, side shots, the closing leg, least squares, Qatar National Grid and the PDF, CSV and Google Earth exports",
+      "Field book angle and distance cells are wide enough for DDD.MMSS values",
+      "Side-shot labels on the plan and in the PDF sketch no longer cover the station's label",
+      "New field book samples: CSV, PDF report, KML and a Field book sheet in sample-data.xlsx",
+    ],
+  },
+  {
+    app: "folder-manager",
+    version: "7.0.0",
+    releasedAt: "2026-11-03",
+    title: "Project Folder Manager 7: a proper Windows program, cleaner and simpler",
+    notes: [
+      "Installs and updates itself: a normal installer, no administrator rights, listed in Settings → Apps",
+      "Open a drive or any folder; the folder list follows the disk by itself, with nothing to scan or rebuild",
+      "Instant search that indexes itself in the background, UNDO, drag and drop, and a preview before every bulk rename",
+      "One calm top bar, softer colours, and a manual inside (F1)",
+      "Coming from 6.2? Install version 7: its start page offers to bring in your 6.2 settings",
+    ],
+  },
+  {
+    app: "folder-manager",
+    version: "6.2",
+    releasedAt: "2026-10-16",
+    title: "Project Folder Manager 6.2: one screen for any project's folders",
+    notes: [
+      "Made for any project: no project name built in. Click the title at the top left to name it for yours",
+      "Every module at a glance, by discipline, with instant search after one INDEX",
+      "Copy, move and rename in bulk; delete goes to the Recycle Bin",
+      "Six layouts (Alt+1 to Alt+6) and the free space on every drive",
+      "To update, replace only the .hta file. Settings are now Project_Folder_Manager_config.txt, so set the root path once",
+    ],
+  },
+  {
+    app: "excel-to-kml",
+    version: normVersion(LATEST_VERSION),
+    releasedAt: new Date().toISOString().slice(0, 10),
+    title: `${APP_NAME} ${normVersion(LATEST_VERSION)} is out`,
+    notes: [],
+  },
+];
+
+// An empty table gets every release in SEED; afterwards, only the ones newer than an app's newest
+// saved release are added (a version added to SEED later), so an old one deleted in Admin stays deleted
+async function seedIfEmpty() {
+  const empty = (await prisma.productRelease.count()) === 0;
+  const newest = new Map<string, string>();
+  for (const s of SEED) {
+    const app = appById(s.app);
+    if (!app) continue;
+    if (!empty) {
+      if (!newest.has(s.app)) {
+        const saved = await prisma.productRelease.findMany({ where: { app: s.app }, select: { version: true } });
+        newest.set(s.app, saved.reduce((m, r) => (compareVersions(r.version, m) > 0 ? r.version : m), "0"));
+      }
+      if (compareVersions(s.version, newest.get(s.app)!) <= 0) continue;
+    }
+    await prisma.productRelease.upsert({
+      where: { app_version: { app: s.app, version: s.version } },
+      update: {},
+      create: { app: s.app, version: s.version, releasedAt: new Date(s.releasedAt), title: s.title, notes: s.notes.join("\n"), link: app.href },
+    });
+  }
+}
+
+// ---------- releases ----------
+export interface ReleaseInput {
+  app: string;
+  version: string;
+  releasedAt: string;
+  title: string;
+  notes: string;
+  link: string;
+  linkLabel: string;
+}
+
+/** The cleaned-up input, or an error message to show */
+export function checkRelease(b: Partial<Record<keyof ReleaseInput, unknown>>): { ok: true; data: ReleaseInput } | { ok: false; error: string } {
+  const str = (v: unknown, max: number) => String(v ?? "").trim().slice(0, max);
+  const app = str(b.app, 40);
+  const a = appById(app);
+  if (!a) return { ok: false, error: "Choose the app." };
+  const version = normVersion(str(b.version, 20));
+  if (!/^[0-9A-Za-z][0-9A-Za-z._-]*$/.test(version)) return { ok: false, error: "Type a version such as 3.4 or 4.2.1." };
+  const date = str(b.releasedAt, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || isNaN(Date.parse(date))) return { ok: false, error: "Pick the release date." };
+  const title = str(b.title, 150) || `${a.name} ${version} is out`;
+  const notes = String(b.notes ?? "").replace(/\r/g, "").split("\n").map((l) => l.trim()).filter(Boolean).slice(0, 25).join("\n").slice(0, 6000);
+  const link = str(b.link, 300) || a.href;
+  if (!/^\/[\w\-./#?=&%]*$/.test(link) && !/^https:\/\/[^\s"<>]+$/.test(link)) return { ok: false, error: "The link must be a site path such as /roadpro or an https:// address." };
+  const linkLabel = str(b.linkLabel, 60);
+  return { ok: true, data: { app, version, releasedAt: date, title, notes, link, linkLabel } };
+}
+
+export async function createRelease(d: ReleaseInput) {
+  await ensureReleaseTables();
+  const exists = await prisma.productRelease.findUnique({ where: { app_version: { app: d.app, version: d.version } } });
+  if (exists) throw new Error(`${appById(d.app)!.name} ${d.version} is already in the list.`);
+  return prisma.productRelease.create({ data: { ...d, releasedAt: new Date(d.releasedAt) } });
+}
+
+/**
+ * Admin → Releases → "Create the introduction email": a new program's first release, with the
+ * title and notes of its introduction (lib/mail/releaseEmail.ts), at the version on the site today.
+ * Returns the one there already when the app has releases.
+ */
+export async function createIntroduction(appId: string) {
+  await ensureReleaseTables();
+  const app = appById(appId);
+  const intro = introductionOf(appId);
+  if (!app || !intro) throw new Error("This app has no introduction email.");
+  const first = await prisma.productRelease.findFirst({ where: { app: app.id }, orderBy: { releasedAt: "asc" } });
+  if (first) return first;
+  return prisma.productRelease.create({
+    data: {
+      app: app.id,
+      version: normVersion(app.current) || "1.0",
+      releasedAt: new Date(new Date().toISOString().slice(0, 10)),
+      title: intro.title,
+      notes: intro.notes,
+      link: app.href,
+      linkLabel: "",
+    },
+  });
+}
+
+export async function updateRelease(id: string, d: ReleaseInput) {
+  await ensureReleaseTables();
+  const clash = await prisma.productRelease.findUnique({ where: { app_version: { app: d.app, version: d.version } } });
+  if (clash && clash.id !== id) throw new Error(`${appById(d.app)!.name} ${d.version} is already in the list.`);
+  return prisma.productRelease.update({ where: { id }, data: { ...d, releasedAt: new Date(d.releasedAt) } });
+}
+
+export async function deleteRelease(id: string) {
+  await ensureReleaseTables();
+  await prisma.productRelease.delete({ where: { id } });
+}
+
+type ReleaseRow = { app: string; version: string; releasedAt: Date; title: string; notes: string; link: string; linkLabel: string };
+
+function forEmail(r: ReleaseRow, introduces = false): ReleaseForEmail {
+  const app = appById(r.app);
+  const name = app?.name || r.app;
+  const newer = app && app.current && normVersion(app.current) !== normVersion(r.version) && compareVersions(app.current, r.version) > 0 ? app.current : null;
+  return { appId: r.app, appName: name, version: r.version, releasedAt: r.releasedAt, title: r.title, notes: r.notes, link: r.link, linkLabel: r.linkLabel, newerVersion: newer, introduces };
+}
+
+/** The app's first release in the list: for a new program (one with an introduction, lib/mail/releaseEmail.ts) its email introduces it */
+export async function forEmailOf(r: ReleaseRow): Promise<ReleaseForEmail> {
+  const earlier = await prisma.productRelease.count({ where: { app: r.app, releasedAt: { lt: r.releasedAt } } });
+  return forEmail(r, earlier === 0);
+}
+
+/** 3.10 > 3.9 > 3.4.1 > 3.4; letters compare as text */
+export function compareVersions(a: string, b: string): number {
+  const pa = normVersion(a).split(/[.\-_]/);
+  const pb = normVersion(b).split(/[.\-_]/);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const x = pa[i] ?? "0";
+    const y = pb[i] ?? "0";
+    const nx = Number(x), ny = Number(y);
+    const c = !isNaN(nx) && !isNaN(ny) ? nx - ny : x.localeCompare(y);
+    if (c) return c;
+  }
+  return 0;
+}
+
+// ---------- who gets the email ----------
+/**
+ * "app": people who downloaded or used that app. "all": everyone with an account. "behind":
+ * people whose copy of the app is older than the newest version (lib/products/versionsInUse.ts).
+ */
+export type Audience = "app" | "all" | "behind";
+
+const eligibleSql = `
+  SELECT DISTINCT ON (lower(trim(u."email"))) lower(trim(u."email")) AS email, coalesce(u."name", '') AS name
+  FROM "users" u
+  WHERE u."email" ~* '^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$'
+    AND lower(trim(u."email")) <> ALL($1::text[])
+    AND NOT EXISTS (SELECT 1 FROM "email_optouts" o WHERE o."email" = lower(trim(u."email")))
+    AND NOT EXISTS (SELECT 1 FROM "user_email_status" v WHERE v."userId" = u."id" AND v."required" AND v."verifiedAt" IS NULL)`;
+
+// The tables that show who uses which app. activities, user_files and slope_jobs may be missing
+// on a database that has never had them; the checks that need them are left out until they exist.
+let tablesSeen: Promise<Set<string>> | null = null;
+function usageTables(): Promise<Set<string>> {
+  if (!tablesSeen) {
+    tablesSeen = prisma
+      .$queryRawUnsafe<{ t: string }[]>(
+        `SELECT t FROM unnest(ARRAY['downloads', 'activities', 'user_files', 'slope_jobs']) AS t WHERE to_regclass('public.' || quote_ident(t)) IS NOT NULL`
+      )
+      .then((rows) => new Set(rows.map((r) => r.t)));
+    tablesSeen.then((t) => {
+      if (t.size < 4) tablesSeen = null; // look again next time
+    });
+  }
+  return tablesSeen;
+}
+
+// A download counts by account, or by email for one recorded without the account id
+const downloaded = (types: string[]) =>
+  `EXISTS (SELECT 1 FROM "downloads" d WHERE (d."userId" = u."id" OR lower(trim(d."userEmail")) = lower(trim(u."email"))) AND d."assetType" IN (${types.map((t) => `'${t}'`).join(", ")}))`;
+
+/**
+ * SQL that is true for a user of the app (u is the users row). Excel to KML: downloaded the
+ * Windows app or used the converter (web, Android or Windows all log conversions). Traverse &
+ * Level: downloaded the Windows program or used the web app (its activity starts with tl_).
+ * RoadPro and Project Folder Manager: downloaded them. Slope Calculator: downloaded the Windows
+ * program or keeps calculations in the account. Auto Drafting: downloaded it or saved a drawing with it.
+ */
+async function appUserSql(appId: string): Promise<string> {
+  const t = await usageTables();
+  if (!t.has("downloads")) return "FALSE";
+  const or = (parts: (string | false)[]) => `(${parts.filter(Boolean).join(" OR ")})`;
+  switch (appId) {
+    case "excel-to-kml":
+      return or([
+        downloaded(["windows_installer", "web_app"]),
+        t.has("activities") &&
+          `EXISTS (SELECT 1 FROM "activities" a WHERE a."userId" = u."id" AND a."action" IN ('file_upload', 'conversion', 'export', 'batch_process', 'photos_attached', 'project_save'))`,
+      ]);
+    case "traverse":
+      return or([
+        downloaded(["traverse"]),
+        t.has("activities") && `EXISTS (SELECT 1 FROM "activities" a WHERE a."userId" = u."id" AND a."action" LIKE 'tl\\_%')`,
+        t.has("user_files") && `EXISTS (SELECT 1 FROM "user_files" f WHERE f."userId" = u."id" AND f."platform" = 'traverse_app')`,
+      ]);
+    case "auto-draft":
+      // its activity is tagged with the app (lib/admin/activityTags.ts adds that column on first use)
+      if (t.has("activities")) await ensureActivityColumns().catch(() => undefined);
+      return or([
+        downloaded(["auto_draft"]),
+        t.has("activities") && `EXISTS (SELECT 1 FROM "activities" a WHERE a."userId" = u."id" AND a."app" = 'auto-draft')`,
+      ]);
+    case "roadpro":
+      return downloaded(["roadpro"]);
+    case "folder-manager":
+      return downloaded(["folder_manager"]);
+    case "slope":
+      return or([
+        downloaded(["slope"]),
+        t.has("slope_jobs") && `EXISTS (SELECT 1 FROM "slope_jobs" j WHERE j."ownerId" = u."id")`,
+      ]);
+    default:
+      return "FALSE";
+  }
+}
+
+/** The people a broadcast goes to ($1: never-email list); for "behind" use audiencePeople */
+export async function recipientsSql(appId: string, who: Audience): Promise<string> {
+  return who === "app" ? `${eligibleSql}\n    AND ${await appUserSql(appId)}` : eligibleSql;
+}
+
+/**
+ * The people a broadcast goes to, with the extra query values it needs: "behind" is a list of
+ * accounts worked out now (lib/products/versionsInUse.ts), passed as parameter $<param>
+ */
+export async function audiencePeople(appId: string, who: Audience, param: number): Promise<{ sql: string; args: unknown[] }> {
+  if (who !== "behind") return { sql: await recipientsSql(appId, who), args: [] };
+  const ids = await (await import("@/lib/products/versionsInUse")).behindUserIds(appId);
+  return { sql: `${eligibleSql}\n    AND u."id" = ANY($${param}::text[])`, args: [ids] };
+}
+
+// people who already have this release from an earlier broadcast ($2: release id)
+export const alreadySentSql = `
+    AND NOT EXISTS (
+      SELECT 1 FROM "release_recipients" r JOIN "release_broadcasts" b ON b."id" = r."broadcastId"
+      WHERE b."releaseId" = $2 AND b."kind" = 'release' AND r."status" = 'sent' AND r."email" = lower(trim(u."email")))`;
+
+async function count(sql: string, ...args: unknown[]): Promise<number> {
+  const [r] = await prisma.$queryRawUnsafe<{ n: number }[]>(`SELECT count(*)::int AS n FROM (${sql}) e`, ...args);
+  return r.n;
+}
+
+// ---------- the list for the admin page ----------
+export async function listReleases() {
+  await ensureReleaseTables();
+  const releases = await prisma.productRelease.findMany({
+    include: { broadcasts: { where: { kind: "release" }, orderBy: { createdAt: "desc" } } },
+  });
+  const reviewBroadcasts = await prisma.releaseBroadcast.findMany({
+    where: { kind: "review" },
+    include: { release: { select: { app: true } } },
+    orderBy: { createdAt: "desc" },
+  });
+  const everyone = await count(eligibleSql, NEVER_EMAIL);
+  const [optedOut] = await prisma.$queryRawUnsafe<{ n: number }[]>(`SELECT count(*)::int AS n FROM "email_optouts"`);
+  const groups = await Promise.all(
+    RELEASE_APPS.map(async (app) => {
+      const appSql = await recipientsSql(app.id, "app");
+      const own = releases
+        .filter((r) => r.app === app.id)
+        .sort((x, y) => compareVersions(y.version, x.version) || y.releasedAt.getTime() - x.releasedAt.getTime());
+      // a new program's first release is emailed as its introduction
+      const intro = introductionOf(app.id);
+      const first = own.reduce<(typeof own)[number] | null>((a, r) => (!a || r.releasedAt < a.releasedAt ? r : a), null);
+      return {
+        app,
+        intro: intro ? { title: intro.title, releaseId: first?.id ?? null, announce: intro.announce } : null,
+        // people who downloaded or used this app
+        users: await count(appSql, NEVER_EMAIL),
+        // asking them for a review: who could be asked, and the requests sent before
+        review: {
+          ...(await reviewCounts(app.id)),
+          broadcasts: reviewBroadcasts.filter((b) => b.release.app === app.id).map((b) => ({ ...b, release: undefined })),
+        },
+        releases: await Promise.all(
+          own.map(async (r) => ({
+            ...r,
+            introduces: !!intro && r.id === first?.id,
+            // still to get this release: among the app's users, and among everyone
+            notYet: await count(`${appSql}${alreadySentSql}`, NEVER_EMAIL, r.id),
+            notYetAll: await count(`${eligibleSql}${alreadySentSql}`, NEVER_EMAIL, r.id),
+          }))
+        ),
+      };
+    })
+  );
+  return {
+    groups,
+    audience: { everyone, optedOut: optedOut.n },
+    mail: { configured: isMailConfigured(), from: mailFrom(), freeMailbox: sendsFromFreeMailbox() },
+  };
+}
+
+// ---------- preview and test ----------
+export async function previewRelease(id: string, to: { name: string; email: string }) {
+  await ensureReleaseTables();
+  const r = await prisma.productRelease.findUnique({ where: { id } });
+  if (!r) return null;
+  const m = releaseEmail(await forEmailOf(r), to);
+  return { subject: m.subject, html: m.html, text: m.text };
+}
+
+export async function sendTest(id: string, to: { name: string; email: string }) {
+  await ensureReleaseTables();
+  const r = await prisma.productRelease.findUnique({ where: { id } });
+  if (!r) throw new Error("That release no longer exists.");
+  const m = releaseEmail(await forEmailOf(r), to);
+  const t = mailTransport();
+  await t.sendMail({ from: mailFrom(), replyTo: mailReplyTo(), to: to.email, subject: `[Test] ${m.subject}`, text: m.text, html: m.html, list: m.list, headers: m.headers });
+}
+
+// ---------- broadcasts ----------
+/** Start announcing a release; onlyNew skips people who already got it. Reuses an unfinished one. */
+export async function startBroadcast(releaseId: string, onlyNew: boolean, who: Audience, createdBy: string) {
+  await ensureReleaseTables();
+  const release = await prisma.productRelease.findUnique({ where: { id: releaseId } });
+  if (!release) throw new Error("That release no longer exists.");
+  const open = await prisma.releaseBroadcast.findFirst({ where: { releaseId, status: { in: ["sending", "paused"] } } });
+  if (open) {
+    await prisma.releaseBroadcast.update({ where: { id: open.id }, data: { status: "sending", lastError: null } });
+    return open.id;
+  }
+  const subject = release.title;
+  // "behind": the people still on an older version, worked out now ($4)
+  const { sql: people, args } = await audiencePeople(release.app, who, 4);
+  const name = appById(release.app)?.name || release.app;
+  if (who === "behind" && !(args[0] as string[]).length) throw new Error(`Everyone we know has ${name} is on the newest version.`);
+  const b = await prisma.releaseBroadcast.create({ data: { releaseId, subject, createdBy, audience: who } });
+  const inserted = await prisma.$executeRawUnsafe(
+    `INSERT INTO "release_recipients" ("id", "broadcastId", "email", "name", "status")
+     SELECT gen_random_uuid()::text, $3, e.email, e.name, 'pending' FROM (${people}${onlyNew ? alreadySentSql : ` AND $2::text IS NOT NULL`}) e
+     ON CONFLICT ("broadcastId", "email") DO NOTHING`,
+    NEVER_EMAIL,
+    releaseId,
+    b.id,
+    ...args
+  );
+  if (!inserted) {
+    await prisma.releaseBroadcast.delete({ where: { id: b.id } });
+    if (who === "behind") {
+      throw new Error(onlyNew ? `Everyone on an older ${name} already has this email.` : `Nobody on an older ${name} can be emailed (stopped emails or unconfirmed addresses).`);
+    }
+    if (who === "app") {
+      throw new Error(onlyNew ? `Everyone who uses ${name} already has this release.` : `Nobody has downloaded or used ${name} with their account yet.`);
+    }
+    throw new Error(onlyNew ? "Everyone with an account already has this release." : "There's nobody to send to yet.");
+  }
+  await prisma.releaseBroadcast.update({ where: { id: b.id }, data: { total: inserted } });
+  return b.id;
+}
+
+/** Errors that mean "slow down / try later" rather than "this address is bad" */
+function isTemporary(err: unknown): boolean {
+  const e = err as { responseCode?: number; code?: string; message?: string };
+  if (e?.code && ["EAUTH", "ECONNECTION", "ETIMEDOUT", "ESOCKET", "EDNS", "ECONNRESET"].includes(e.code)) return true;
+  if (e?.responseCode && [421, 450, 451, 452, 454].includes(e.responseCode)) return true;
+  return /quota|rate limit|too many|try again|temporar|daily|limit exceeded/i.test(e?.message || "");
+}
+
+async function refreshCounts(id: string) {
+  const rows = await prisma.releaseRecipient.groupBy({ by: ["status"], where: { broadcastId: id }, _count: { _all: true } });
+  const c = Object.fromEntries(rows.map((r) => [r.status, r._count._all])) as Record<string, number>;
+  const left = (c.pending || 0) + (c.sending || 0);
+  const b = await prisma.releaseBroadcast.findUnique({ where: { id } });
+  return prisma.releaseBroadcast.update({
+    where: { id },
+    data: {
+      sent: c.sent || 0,
+      failed: c.failed || 0,
+      ...(left === 0 && b?.status !== "done" ? { status: "done", finishedAt: new Date() } : {}),
+    },
+  });
+}
+
+/**
+ * Send the next few emails of a broadcast, within budgetMs. Returns the broadcast with its
+ * counts; status stays "sending" while some are left, becomes "done" at the end, or "paused"
+ * when the mail server says to stop (daily limit, sign-in problem).
+ */
+export async function sendNextBatch(id: string, budgetMs = 40_000, batch = 25) {
+  return (await sendBatch(id, budgetMs, batch)).broadcast;
+}
+
+/** One step of a broadcast run on the server (lib/mail/broadcastRunner.ts): bigger batches, and whether it sent anything */
+export async function sendStep(id: string) {
+  return sendBatch(id, 45_000, 200);
+}
+
+/** A broadcast still sending whose last email went out (or was claimed) over 90 s ago: its run stopped */
+export async function stalledBroadcasts(): Promise<string[]> {
+  await ensureReleaseTables();
+  const rows = await prisma.$queryRawUnsafe<{ id: string }[]>(
+    `SELECT b."id" FROM "release_broadcasts" b
+     WHERE b."status" = 'sending' AND b."createdAt" < now() - interval '60 seconds'
+       AND NOT EXISTS (
+         SELECT 1 FROM "release_recipients" r
+         WHERE r."broadcastId" = b."id" AND (r."claimedAt" > now() - interval '90 seconds' OR r."sentAt" > now() - interval '90 seconds'))`
+  );
+  return rows.map((r) => r.id);
+}
+
+/** The broadcast with its counts, without sending */
+export async function broadcastStatus(id: string) {
+  await ensureReleaseTables();
+  return refreshCounts(id);
+}
+
+async function sendBatch(id: string, budgetMs: number, batch: number) {
+  await ensureReleaseTables();
+  const b = await prisma.releaseBroadcast.findUnique({ where: { id }, include: { release: true } });
+  if (!b) throw new Error("That broadcast no longer exists.");
+  if (b.status !== "sending") return { broadcast: b, claimed: 0 };
+  if (!isMailConfigured()) {
+    const broadcast = await prisma.releaseBroadcast.update({ where: { id }, data: { status: "paused", lastError: "Email isn't set up (SMTP_HOST, SMTP_USER, SMTP_PASS)." } });
+    return { broadcast, claimed: 0 };
+  }
+
+  // claim a batch; a claim older than 10 minutes was left by a request that died
+  const claimed = await prisma.$queryRawUnsafe<{ id: string; email: string; name: string }[]>(
+    `UPDATE "release_recipients" SET "status" = 'sending', "claimedAt" = now()
+     WHERE "id" IN (
+       SELECT "id" FROM "release_recipients"
+       WHERE "broadcastId" = $1 AND ("status" = 'pending' OR ("status" = 'sending' AND "claimedAt" < now() - interval '10 minutes'))
+       ORDER BY "email" LIMIT $2 FOR UPDATE SKIP LOCKED)
+     RETURNING "id", "email", "name"`,
+    id,
+    batch
+  );
+
+  const started = Date.now();
+  const release = await forEmailOf(b.release);
+  const review = b.kind === "review" ? reviewAskFor(b.release.app) : null;
+  const transport = claimed.length ? mailTransport(true) : null;
+  const gap = mailGapMs();
+  let stopWith: string | null = null;
+  try {
+    for (let i = 0; i < claimed.length; i++) {
+      const r = claimed[i];
+      // a pause between emails (a little uneven), unless it would run past this request's time
+      if (i > 0 && gap && !stopWith) {
+        const wait = Math.round(gap * (0.75 + Math.random() * 0.5));
+        if (Date.now() - started + wait <= budgetMs) await new Promise((res) => setTimeout(res, wait));
+      }
+      if (stopWith || Date.now() - started > budgetMs) {
+        await prisma.releaseRecipient.updateMany({ where: { id: { in: claimed.slice(i).map((x) => x.id) } }, data: { status: "pending", claimedAt: null } });
+        break;
+      }
+      // someone may have unsubscribed after the broadcast started
+      const out = await prisma.emailOptOut.findUnique({ where: { email: r.email } });
+      if (out) {
+        await prisma.releaseRecipient.update({ where: { id: r.id }, data: { status: "failed", error: "Unsubscribed" } });
+        continue;
+      }
+      const m = review ? reviewRequestEmail(review, { name: r.name, email: r.email }) : releaseEmail(release, { name: r.name, email: r.email });
+      try {
+        await transport!.sendMail({ from: mailFrom(), replyTo: mailReplyTo(), to: r.email, subject: m.subject, text: m.text, html: m.html, list: m.list, headers: m.headers });
+        await prisma.releaseRecipient.update({ where: { id: r.id }, data: { status: "sent", sentAt: new Date(), error: null } });
+      } catch (err) {
+        const msg = (err as Error)?.message?.slice(0, 300) || "Sending failed";
+        if (isTemporary(err)) {
+          stopWith = msg;
+          await prisma.releaseRecipient.update({ where: { id: r.id }, data: { status: "pending", claimedAt: null } });
+        } else {
+          await prisma.releaseRecipient.update({ where: { id: r.id }, data: { status: "failed", error: msg } });
+        }
+      }
+    }
+  } finally {
+    transport?.close();
+  }
+
+  if (stopWith) await prisma.releaseBroadcast.update({ where: { id }, data: { status: "paused", lastError: stopWith } });
+  return { broadcast: await refreshCounts(id), claimed: claimed.length };
+}
+
+export async function pauseBroadcast(id: string) {
+  await ensureReleaseTables();
+  return prisma.releaseBroadcast.update({ where: { id }, data: { status: "paused", lastError: "Paused by an admin." } });
+}
+
+export async function resumeBroadcast(id: string) {
+  await ensureReleaseTables();
+  return prisma.releaseBroadcast.update({ where: { id }, data: { status: "sending", lastError: null } });
+}
+
+/** Stop for good: the people not reached yet are dropped from this broadcast */
+export async function cancelBroadcast(id: string) {
+  await ensureReleaseTables();
+  await prisma.releaseRecipient.deleteMany({ where: { broadcastId: id, status: { in: ["pending", "sending"] } } });
+  const b = await refreshCounts(id);
+  const total = await prisma.releaseRecipient.count({ where: { broadcastId: id } });
+  return prisma.releaseBroadcast.update({ where: { id }, data: { total, status: "done", finishedAt: b.finishedAt ?? new Date(), lastError: "Stopped before everyone was reached." } });
+}
+
+/** The addresses that failed, for the admin to check */
+export async function failedRecipients(id: string) {
+  await ensureReleaseTables();
+  return prisma.releaseRecipient.findMany({ where: { broadcastId: id, status: "failed" }, select: { email: true, error: true }, take: 200 });
+}
+
+// ---------- asking for reviews ----------
+// The id a program's reviews are saved under (lib/content/reviews.ts)
+const REVIEW_PRODUCT: Record<string, string> = {
+  "excel-to-kml": "excel-to-kml",
+  roadpro: "roadpro",
+  traverse: "traverse",
+  "folder-manager": "project-folder-manager",
+  slope: "slope-calculator",
+  "auto-draft": "auto-draft",
+};
+const reviewAskFor = (appId: string) => ({ appName: appById(appId)?.name || appId, product: REVIEW_PRODUCT[appId] || appId });
+
+let reviewsTable: Promise<boolean> | null = null;
+const hasReviews = () => {
+  if (!reviewsTable) {
+    reviewsTable = prisma
+      .$queryRawUnsafe<{ ok: boolean }[]>(`SELECT to_regclass('public.reviews') IS NOT NULL AS ok`)
+      .then(([r]) => {
+        if (!r.ok) reviewsTable = null; // look again next time
+        return r.ok;
+      });
+  }
+  return reviewsTable;
+};
+
+/** The app's users who haven't reviewed it yet; askedBefore also leaves out anyone asked already */
+async function reviewRecipientsSql(appId: string, leaveOutAsked: boolean): Promise<string> {
+  const product = REVIEW_PRODUCT[appId];
+  if (!product) return `${eligibleSql} AND FALSE`;
+  const reviewed = (await hasReviews())
+    ? `\n    AND NOT EXISTS (SELECT 1 FROM "reviews" rv WHERE rv."userId" = u."id" AND rv."product" = '${product}')`
+    : "";
+  const asked = leaveOutAsked
+    ? `\n    AND NOT EXISTS (
+      SELECT 1 FROM "release_recipients" r JOIN "release_broadcasts" b ON b."id" = r."broadcastId" JOIN "product_releases" pr ON pr."id" = b."releaseId"
+      WHERE b."kind" = 'review' AND pr."app" = '${appId}' AND r."status" = 'sent' AND r."email" = lower(trim(u."email")))`
+    : "";
+  return `${eligibleSql}\n    AND ${await appUserSql(appId)}${reviewed}${asked}`;
+}
+
+/** For the admin page: the app's users who reviewed it, could be asked, and were never asked */
+async function reviewCounts(appId: string) {
+  const [toAsk, notAskedYet] = await Promise.all([
+    count(await reviewRecipientsSql(appId, false), NEVER_EMAIL),
+    count(await reviewRecipientsSql(appId, true), NEVER_EMAIL),
+  ]);
+  const product = REVIEW_PRODUCT[appId];
+  const reviewed = product && (await hasReviews())
+    ? (await prisma.$queryRawUnsafe<{ n: number }[]>(`SELECT count(*)::int AS n FROM "reviews" WHERE "product" = $1`, product))[0].n
+    : 0;
+  return { reviewed, toAsk, notAskedYet };
+}
+
+/** A review request is filed under the app's newest release (there is always one) */
+async function newestRelease(appId: string) {
+  const all = await prisma.productRelease.findMany({ where: { app: appId } });
+  return all.sort((x, y) => compareVersions(y.version, x.version))[0] ?? null;
+}
+
+export async function previewReviewRequest(appId: string, to: { name: string; email: string }) {
+  if (!appById(appId)) return null;
+  const m = reviewRequestEmail(reviewAskFor(appId), to);
+  return { subject: m.subject, html: m.html, text: m.text };
+}
+
+export async function sendReviewTest(appId: string, to: { name: string; email: string }) {
+  if (!appById(appId)) throw new Error("Unknown program.");
+  const m = reviewRequestEmail(reviewAskFor(appId), to);
+  const t = mailTransport();
+  await t.sendMail({ from: mailFrom(), replyTo: mailReplyTo(), to: to.email, subject: `[Test] ${m.subject}`, text: m.text, html: m.html, list: m.list, headers: m.headers });
+}
+
+/**
+ * Start asking an app's users for a review: everyone who used it and hasn't reviewed it, or
+ * (onlyNew) only those never asked before. Reuses an unfinished request for the same app.
+ */
+export async function startReviewRequest(appId: string, onlyNew: boolean, createdBy: string) {
+  await ensureReleaseTables();
+  const app = appById(appId);
+  if (!app || !REVIEW_PRODUCT[appId]) throw new Error("Unknown program.");
+  const open = await prisma.releaseBroadcast.findFirst({ where: { kind: "review", status: { in: ["sending", "paused"] }, release: { app: appId } } });
+  if (open) {
+    await prisma.releaseBroadcast.update({ where: { id: open.id }, data: { status: "sending", lastError: null } });
+    return open.id;
+  }
+  const release = await newestRelease(appId);
+  if (!release) throw new Error(`Add a release of ${app.name} first.`);
+  const people = await reviewRecipientsSql(appId, onlyNew);
+  const b = await prisma.releaseBroadcast.create({
+    data: { releaseId: release.id, subject: `How is ${app.name} working for you?`, createdBy, audience: "app", kind: "review" },
+  });
+  const inserted = await prisma.$executeRawUnsafe(
+    `INSERT INTO "release_recipients" ("id", "broadcastId", "email", "name", "status")
+     SELECT gen_random_uuid()::text, $2, e.email, e.name, 'pending' FROM (${people}) e
+     ON CONFLICT ("broadcastId", "email") DO NOTHING`,
+    NEVER_EMAIL,
+    b.id
+  );
+  if (!inserted) {
+    await prisma.releaseBroadcast.delete({ where: { id: b.id } });
+    throw new Error(onlyNew ? `Everyone who uses ${app.name} has reviewed it or been asked already.` : `Everyone who uses ${app.name} has reviewed it already, or nobody has used it yet.`);
+  }
+  await prisma.releaseBroadcast.update({ where: { id: b.id }, data: { total: inserted } });
+  return b.id;
+}
+
+// ---------- unsubscribe ----------
+export async function optOut(email: string) {
+  await ensureReleaseTables();
+  const e = email.trim().toLowerCase();
+  await prisma.emailOptOut.upsert({ where: { email: e }, update: {}, create: { email: e } });
+}
+export async function optIn(email: string) {
+  await ensureReleaseTables();
+  await prisma.emailOptOut.deleteMany({ where: { email: email.trim().toLowerCase() } });
+}
+export async function isOptedOut(email: string) {
+  await ensureReleaseTables();
+  return Boolean(await prisma.emailOptOut.findUnique({ where: { email: email.trim().toLowerCase() } }));
+}
+
+// ---------- import from GitHub ----------
+/** A release's Markdown notes as plain lines, one item each */
+export function notesFromMarkdown(md: string): string[] {
+  const clean = (s: string) =>
+    s
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+      .replace(/\*\*([^*]+)\*\*/g, "$1")
+      .replace(/__([^_]+)__/g, "$1")
+      .replace(/`([^`]+)`/g, "$1")
+      .replace(/(^|\s)[*_]([^*_]+)[*_](?=\s|$)/g, "$1$2")
+      .replace(/\s+/g, " ")
+      .trim();
+  const lines = String(md || "").replace(/\r/g, "").split("\n").map((l) => l.trim());
+  // links to the changelog and checksum lines, not a mention of SHA-256 in a real item
+  const skip = /full changelog|^(sha-?256|checksums?)\b|\b[a-f0-9]{64}\b|^<!--/i;
+  // a bullet, with the lines it wraps onto (GitHub's notes often break a long item over lines)
+  const raw: string[] = [];
+  let inBullet = false;
+  for (const l of lines) {
+    if (/^([-*+]|\d+\.)\s+/.test(l)) {
+      raw.push(l.replace(/^([-*+]|\d+\.)\s+/, ""));
+      inBullet = true;
+    } else if (!l || l.startsWith("#") || l.startsWith("|") || l.startsWith("```")) {
+      inBullet = false;
+    } else if (inBullet && raw.length) {
+      raw[raw.length - 1] += ` ${l}`;
+    }
+  }
+  const bullets = raw.map(clean).filter((l) => l && !skip.test(l));
+  const items = bullets.length ? bullets : lines.filter((l) => l && !l.startsWith("#") && !skip.test(l)).map(clean);
+  return items.filter(Boolean).slice(0, 12).map((l) => l.slice(0, 300));
+}
+
+/** Add the app's GitHub releases that aren't in the list yet, and fill notes that are empty */
+export async function importFromGitHub(appId: string) {
+  await ensureReleaseTables();
+  const app = appById(appId);
+  if (!app?.github) throw new Error("This app has no GitHub releases to import.");
+  const res = await fetch(`https://api.github.com/repos/${app.github}/releases?per_page=30`, {
+    headers: { Accept: "application/vnd.github+json", "User-Agent": "surveyxdigital.com" },
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error(`GitHub answered ${res.status}. Try again in a minute.`);
+  const list = (await res.json()) as {
+    tag_name: string;
+    name: string | null;
+    body: string | null;
+    published_at: string;
+    draft: boolean;
+    prerelease: boolean;
+    assets?: unknown[];
+  }[];
+  let added = 0;
+  let filled = 0;
+  for (const g of list) {
+    // drafts and releases made by mistake with no files (Project-manager's v2.3.9)
+    if (g.draft || !g.assets?.length) continue;
+    const version = normVersion(g.tag_name);
+    if (!/^\d+(\.\d+){1,3}$/.test(version)) continue;
+    if (GITHUB_MIN_VERSION[app.id] && compareVersions(version, GITHUB_MIN_VERSION[app.id]) < 0) continue;
+    // a beta, unless this site already offers that version (RoadPro 3.6.1 is marked pre-release on GitHub)
+    if (g.prerelease && compareVersions(version, app.current) > 0) continue;
+    const notes = notesFromMarkdown(g.body || "").join("\n");
+    const existing = await prisma.productRelease.findUnique({ where: { app_version: { app: app.id, version } } });
+    if (existing) {
+      if (!existing.notes.trim() && notes) {
+        await prisma.productRelease.update({ where: { id: existing.id }, data: { notes, releasedAt: new Date(g.published_at) } });
+        filled++;
+      }
+      continue;
+    }
+    const named = (g.name || "").trim();
+    const title = named && normVersion(named) !== version && !/^v?\d[\d.]*$/.test(named) ? named.slice(0, 150) : `${app.name} ${version} is out`;
+    await prisma.productRelease.create({
+      data: { app: app.id, version, releasedAt: new Date(g.published_at), title, notes, link: app.href },
+    });
+    added++;
+  }
+  return { added, filled };
+}

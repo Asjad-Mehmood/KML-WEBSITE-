@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { MailCheck, MailQuestion, MailWarning, Send, Undo2, Check } from "lucide-react";
-import type { EmailStatus } from "@/lib/emailVerify";
+import type { EmailStatus } from "@/lib/auth/emailVerify";
 
 const METHOD: Record<string, string> = {
   code: "with the emailed code",

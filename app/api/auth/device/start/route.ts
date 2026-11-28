@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { clientIp } from "@/lib/loginThrottle";
-import { startLink } from "@/lib/deviceLink";
+import { clientIp } from "@/lib/auth/loginThrottle";
+import { startLink } from "@/lib/auth/deviceLink";
 
 // POST { app }: a sign-in code for an app window (Traverse & Level's Windows program).
 // The person confirms it at /link in their browser; the app then polls /api/auth/device/poll.

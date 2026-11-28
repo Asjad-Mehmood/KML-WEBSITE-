@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { GRID_PAGES } from "@/lib/gridPages";
-import type { EpsgSystem } from "@/lib/epsgCatalog";
+import { GRID_PAGES } from "@/lib/geo/gridPages";
+import type { EpsgSystem } from "@/lib/geo/epsgCatalog";
 
 const hrefFor = (code: number) => {
   const curated = GRID_PAGES.find((g) => g.code === code);

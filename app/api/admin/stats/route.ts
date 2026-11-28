@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminSession } from "@/lib/adminAuth";
+import { getAdminSession } from "@/lib/auth/adminAuth";
 import { db } from "@/lib/db";
-import { adminGroups } from "@/lib/traverseJobs";
-import { adminTotals as slopeTotals } from "@/lib/slopeJobs";
+import { adminGroups } from "@/lib/products/traverseJobs";
+import { adminTotals as slopeTotals } from "@/lib/products/slopeJobs";
 
 export async function GET(req: NextRequest) {
   try {
@@ -11,51 +11,29 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized: Admin privileges required" }, { status: 401 });
     }
 
-    const users = await db.getAllUsers();
-    const downloads = await db.getAllDownloads();
-    const conversions = await db.getAllConversions(5);
-    const activities = await db.getAllActivities(200);
-    const activityCount = await db.countActivities();
-    const settings = await db.getSettings();
-    const fileTotals = await db.getFileTotals();
+    // counted in the database: nothing loads every account or every download
+    const [users, downloads, recentUsers, recentDownloads, conversions, activities, activityCount, totalPointsProcessed, settings, fileTotals] = await Promise.all([
+      db.userCounts(),
+      db.downloadCounts(),
+      db.getAllUsers(undefined, 5),
+      db.getAllDownloads(5),
+      db.getAllConversions(5),
+      db.getAllActivities(6),
+      db.countActivities(),
+      db.totalPointsProcessed(),
+      db.getSettings(),
+      db.getFileTotals(),
+    ]);
     // Traverse & Level jobs (their own tables, created on first use)
     const traverse = await adminGroups().then((g) => g.totals).catch(() => null);
     // Slope Calculator: calculations kept in accounts
     const slope = await slopeTotals().catch(() => null);
 
-    // Breakdown by role
-    const roleCounts: Record<string, number> = {};
-    users.forEach((u) => {
-      const r = u.role || "Surveyor";
-      roleCounts[r] = (roleCounts[r] || 0) + 1;
-    });
-
-    // Breakdown by asset type
-    const assetCounts: Record<string, number> = {};
-    downloads.forEach((d) => {
-      assetCounts[d.assetType] = (assetCounts[d.assetType] || 0) + 1;
-    });
-
-    // Breakdown by location
-    const locationCounts: Record<string, number> = {};
-    downloads.forEach((d) => {
-      const loc = d.location || "Unknown Origin";
-      locationCounts[loc] = (locationCounts[loc] || 0) + 1;
-    });
-
-    // Calculate total points processed across activities
-    let totalPointsProcessed = 0;
-    activities.forEach((a) => {
-      if (typeof a.pointsCount === "number") {
-        totalPointsProcessed += a.pointsCount;
-      }
-    });
-
     return NextResponse.json({
       success: true,
       stats: {
-        totalUsers: users.length,
-        totalDownloads: downloads.length,
+        totalUsers: users.total,
+        totalDownloads: downloads.total,
         totalConversions: conversions.total,
         totalActivities: activityCount,
         totalFilesStored: fileTotals.files,
@@ -65,14 +43,14 @@ export async function GET(req: NextRequest) {
         traverse,
         slope,
         totalPointsProcessed,
-        roleCounts,
-        assetCounts,
-        locationCounts,
+        roleCounts: users.byRole,
+        assetCounts: downloads.byAsset,
+        locationCounts: downloads.byLocation,
         settings,
-        recentUsers: users.slice(0, 5),
-        recentDownloads: downloads.slice(0, 5),
+        recentUsers,
+        recentDownloads,
         recentConversions: conversions.conversions,
-        recentActivities: activities.slice(0, 6),
+        recentActivities: activities,
       },
     });
   } catch (err: unknown) {

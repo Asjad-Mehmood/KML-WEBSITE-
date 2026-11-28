@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminSession } from "@/lib/adminAuth";
-import { logAdmin } from "@/lib/adminLog";
-import { optIn } from "@/lib/releases";
-import { checkLink, draftPreview, emailHistory, githubRelease, optOuts, recipientsPreview, retryFailed, versionBoard } from "@/lib/releaseTools";
+import { getAdminSession } from "@/lib/auth/adminAuth";
+import { logAdmin } from "@/lib/admin/adminLog";
+import { optIn } from "@/lib/products/releases";
+import { checkLink, draftPreview, emailHistory, githubRelease, optOuts, recipientsPreview, retryFailed, versionBoard } from "@/lib/products/releaseTools";
 
-// Admin → Releases: the tools around the list (lib/releaseTools.ts)
+// Admin → Releases: the tools around the list (lib/products/releaseTools.ts)
 // GET ?board=1                               each app's versions and what's off
 // GET ?github=<app>&version=<v>              that version's release on GitHub (title, notes, date)
 // GET ?link=<url or /path>                   does the link answer

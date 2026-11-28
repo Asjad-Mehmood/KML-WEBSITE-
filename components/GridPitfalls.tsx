@@ -1,8 +1,8 @@
 import { AlertTriangle } from "lucide-react";
-import type { EpsgSystem } from "@/lib/epsgCatalog";
-import { examplePoints, fmtGrid } from "@/lib/epsgExample";
-import { hasWestSouthAxes } from "@/lib/epsgPageText";
-import { datumTie, unitLabel } from "@/lib/gridParams";
+import type { EpsgSystem } from "@/lib/geo/epsgCatalog";
+import { examplePoints, fmtGrid } from "@/lib/geo/epsgExample";
+import { hasWestSouthAxes } from "@/lib/geo/epsgPageText";
+import { datumTie, unitLabel } from "@/lib/geo/gridParams";
 
 /**
  * Mistakes people make with this particular grid, worked out from its definition: where its

@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import WebAppLink from "./WebAppLink";
-import { PRODUCTS, badgeLabel, type Product } from "@/lib/products";
+import { PRODUCTS, badgeLabel, type Product } from "@/lib/products/products";
 
 // Dynamically import HeroConverter with radar without SSR
 const HeroConverter = dynamic(() => import("./HeroConverter"), {
@@ -77,7 +77,7 @@ export default function HeroClassic({ versionTag, fileSizeText, onDownloadClick 
              ══════════════════════════════════════════════════════════════════ */}
           <div className="lg:col-span-5 flex flex-col items-start text-left">
 
-            {/* One chip per product we spotlight (lib/products.ts), each on its own line: the new one
+            {/* One chip per product we spotlight (lib/products/products.ts), each on its own line: the new one
                 first (amber, "New"), then the Excel to KML version, then the others */}
             <div className="flex flex-col items-start gap-2 mb-6">
             {PRODUCTS.filter((p) => p.inHero && badgeLabel(p)).map(heroChip)}

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Sparkles, X } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import { usePublicSettings } from "@/lib/publicSettings";
+import { usePublicSettings } from "@/lib/content/publicSettings";
 
 // Invites signed-out visitors to create an account once they have shown interest: 3 pages in a
 // visit, a minute on the site, most of a page read, or a few clicks inside the page (using a

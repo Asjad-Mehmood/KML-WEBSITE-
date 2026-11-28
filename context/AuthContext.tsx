@@ -1,9 +1,9 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { signOutEverywherePath } from "../lib/authHost";
-import { usePublicSettings } from "@/lib/publicSettings";
-import { isAdminUser } from "@/lib/adminRole";
+import { signOutEverywherePath } from "@/lib/auth/authHost";
+import { usePublicSettings } from "@/lib/content/publicSettings";
+import { isAdminUser } from "@/lib/auth/adminRole";
 
 export interface User {
   id: string;

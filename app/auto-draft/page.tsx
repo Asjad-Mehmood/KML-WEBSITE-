@@ -35,8 +35,8 @@ import {
   AUTO_DRAFT_RELEASED,
   AUTO_DRAFT_STEPS,
   AUTO_DRAFT_VERSION,
-} from "@/lib/autoDraft";
-import { SITE_URL, jsonLd, openGraphFor, companyTitle } from "@/lib/site";
+} from "@/lib/products/autoDraft";
+import { SITE_URL, jsonLd, openGraphFor, companyTitle } from "@/lib/content/site";
 
 const TITLE = "Auto Drafting: survey points to a finished CAD drawing";
 const DESCRIPTION =

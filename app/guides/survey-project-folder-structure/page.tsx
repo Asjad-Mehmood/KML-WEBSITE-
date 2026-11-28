@@ -1,5 +1,5 @@
 import GuideLayout from "../../../components/GuideLayout";
-import { guideMetadata } from "@/lib/guideMeta";
+import { guideMetadata } from "@/lib/content/guideMeta";
 
 const SLUG = "survey-project-folder-structure";
 export const metadata = guideMetadata(SLUG);

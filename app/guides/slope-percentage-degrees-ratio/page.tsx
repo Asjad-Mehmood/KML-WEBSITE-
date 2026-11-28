@@ -1,6 +1,6 @@
 import Link from "next/link";
 import GuideLayout from "../../../components/GuideLayout";
-import { guideMetadata } from "@/lib/guideMeta";
+import { guideMetadata } from "@/lib/content/guideMeta";
 
 const SLUG = "slope-percentage-degrees-ratio";
 export const metadata = guideMetadata(SLUG);

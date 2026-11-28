@@ -5,8 +5,8 @@ import PageShell from "../../components/PageShell";
 import PageIntro from "../../components/PageIntro";
 import NextSteps from "../../components/NextSteps";
 import { BreadcrumbStructuredData } from "../../components/StructuredData";
-import { TOOLS, TOOL_GROUPS, type ToolGroup } from "@/lib/tools";
-import { openGraphFor } from "@/lib/site";
+import { TOOLS, TOOL_GROUPS, type ToolGroup } from "@/lib/geo/tools";
+import { openGraphFor } from "@/lib/content/site";
 import ToolCta from "../../components/tools/ToolCta";
 
 const TITLE = "Free Survey and Coordinate Tools";

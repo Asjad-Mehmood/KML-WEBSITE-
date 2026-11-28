@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
-import { reviewsDue } from "@/lib/reviews";
+import { sessionForToken, tokenFromRequest } from "@/lib/auth/serverSession";
+import { reviewsDue } from "@/lib/content/reviews";
 
 // GET: the programs the signed-in account downloaded and hasn't reviewed yet (for the review prompt).
 export async function GET(req: NextRequest) {

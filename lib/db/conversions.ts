@@ -1,6 +1,6 @@
 // Converted points (Excel to KML) (part of db, lib/db/index.ts)
 import crypto from "crypto";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import { ensureElevationOptional } from "./core";
 import type { ConversionRecord } from "./core";
 

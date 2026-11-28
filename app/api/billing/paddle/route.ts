@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { applyPaddleSubscription } from "@/lib/billing";
-import { noteWebhook } from "@/lib/billingConfig";
-import { verifyPaddleSignature, type PaddleSubscription } from "@/lib/paddle";
+import { applyPaddleSubscription } from "@/lib/billing/billing";
+import { noteWebhook } from "@/lib/billing/billingConfig";
+import { verifyPaddleSignature, type PaddleSubscription } from "@/lib/billing/paddle";
 
 // POST: Paddle's webhook (Paddle → Developer tools → Notifications → New destination, this URL:
 // https://www.surveyxdigital.com/api/billing/paddle, with the subscription.* events).

@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminSession } from "@/lib/adminAuth";
-import { logAdmin } from "@/lib/adminLog";
-import { billingState, listSubscriptions } from "@/lib/billing";
-import { billingConfig, lastWebhook, saveBillingConfig, type BillingConfig } from "@/lib/billingConfig";
-import { getPrice, paddleConfig, paddleEnv, type PaddlePrice } from "@/lib/paddle";
-import { SITE_URL } from "@/lib/site";
+import { getAdminSession } from "@/lib/auth/adminAuth";
+import { logAdmin } from "@/lib/admin/adminLog";
+import { billingState, listSubscriptions } from "@/lib/billing/billing";
+import { billingConfig, lastWebhook, saveBillingConfig, type BillingConfig } from "@/lib/billing/billingConfig";
+import { getPrice, paddleConfig, paddleEnv, type PaddlePrice } from "@/lib/billing/paddle";
+import { SITE_URL } from "@/lib/content/site";
 
 // Admin → Payments: the switches for the paid plans, and a checklist of everything they need
 // (each Paddle setting is tried against Paddle itself, not only checked for being there)

@@ -3,7 +3,7 @@
 import { useState, useSyncExternalStore } from "react";
 import { CheckCircle2, Loader2, Send } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import { SUPPORT_EMAIL } from "@/lib/site";
+import { SUPPORT_EMAIL } from "@/lib/content/site";
 
 const TOPICS: [string, string][] = [
   ["question", "Question"],

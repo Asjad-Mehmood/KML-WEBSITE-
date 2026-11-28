@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
-import { billingState, planOf } from "@/lib/billing";
-import { paddleConfig } from "@/lib/paddle";
+import { sessionForToken, tokenFromRequest } from "@/lib/auth/serverSession";
+import { billingState, planOf } from "@/lib/billing/billing";
+import { paddleConfig } from "@/lib/billing/paddle";
 
 // POST { interval: "monthly" | "yearly" }: start paying for Pro.
 // With Paddle set up: what the page needs to open Paddle's checkout, with this account's id as

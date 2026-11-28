@@ -1,6 +1,6 @@
 "use client";
 
-// "Your download is starting": shown when a program's download starts (lib/downloadNotice.ts).
+// "Your download is starting": shown when a program's download starts (lib/products/downloadNotice.ts).
 // Our installers aren't code-signed yet, so Windows SmartScreen may stop them the first time with
 // "Windows protected your PC". The notice says so before it happens, shows the two clicks (More
 // info, then Run anyway) on a picture of that window, mentions the browser's own "not commonly
@@ -10,7 +10,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { CheckCircle2, Download, FileCheck2, Info, ShieldCheck, X } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import { DOWNLOAD_EVENT, type DownloadInfo } from "@/lib/downloadNotice";
+import { DOWNLOAD_EVENT, type DownloadInfo } from "@/lib/products/downloadNotice";
 
 const HIDE_KEY = "kml.download-notice.off";
 const TOOLKIT = "/api/toolkit/download";

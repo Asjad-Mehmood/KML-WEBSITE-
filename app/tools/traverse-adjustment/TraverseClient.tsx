@@ -8,8 +8,8 @@ import {
   DEF_TOL, LEVEL, METHOD, STATUS_TEXT, SURV, TYPE, blankCtrl, blankLRow, blankRow, blankState, computeAll, exampleState,
   knownFor, levKnown, levStatus, newLev, newTrav, okNum, register, resolve, tn, travStatus,
   type Known, type LevCalc, type LevRun, type Status, type Trav, type TravCalc, type TvState,
-} from "@/lib/traverseModel";
-import type { LevelResult, TraverseResult } from "@/lib/surveyEngine.js";
+} from "@/lib/products/traverseModel";
+import type { LevelResult, TraverseResult } from "@/lib/geo/surveyEngine.js";
 
 const KEY = "tools.traverse.v1";
 type Section = "ctl" | "trav" | "lev";

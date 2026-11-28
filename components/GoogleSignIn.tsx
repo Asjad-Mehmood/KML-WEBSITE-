@@ -1,6 +1,6 @@
 "use client";
 
-import { usePublicSettings } from "@/lib/publicSettings";
+import { usePublicSettings } from "@/lib/content/publicSettings";
 
 export const GOOGLE_ERRORS: Record<string, string> = {
   "google-cancelled": "Google sign-in was cancelled. You can try again or use your email.",

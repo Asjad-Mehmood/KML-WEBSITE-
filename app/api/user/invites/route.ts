@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
-import { inviteSummary } from "@/lib/referrals";
-import { SITE_URL } from "@/lib/site";
+import { sessionForToken, tokenFromRequest } from "@/lib/auth/serverSession";
+import { inviteSummary } from "@/lib/account/referrals";
+import { SITE_URL } from "@/lib/content/site";
 
 // GET: this account's invite link, and how many colleagues joined from it
 export const dynamic = "force-dynamic";

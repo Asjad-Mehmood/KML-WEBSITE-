@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse, after } from "next/server";
-import { logAdmin } from "@/lib/adminLog";
-import { kickBroadcast } from "@/lib/broadcastRunner";
-import { getAdminSession } from "@/lib/adminAuth";
-import { isMailConfigured } from "@/lib/mailer";
-import { startReviewRequest } from "@/lib/releases";
+import { logAdmin } from "@/lib/admin/adminLog";
+import { kickBroadcast } from "@/lib/mail/broadcastRunner";
+import { getAdminSession } from "@/lib/auth/adminAuth";
+import { isMailConfigured } from "@/lib/mail/mailer";
+import { startReviewRequest } from "@/lib/products/releases";
 
 // POST { app, onlyNew, confirm }: start emailing the app's users who haven't reviewed it
 // (onlyNew: leave out anyone asked before). The admin page then asks /api/admin/broadcasts/[id]

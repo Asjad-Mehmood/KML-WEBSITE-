@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { nextFromContinue, signinQuery, stateIsGood } from "@/lib/signinFlow";
+import { nextFromContinue, signinQuery, stateIsGood } from "@/lib/auth/signinFlow";
 import SigninFlow from "./SigninFlow";
 import SignupFlow from "../signup/SignupFlow";
 import type { SignupStepName } from "../signup/steps";

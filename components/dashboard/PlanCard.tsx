@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Gauge } from "lucide-react";
-import { METER_LABEL, type Meter, type PlanId } from "@/lib/plans";
+import { METER_LABEL, type Meter, type PlanId } from "@/lib/billing/plans";
 
 type Summary =
   | { enabled: false }

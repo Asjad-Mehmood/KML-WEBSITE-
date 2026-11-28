@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Layers, Mountain, Spline, FileOutput } from "lucide-react";
 import AutoDraftDownload, { AutoDraftReleaseInfo } from "../AutoDraftDownload";
-import { AUTO_DRAFT_CODES_PAGE, AUTO_DRAFT_FILES, AUTO_DRAFT_HIGHLIGHTS, AUTO_DRAFT_VERSION } from "@/lib/autoDraft";
+import { AUTO_DRAFT_CODES_PAGE, AUTO_DRAFT_FILES, AUTO_DRAFT_HIGHLIGHTS, AUTO_DRAFT_VERSION } from "@/lib/products/autoDraft";
 
 const ICONS = [Spline, Layers, Mountain, FileOutput];
 

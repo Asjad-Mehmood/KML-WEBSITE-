@@ -2,7 +2,7 @@
 
 import React, { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Search, X, MapPin, Crosshair, Globe2, Loader2 } from "lucide-react";
-import { formatLatLng, parseCoordinates, placeSearchAllowed, searchPlaces, type PlaceHit } from "@/lib/mapSearch";
+import { formatLatLng, parseCoordinates, placeSearchAllowed, searchPlaces, type PlaceHit } from "@/lib/geo/mapSearch";
 
 export interface MapTarget {
   lat: number;

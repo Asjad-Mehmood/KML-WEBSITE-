@@ -1,5 +1,5 @@
 import { after, NextRequest, NextResponse } from "next/server";
-import { logEvent } from "@/lib/activityEvents";
+import { logEvent } from "@/lib/admin/activityEvents";
 import { db } from "@/lib/db";
 
 export async function POST(req: NextRequest) {

@@ -1,9 +1,9 @@
 // Field book traverse: horizontal angles (or bearings) and distances, as the instrument records
-// them, worked out by the Excel to KML traverse engine (lib/surveyEngine.js, SURV): angular
+// them, worked out by the Excel to KML traverse engine (lib/geo/surveyEngine.js, SURV): angular
 // misclosure, Bowditch, Transit, Equal or least squares, side shots, levels, and the scale
 // factor of the Qatar National Grid. The answer has the same shape as computeTraverse, so the
 // Traverse screen, the PDF, the CSV and the dashboard read it the same way.
-import { SURV } from '../../lib/surveyEngine.js';
+import { SURV } from '../../lib/geo/surveyEngine.js';
 import { QNG } from './qng.js';
 import { computeTraverse, num, isBlank, bearing, METHODS } from './core.js';
 

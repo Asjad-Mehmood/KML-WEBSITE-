@@ -7,7 +7,7 @@ import { readFileSync } from 'node:fs';
 import { computeFieldBook, computeAny, blankFieldBook } from '../src/fieldbook.js';
 import { computeTraverse, bearing } from '../src/core.js';
 import { QNG } from '../src/qng.js';
-import { SURV } from '../../lib/surveyEngine.js';
+import { SURV } from '../../lib/geo/surveyEngine.js';
 
 const near = (a, b, tol, msg) => assert.ok(Math.abs(a - b) <= tol, `${msg || ''} ${a} vs ${b}`);
 const ref = JSON.parse(readFileSync(new URL('./qng-reference.json', import.meta.url)));

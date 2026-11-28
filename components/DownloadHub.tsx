@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { goToDownload } from "@/lib/downloadHandoff";
+import { goToDownload } from "@/lib/products/downloadHandoff";
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -30,8 +30,8 @@ import {
 import Link from "next/link";
 import WebAppLink from "./WebAppLink";
 import ToolkitOnly from "./ToolkitOnly";
-import { directDownloadAllowed, useDirectDownload } from "@/lib/publicSettings";
-import { INSTALLER_NAME } from "@/lib/site";
+import { directDownloadAllowed, useDirectDownload } from "@/lib/content/publicSettings";
+import { INSTALLER_NAME } from "@/lib/content/site";
 
 interface DownloadHubProps {
   versionTag: string;

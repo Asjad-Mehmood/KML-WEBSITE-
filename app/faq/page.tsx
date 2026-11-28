@@ -4,7 +4,7 @@ import React from "react";
 import Navbar from "../../components/Navbar";
 import Faq from "../../components/Faq";
 import CtaBanner from "../../components/CtaBanner";
-import { GITHUB_REPO_URL, LATEST_VERSION } from "@/lib/site";
+import { GITHUB_REPO_URL, LATEST_VERSION } from "@/lib/content/site";
 import Footer from "../../components/Footer";
 
 export default function FaqPage() {

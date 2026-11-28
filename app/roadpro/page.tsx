@@ -50,8 +50,8 @@ import {
   ROADPRO_UPGRADE_NOTE,
   ROADPRO_STEPS,
   ROADPRO_VERSION,
-} from "@/lib/roadpro";
-import { SITE_URL, jsonLd, openGraphFor, companyTitle } from "@/lib/site";
+} from "@/lib/products/roadpro";
+import { SITE_URL, jsonLd, openGraphFor, companyTitle } from "@/lib/content/site";
 
 const TITLE = "RoadPro: Road Builder Plugin for AutoCAD";
 const DESCRIPTION =

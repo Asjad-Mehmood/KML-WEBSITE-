@@ -30,8 +30,8 @@ import {
   PFM_RELEASED,
   PFM_REQUIREMENTS,
   PFM_VERSION,
-} from "@/lib/folderManager";
-import { SITE_URL, jsonLd, openGraphFor, companyTitle } from "@/lib/site";
+} from "@/lib/products/folderManager";
+import { SITE_URL, jsonLd, openGraphFor, companyTitle } from "@/lib/content/site";
 
 const TITLE = "Project Folder Manager for Windows";
 const DESCRIPTION =

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { sessionForToken } from "@/lib/serverSession";
-import { appSigninPath, parseAppLink } from "@/lib/appLink";
+import { sessionForToken } from "@/lib/auth/serverSession";
+import { appSigninPath, parseAppLink } from "@/lib/auth/appLink";
 
 // "Continue to the app" on /app-signin: a new session for the Windows app,
 // sent only to the app's loopback address on this computer

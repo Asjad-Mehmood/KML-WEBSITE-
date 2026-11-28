@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { logAdmin } from "@/lib/adminLog";
-import { getAdminSession } from "@/lib/adminAuth";
-import { lastCleanup, retentionDays, runCleanup } from "@/lib/cleanup";
+import { logAdmin } from "@/lib/admin/adminLog";
+import { getAdminSession } from "@/lib/auth/adminAuth";
+import { lastCleanup, retentionDays, runCleanup } from "@/lib/admin/cleanup";
 
 export const maxDuration = 60;
 

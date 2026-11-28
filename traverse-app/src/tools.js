@@ -4,7 +4,7 @@ import { computeTraverse, computeLevel, fmt, ratioText, dms, num, isBlank, METHO
 import { traverseReport, levelReport } from './report.js';
 import { EXAMPLE_TRAVERSE, EXAMPLE_LEVEL, EXAMPLE_FIELDBOOK } from './example.js';
 import { computeAny, blankFieldBook, blankGrid, FB_METHODS, ANGLE_FMT } from './fieldbook.js';
-import { SURV } from '../../lib/surveyEngine.js';
+import { SURV } from '../../lib/geo/surveyEngine.js';
 import { storage } from './backend.js';
 import { $, $$, esc, clone, today, slug, toast, saveFile, pickFile, splitTable, tableToRows, toCSV, relTime } from './util.js';
 

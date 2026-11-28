@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { logAdmin } from "@/lib/adminLog";
-import { getAdminSession } from "@/lib/adminAuth";
-import { listTrustedBrowsers, otpAvailable, otpEnabled, revokeTrustedBrowsers } from "@/lib/adminOtp";
+import { logAdmin } from "@/lib/admin/adminLog";
+import { getAdminSession } from "@/lib/auth/adminAuth";
+import { listTrustedBrowsers, otpAvailable, otpEnabled, revokeTrustedBrowsers } from "@/lib/auth/adminOtp";
 
 // Admin → Settings → Sign-in security: browsers that skip the email code, and whether the code step is active
 export async function GET(req: NextRequest) {

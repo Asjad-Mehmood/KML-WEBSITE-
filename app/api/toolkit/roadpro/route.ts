@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { ROADPRO_COMMANDS, ROADPRO_FILES, ROADPRO_KEYS, ROADPRO_VERSION } from "@/lib/roadpro";
-import { SITE_URL } from "@/lib/site";
+import { ROADPRO_COMMANDS, ROADPRO_FILES, ROADPRO_KEYS, ROADPRO_VERSION } from "@/lib/products/roadpro";
+import { SITE_URL } from "@/lib/content/site";
 
 // Survey Toolkit: what its RoadPro panel shows besides the install state (lib/toolkit/feed.ts):
-// the command list and the help files, from lib/roadpro.ts, so a new RoadPro version needs no
+// the command list and the help files, from lib/products/roadpro.ts, so a new RoadPro version needs no
 // new Toolkit. Public: it is all on /roadpro already.
 export function GET() {
   const abs = (href: string) => (href.startsWith("/") ? `${SITE_URL}${href}` : href);

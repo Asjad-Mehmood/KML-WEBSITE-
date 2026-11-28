@@ -1,12 +1,12 @@
 "use client";
 
 // Admin → Email: write an email and send it to one person, people picked from the accounts,
-// everyone who uses an app, or every account (lib/customMail.ts, /api/admin/mail). Preview it,
+// everyone who uses an app, or every account (lib/mail/customMail.ts, /api/admin/mail). Preview it,
 // send yourself a test, see how many it reaches, then watch it go out (it carries on when this
 // page is closed) with pause, resume and stop.
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { MAIL_TEMPLATES, type MailTemplate } from "@/lib/mailTemplates";
-import { releaseDraft, type ReleaseForMail } from "@/lib/releaseMailDraft";
+import { MAIL_TEMPLATES, type MailTemplate } from "@/lib/mail/mailTemplates";
+import { releaseDraft, type ReleaseForMail } from "@/lib/mail/releaseMailDraft";
 import ReleasePicker from "./ReleasePicker";
 import MailPeople, { type MailPerson } from "./MailPeople";
 import { CheckCircle2, Clock, Eye, Loader2, Mail, Pause, Play, RefreshCw, Search, Send, Square, User, Users, X, AppWindow, Globe2, FlaskConical } from "lucide-react";

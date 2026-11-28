@@ -1,13 +1,13 @@
 "use client";
 
-import { announceDownload } from "@/lib/downloadNotice";
+import { announceDownload } from "@/lib/products/downloadNotice";
 import { useRouter } from "next/navigation";
 import ToolkitOnly from "@/components/ToolkitOnly";
-import { directDownloadAllowed, useDirectDownload } from "@/lib/publicSettings";
+import { directDownloadAllowed, useDirectDownload } from "@/lib/content/publicSettings";
 import { useEffect, useState } from "react";
 import { Clock, Download } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import { SLOPE_FILES, SLOPE_INSTALLER, SLOPE_RELEASES_API, SLOPE_VERSION } from "@/lib/slope";
+import { SLOPE_FILES, SLOPE_INSTALLER, SLOPE_RELEASES_API, SLOPE_VERSION } from "@/lib/products/slope";
 
 export interface SlopeRelease {
   /** "checking" until GitHub answers; "none" when the latest release has no installer yet */

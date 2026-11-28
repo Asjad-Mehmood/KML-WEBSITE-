@@ -8,9 +8,9 @@ import GoogleSignIn from "./GoogleSignIn";
 import OtpForm from "./OtpForm";
 import { X, Lock } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import { OCCUPATIONS, OCCUPATION_MAX } from "../lib/occupations";
-import { usePublicSettings } from "../lib/publicSettings";
-import { authHost, inAuthHost } from "../lib/authHost";
+import { OCCUPATIONS, OCCUPATION_MAX } from "@/lib/account/occupations";
+import { usePublicSettings } from "@/lib/content/publicSettings";
+import { authHost, inAuthHost } from "@/lib/auth/authHost";
 
 export default function AuthModal() {
   const router = useRouter();

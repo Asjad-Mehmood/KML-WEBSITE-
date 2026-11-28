@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminSession } from "@/lib/adminAuth";
-import { usageOverview } from "@/lib/usageStats";
+import { getAdminSession } from "@/lib/auth/adminAuth";
+import { usageOverview } from "@/lib/admin/usageStats";
 
-// Admin → Usage (lib/usageStats.ts): monthly active people against the goal, the heaviest users,
+// Admin → Usage (lib/admin/usageStats.ts): monthly active people against the goal, the heaviest users,
 // and how many would pass example free limits
 export const dynamic = "force-dynamic";
 

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { logAdmin } from "@/lib/adminLog";
-import { getAdminSession } from "@/lib/adminAuth";
-import { adminReviews, deleteReviews, setReviewsStatus } from "@/lib/reviews";
+import { logAdmin } from "@/lib/admin/adminLog";
+import { getAdminSession } from "@/lib/auth/adminAuth";
+import { adminReviews, deleteReviews, setReviewsStatus } from "@/lib/content/reviews";
 
 // Admin → Reviews
 // GET ?status=&product=&q=&stars=1-5&comment=1&sort=newest|oldest|lowest|highest

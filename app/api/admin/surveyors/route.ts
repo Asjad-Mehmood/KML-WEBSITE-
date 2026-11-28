@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminSession } from "@/lib/adminAuth";
-import { logAdmin } from "@/lib/adminLog";
-import { DOWNLOAD_APPS, SURVEYOR_SORTS, csvCell, listSurveyors, surveyorSummary, type SurveyorFilter } from "@/lib/adminPeople";
+import { getAdminSession } from "@/lib/auth/adminAuth";
+import { logAdmin } from "@/lib/admin/adminLog";
+import { DOWNLOAD_APPS, SURVEYOR_SORTS, csvCell, listSurveyors, surveyorSummary, type SurveyorFilter } from "@/lib/admin/adminPeople";
 
-// Admin → Surveyors (lib/adminPeople.ts)
+// Admin → Surveyors (lib/admin/adminPeople.ts)
 // GET ?q= &email=confirmed|waiting|older &kind=admin|blocked|full &app= &downloaded=yes|no &joined=days &active=days (-days: not since) &country=
 //     &sort=newest|oldest|active|inactive|downloads|name &offset= &limit= (≤ 200)
 //     &view=summary   the numbers and the countries

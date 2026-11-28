@@ -1,13 +1,13 @@
 "use client";
 
-import { announceDownload } from "@/lib/downloadNotice";
+import { announceDownload } from "@/lib/products/downloadNotice";
 import { useRouter } from "next/navigation";
 import ToolkitOnly from "@/components/ToolkitOnly";
-import { directDownloadAllowed, useDirectDownload } from "@/lib/publicSettings";
+import { directDownloadAllowed, useDirectDownload } from "@/lib/content/publicSettings";
 import { useEffect, useState } from "react";
 import { Clock, Download } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import { AUTO_DRAFT_FILES, AUTO_DRAFT_INSTALLER, AUTO_DRAFT_RELEASES_API, AUTO_DRAFT_VERSION } from "@/lib/autoDraft";
+import { AUTO_DRAFT_FILES, AUTO_DRAFT_INSTALLER, AUTO_DRAFT_RELEASES_API, AUTO_DRAFT_VERSION } from "@/lib/products/autoDraft";
 
 export interface AutoDraftRelease {
   /** "checking" until GitHub answers; "none" when the latest release has no installer yet */

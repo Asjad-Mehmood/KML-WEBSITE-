@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
+import { sessionForToken, tokenFromRequest } from "@/lib/auth/serverSession";
 import { mayUseToolkit } from "@/lib/toolkit/access";
 
 // Survey Toolkit: who is signed in, and may they use it? Admins always may; everyone else while the

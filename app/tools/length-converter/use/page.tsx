@@ -1,7 +1,7 @@
 import ToolWorkspace from "../../../../components/tools/ToolWorkspace";
-import { toolUseMetadata } from "@/lib/toolMeta";
+import { toolUseMetadata } from "@/lib/geo/toolMeta";
 import UnitConverter from "../../../../components/tools/UnitConverter";
-import { LENGTH_UNITS } from "@/lib/toolMath";
+import { LENGTH_UNITS } from "@/lib/geo/toolMath";
 
 const SLUG = "length-converter";
 export const metadata = toolUseMetadata(SLUG);

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
-import { TeamError, downloadShare } from "@/lib/teams";
+import { sessionForToken, tokenFromRequest } from "@/lib/auth/serverSession";
+import { TeamError, downloadShare } from "@/lib/account/teams";
 
 // GET: a job shared with one of my teams, as a file (Excel to KML: .bm2job; the others: .json)
 export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {

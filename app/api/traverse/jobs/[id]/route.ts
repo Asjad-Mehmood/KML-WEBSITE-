@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { attachment } from "@/lib/attachment";
-import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
-import { logTraverseActivity } from "@/lib/traverseActivity";
-import { traverseControls } from "@/lib/traverseControls";
-import { checkLimit } from "@/lib/billing";
-import { MAX_TRAVERSE_JOB_BYTES, countOwn, jobForDownload, jobInfo, ownerOf, remove, upsert } from "@/lib/traverseJobs";
-import { getAdminSession } from "@/lib/adminAuth";
+import { attachment } from "@/lib/http/attachment";
+import { sessionForToken, tokenFromRequest } from "@/lib/auth/serverSession";
+import { logTraverseActivity } from "@/lib/products/traverseActivity";
+import { traverseControls } from "@/lib/products/traverseControls";
+import { checkLimit } from "@/lib/billing/billing";
+import { MAX_TRAVERSE_JOB_BYTES, countOwn, jobForDownload, jobInfo, ownerOf, remove, upsert } from "@/lib/products/traverseJobs";
+import { getAdminSession } from "@/lib/auth/adminAuth";
 
 type Ctx = { params: Promise<{ id: string }> };
 const ID = /^[A-Za-z0-9-]{8,64}$/;

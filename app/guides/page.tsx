@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, BookOpen, Compass, FileOutput, FolderTree, Route, ShieldCheck, Waypoints } from "lucide-react";
 import PageShell from "../../components/PageShell";
-import { GUIDES, GUIDE_CATEGORIES, type GuideCategory } from "@/lib/guides";
-import { openGraphFor } from "@/lib/site";
+import { GUIDES, GUIDE_CATEGORIES, type GuideCategory } from "@/lib/content/guides";
+import { openGraphFor } from "@/lib/content/site";
 
 const TITLE = "Guides: Survey Points, Traverses and Roads";
 const DESCRIPTION =

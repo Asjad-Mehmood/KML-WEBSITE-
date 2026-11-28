@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
-import { countJobs, deleteJob, getJob, jobFileResponse, putJob } from "@/lib/userJobs";
-import { surveySummary } from "@/lib/activityKinds";
-import { checkLimit } from "@/lib/billing";
-import { MAX_JOB_BYTES, MAX_USER_JOBS, MAX_USER_STORAGE_BYTES, formatBytes } from "@/lib/uploadLimits";
+import { sessionForToken, tokenFromRequest } from "@/lib/auth/serverSession";
+import { countJobs, deleteJob, getJob, jobFileResponse, putJob } from "@/lib/account/userJobs";
+import { surveySummary } from "@/lib/admin/activityKinds";
+import { checkLimit } from "@/lib/billing/billing";
+import { MAX_JOB_BYTES, MAX_USER_JOBS, MAX_USER_STORAGE_BYTES, formatBytes } from "@/lib/account/uploadLimits";
 
 export async function OPTIONS() {
   return new NextResponse(null, { status: 204 });

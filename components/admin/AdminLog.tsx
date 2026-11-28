@@ -1,6 +1,6 @@
 "use client";
 
-// Admin → Admin log: every change an admin made (lib/adminLog.ts): who, what, to what, when and
+// Admin → Admin log: every change an admin made (lib/admin/adminLog.ts): who, what, to what, when and
 // from where. Filter by admin, by kind of change, or search; export what is shown.
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FileSpreadsheet, Loader2, RefreshCw, Search, ShieldCheck } from "lucide-react";

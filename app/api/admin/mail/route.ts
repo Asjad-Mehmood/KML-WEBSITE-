@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminSession } from "@/lib/adminAuth";
-import { logAdmin } from "@/lib/adminLog";
-import { kickMail } from "@/lib/broadcastRunner";
-import { prisma } from "@/lib/prisma";
-import { RELEASE_APPS, appById, ensureReleaseTables, importFromGitHub } from "@/lib/releases";
+import { getAdminSession } from "@/lib/auth/adminAuth";
+import { logAdmin } from "@/lib/admin/adminLog";
+import { kickMail } from "@/lib/mail/broadcastRunner";
+import { prisma } from "@/lib/db/prisma";
+import { RELEASE_APPS, appById, ensureReleaseTables, importFromGitHub } from "@/lib/products/releases";
 import {
   type AudienceInput,
   type MailAudience,
@@ -19,9 +19,9 @@ import {
   setMailStatus,
   stalledMails,
   startMail,
-} from "@/lib/customMail";
+} from "@/lib/mail/customMail";
 
-// Admin → Email (lib/customMail.ts):
+// Admin → Email (lib/mail/customMail.ts):
 //   GET                         the emails sent, newest first (and restarts a run that stopped)
 //   GET ?id=…                   one email's counts and the addresses that failed
 //   GET ?id=…&people=1          everyone that email went to, with how it went for each

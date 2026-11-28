@@ -1,6 +1,6 @@
-import { prisma } from "@/lib/prisma";
-import { ensureReleaseTables, normVersion } from "@/lib/releases";
-import { REVIEW_PRODUCTS, publishedReviewsAll, type ReviewProduct } from "@/lib/reviews";
+import { prisma } from "@/lib/db/prisma";
+import { ensureReleaseTables, normVersion } from "@/lib/products/releases";
+import { REVIEW_PRODUCTS, publishedReviewsAll, type ReviewProduct } from "@/lib/content/reviews";
 import { toolkitFeed } from "@/lib/toolkit/feed";
 import { TOOLKIT_TOOLS } from "@/lib/toolkit/tools";
 

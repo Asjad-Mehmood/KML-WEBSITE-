@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { isMailConfigured } from "@/lib/mailer";
-import { sendPasswordResetEmail } from "@/lib/resetEmail";
+import { isMailConfigured } from "@/lib/mail/mailer";
+import { sendPasswordResetEmail } from "@/lib/mail/resetEmail";
 
 // Same reply whether or not the email has an account, so this can't be used to find accounts
 const GENERIC_REPLY = {

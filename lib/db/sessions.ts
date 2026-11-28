@@ -1,8 +1,8 @@
 // Sign-in sessions (part of db, lib/db/index.ts)
 import crypto from "crypto";
-import { prisma } from "@/lib/prisma";
-import { AccountBlocked, isBlocked } from "@/lib/accountControls";
-import { ADMIN_SESSION_PREFIX } from "@/lib/adminHost";
+import { prisma } from "@/lib/db/prisma";
+import { AccountBlocked, isBlocked } from "@/lib/auth/accountControls";
+import { ADMIN_SESSION_PREFIX } from "@/lib/auth/adminHost";
 import { mapUser } from "./core";
 import type { SessionRecord, UserRecord } from "./core";
 

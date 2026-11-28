@@ -1,6 +1,6 @@
 "use client";
 
-// Dashboard → Teams (lib/teams.ts): make a team, invite colleagues with its link, share jobs with
+// Dashboard → Teams (lib/account/teams.ts): make a team, invite colleagues with its link, share jobs with
 // it, and copy or download what the others shared.
 import { useCallback, useEffect, useState } from "react";
 import { Copy, Download, Link2, Loader2, LogOut, Plus, Share2, Trash2, Users, X } from "lucide-react";

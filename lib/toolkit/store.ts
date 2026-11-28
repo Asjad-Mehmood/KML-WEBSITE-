@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 
 // Survey Toolkit (beta test): who may use it, their PCs, and what it did on them. Three tables of
 // its own, created on first use like slope_jobs, so no migration and no change to any other table.

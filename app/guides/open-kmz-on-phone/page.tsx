@@ -1,6 +1,6 @@
 import Link from "next/link";
 import GuideLayout from "../../../components/GuideLayout";
-import { guideMetadata } from "@/lib/guideMeta";
+import { guideMetadata } from "@/lib/content/guideMeta";
 
 const SLUG = "open-kmz-on-phone";
 export const metadata = guideMetadata(SLUG);

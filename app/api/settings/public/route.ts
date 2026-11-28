@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { isGoogleConfigured } from "@/lib/googleAuth";
-import { announcementLive, getExtraSettings } from "@/lib/siteSettings";
-import { directDownloadsOf } from "@/lib/directDownloads";
+import { isGoogleConfigured } from "@/lib/auth/googleAuth";
+import { announcementLive, getExtraSettings } from "@/lib/content/siteSettings";
+import { directDownloadsOf } from "@/lib/products/directDownloads";
 
 // The admin settings the public site needs (no secrets): download gate,
 // maintenance, announcement and the installer fallback details
