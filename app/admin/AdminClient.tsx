@@ -55,89 +55,13 @@ import {
 import SurveyorDetailModal from "@/components/admin/SurveyorDetailModal";
 import FileViewer, { type ViewerFile } from "@/components/FileViewer";
 import { actionLabel, adminActionTag } from "@/lib/activityKinds";
+import { PROGRAMS } from "@/lib/programs";
+import type { AppSettings as SiteSettings, ConversionItem, DownloadItem, UserActivityItem, UserItem } from "@/lib/adminTypes";
 
-interface UserItem {
-  id: string;
-  name: string;
-  email: string;
-  organization: string;
-  role: string;
-  createdAt: string;
-  lastLoginAt: string;
-  downloadCount: number;
-  ipAddress?: string;
-  location?: string;
-  hasFullAccess?: boolean;
-  customMaxPoints?: number;
-  /** confirmed, waiting (signed up but never confirmed: maybe a fake address) or older (before confirmation started) */
-  emailState?: "confirmed" | "waiting" | "older";
-  blocked?: boolean;
-}
 
-interface DownloadItem {
-  id: string;
-  userId: string | null;
-  userEmail: string | null;
-  userName: string | null;
-  assetType: string;
-  fileName: string;
-  version: string;
-  ipAddress?: string;
-  location?: string;
-  timestamp: string;
-}
 
-interface ConversionItem {
-  id: string;
-  userEmail?: string | null;
-  fileName?: string | null;
-  station: string;
-  featureCode: string;
-  easting: number;
-  northing: number;
-  elevation: number | null;
-  coordSystem: string;
-  lat: string;
-  lon: string;
-  timestamp: string;
-}
 
-interface UserActivityItem {
-  id: string;
-  userId: string | null;
-  userEmail: string | null;
-  userName?: string | null;
-  action: string;
-  title: string;
-  details?: string;
-  fileName?: string;
-  fileSize?: string;
-  pointsCount?: number;
-  linesCount?: number;
-  polygonsCount?: number;
-  crs?: string;
-  exportFormat?: string;
-  photosCount?: number;
-  durationMs?: number;
-  status?: "success" | "warning" | "error";
-  ipAddress?: string;
-  userAgent?: string;
-  timestamp: string;
-}
 
-interface AppSettings {
-  appVersion: string;
-  installerFileName: string;
-  installerFileSize: string;
-  requireAuthForDownload: boolean;
-  maintenanceMode: boolean;
-  announcementBanner: string;
-  announcementActive: boolean;
-  webAppRestricted: boolean;
-  webMaxPoints: number;
-  webWatermarkKml: boolean;
-  webDisableReports: boolean;
-}
 
 function fmtBytes(n: number) {
   if (n < 1024) return `${n} B`;
@@ -153,16 +77,8 @@ function barWidth(n: number, total: number) {
 
 /** Page buttons under a long table */
 
-/** The apps under Releases in the menu (lib/releases.ts RELEASE_APPS, which the page can't import) */
-const RELEASE_TABS = [
-  { id: "excel-to-kml", name: "Excel to KML" },
-  { id: "traverse", name: "Traverse & Level" },
-  { id: "slope", name: "Slope Calculator" },
-  { id: "auto-draft", name: "Auto Drafting" },
-  { id: "roadpro", name: "RoadPro" },
-  { id: "folder-manager", name: "Project Folder Manager" },
-  { id: "toolkit", name: "Survey Toolkit" },
-];
+/** The apps under Releases in the menu (lib/programs.ts) */
+const RELEASE_TABS = PROGRAMS;
 
 const ADMIN_TABS = ["overview", "usage", "payments", "users", "activities", "downloads", "files", "conversions", "excel", "traverse", "slope", "autodraft", "roadpro", "pfm", "toolkit", "releases", "reviews", "messages", "mail", "settings", "log"] as const;
 type AdminTab = (typeof ADMIN_TABS)[number];
@@ -257,7 +173,7 @@ export default function AdminClient() {
     roleCounts: Record<string, number>;
     assetCounts: Record<string, number>;
     locationCounts?: Record<string, number>;
-    settings: AppSettings;
+    settings: SiteSettings;
     recentUsers: UserItem[];
     recentDownloads: DownloadItem[];
     recentConversions: ConversionItem[];

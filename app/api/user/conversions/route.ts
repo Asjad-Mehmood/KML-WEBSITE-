@@ -4,18 +4,12 @@ import { prisma } from "@/lib/prisma";
 import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
 import { MAX_POINTS_PER_SAVE, MAX_USER_POINTS } from "@/lib/uploadLimits";
 
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
-};
-
 export async function OPTIONS() {
-  return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
+  return new NextResponse(null, { status: 204 });
 }
 
 function json(body: unknown, status = 200) {
-  return NextResponse.json(body, { status, headers: CORS_HEADERS });
+  return NextResponse.json(body, { status });
 }
 
 async function signedIn(req: NextRequest) {

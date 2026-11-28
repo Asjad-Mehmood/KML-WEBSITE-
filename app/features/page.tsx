@@ -19,14 +19,14 @@ import NextSteps from "../../components/NextSteps";
 import { BreadcrumbStructuredData } from "../../components/StructuredData";
 import { FEATURES } from "@/lib/featureGroups";
 import { FEATURE_DETAILS } from "@/lib/featureDetails";
-import { openGraphFor } from "@/lib/site";
+import { openGraphFor, excelTitle } from "@/lib/site";
 
 const TITLE = "Features";
 const DESCRIPTION =
   "Everything Excel to KML does: 5,800+ grids offline, automatic column detection, site calibration, levels, boundaries and areas, site photos in Google Earth, and exports for GIS, CAD and survey instruments.";
 
 export const metadata: Metadata = {
-  title: TITLE,
+  title: { absolute: excelTitle(TITLE) },
   description: DESCRIPTION,
   alternates: { canonical: "/features" },
   openGraph: openGraphFor("/features", `${TITLE} | Excel to KML`, DESCRIPTION),

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { attachment } from "@/lib/attachment";
 
 /**
  * Jobs kept in the account.
@@ -138,7 +139,7 @@ export function jobFileResponse(job: JobSummary & { state: string }): Response {
   return new Response(head.slice(0, -1) + ',"state":' + job.state + "}", {
     headers: {
       "Content-Type": "application/json; charset=utf-8",
-      "Content-Disposition": `attachment; filename="${name.replace(/[^\x20-\x7e]/g, "_")}"; filename*=UTF-8''${encodeURIComponent(name)}`,
+      "Content-Disposition": attachment(name),
       "Cache-Control": "private, no-store",
     },
   });

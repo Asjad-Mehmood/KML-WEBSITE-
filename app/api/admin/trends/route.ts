@@ -2,12 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/adminAuth";
 import { prisma } from "@/lib/prisma";
 import { countryOf } from "@/lib/publicStats";
+import { notStaff } from "@/lib/staffAccounts";
+import { DOWNLOAD_APPS } from "@/lib/adminPeople";
 
 // Admin → Dashboard → trends: the chosen period (7, 30, 90 or 365 days) against the period before
 // it, day by day, per program and per country, and what needs an admin's attention now.
-const PROGRAMS = ["windows_installer", "roadpro", "traverse", "folder_manager", "slope", "auto_draft", "toolkit"];
-// seeded and staff accounts that aren't real users (as lib/publicStats.ts)
-const NOT_USERS = ["admin@exceltokml.com", "surveyor@geotech.com", "demo@surveyor.io", "surveyor.demo@geotech.com"];
+// each program's own download (the first asset of each in lib/adminPeople.ts DOWNLOAD_APPS)
+const PROGRAMS = DOWNLOAD_APPS.map((a) => a.assets[0]);
 
 const n = (v: unknown) => Number(v ?? 0);
 const safe = <T,>(p: Promise<T>, fallback: T) => p.catch(() => fallback);
@@ -29,7 +30,7 @@ export async function GET(req: NextRequest) {
         from,
         prevFrom
       );
-    const notUsers = `AND "email" NOT IN (${NOT_USERS.map((e) => `'${e}'`).join(",")})`;
+    const notUsers = `AND ${notStaff()}`;
     const [signups, downloads, conversions, signins, active, series, perProgram, places, attention] = await Promise.all([
       count("users", "createdAt", notUsers),
       count("downloads", "timestamp", `AND "assetType" IN (${PROGRAMS.map((p) => `'${p}'`).join(",")})`),

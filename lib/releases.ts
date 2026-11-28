@@ -6,6 +6,7 @@ import { reviewRequestEmail } from "@/lib/reviewEmail";
 import { PRODUCTS } from "@/lib/products";
 import { ensureActivityColumns } from "@/lib/activityTags";
 import { APP_NAME, LATEST_VERSION } from "@/lib/site";
+import { STAFF_EMAILS } from "@/lib/staffAccounts";
 
 /**
  * Admin → Releases: every version of our software, grouped by app, and the emails that
@@ -56,7 +57,7 @@ export const RELEASE_APPS: ReleaseApp[] = [
 export const appById = (id: string) => RELEASE_APPS.find((a) => a.id === id);
 
 // Accounts the site creates itself (lib/db.ts, scripts/set-password.mjs): not real mailboxes
-export const NEVER_EMAIL = ["admin@exceltokml.com", "surveyor@geotech.com", "demo@surveyor.io", "surveyor.demo@geotech.com"];
+export const NEVER_EMAIL: string[] = [...STAFF_EMAILS];
 
 // ---------- tables ----------
 let ready: Promise<void> | null = null;

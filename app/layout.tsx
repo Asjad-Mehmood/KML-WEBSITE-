@@ -36,7 +36,9 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
     default: DEFAULT_TITLE,
-    template: "%s | Excel to KML",
+    // company pages: "… · SurveyX Digital"; Excel to KML's own sections keep "… | Excel to KML"
+    // (lib/site.ts EXCEL_TITLE: their layouts and pages), so their search results stay as they are
+    template: "%s · SurveyX Digital",
   },
   description: SITE_DESCRIPTION,
   authors: [{ name: "Asjad Mehmood" }],

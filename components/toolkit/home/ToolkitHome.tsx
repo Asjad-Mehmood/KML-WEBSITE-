@@ -35,7 +35,7 @@ import MotionRoot from "@/components/toolkit/home-options/MotionRoot";
 import { HubGraphic, type OptionTool } from "@/components/toolkit/home-options/options";
 import StartDownload from "@/components/toolkit/home/StartDownload";
 import { TOOLKIT_FAQS } from "@/lib/toolkit/homeFaq";
-import homePng from "@/components/toolkit/images/shot-home.png";
+import homePng from "@/assets/toolkit/shot-home.webp";
 import ProductTabs, { Window } from "@/components/toolkit/home/ProductTabs";
 import { Reviews, WhatsNew } from "@/components/toolkit/home/HomeSections";
 import type { HomeReviewsData, NewsItem } from "@/lib/toolkit/homeNews";

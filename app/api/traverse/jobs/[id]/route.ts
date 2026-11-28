@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { attachment } from "@/lib/attachment";
 import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
 import { logTraverseActivity } from "@/lib/traverseActivity";
 import { traverseControls } from "@/lib/traverseControls";
@@ -28,7 +29,7 @@ export async function GET(req: NextRequest, ctx: Ctx) {
       headers: {
         "Content-Type": "application/json; charset=utf-8",
         "Cache-Control": "no-store",
-        ...(req.nextUrl.searchParams.get("download") ? { "Content-Disposition": `attachment; filename="${file}"` } : {}),
+        ...(req.nextUrl.searchParams.get("download") ? { "Content-Disposition": attachment(file) } : {}),
       },
     });
   } catch (e) {

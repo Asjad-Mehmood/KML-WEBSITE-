@@ -48,44 +48,11 @@ import AppVersions from "@/components/AppVersions";
 import EmailConfirmPanel from "@/components/admin/EmailConfirmPanel";
 import type { EmailStatus } from "@/lib/emailVerify";
 import type { ProgramVersions } from "@/lib/appUsage";
+import type { UserActivityItem, UserItem } from "@/lib/adminTypes";
 
-export interface UserItem {
-  id: string;
-  name: string;
-  email: string;
-  organization: string;
-  role: string;
-  createdAt: string;
-  lastLoginAt: string;
-  downloadCount: number;
-  ipAddress?: string;
-  location?: string;
-  hasFullAccess?: boolean;
-  customMaxPoints?: number;
-}
+export type { UserActivityItem, UserItem };
 
-export interface UserActivityItem {
-  id: string;
-  userId: string | null;
-  userEmail: string | null;
-  userName?: string | null;
-  action: string;
-  title: string;
-  details?: string;
-  fileName?: string;
-  fileSize?: string;
-  pointsCount?: number;
-  linesCount?: number;
-  polygonsCount?: number;
-  crs?: string;
-  exportFormat?: string;
-  photosCount?: number;
-  durationMs?: number;
-  status?: "success" | "warning" | "error";
-  ipAddress?: string;
-  userAgent?: string;
-  timestamp: string;
-}
+
 
 export interface UserDownloadItem {
   id: string;

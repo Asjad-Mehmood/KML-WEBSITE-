@@ -90,19 +90,8 @@ export interface UserActivityRecord {
   timestamp: string;
 }
 
-export interface AppSettings {
-  appVersion: string;
-  installerFileName: string;
-  installerFileSize: string;
-  requireAuthForDownload: boolean;
-  maintenanceMode: boolean;
-  announcementBanner: string;
-  announcementActive: boolean;
-  webAppRestricted: boolean;
-  webMaxPoints: number;
-  webWatermarkKml: boolean;
-  webDisableReports: boolean;
-}
+import type { AppSettings } from "@/lib/adminTypes";
+export type { AppSettings };
 
 /** Where a kept file came from: the Excel to KML Windows app, its web app, or Traverse & Level */
 export type FilePlatform = "windows_app" | "web_app" | "traverse_app";

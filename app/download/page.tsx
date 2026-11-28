@@ -3,14 +3,14 @@ import PageShell from "../../components/PageShell";
 import { BreadcrumbStructuredData } from "../../components/StructuredData";
 import DownloadClient from "./DownloadClient";
 import ProductReviews from "../../components/ProductReviews";
-import { SHOW_ANDROID, openGraphFor } from "@/lib/site";
+import { SHOW_ANDROID, openGraphFor, excelTitle } from "@/lib/site";
 
 const TITLE = "Download";
 const DESCRIPTION =
   `Download Excel to KML for Windows 10 and 11${SHOW_ANDROID ? ", get the Android app," : ""} or use it in your browser. Free, with automatic updates.`;
 
 export const metadata: Metadata = {
-  title: TITLE,
+  title: { absolute: excelTitle(TITLE) },
   description: DESCRIPTION,
   alternates: { canonical: "/download" },
   openGraph: openGraphFor("/download", `${TITLE} | Excel to KML`, DESCRIPTION),

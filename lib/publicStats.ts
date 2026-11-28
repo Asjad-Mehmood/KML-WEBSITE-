@@ -3,11 +3,12 @@
 // page is rebuilt every few minutes (app/page.tsx), so this runs rarely.
 import { prisma } from "@/lib/prisma";
 import type { PublicStats } from "@/lib/publicCounts";
+import { STAFF_EMAILS } from "@/lib/staffAccounts";
 
 export type { PublicStats };
 
 // Seeded and staff accounts that aren't real users
-const NOT_USERS = ["admin@exceltokml.com", "surveyor@geotech.com", "demo@surveyor.io", "surveyor.demo@geotech.com"];
+const NOT_USERS: string[] = [...STAFF_EMAILS];
 const PROGRAM_FILES = ["windows_installer", "roadpro", "traverse", "folder_manager", "slope", "auto_draft", "toolkit"];
 
 /** The country at the end of a stored location ("Lahore, Pakistan" → "Pakistan"); null when unknown */

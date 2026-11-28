@@ -7,6 +7,7 @@
 // unsharing it or leaving the team takes it away. A copy is the member's own from then on.
 // Server only.
 import { randomInt, randomUUID } from "crypto";
+import { attachment } from "@/lib/attachment";
 import { prisma } from "@/lib/prisma";
 import { db } from "@/lib/db";
 import { checkLimit } from "@/lib/billing";
@@ -269,7 +270,7 @@ export async function downloadShare(userId: string, shareId: string): Promise<Re
   const body = JSON.stringify({ app: KIND_LABEL[s.kind], ...job }, null, 2);
   const file = `${String(job.name).replace(/[^\w.-]+/g, "_").slice(0, 80) || "job"}.json`;
   return new Response(body, {
-    headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "private, no-store", "Content-Disposition": `attachment; filename="${file}"` },
+    headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "private, no-store", "Content-Disposition": attachment(file) },
   });
 }
 

@@ -35,6 +35,11 @@ export const companyTitle = (title: string) => ({ absolute: `${title} | ${SITE_N
  */
 export const SHOW_ANDROID = false;
 
+/** The title template of Excel to KML's own pages (docs/REBRAND.md: product pages keep their name) */
+export const EXCEL_TITLE = "%s | Excel to KML";
+/** An Excel to KML page's full title */
+export const excelTitle = (t: string) => EXCEL_TITLE.replace("%s", t);
+
 export const DEFAULT_TITLE = "SurveyX Digital — Excel to KML and Free Survey Software";
 
 export const SITE_DESCRIPTION =

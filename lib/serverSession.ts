@@ -21,6 +21,15 @@ export async function sessionForToken(token: string | undefined) {
   }
 }
 
+/**
+ * The signed-in user of a request, or null: the auth cookie, the older admin cookie
+ * (surveyor_session) or a Bearer header. One check for every /api/user route.
+ */
+export async function userFromRequest(req: NextRequest) {
+  const token = tokenFromRequest(req) || req.cookies.get("surveyor_session")?.value;
+  return (await sessionForToken(token))?.user ?? null;
+}
+
 /** The Windows desktop app loads the web app HTML without a browser session. */
 export function isWindowsAppRequest(req: NextRequest): boolean {
   const userAgent = req.headers.get("user-agent") || "";

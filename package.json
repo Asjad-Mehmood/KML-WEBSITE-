@@ -14,7 +14,8 @@
     "db:seed": "tsx prisma/seed.ts",
     "build:epsg": "node scripts/build-epsg-index.mjs",
     "set-password": "node scripts/set-password.mjs",
-    "build:epsg-catalog": "node scripts/build-epsg-catalog.mjs"
+    "build:epsg-catalog": "node scripts/build-epsg-catalog.mjs",
+    "test": "tsx --test tests/*.test.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -46,7 +47,7 @@
     "eslint-config-next": "16.4.6",
     "prisma": "^6.19.3",
     "tailwindcss": "^4",
-    "ts-node": "^10.9.2",
+    "tsx": "^4.23.15",
     "typescript": "^5"
   }
 }
