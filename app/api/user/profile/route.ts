@@ -2,36 +2,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { describeAccountChanges } from "@/lib/accountChanges";
 import { revokeTrustedBrowsers } from "@/lib/adminOtp";
 import { db, isAdminRole } from "@/lib/db";
+import { userFromRequest } from "@/lib/serverSession";
 import { cleanOccupation } from "@/lib/occupations";
-
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, PATCH, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
-};
 
 export async function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
-    headers: CORS_HEADERS,
   });
-}
-
-async function getAuthUser(req: NextRequest) {
-  const token =
-    req.cookies.get("surveyor_auth_token")?.value ||
-    req.headers.get("authorization")?.replace("Bearer ", "");
-  if (!token) return null;
-  const sessionData = await db.validateSession(token);
-  return sessionData?.user || null;
 }
 
 // GET: Retrieve user profile + aggregated stats + recent activities
 export async function GET(req: NextRequest) {
   try {
-    const user = await getAuthUser(req);
+    const user = await userFromRequest(req);
     if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: CORS_HEADERS });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const stats = await db.getUserStats(user.id);
@@ -42,21 +27,20 @@ export async function GET(req: NextRequest) {
         user: db.sanitizeUser(user),
         stats,
         recentActivities,
-      },
-      { headers: CORS_HEADERS }
+      }
     );
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Internal Server Error";
-    return NextResponse.json({ error: message }, { status: 500, headers: CORS_HEADERS });
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
 // PATCH: Update user profile (name, organization, password)
 export async function PATCH(req: NextRequest) {
   try {
-    const user = await getAuthUser(req);
+    const user = await userFromRequest(req);
     if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: CORS_HEADERS });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await req.json().catch(() => ({}));
@@ -71,7 +55,7 @@ export async function PATCH(req: NextRequest) {
       // optional: left empty, the account keeps the one it has
       const o = cleanOccupation(occupation);
       if (o && isAdminRole(o)) {
-        return NextResponse.json({ error: 'Please describe your occupation without the word "admin".' }, { status: 400, headers: CORS_HEADERS });
+        return NextResponse.json({ error: 'Please describe your occupation without the word "admin".' }, { status: 400 });
       }
       if (o) updates.role = o;
     }
@@ -79,10 +63,10 @@ export async function PATCH(req: NextRequest) {
       // A new password needs the current one, so a borrowed or stolen
       // session alone can't take over the account
       if (typeof password !== "string" || password.trim().length < 8) {
-        return NextResponse.json({ error: "Use at least 8 characters." }, { status: 400, headers: CORS_HEADERS });
+        return NextResponse.json({ error: "Use at least 8 characters." }, { status: 400 });
       }
       if (typeof currentPassword !== "string" || !currentPassword || !db.verifyPassword(user, currentPassword)) {
-        return NextResponse.json({ error: "Your current password isn't right." }, { status: 403, headers: CORS_HEADERS });
+        return NextResponse.json({ error: "Your current password isn't right." }, { status: 403 });
       }
       updates.password = password.trim();
     }
@@ -108,11 +92,10 @@ export async function PATCH(req: NextRequest) {
       {
         success: true,
         user: db.sanitizeUser(updated),
-      },
-      { headers: CORS_HEADERS }
+      }
     );
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Internal Server Error";
-    return NextResponse.json({ error: message }, { status: 500, headers: CORS_HEADERS });
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

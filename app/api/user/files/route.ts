@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { trackAppUse } from "@/lib/appUsage";
 import { db, type FilePlatform } from "@/lib/db";
+import { userFromRequest } from "@/lib/serverSession";
 import { traverseControls } from "@/lib/traverseControls";
 import { getAdminSession } from "@/lib/adminAuth";
 import {
@@ -13,26 +14,15 @@ import {
 } from "@/lib/uploadLimits";
 import { pointsFromExport } from "@/lib/exportPoints";
 
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS, DELETE",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With, X-App-Platform, X-App-Name, X-App-Version",
-};
-
 export async function OPTIONS() {
-  return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
+  return new NextResponse(null, { status: 204 });
 }
 
 async function getAuthUser(req: NextRequest) {
-  const token =
-    req.cookies.get("surveyor_auth_token")?.value ||
-    req.cookies.get("surveyor_session")?.value ||
-    req.headers.get("authorization")?.replace("Bearer ", "");
-  if (!token) return null;
-  const sessionData = await db.validateSession(token);
+  const user = await userFromRequest(req);
   // which app is calling, and its version (Admin → user profile)
-  trackAppUse(req, sessionData?.user?.id);
-  return sessionData?.user || null;
+  trackAppUse(req, user?.id);
+  return user;
 }
 
 // GET: Retrieve list of files for the authenticated user (or all if admin)
@@ -45,7 +35,7 @@ export async function GET(req: NextRequest) {
     const userParam = searchParams.get("userId");
     const direction = searchParams.get("direction") || undefined;
 
-    let files: any[] = [];
+    let files: Awaited<ReturnType<typeof db.getAllFiles>> = [];
     if (admin && userParam) {
       files = await db.getUserFiles(userParam, limit);
     } else if (admin && searchParams.get("all") === "true") {
@@ -54,7 +44,7 @@ export async function GET(req: NextRequest) {
       files = await db.getUserFiles(user.id, limit);
     } else {
       // Signed out: no file lists for any userId
-      return NextResponse.json({ files: [] }, { headers: CORS_HEADERS });
+      return NextResponse.json({ files: [] });
     }
 
     // Sanitize records to exclude heavy base64 strings from list views
@@ -68,15 +58,15 @@ export async function GET(req: NextRequest) {
       };
     });
 
-    return NextResponse.json({ success: true, files: sanitizedFiles }, { headers: CORS_HEADERS });
+    return NextResponse.json({ success: true, files: sanitizedFiles });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Internal Server Error";
-    return NextResponse.json({ error: msg }, { status: 500, headers: CORS_HEADERS });
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
 
 function tooBig(message: string) {
-  return NextResponse.json({ error: message }, { status: 413, headers: CORS_HEADERS });
+  return NextResponse.json({ error: message }, { status: 413 });
 }
 
 // POST: Save an imported or exported file into the signed-in user's file vault
@@ -85,7 +75,7 @@ export async function POST(req: NextRequest) {
     // Only signed-in users can store files; nothing is kept for anonymous requests.
     const user = await getAuthUser(req);
     if (!user) {
-      return NextResponse.json({ error: "Sign in to save files." }, { status: 401, headers: CORS_HEADERS });
+      return NextResponse.json({ error: "Sign in to save files." }, { status: 401 });
     }
 
     // Refuse an oversized body before reading it.
@@ -127,7 +117,7 @@ export async function POST(req: NextRequest) {
       const formData = await req.formData();
       const file = formData.get("file") as File | null;
       if (!file) {
-        return NextResponse.json({ error: "No file provided in form data" }, { status: 400, headers: CORS_HEADERS });
+        return NextResponse.json({ error: "No file provided in form data" }, { status: 400 });
       }
 
       fileName = file.name || "unnamed_file";
@@ -173,13 +163,13 @@ export async function POST(req: NextRequest) {
     }
 
     if (!fileName) {
-      return NextResponse.json({ error: "fileName is required" }, { status: 400, headers: CORS_HEADERS });
+      return NextResponse.json({ error: "fileName is required" }, { status: 400 });
     }
     // Traverse & Level keeps copies only while the admin allows it (Admin → Settings → Traverse & Level)
     if (platform === "traverse_app") {
       const allow = await traverseControls(user.id);
       if (!allow.enabled || !allow.keepFiles) {
-        return NextResponse.json({ success: false, stored: false, error: "Keeping copies of files is switched off." }, { status: 403, headers: CORS_HEADERS });
+        return NextResponse.json({ success: false, stored: false, error: "Keeping copies of files is switched off." }, { status: 403 });
       }
     }
     fileName = fileName.slice(0, MAX_FILE_NAME);
@@ -187,7 +177,7 @@ export async function POST(req: NextRequest) {
     // The real size, whatever the request claimed.
     const size = fileBuffer ? fileBuffer.length : 0;
     if (!metaOnly && size === 0) {
-      return NextResponse.json({ error: "The file is empty." }, { status: 400, headers: CORS_HEADERS });
+      return NextResponse.json({ error: "The file is empty." }, { status: 400 });
     }
     if (size > MAX_FILE_BYTES) {
       return tooBig(`Files larger than ${formatBytes(MAX_FILE_BYTES)} are not stored.`);
@@ -246,11 +236,10 @@ export async function POST(req: NextRequest) {
         message: metaOnly
           ? `${fileName} is listed in your account; at ${formatBytes(metaSize)} it is too big to keep a copy.`
           : `${direction === "import" ? "Imported" : "Exported"} file ${fileName} archived in database.`,
-      },
-      { headers: CORS_HEADERS }
+      }
     );
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Internal Server Error";
-    return NextResponse.json({ error: msg }, { status: 500, headers: CORS_HEADERS });
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

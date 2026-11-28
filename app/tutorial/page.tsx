@@ -5,14 +5,14 @@ import { ArrowRight, CheckCircle2, Lightbulb } from "lucide-react";
 import PageShell from "../../components/PageShell";
 import WebAppLink from "@/components/WebAppLink";
 import { MAIN_STEPS, MORE_FEATURES } from "@/lib/tutorial";
-import { SITE_URL, jsonLd, openGraphFor } from "@/lib/site";
+import { SITE_URL, jsonLd, openGraphFor, excelTitle } from "@/lib/site";
 
 const TITLE = "App Tutorial: Excel Survey Points to Google Earth";
 const DESCRIPTION =
   "A step-by-step walkthrough of Excel to KML with screenshots: load your points, choose the grid, prove it with a known mark and save KMZ, KML, Excel, PDF or DXF.";
 
 export const metadata: Metadata = {
-  title: TITLE,
+  title: { absolute: excelTitle(TITLE) },
   description: DESCRIPTION,
   alternates: { canonical: "/tutorial" },
   openGraph: openGraphFor("/tutorial", `${TITLE} | Excel to KML`, DESCRIPTION),

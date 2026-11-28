@@ -21,8 +21,8 @@ import {
   ShieldCheck,
   UserCheck,
 } from "lucide-react";
-import toolkitIcon from "@/components/toolkit/images/toolkit-icon.png";
-import shot from "@/components/toolkit/images/shot-home.png";
+import toolkitIcon from "@/assets/toolkit/toolkit-icon.png";
+import shot from "@/assets/toolkit/shot-home.webp";
 
 const POINTS = [
   { Icon: LayoutGrid, text: "Excel to KML, Traverse & Level, Slope Calculator, Auto Drafting and more, in one app" },

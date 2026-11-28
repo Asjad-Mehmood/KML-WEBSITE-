@@ -2,26 +2,28 @@ import { prisma } from "@/lib/prisma";
 import { ensureVerifyTables } from "@/lib/emailVerify";
 import { blockedIds } from "@/lib/accountControls";
 import { countryOf } from "@/lib/publicStats";
+import { STAFF_EMAILS, notStaff } from "@/lib/staffAccounts";
+import { programName } from "@/lib/programs";
 
 // Admin → Surveyors and Admin → Downloads, filtered, sorted and paged in the database so both stay
 // quick however many accounts and downloads there are.
 
 /** Which program each download is of (as lib/activityFeed.ts) */
 export const DOWNLOAD_APPS: { id: string; name: string; assets: string[] }[] = [
-  { id: "excel-to-kml", name: "Excel to KML", assets: ["windows_installer", "sample_csv", "test_kml", "web_app"] },
-  { id: "traverse", name: "Traverse & Level", assets: ["traverse", "traverse_manual", "traverse_sample"] },
-  { id: "slope", name: "Slope Calculator", assets: ["slope"] },
-  { id: "auto-draft", name: "Auto Drafting", assets: ["auto_draft"] },
-  { id: "roadpro", name: "RoadPro", assets: ["roadpro"] },
-  { id: "folder-manager", name: "Project Folder Manager", assets: ["folder_manager"] },
-  { id: "toolkit", name: "Survey Toolkit", assets: ["toolkit"] },
+  { id: "excel-to-kml", name: programName("excel-to-kml"), assets: ["windows_installer", "sample_csv", "test_kml", "web_app"] },
+  { id: "traverse", name: programName("traverse"), assets: ["traverse", "traverse_manual", "traverse_sample"] },
+  { id: "slope", name: programName("slope"), assets: ["slope"] },
+  { id: "auto-draft", name: programName("auto-draft"), assets: ["auto_draft"] },
+  { id: "roadpro", name: programName("roadpro"), assets: ["roadpro"] },
+  { id: "folder-manager", name: programName("folder-manager"), assets: ["folder_manager"] },
+  { id: "toolkit", name: programName("toolkit"), assets: ["toolkit"] },
 ];
 const APP_OF_ASSET = `CASE
   ${DOWNLOAD_APPS.map((a) => `WHEN d."assetType" IN (${a.assets.map((x) => `'${x}'`).join(",")}) THEN '${a.id}'`).join("\n  ")}
   WHEN d."assetType" LIKE 'traverse%' THEN 'traverse' ELSE d."assetType" END`;
 
 // accounts the site makes itself, never real people
-const NOT_PEOPLE = ["admin@exceltokml.com", "surveyor@geotech.com", "demo@surveyor.io", "surveyor.demo@geotech.com"];
+const NOT_PEOPLE: string[] = [...STAFF_EMAILS];
 
 const n = (v: unknown) => Number(v ?? 0);
 const like = (q: string) => `%${q.replace(/[%_\\]/g, (c) => "\\" + c)}%`;
@@ -159,7 +161,7 @@ export async function surveyorSummary() {
   await surveyorReady();
   const d7 = new Date(Date.now() - 7 * 864e5);
   const d30 = new Date(Date.now() - 30 * 864e5);
-  const notPeople = `u."email" NOT IN (${NOT_PEOPLE.map((e) => `'${e}'`).join(",")})`;
+  const notPeople = notStaff('u."email"');
   const [t, places] = await Promise.all([
     prisma.$queryRawUnsafe<
       {

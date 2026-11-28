@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { ensureJobsTable, deleteJob } from "@/lib/userJobs";
 import { ensureTraverseTables, adminRemove as removeTraverseJob } from "@/lib/traverseJobs";
 import { ensureSlopeTables, adminRemove as removeSlopeJob } from "@/lib/slopeJobs";
+import { programName } from "@/lib/programs";
 
 // Admin → Files: everything people keep in their accounts, app by app, in one list:
 //   user_files     files opened in and saved from Excel to KML (Windows and web) and Traverse & Level
@@ -14,9 +15,9 @@ import { ensureSlopeTables, adminRemove as removeSlopeJob } from "@/lib/slopeJob
 
 /** The apps that keep anything in accounts, in menu order */
 export const DATA_APPS = [
-  { id: "excel-to-kml", name: "Excel to KML", keeps: "Files opened and saved in the Windows program and the web app, and jobs kept in the account" },
-  { id: "traverse", name: "Traverse & Level", keeps: "Files opened and saved, and traverse and level jobs kept in the account" },
-  { id: "slope", name: "Slope Calculator", keeps: "Calculations kept in the account" },
+  { id: "excel-to-kml", name: programName("excel-to-kml"), keeps: "Files opened and saved in the Windows program and the web app, and jobs kept in the account" },
+  { id: "traverse", name: programName("traverse"), keeps: "Files opened and saved, and traverse and level jobs kept in the account" },
+  { id: "slope", name: programName("slope"), keeps: "Calculations kept in the account" },
 ] as const;
 export const DATA_KINDS = ["opened", "saved", "job", "calculation"] as const;
 export type DataKind = (typeof DATA_KINDS)[number];

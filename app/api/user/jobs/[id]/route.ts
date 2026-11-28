@@ -6,18 +6,12 @@ import { surveySummary } from "@/lib/activityKinds";
 import { checkLimit } from "@/lib/billing";
 import { MAX_JOB_BYTES, MAX_USER_JOBS, MAX_USER_STORAGE_BYTES, formatBytes } from "@/lib/uploadLimits";
 
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
-};
-
 export async function OPTIONS() {
-  return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
+  return new NextResponse(null, { status: 204 });
 }
 
 function json(body: unknown, status = 200) {
-  return NextResponse.json(body, { status, headers: CORS_HEADERS });
+  return NextResponse.json(body, { status });
 }
 
 type Ctx = { params: Promise<{ id: string }> };

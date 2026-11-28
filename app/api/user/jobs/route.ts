@@ -3,18 +3,12 @@ import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
 import { listJobs, jobBytes } from "@/lib/userJobs";
 import { MAX_JOB_BYTES, MAX_USER_JOBS } from "@/lib/uploadLimits";
 
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
-};
-
 export async function OPTIONS() {
-  return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
+  return new NextResponse(null, { status: 204 });
 }
 
 function json(body: unknown, status = 200) {
-  return NextResponse.json(body, { status, headers: CORS_HEADERS });
+  return NextResponse.json(body, { status });
 }
 
 // GET: the jobs this account keeps, without their contents.

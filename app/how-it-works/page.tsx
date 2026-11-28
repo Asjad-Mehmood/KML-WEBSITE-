@@ -6,14 +6,14 @@ import PageIntro from "../../components/PageIntro";
 import NextSteps from "../../components/NextSteps";
 import { BreadcrumbStructuredData } from "../../components/StructuredData";
 import HowItWorksClient from "./HowItWorksClient";
-import { openGraphFor } from "@/lib/site";
+import { openGraphFor, excelTitle } from "@/lib/site";
 
 const TITLE = "How It Works";
 const DESCRIPTION =
   "From a spreadsheet of eastings and northings to a file that opens in Google Earth: bring in your points, choose the grid, prove it against a known mark, and save.";
 
 export const metadata: Metadata = {
-  title: TITLE,
+  title: { absolute: excelTitle(TITLE) },
   description: DESCRIPTION,
   alternates: { canonical: "/how-it-works" },
   openGraph: openGraphFor("/how-it-works", `${TITLE} | Excel to KML`, DESCRIPTION),

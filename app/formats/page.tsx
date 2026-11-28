@@ -5,14 +5,14 @@ import PageShell from "../../components/PageShell";
 import PageIntro from "../../components/PageIntro";
 import NextSteps from "../../components/NextSteps";
 import { BreadcrumbStructuredData } from "../../components/StructuredData";
-import { openGraphFor } from "@/lib/site";
+import { openGraphFor, excelTitle } from "@/lib/site";
 
 const TITLE = "File Formats";
 const DESCRIPTION =
   "The files Excel to KML opens — Excel, CSV, KML, KMZ, DXF — and the files it saves: Google Earth KML and KMZ, Excel, CSV, AutoCAD DXF, Shapefile, GeoJSON, GPX, Leica GSI-16, Trimble and a PDF report.";
 
 export const metadata: Metadata = {
-  title: TITLE,
+  title: { absolute: excelTitle(TITLE) },
   description: DESCRIPTION,
   alternates: { canonical: "/formats" },
   openGraph: openGraphFor("/formats", `${TITLE} | Excel to KML`, DESCRIPTION),

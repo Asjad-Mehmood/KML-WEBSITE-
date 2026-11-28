@@ -5,7 +5,7 @@ import PageShell from "../../components/PageShell";
 import GridSearch from "../../components/GridSearch";
 import { GRID_PAGES, GRID_REGIONS } from "@/lib/gridPages";
 import { countries } from "@/lib/epsgCatalog";
-import { openGraphFor } from "@/lib/site";
+import { openGraphFor, excelTitle } from "@/lib/site";
 import WebAppLink from "@/components/WebAppLink";
 
 const TITLE = "Survey Grid to KML Converters";
@@ -13,7 +13,7 @@ const DESCRIPTION =
   "Convert eastings and northings from popular national and UTM grids (Qatar QNG, Dubai DLTM, UTM zones, British National Grid and more) to Google Earth KML and KMZ.";
 
 export const metadata: Metadata = {
-  title: TITLE,
+  title: { absolute: excelTitle(TITLE) },
   description: DESCRIPTION,
   alternates: { canonical: "/convert" },
   openGraph: openGraphFor("/convert", `${TITLE} | Excel to KML`, DESCRIPTION),

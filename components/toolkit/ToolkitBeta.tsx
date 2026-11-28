@@ -21,11 +21,11 @@ import {
   UserRound,
 } from "lucide-react";
 import PageShell from "@/components/PageShell";
-import iconPng from "./images/toolkit-icon.png";
-import toolsPng from "./images/3-tools.png";
-import gridPng from "./images/9-app-grid.png";
-import updatesPng from "./images/10-updates.png";
-import updatingPng from "./images/6-updating.png";
+import iconPng from "@/assets/toolkit/toolkit-icon.png";
+import toolsPng from "@/assets/toolkit/3-tools.webp";
+import gridPng from "@/assets/toolkit/9-app-grid.webp";
+import updatesPng from "@/assets/toolkit/10-updates.webp";
+import updatingPng from "@/assets/toolkit/6-updating.webp";
 
 export interface ToolkitRelease {
   version: string;

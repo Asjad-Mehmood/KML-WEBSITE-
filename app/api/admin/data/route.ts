@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { attachment } from "@/lib/attachment";
 import { getAdminSession } from "@/lib/adminAuth";
 import { logAdmin } from "@/lib/adminLog";
 import { DATA_KINDS, DATA_SORTS, type DataFilter, type DataSort, dataByPerson, dataSummary, deleteData, downloadUrl, jobFile, listData } from "@/lib/adminData";
@@ -54,7 +55,7 @@ export async function GET(req: NextRequest) {
       return new NextResponse(f.body, {
         headers: {
           "Content-Type": f.type,
-          "Content-Disposition": `attachment; filename="${f.name.replace(/"/g, "")}"`,
+          "Content-Disposition": attachment(f.name),
           "Cache-Control": "no-store",
         },
       });

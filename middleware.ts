@@ -4,6 +4,7 @@ import { AUTH_PAGE, authHost, onAuthHost } from "@/lib/authHost";
 import { DASHBOARD_PAGE, dashboardHost, isDashboardPath, onDashboardHost } from "@/lib/dashboardHost";
 import { safeNextPath } from "@/lib/authRedirect";
 import { SITE_URL } from "@/lib/site";
+import { corsHeaders } from "@/lib/cors";
 
 // Admin's pages and APIs (lib/adminHost: they live on ADMIN_HOST once it is set)
 const ADMIN_PAGE = /^\/(admin|toolkit-beta\/admin)(\/|$)/;
@@ -145,35 +146,12 @@ function toTwoStep(req: NextRequest, to: string) {
 }
 
 function withCors(req: NextRequest) {
-  const origin = req.headers.get("origin");
-
-  if (req.method === "OPTIONS") {
-    const res = new NextResponse(null, { status: 204 });
-    if (origin) {
-      res.headers.set("Access-Control-Allow-Origin", origin);
-      res.headers.set("Access-Control-Allow-Credentials", "true");
-    } else {
-      res.headers.set("Access-Control-Allow-Origin", "*");
-    }
-    res.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
-    res.headers.set(
-      "Access-Control-Allow-Headers",
-      "Content-Type, Authorization, X-Requested-With, Accept, X-Admin-Token, X-App-Platform, X-App-Name, X-App-Version"
-    );
-    res.headers.set("Access-Control-Max-Age", "86400");
-    return res;
-  }
-
-  const res = NextResponse.next();
-  if (origin) {
-    res.headers.set("Access-Control-Allow-Origin", origin);
-    res.headers.set("Access-Control-Allow-Credentials", "true");
-  }
-  res.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
-  res.headers.set(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Authorization, X-Requested-With, Accept, X-Admin-Token, X-App-Platform, X-App-Name, X-App-Version"
-  );
+  // lib/cors.ts: the site's own addresses may send the visitor's cookies; any other origin gets
+  // an answer without credentials
+  const headers = corsHeaders(req.headers.get("origin"));
+  const res = req.method === "OPTIONS" ? new NextResponse(null, { status: 204 }) : NextResponse.next();
+  for (const [k, v] of Object.entries(headers)) res.headers.set(k, v);
+  if (req.method === "OPTIONS") res.headers.set("Access-Control-Max-Age", "86400");
   return res;
 }
 

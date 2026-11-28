@@ -7,10 +7,10 @@
 import { useEffect, useState } from "react";
 import Image, { type StaticImageData } from "next/image";
 import { DraftingCompass, Moon, RefreshCw, Route, type LucideIcon } from "lucide-react";
-import updatingPng from "@/components/toolkit/images/shot-updating.png";
-import draftingPng from "@/components/toolkit/images/shot-drafting.png";
-import roadproPng from "@/components/toolkit/images/shot-roadpro.png";
-import darkPng from "@/components/toolkit/images/shot-home-dark.png";
+import updatingPng from "@/assets/toolkit/shot-updating.webp";
+import draftingPng from "@/assets/toolkit/shot-drafting.webp";
+import roadproPng from "@/assets/toolkit/shot-roadpro.webp";
+import darkPng from "@/assets/toolkit/shot-home-dark.webp";
 
 type Tab = { id: string; label: string; Icon: LucideIcon; title: string; text: string; img: StaticImageData; alt: string };
 
