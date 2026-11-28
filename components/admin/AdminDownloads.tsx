@@ -6,6 +6,8 @@
 // export what the filters show.
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CheckSquare, Download, FileSpreadsheet, Loader2, RefreshCw, Search, Square, Trash2, UserRound, X } from "lucide-react";
+import { DOWNLOAD_TABS } from "@/components/admin/menus";
+export { DOWNLOAD_TABS };
 
 type Fetcher = (url: string, options?: RequestInit) => Promise<Response>;
 interface Row {
@@ -32,15 +34,6 @@ interface Summary {
   countries: [string, number][];
 }
 
-export const DOWNLOAD_TABS = [
-  { id: "excel-to-kml", name: "Excel to KML" },
-  { id: "traverse", name: "Traverse & Level" },
-  { id: "slope", name: "Slope Calculator" },
-  { id: "auto-draft", name: "Auto Drafting" },
-  { id: "roadpro", name: "RoadPro" },
-  { id: "folder-manager", name: "Project Folder Manager" },
-  { id: "toolkit", name: "Survey Toolkit" },
-];
 const ASSET: Record<string, string> = {
   windows_installer: "Installer",
   sample_csv: "Sample CSV",

@@ -2,13 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "../context/AuthContext";
-import SiteNotice from "../components/SiteNotice";
-import MovedNotice from "../components/MovedNotice";
-import AuthModal from "../components/AuthModal";
 import AdSenseScript from "../components/AdSenseScript";
-import SignupPrompt from "../components/SignupPrompt";
-import DownloadNotice from "../components/DownloadNotice";
-import ReviewPrompt from "../components/ReviewPrompt";
+import { LaterNotices, PageNotices, SignInWindow } from "@/components/SiteOverlays";
 import { DEFAULT_TITLE, FACEBOOK_DOMAIN_VERIFICATION, FACEBOOK_PAGE_ID, OG_IMAGE, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/content/site";
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -104,20 +99,17 @@ export default function RootLayout({
         {/* Ties the site to the official Facebook Page (needs property=, which Metadata can't set) */}
         <meta property="fb:pages" content={FACEBOOK_PAGE_ID} />
 
-        {/* Drop-down lists that open inside the Survey Toolkit's window; does nothing in a browser */}
-        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
-        <script src="/toolkit-selects.js" />
+        {/* Drop-down lists that open inside the Survey Toolkit's window; does nothing in a browser.
+            Deferred: it runs once the page is read, without holding up the first paint. */}
+        <script src="/toolkit-selects.js" defer />
       </head>
       <body className="min-h-screen bg-white text-[#1d1d1f] selection:bg-[#0071e3]/20 selection:text-[#0071e3]">
         <AuthProvider>
           {children}
-          <AuthModal />
-          <SiteNotice />
-          <MovedNotice />
-          <SignupPrompt />
-          {/* "Your download is starting": what Windows SmartScreen may show, for every program */}
-          <DownloadNotice />
-          <ReviewPrompt />
+          <SignInWindow />
+          <PageNotices />
+          {/* "Your download is starting": what Windows SmartScreen may show, for every program; and the review prompt */}
+          <LaterNotices />
         </AuthProvider>
         <AdSenseScript />
         <Analytics />

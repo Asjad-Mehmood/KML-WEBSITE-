@@ -7,6 +7,8 @@
 // follow it live; export what is shown.
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AlertTriangle, ChevronDown, ChevronRight, FileSpreadsheet, Loader2, Pause, Play, RefreshCw, Search, User, X } from "lucide-react";
+import { ACTIVITY_APPS as APPS } from "@/components/admin/menus";
+export { APPS };
 
 type Fetcher = (url: string, options?: RequestInit) => Promise<Response>;
 interface Row {
@@ -39,16 +41,6 @@ interface Facets {
   total: number;
 }
 
-export const APPS: { id: string; name: string; tone: string }[] = [
-  { id: "excel-to-kml", name: "Excel to KML", tone: "bg-blue-500/15 text-blue-300 border-blue-500/30" },
-  { id: "traverse", name: "Traverse & Level", tone: "bg-violet-500/15 text-violet-300 border-violet-500/30" },
-  { id: "slope", name: "Slope Calculator", tone: "bg-cyan-500/15 text-cyan-300 border-cyan-500/30" },
-  { id: "auto-draft", name: "Auto Drafting", tone: "bg-orange-500/15 text-orange-300 border-orange-500/30" },
-  { id: "roadpro", name: "RoadPro", tone: "bg-amber-500/15 text-amber-300 border-amber-500/30" },
-  { id: "folder-manager", name: "Folder Manager", tone: "bg-teal-500/15 text-teal-300 border-teal-500/30" },
-  { id: "toolkit", name: "Survey Toolkit", tone: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30" },
-  { id: "website", name: "Website", tone: "bg-slate-500/15 text-slate-300 border-slate-500/30" },
-];
 const appOf = (id: string) => APPS.find((a) => a.id === id) ?? { id, name: id, tone: "bg-slate-500/15 text-slate-300 border-slate-500/30" };
 
 /** Plain words for each action */
