@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, BookOpen, Compass, FileOutput, Route, ShieldCheck, Waypoints } from "lucide-react";
+import { ArrowRight, BookOpen, Compass, FileOutput, FolderTree, Route, ShieldCheck, Waypoints } from "lucide-react";
 import PageShell from "../../components/PageShell";
 import { GUIDES, GUIDE_CATEGORIES, type GuideCategory } from "@/lib/guides";
 import { openGraphFor } from "@/lib/site";
 
 const TITLE = "Guides: Survey Points, Traverses and Roads";
 const DESCRIPTION =
-  "Short, practical guides for surveyors and site engineers: survey coordinates into Google Earth and AutoCAD on the right grid, traverse and level adjustment, and roads in AutoCAD.";
+  "Short, practical guides for surveyors and site engineers: survey coordinates into Google Earth and AutoCAD on the right grid, traverse and level adjustment, slopes, roads in AutoCAD and project folders.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -23,6 +23,7 @@ const ICONS: Record<GuideCategory, React.ElementType> = {
   Deliverables: FileOutput,
   "Traverse and levelling": Waypoints,
   "Roads in AutoCAD": Route,
+  "Site and office": FolderTree,
 };
 
 export default function GuidesIndex() {
