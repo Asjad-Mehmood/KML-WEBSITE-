@@ -97,7 +97,8 @@ export const EXTRA_DEFAULTS: ExtraSettings = {
 };
 
 let ready: Promise<void> | null = null;
-function ensureTable(): Promise<void> {
+/** The site_settings table, made on first use (also read by lib/billingConfig.ts) */
+export function ensureSiteSettingsTable(): Promise<void> {
   if (!ready) {
     ready = prisma
       .$executeRawUnsafe(`CREATE TABLE IF NOT EXISTS "site_settings" (
@@ -117,7 +118,7 @@ function ensureTable(): Promise<void> {
 
 export async function getExtraSettings(): Promise<ExtraSettings> {
   try {
-    await ensureTable();
+    await ensureSiteSettingsTable();
     const rows = await prisma.$queryRaw<{ key: string; value: string }[]>`SELECT "key", "value" FROM "site_settings"`;
     const out: ExtraSettings = { ...EXTRA_DEFAULTS };
     for (const { key, value } of rows) {
@@ -137,7 +138,7 @@ export async function getExtraSettings(): Promise<ExtraSettings> {
 }
 
 export async function saveExtraSettings(updates: Partial<ExtraSettings>): Promise<void> {
-  await ensureTable();
+  await ensureSiteSettingsTable();
   for (const [key, value] of Object.entries(updates)) {
     if (!(key in EXTRA_DEFAULTS)) continue;
     const json = JSON.stringify(value);
