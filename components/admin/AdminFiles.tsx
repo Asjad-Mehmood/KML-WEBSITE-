@@ -29,6 +29,8 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
+import { FILE_APPS } from "@/components/admin/menus";
+export { FILE_APPS };
 
 type Fetcher = (url: string, options?: RequestInit) => Promise<Response>;
 type Kind = "opened" | "saved" | "job" | "calculation";
@@ -76,12 +78,6 @@ interface Person {
   last: string;
 }
 
-/** The apps that keep anything in accounts: the menu under Files */
-export const FILE_APPS = [
-  { id: "excel-to-kml", name: "Excel to KML" },
-  { id: "traverse", name: "Traverse & Level" },
-  { id: "slope", name: "Slope Calculator" },
-];
 const APP_NAME: Record<string, string> = Object.fromEntries(FILE_APPS.map((a) => [a.id, a.name]));
 const APP_KEEPS: Record<string, string> = {
   "excel-to-kml": "Files opened and saved in the Windows program and the web app, and jobs kept in the account.",

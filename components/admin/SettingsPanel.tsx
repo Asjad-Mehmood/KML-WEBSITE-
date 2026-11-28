@@ -25,6 +25,8 @@ import SystemHealth from "./SystemHealth";
 import AppSourceStatus from "./AppSourceStatus";
 import CleanupCard from "./CleanupCard";
 import { DOWNLOAD_PROGRAMS } from "@/lib/products/directDownloads";
+import { SETTINGS_SECTIONS } from "@/components/admin/menus";
+export { SETTINGS_SECTIONS };
 
 export interface AllSettings {
   appVersion: string;
@@ -68,21 +70,6 @@ type AdminFetch = (url: string, options?: RequestInit) => Promise<Response>;
 
 const toDraft = (s: AllSettings): Draft => ({ ...s });
 
-/** The parts of Settings: one menu item each under Settings in the sidebar */
-export const SETTINGS_SECTIONS = [
-  ["status", "Status"],
-  ["access", "Access"],
-  ["notices", "Notices"],
-  ["home", "Home page"],
-  ["toolkit", "Survey Toolkit"],
-  ["downloads", "Downloads"],
-  ["features", "App features"],
-  ["traverse", "Traverse & Level"],
-  ["release", "Release"],
-  ["security", "Security"],
-  ["system", "System"],
-  ["history", "History"],
-] as const;
 // the part chosen in the menu; "" shows every part
 const Only = createContext("");
 

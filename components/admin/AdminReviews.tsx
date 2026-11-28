@@ -8,6 +8,8 @@
 // The menu has a part per program (app="excel-to-kml" …).
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AlertTriangle, Check, CheckSquare, EyeOff, Keyboard, Loader2, Mail, RefreshCw, Search, Send, Square, Star, Trash2, TrendingDown, TrendingUp, Undo2, Wand2 } from "lucide-react";
+import { REVIEW_APPS } from "@/components/admin/menus";
+export { REVIEW_APPS };
 
 type Fetcher = (url: string, options?: RequestInit) => Promise<Response>;
 type Status = "pending" | "published" | "hidden";
@@ -29,16 +31,6 @@ type Summary = { product: string; status: string; count: number; average: number
 type Spread = { product: string; rating: number; count: number };
 type Trend = { product: string; recent: number | null; before: number | null; recentCount: number };
 
-/** The programs people review (lib/content/reviews.ts REVIEW_PRODUCTS), and the Releases app each one is */
-export const REVIEW_APPS = [
-  { id: "excel-to-kml", name: "Excel to KML", release: "excel-to-kml" },
-  { id: "traverse", name: "Traverse & Level", release: "traverse" },
-  { id: "slope-calculator", name: "Slope Calculator", release: "slope" },
-  { id: "auto-draft", name: "Auto Drafting", release: "auto-draft" },
-  { id: "roadpro", name: "RoadPro", release: "roadpro" },
-  { id: "project-folder-manager", name: "Project Folder Manager", release: "folder-manager" },
-  { id: "toolkit", name: "Survey Toolkit", release: "toolkit" },
-];
 const NAME: Record<string, string> = Object.fromEntries(REVIEW_APPS.map((a) => [a.id, a.name]));
 const STATUS_TAG: Record<Status, string> = {
   pending: "bg-amber-500/15 text-amber-300 border-amber-500/30",

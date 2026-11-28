@@ -2,21 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { attachment } from "@/lib/http/attachment";
 import { db } from "@/lib/db";
 import { userFromRequest } from "@/lib/auth/serverSession";
+import { ownsFile } from "@/lib/account/fileAccess";
 import { getAdminSession } from "@/lib/auth/adminAuth";
 
 export async function OPTIONS() {
   return new NextResponse(null, { status: 204 });
-}
-
-/**
- * The same owner rule for downloading and deleting: the account the file is kept under; a file
- * kept before files were tied to an account id belongs to the account with its email. Files
- * with neither are for admins only.
- */
-function ownsFile(user: { id: string; email: string } | null, record: { userId?: string | null; userEmail?: string | null }): boolean {
-  if (!user) return false;
-  if (record.userId) return user.id === record.userId;
-  return Boolean(record.userEmail && user.email.toLowerCase() === record.userEmail.toLowerCase());
 }
 
 // GET: Download the stored file

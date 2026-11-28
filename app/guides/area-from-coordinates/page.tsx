@@ -1,6 +1,7 @@
 import Link from "next/link";
 import GuideLayout from "../../../components/GuideLayout";
 import { guideMetadata } from "@/lib/content/guideMeta";
+import GuideTable from "@/components/GuideTable";
 
 const SLUG = "area-from-coordinates";
 export const metadata = guideMetadata(SLUG);
@@ -28,24 +29,7 @@ export default function Guide() {
       </p>
 
       <h2>A worked example</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Corner</th>
-            <th>Easting (m)</th>
-            <th>Northing (m)</th>
-          </tr>
-        </thead>
-        <tbody>
-          {EXAMPLE.map(([p, e, n]) => (
-            <tr key={p}>
-              <td>{p}</td>
-              <td>{e.toFixed(3)}</td>
-              <td>{n.toFixed(3)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <GuideTable head={["Corner", "Easting (m)", "Northing (m)"]} rows={EXAMPLE.map(([p, e, n]) => [p, e.toFixed(3), n.toFixed(3)])} />
       <p>
         A 40 m by 25 m rectangle: the formula gives ½ × |(1000×2000 − 1040×2000) + (1040×2025 − 1040×2000) + (1040×2025 − 1000×2025) +
         (1000×2000 − 1000×2025)| = ½ × |−80,000 + 26,000 + 81,000 − 25,000| = ½ × 2,000 = <strong>1,000 m²</strong>, the same as 40 × 25.

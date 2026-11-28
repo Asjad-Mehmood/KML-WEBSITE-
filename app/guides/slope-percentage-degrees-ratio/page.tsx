@@ -1,6 +1,7 @@
 import Link from "next/link";
 import GuideLayout from "../../../components/GuideLayout";
 import { guideMetadata } from "@/lib/content/guideMeta";
+import GuideTable from "@/components/GuideTable";
 
 const SLUG = "slope-percentage-degrees-ratio";
 export const metadata = guideMetadata(SLUG);
@@ -52,26 +53,7 @@ export default function Guide() {
       </p>
 
       <h2>Common slopes</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Percent</th>
-            <th>1 in N</th>
-            <th>Degrees</th>
-            <th>Where you see it</th>
-          </tr>
-        </thead>
-        <tbody>
-          {ROWS.map(([pct, where]) => (
-            <tr key={pct}>
-              <td>{pct}%</td>
-              <td>1 in {+(100 / pct).toFixed(1)}</td>
-              <td>{deg(pct).toFixed(2)}°</td>
-              <td>{where}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <GuideTable head={["Percent", "1 in N", "Degrees", "Where you see it"]} rows={ROWS.map(([pct, where]) => [`${pct}%`, `1 in ${+(100 / pct).toFixed(1)}`, `${deg(pct).toFixed(2)}°`, where])} />
       <p>Check the limits in your own specification: they differ between countries and clients.</p>
 
       <h2>In Excel</h2>

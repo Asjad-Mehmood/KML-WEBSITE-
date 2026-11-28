@@ -88,3 +88,28 @@ export interface AppSettings {
   webWatermarkKml: boolean;
   webDisableReports: boolean;
 }
+
+/** The admin dashboard's numbers (/api/admin/stats) */
+export interface AdminStats {
+  totalUsers: number;
+  totalDownloads: number;
+  totalConversions: number;
+  totalActivities?: number;
+  totalPointsProcessed?: number;
+  totalPointsKept?: number;
+  totalFilesStored?: number;
+  totalFilesWithCopy?: number;
+  totalStorageBytes?: number;
+  /** Traverse & Level jobs: null when their tables could not be read */
+  traverse?: { jobs: number; traverses: number; levels: number; accepted: number; rejected: number; surveyors: number } | null;
+  /** Slope Calculator: calculations kept in accounts; null when the table could not be read */
+  slope?: { jobs: number; surveyors: number } | null;
+  roleCounts: Record<string, number>;
+  assetCounts: Record<string, number>;
+  locationCounts?: Record<string, number>;
+  settings: AppSettings;
+  recentUsers: UserItem[];
+  recentDownloads: DownloadItem[];
+  recentConversions: ConversionItem[];
+  recentActivities?: UserActivityItem[];
+}
