@@ -38,7 +38,12 @@
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html { -webkit-text-size-adjust: 100%; }
-body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--f-sans); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+/* On laptop and desktop screens the whole app is drawn at 85%, as with the browser's zoom at 85%:
+   more of the job fits on the screen. Phones and narrow windows stay at 100%. Heights tied to the
+   screen are divided by the same factor, so they still reach the bottom. */
+:root { --z: 1; }
+@media (min-width: 1100px) { :root { --z: .85; } html { zoom: var(--z); } }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--f-sans); -webkit-font-smoothing: antialiased; min-height: calc(100vh / var(--z)); }
 button, input, select { font: inherit; color: inherit; }
 a { color: var(--accent); }
 :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
@@ -84,7 +89,7 @@ body:not(.authed) .user-only, body.authed .guest-only { display: none !important
 /* ---------------- sidebar: the tools, your recent jobs, the connection ---------------- */
 body.authed .shell { display: grid; grid-template-columns: 236px minmax(0, 1fr); align-items: start; }
 .shell-main { min-width: 0; }
-.sidebar { position: sticky; top: var(--top-h, 61px); height: calc(100vh - var(--top-h, 61px)); display: flex; flex-direction: column; gap: 22px; padding: 18px 12px 14px;
+.sidebar { position: sticky; top: var(--top-h, 61px); height: calc(100vh / var(--z) - var(--top-h, 61px)); display: flex; flex-direction: column; gap: 22px; padding: 18px 12px 14px;
   border-right: 1px solid var(--line); background: color-mix(in srgb, var(--surface) 72%, var(--bg)); overflow-y: auto; }
 .side-nav { display: flex; flex-direction: column; gap: 4px; }
 .side-nav a { display: flex; align-items: center; gap: 11px; padding: 10px 14px; border-radius: 10px; text-decoration: none; color: var(--muted); font-weight: 600; }
@@ -192,7 +197,7 @@ input.bad { border-color: var(--bad); background: var(--bad-soft); }
 .foot .brand-rose { width: 26px; height: 26px; }
 
 /* ---------------- auth ---------------- */
-.auth { min-height: calc(100vh - 70px); display: grid; place-items: center; padding: 32px 16px; background: radial-gradient(900px 500px at 50% 0%, var(--gold-soft), transparent 70%); }
+.auth { min-height: calc(100vh / var(--z) - 70px); display: grid; place-items: center; padding: 32px 16px; background: radial-gradient(900px 500px at 50% 0%, var(--gold-soft), transparent 70%); }
 .auth-card { width: min(460px, 100%); background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 30px 28px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 12px; }
 .auth-rose { width: 64px; height: 64px; align-self: center; }
 .auth-card h1 { font-family: var(--f-display); font-weight: 400; font-size: 32px; margin: 0; text-align: center; }
@@ -258,7 +263,7 @@ input.bad { border-color: var(--bad); background: var(--bad-soft); }
 .bar-row em { font-style: normal; text-align: right; font-family: var(--f-mono); color: var(--ink); }
 
 .modal { position: fixed; inset: 0; z-index: 50; background: rgba(5, 12, 22, .55); display: grid; place-items: center; padding: 16px; }
-.modal-card { width: min(520px, 100%); background: var(--surface); border-radius: 16px; border: 1px solid var(--line); padding: 22px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 10px; max-height: 90vh; overflow: auto; }
+.modal-card { width: min(520px, 100%); background: var(--surface); border-radius: 16px; border: 1px solid var(--line); padding: 22px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 10px; max-height: calc(90vh / var(--z)); overflow: auto; }
 .modal-card h2 { font-family: var(--f-display); font-weight: 400; font-size: 26px; margin: 0; }
 .share-row { display: flex; gap: 8px; }
 .share-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
