@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
-import { getSubscription } from "@/lib/billing";
-import { paddleReady, portalUrl } from "@/lib/paddle";
+import { sessionForToken, tokenFromRequest } from "@/lib/auth/serverSession";
+import { getSubscription } from "@/lib/billing/billing";
+import { paddleReady, portalUrl } from "@/lib/billing/paddle";
 
 // POST: a link to Paddle's billing page for this account (change card, invoices, cancel)
 export async function POST(req: NextRequest) {

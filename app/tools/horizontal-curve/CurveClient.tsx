@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { Card, CopyButton, Field, ResultRow } from "@/components/tools/ui";
 import { ShareButton, useShared } from "@/components/tools/share";
-import { fmt, formatChainage, formatDms, horizontalCurve, parseChainage, parseDms, parseNumber } from "@/lib/toolMath";
+import { fmt, formatChainage, formatDms, horizontalCurve, parseChainage, parseDms, parseNumber } from "@/lib/geo/toolMath";
 
 const f3 = (v: number) => v.toFixed(3);
 

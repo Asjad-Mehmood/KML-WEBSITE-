@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminSession } from "@/lib/adminAuth";
-import { activityFacets, activityFeed, type FeedFilter } from "@/lib/activityFeed";
+import { getAdminSession } from "@/lib/auth/adminAuth";
+import { activityFacets, activityFeed, type FeedFilter } from "@/lib/admin/activityFeed";
 
-// Admin → Activity: everything across the apps and tools (lib/activityFeed.ts)
+// Admin → Activity: everything across the apps and tools (lib/admin/activityFeed.ts)
 // GET ?app=&action=&user=&q=&errors=1&from=YYYY-MM-DD&to=YYYY-MM-DD&before=<cursor>&limit=
 //     &facets=1 (also how many per app and per action)
 export async function GET(req: NextRequest) {

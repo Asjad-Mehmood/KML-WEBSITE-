@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminSession } from "@/lib/adminAuth";
-import { prisma } from "@/lib/prisma";
-import { countryOf } from "@/lib/publicStats";
-import { notStaff } from "@/lib/staffAccounts";
-import { DOWNLOAD_APPS } from "@/lib/adminPeople";
+import { getAdminSession } from "@/lib/auth/adminAuth";
+import { prisma } from "@/lib/db/prisma";
+import { countryOf } from "@/lib/content/publicStats";
+import { notStaff } from "@/lib/admin/staffAccounts";
+import { DOWNLOAD_APPS } from "@/lib/admin/adminPeople";
 
 // Admin → Dashboard → trends: the chosen period (7, 30, 90 or 365 days) against the period before
 // it, day by day, per program and per country, and what needs an admin's attention now.
-// each program's own download (the first asset of each in lib/adminPeople.ts DOWNLOAD_APPS)
+// each program's own download (the first asset of each in lib/admin/adminPeople.ts DOWNLOAD_APPS)
 const PROGRAMS = DOWNLOAD_APPS.map((a) => a.assets[0]);
 
 const n = (v: unknown) => Number(v ?? 0);

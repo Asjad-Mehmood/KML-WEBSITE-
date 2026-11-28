@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse, after } from "next/server";
-import { logAdmin } from "@/lib/adminLog";
-import { kickBroadcast } from "@/lib/broadcastRunner";
-import { getAdminSession } from "@/lib/adminAuth";
-import { isMailConfigured } from "@/lib/mailer";
-import { startBroadcast } from "@/lib/releases";
+import { logAdmin } from "@/lib/admin/adminLog";
+import { kickBroadcast } from "@/lib/mail/broadcastRunner";
+import { getAdminSession } from "@/lib/auth/adminAuth";
+import { isMailConfigured } from "@/lib/mail/mailer";
+import { startBroadcast } from "@/lib/products/releases";
 
 type Ctx = { params: Promise<{ id: string }> };
 
 // Start emailing a release to the people who use its app (audience "all": everyone with an
 // account; "behind": the people still on an older version; onlyNew: skip people who already got it).
-// The server then sends it in steps (lib/broadcastRunner.ts); the admin page only watches.
+// The server then sends it in steps (lib/mail/broadcastRunner.ts); the admin page only watches.
 export async function POST(req: NextRequest, { params }: Ctx) {
   const session = await getAdminSession(req);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

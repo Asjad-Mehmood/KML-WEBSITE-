@@ -6,8 +6,8 @@ import PageShell from "../../components/PageShell";
 import PageIntro from "../../components/PageIntro";
 import NextSteps from "../../components/NextSteps";
 import { BreadcrumbStructuredData } from "../../components/StructuredData";
-import { SHOW_ANDROID, openGraphFor, companyTitle } from "@/lib/site";
-import { PRODUCTS } from "@/lib/products";
+import { SHOW_ANDROID, openGraphFor, companyTitle } from "@/lib/content/site";
+import { PRODUCTS } from "@/lib/products/products";
 
 const TITLE = "About";
 const DESCRIPTION =

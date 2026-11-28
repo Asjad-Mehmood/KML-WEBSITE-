@@ -1,6 +1,6 @@
 import Link from "next/link";
 import GuideLayout from "../../../components/GuideLayout";
-import { guideMetadata } from "@/lib/guideMeta";
+import { guideMetadata } from "@/lib/content/guideMeta";
 
 const SLUG = "plot-coordinates-on-google-maps";
 export const metadata = guideMetadata(SLUG);

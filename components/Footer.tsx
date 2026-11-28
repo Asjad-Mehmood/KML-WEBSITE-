@@ -6,9 +6,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import WebAppLink from "./WebAppLink";
-import { FACEBOOK_URL } from "@/lib/site";
-import { PRODUCTS } from "@/lib/products";
-import { TRAVERSE_APP } from "@/lib/traverse";
+import { FACEBOOK_URL } from "@/lib/content/site";
+import { PRODUCTS } from "@/lib/products/products";
+import { TRAVERSE_APP } from "@/lib/products/traverse";
 
 interface FooterProps {
   versionTag: string;

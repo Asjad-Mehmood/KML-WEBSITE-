@@ -5,10 +5,10 @@ import { ArrowRight, CheckCircle2, ChevronDown, Users } from "lucide-react";
 import PageShell from "../PageShell";
 import NextSteps from "../NextSteps";
 import { BreadcrumbStructuredData } from "../StructuredData";
-import { TOOLS, toolBySlug } from "@/lib/tools";
-import { TOOL_PAGES } from "@/lib/toolPages";
-import { toolExample } from "@/lib/toolExamples";
-import { SITE_NAME, SITE_URL, jsonLd } from "@/lib/site";
+import { TOOLS, toolBySlug } from "@/lib/geo/tools";
+import { TOOL_PAGES } from "@/lib/geo/toolPages";
+import { toolExample } from "@/lib/geo/toolExamples";
+import { SITE_NAME, SITE_URL, jsonLd } from "@/lib/content/site";
 
 function UseButton({ href, big = false }: { href: string; big?: boolean }) {
   return (

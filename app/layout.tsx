@@ -9,7 +9,7 @@ import AdSenseScript from "../components/AdSenseScript";
 import SignupPrompt from "../components/SignupPrompt";
 import DownloadNotice from "../components/DownloadNotice";
 import ReviewPrompt from "../components/ReviewPrompt";
-import { DEFAULT_TITLE, FACEBOOK_DOMAIN_VERIFICATION, FACEBOOK_PAGE_ID, OG_IMAGE, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
+import { DEFAULT_TITLE, FACEBOOK_DOMAIN_VERIFICATION, FACEBOOK_PAGE_ID, OG_IMAGE, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/content/site";
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
   title: {
     default: DEFAULT_TITLE,
     // company pages: "… · SurveyX Digital"; Excel to KML's own sections keep "… | Excel to KML"
-    // (lib/site.ts EXCEL_TITLE: their layouts and pages), so their search results stay as they are
+    // (lib/content/site.ts EXCEL_TITLE: their layouts and pages), so their search results stay as they are
     template: "%s · SurveyX Digital",
   },
   description: SITE_DESCRIPTION,

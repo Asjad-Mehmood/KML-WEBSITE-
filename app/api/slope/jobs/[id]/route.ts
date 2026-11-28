@@ -1,9 +1,9 @@
 import { after, NextRequest, NextResponse } from "next/server";
-import { logEvent } from "@/lib/activityEvents";
-import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
-import { checkLimit } from "@/lib/billing";
-import { MAX_SLOPE_JOB_BYTES, countOwn, ownerOf, remove, upsert } from "@/lib/slopeJobs";
-import { getExtraSettings } from "@/lib/siteSettings";
+import { logEvent } from "@/lib/admin/activityEvents";
+import { sessionForToken, tokenFromRequest } from "@/lib/auth/serverSession";
+import { checkLimit } from "@/lib/billing/billing";
+import { MAX_SLOPE_JOB_BYTES, countOwn, ownerOf, remove, upsert } from "@/lib/products/slopeJobs";
+import { getExtraSettings } from "@/lib/content/siteSettings";
 
 type Ctx = { params: Promise<{ id: string }> };
 const ID = /^[A-Za-z0-9-]{8,64}$/;

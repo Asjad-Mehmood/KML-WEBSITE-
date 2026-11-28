@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { useAuth } from "../context/AuthContext";
-import { WEB_APP_LOGIN_URL } from "@/lib/authRedirect";
+import { WEB_APP_LOGIN_URL } from "@/lib/auth/authRedirect";
 
 type Props = Omit<React.ComponentProps<typeof Link>, "href">;
 

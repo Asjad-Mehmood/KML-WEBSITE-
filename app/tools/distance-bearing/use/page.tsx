@@ -1,5 +1,5 @@
 import ToolWorkspace from "../../../../components/tools/ToolWorkspace";
-import { toolUseMetadata } from "@/lib/toolMeta";
+import { toolUseMetadata } from "@/lib/geo/toolMeta";
 import DistanceClient from "../DistanceClient";
 
 const SLUG = "distance-bearing";

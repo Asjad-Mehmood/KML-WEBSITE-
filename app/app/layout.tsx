@@ -1,4 +1,4 @@
-import { excelTitle } from "@/lib/site";
+import { excelTitle } from "@/lib/content/site";
 import type { Metadata } from "next";
 
 // The web app needs a sign-in, so there is nothing here for search engines to index

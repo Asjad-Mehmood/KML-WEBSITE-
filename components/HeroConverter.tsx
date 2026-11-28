@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import proj4 from "proj4";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { parseSurveyRows, buildKml, MAX_ROWS, type ColumnOrder, type ConvertedPoint } from "../lib/surveyRows";
+import { parseSurveyRows, buildKml, MAX_ROWS, type ColumnOrder, type ConvertedPoint } from "@/lib/geo/surveyRows";
 import {
   RefreshCw,
   Search,

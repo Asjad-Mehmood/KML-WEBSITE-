@@ -24,7 +24,7 @@ import SignInSecurity from "./SignInSecurity";
 import SystemHealth from "./SystemHealth";
 import AppSourceStatus from "./AppSourceStatus";
 import CleanupCard from "./CleanupCard";
-import { DOWNLOAD_PROGRAMS } from "@/lib/directDownloads";
+import { DOWNLOAD_PROGRAMS } from "@/lib/products/directDownloads";
 
 export interface AllSettings {
   appVersion: string;

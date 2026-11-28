@@ -1,0 +1,176 @@
+import { prisma } from "@/lib/db/prisma";
+import { ensureActivityColumns } from "@/lib/admin/activityTags";
+import { ADMIN_EMAIL } from "@/lib/auth/adminRole";
+import { ensureToolkitTables } from "@/lib/toolkit/store";
+
+// Admin → Activity: one list of everything that happens across the apps and tools, newest first:
+//   activities      what people do in the apps and on the website (lib/admin/activityTags.ts adds the
+//                   app, device and version), sign-ins and account changes
+//   downloads       every program download from the website
+//   toolkit_events  what the Survey Toolkit installed, updated, opened or failed on each PC
+// Filtered and paged in the database, so it stays quick however long the history gets.
+
+export interface FeedRow {
+  id: string;
+  source: "activity" | "download" | "toolkit";
+  app: string;
+  /** for a Survey Toolkit line, the app it installed, updated or opened */
+  tool: string | null;
+  platform: string | null;
+  version: string | null;
+  userId: string | null;
+  email: string | null;
+  name: string | null;
+  action: string;
+  title: string;
+  details: string | null;
+  fileName: string | null;
+  fileSize: string | null;
+  points: number | null;
+  status: string;
+  error: string | null;
+  durationMs: number | null;
+  ip: string | null;
+  place: string | null;
+  device: string | null;
+  at: Date;
+}
+
+export interface FeedFilter {
+  app?: string;
+  action?: string;
+  userId?: string;
+  q?: string;
+  errorsOnly?: boolean;
+  from?: Date;
+  to?: Date;
+  /** "<ISO time>|<id>" of the last row already shown */
+  before?: string;
+  limit?: number;
+}
+
+// which app each download is for
+const ASSET_APP = `CASE
+  WHEN d."assetType" IN ('windows_installer','sample_csv','test_kml','web_app') THEN 'excel-to-kml'
+  WHEN d."assetType" LIKE 'traverse%' THEN 'traverse'
+  WHEN d."assetType" = 'folder_manager' THEN 'folder-manager'
+  ELSE d."assetType" END`;
+
+/** The whole feed as one SQL query (for lib/products/appOverview.ts) */
+export function feedSql(): string {
+  return unionSql();
+}
+
+function unionSql(): string {
+  return `
+    SELECT a."id", 'activity' AS "source",
+           COALESCE(a."app", CASE WHEN a."action" LIKE 'tl\\_%' THEN 'traverse' WHEN a."action" IN ('conversion','export','file_upload','batch_process','photos_attached','project_save','drag_drop_import','file_import','browser_export') THEN 'excel-to-kml' ELSE 'website' END) AS "app",
+           a."platform", a."appVersion" AS "version", a."userId", COALESCE(u."email", a."userEmail") AS "email", COALESCE(u."name", a."userName") AS "name",
+           a."action", a."title", a."details", a."fileName", a."fileSize", a."pointsCount" AS "points",
+           COALESCE(a."status", 'success') AS "status", a."errorMessage" AS "error", a."durationMs", a."ipAddress" AS "ip",
+           NULL::text AS "place", a."userAgent" AS "device", a."timestamp" AS "at", NULL::text AS "tool"
+      FROM "activities" a LEFT JOIN "users" u ON u."id" = a."userId"
+    UNION ALL
+    SELECT d."id", 'download', ${ASSET_APP}, 'Web', d."version", d."userId", d."userEmail", d."userName",
+           'download', CONCAT('Downloaded ', d."fileName"), NULL, d."fileName", NULL, NULL,
+           'success', NULL, NULL, d."ipAddress", d."location", d."userAgent", d."timestamp", NULL
+      FROM "downloads" d
+    UNION ALL
+    SELECT 'tk_' || e."id"::text, 'toolkit', 'toolkit', 'Windows', e."toVersion", e."userId", u."email", u."name",
+           'toolkit_' || e."action",
+           CONCAT(INITCAP(e."action"), ' ', CASE e."tool" WHEN 'excel-to-kml' THEN 'Excel to KML' WHEN 'traverse' THEN 'Traverse & Level' WHEN 'slope' THEN 'Slope Calculator' WHEN 'auto-draft' THEN 'Auto Drafting'
+                  WHEN 'roadpro' THEN 'RoadPro' WHEN 'folder-manager' THEN 'Project Folder Manager' WHEN 'toolkit' THEN 'Survey Toolkit' ELSE e."tool" END,
+                  CASE WHEN e."fromVersion" <> '' AND e."toVersion" <> '' AND e."fromVersion" <> e."toVersion" THEN CONCAT(' ', e."fromVersion", ' → ', e."toVersion")
+                       WHEN e."toVersion" <> '' THEN CONCAT(' ', e."toVersion") ELSE '' END,
+                  CASE WHEN e."message" LIKE 'automatic%' THEN ' (automatic)' ELSE '' END),
+           e."message", NULL, NULL, NULL,
+           CASE WHEN e."action" = 'failed' THEN 'error' ELSE 'success' END,
+           CASE WHEN e."action" = 'failed' THEN e."message" ELSE NULL END, NULL, NULL, NULL, d."name", e."createdAt", e."tool"
+      FROM "toolkit_events" e LEFT JOIN "users" u ON u."id" = e."userId" LEFT JOIN "toolkit_devices" d ON d."id" = e."deviceId"`;
+}
+
+/** A line not made by an admin account (as lib/auth/adminRole.ts decides who is one), by account or by email */
+// (the accounts' columns are renamed, so "userId" and "email" can only be the line's own)
+const NOT_ADMIN = `NOT EXISTS (
+    SELECT 1 FROM (SELECT "id" AS adm_id, lower("email") AS adm_email, "role" AS adm_role FROM "users") au
+    WHERE (au.adm_id = "userId" OR au.adm_email = lower("email"))
+      AND (au.adm_role IN ('ADMIN', 'Super Admin') OR au.adm_email = '${ADMIN_EMAIL.toLowerCase()}'))
+  AND lower(coalesce("email", '')) <> '${ADMIN_EMAIL.toLowerCase()}'`;
+
+function where(f: FeedFilter, params: unknown[]): string {
+  const w: string[] = [];
+  const p = (v: unknown) => {
+    params.push(v);
+    return `$${params.length}`;
+  };
+  // an app's lines, and the Survey Toolkit's lines about it (installed, updated, failed …)
+  if (f.app) {
+    const a = p(f.app);
+    w.push(`("app" = ${a} OR "tool" = ${a})`);
+  }
+  if (f.action) w.push(`"action" = ${p(f.action)}`);
+  // one person's lines: theirs, admin or not; otherwise what admins did isn't here (Admin log has it)
+  if (f.userId) w.push(`"userId" = ${p(f.userId)}`);
+  else w.push(NOT_ADMIN);
+  if (f.errorsOnly) w.push(`"status" IN ('error','failed','warning')`);
+  if (f.from) w.push(`"at" >= ${p(f.from)}`);
+  if (f.to) w.push(`"at" < ${p(f.to)}`);
+  if (f.q) {
+    const like = p(`%${f.q.replace(/[%_\\]/g, (c) => `\\${c}`)}%`);
+    w.push(`("title" ILIKE ${like} OR "details" ILIKE ${like} OR "email" ILIKE ${like} OR "name" ILIKE ${like} OR "fileName" ILIKE ${like} OR "ip" ILIKE ${like} OR "error" ILIKE ${like})`);
+  }
+  if (f.before) {
+    const [t, id] = f.before.split("|");
+    const at = new Date(t);
+    if (!Number.isNaN(at.getTime()) && id) w.push(`("at", "id") < (${p(at)}, ${p(id)})`);
+  }
+  return w.length ? `WHERE ${w.join(" AND ")}` : "";
+}
+
+export async function feedReady() {
+  await ready();
+}
+
+async function ready() {
+  await ensureActivityColumns();
+  await ensureToolkitTables();
+}
+
+export async function activityFeed(f: FeedFilter): Promise<{ rows: FeedRow[]; next: string | null }> {
+  await ready();
+  const params: unknown[] = [];
+  const limit = Math.max(1, Math.min(5000, Math.floor(f.limit ?? 100)));
+  const rows = await prisma.$queryRawUnsafe<FeedRow[]>(
+    `SELECT * FROM (${unionSql()}) x ${where(f, params)} ORDER BY "at" DESC, "id" DESC LIMIT ${limit + 1}`,
+    ...params
+  );
+  const more = rows.length > limit;
+  const page = more ? rows.slice(0, limit) : rows;
+  const last = page[page.length - 1];
+  return { rows: page, next: more && last ? `${new Date(last.at).toISOString()}|${last.id}` : null };
+}
+
+/** How many of each app and of each action (with the filters but the app's and action's own), for the filter chips */
+export async function activityFacets(f: FeedFilter): Promise<{ apps: Record<string, number>; actions: Record<string, number>; errors: number; total: number }> {
+  await ready();
+  const p1: unknown[] = [];
+  // each app's own lines, plus the Toolkit's lines about it (those also stay under the Toolkit)
+  const apps = await prisma.$queryRawUnsafe<{ app: string; n: bigint }[]>(
+    `SELECT k app, COUNT(*) n FROM (SELECT "app" k, x.* FROM (${unionSql()}) x
+       UNION ALL SELECT "tool" k, x.* FROM (${unionSql()}) x WHERE "tool" IS NOT NULL AND "tool" <> "app") y
+       ${where({ ...f, app: undefined, action: undefined, before: undefined }, p1)} GROUP BY 1`,
+    ...p1
+  );
+  const p2: unknown[] = [];
+  const actions = await prisma.$queryRawUnsafe<{ action: string; n: bigint; errors: bigint }[]>(
+    `SELECT "action", COUNT(*) n, COUNT(*) FILTER (WHERE "status" IN ('error','failed','warning')) errors
+       FROM (${unionSql()}) x ${where({ ...f, action: undefined, errorsOnly: false, before: undefined }, p2)} GROUP BY 1`,
+    ...p2
+  );
+  return {
+    apps: Object.fromEntries(apps.map((r) => [r.app, Number(r.n)])),
+    actions: Object.fromEntries(actions.map((r) => [r.action, Number(r.n)])),
+    errors: actions.reduce((s, r) => s + Number(r.errors), 0),
+    total: actions.reduce((s, r) => s + Number(r.n), 0),
+  };
+}

@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { safeNextPath } from "@/lib/authRedirect";
+import { safeNextPath } from "@/lib/auth/authRedirect";
 import { takeHandoff } from "@/lib/toolkit/store";
-import { SITE_URL } from "@/lib/site";
-import { dashboardOrigin, onDashboardHost } from "@/lib/dashboardHost";
+import { SITE_URL } from "@/lib/content/site";
+import { dashboardOrigin, onDashboardHost } from "@/lib/auth/dashboardHost";
 
 // The main site's half of signing in on the sign-in address (lib/authHost):
 //   GET ?code=… (from /api/auth/continue there) → this browser signed in here, then on to the

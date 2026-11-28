@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse, after } from "next/server";
-import { kickBroadcast, validStepToken } from "@/lib/broadcastRunner";
-import { sendStep } from "@/lib/releases";
+import { kickBroadcast, validStepToken } from "@/lib/mail/broadcastRunner";
+import { sendStep } from "@/lib/products/releases";
 
 type Ctx = { params: Promise<{ id: string }> };
 
-// One step of a broadcast run on the server (lib/broadcastRunner.ts). Started only by the site
+// One step of a broadcast run on the server (lib/mail/broadcastRunner.ts). Started only by the site
 // itself (a token for this broadcast). It answers at once, sends a batch after the answer, then
 // starts the next step while emails are left; a step that sent nothing (another one holds the
 // rest) stops there.

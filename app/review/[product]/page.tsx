@@ -3,9 +3,9 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import PageShell from "../../../components/PageShell";
 import ReviewForm from "./ReviewForm";
-import { REVIEW_PRODUCTS, isReviewProduct, ownReview } from "@/lib/reviews";
-import { sessionForToken } from "@/lib/serverSession";
-import { companyTitle } from "@/lib/site";
+import { REVIEW_PRODUCTS, isReviewProduct, ownReview } from "@/lib/content/reviews";
+import { sessionForToken } from "@/lib/auth/serverSession";
+import { companyTitle } from "@/lib/content/site";
 
 type Props = { params: Promise<{ product: string }>; searchParams: Promise<{ stars?: string }> };
 

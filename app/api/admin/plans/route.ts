@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminSession } from "@/lib/adminAuth";
-import { logAdmin } from "@/lib/adminLog";
+import { getAdminSession } from "@/lib/auth/adminAuth";
+import { logAdmin } from "@/lib/admin/adminLog";
 import { db } from "@/lib/db";
-import { listSubscriptions, setPlan } from "@/lib/billing";
+import { listSubscriptions, setPlan } from "@/lib/billing/billing";
 
 // Admin → Payments: who is on Pro, and giving or taking away Pro by email
 export const dynamic = "force-dynamic";

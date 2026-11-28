@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { attachment } from "@/lib/attachment";
-import { getAdminSession } from "@/lib/adminAuth";
-import { logAdmin } from "@/lib/adminLog";
-import { DATA_KINDS, DATA_SORTS, type DataFilter, type DataSort, dataByPerson, dataSummary, deleteData, downloadUrl, jobFile, listData } from "@/lib/adminData";
+import { attachment } from "@/lib/http/attachment";
+import { getAdminSession } from "@/lib/auth/adminAuth";
+import { logAdmin } from "@/lib/admin/adminLog";
+import { DATA_KINDS, DATA_SORTS, type DataFilter, type DataSort, dataByPerson, dataSummary, deleteData, downloadUrl, jobFile, listData } from "@/lib/admin/adminData";
 
-// Admin → Files: everything people keep in their accounts, per app (lib/adminData.ts).
+// Admin → Files: everything people keep in their accounts, per app (lib/admin/adminData.ts).
 // GET  ?app= &kind=opened|saved|job|calculation &platform=windows_app|web_app &ext= &user= &q= &from= &to=
 //        &view=list (default) &sort=newest|oldest|largest|smallest|name &offset= &limit= (≤ 200)
 //        &view=summary   the numbers and the breakdowns

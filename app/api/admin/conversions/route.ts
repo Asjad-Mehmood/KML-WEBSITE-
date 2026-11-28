@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { logAdmin } from "@/lib/adminLog";
-import { getAdminSession } from "@/lib/adminAuth";
+import { logAdmin } from "@/lib/admin/adminLog";
+import { getAdminSession } from "@/lib/auth/adminAuth";
 import { db } from "@/lib/db";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 
 // GET: the newest converted points across all users (?limit= up to 5000), with the total.
 // ?userId= for one user's points.

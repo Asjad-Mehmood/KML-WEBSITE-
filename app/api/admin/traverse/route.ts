@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { logAdmin } from "@/lib/adminLog";
-import { getAdminSession } from "@/lib/adminAuth";
-import { prisma } from "@/lib/prisma";
-import { clientIp } from "@/lib/loginThrottle";
-import { adminGroups, adminJobsOf, adminRemove } from "@/lib/traverseJobs";
-import { blockedList, setBlocked } from "@/lib/traverseControls";
+import { logAdmin } from "@/lib/admin/adminLog";
+import { getAdminSession } from "@/lib/auth/adminAuth";
+import { prisma } from "@/lib/db/prisma";
+import { clientIp } from "@/lib/auth/loginThrottle";
+import { adminGroups, adminJobsOf, adminRemove } from "@/lib/products/traverseJobs";
+import { blockedList, setBlocked } from "@/lib/products/traverseControls";
 
 // Admin → Traverse & Level: the jobs saved in the Traverse & Level app (/traverse/app).
 // GET            → one row per surveyor, with the totals and who is blocked

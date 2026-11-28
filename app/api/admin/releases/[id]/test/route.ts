@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminSession } from "@/lib/adminAuth";
-import { isMailConfigured } from "@/lib/mailer";
-import { sendTest } from "@/lib/releases";
+import { getAdminSession } from "@/lib/auth/adminAuth";
+import { isMailConfigured } from "@/lib/mail/mailer";
+import { sendTest } from "@/lib/products/releases";
 
 type Ctx = { params: Promise<{ id: string }> };
 

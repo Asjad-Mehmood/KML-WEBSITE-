@@ -54,9 +54,9 @@ import {
 } from "lucide-react";
 import SurveyorDetailModal from "@/components/admin/SurveyorDetailModal";
 import FileViewer, { type ViewerFile } from "@/components/FileViewer";
-import { actionLabel, adminActionTag } from "@/lib/activityKinds";
-import { PROGRAMS } from "@/lib/programs";
-import type { AppSettings as SiteSettings, ConversionItem, DownloadItem, UserActivityItem, UserItem } from "@/lib/adminTypes";
+import { actionLabel, adminActionTag } from "@/lib/admin/activityKinds";
+import { PROGRAMS } from "@/lib/products/programs";
+import type { AppSettings as SiteSettings, ConversionItem, DownloadItem, UserActivityItem, UserItem } from "@/lib/admin/adminTypes";
 
 
 
@@ -77,7 +77,7 @@ function barWidth(n: number, total: number) {
 
 /** Page buttons under a long table */
 
-/** The apps under Releases in the menu (lib/programs.ts) */
+/** The apps under Releases in the menu (lib/products/programs.ts) */
 const RELEASE_TABS = PROGRAMS;
 
 const ADMIN_TABS = ["overview", "usage", "payments", "users", "activities", "downloads", "files", "conversions", "excel", "traverse", "slope", "autodraft", "roadpro", "pfm", "toolkit", "releases", "reviews", "messages", "mail", "settings", "log"] as const;
@@ -328,7 +328,7 @@ export default function AdminClient() {
       loadActivities();
 
       // Load downloads
-      const dlRes = await adminFetch("/api/admin/downloads");
+      const dlRes = await adminFetch("/api/admin/downloads?limit=8");
       if (dlRes.ok) {
         const data = await dlRes.json();
         setDownloads(data.downloads || []);
@@ -526,7 +526,7 @@ export default function AdminClient() {
           text: downloadsApp
             ? `Every download of ${DOWNLOAD_TABS.find((a) => a.id === downloadsApp)?.name ?? downloadsApp}: by whom, which version and from where`
             : "Every program download: by whom, which version and from where",
-          count: stats?.totalDownloads ?? downloads.length,
+          count: stats?.totalDownloads,
           sub: DOWNLOAD_TABS.map((a) => ({ id: a.id, label: a.name, count: downloadCounts[a.id] })),
         },
       ],
@@ -671,7 +671,7 @@ export default function AdminClient() {
                   </div>
                 </div>
                 <div>
-                  <div className="text-[28px] leading-none font-extrabold tracking-tight text-white tabular-nums">{stats?.totalDownloads ?? downloads.length}</div>
+                  <div className="text-[28px] leading-none font-extrabold tracking-tight text-white tabular-nums">{stats?.totalDownloads ?? 0}</div>
                   <p className="text-[11px] text-slate-400 mt-1">Installer and sample files</p>
                 </div>
               </div>
@@ -745,7 +745,7 @@ export default function AdminClient() {
                       <div
                         className="h-full bg-blue-500 rounded-full"
                         style={{
-                          width: barWidth(stats?.assetCounts?.windows_installer ?? 0, downloads.length),
+                          width: barWidth(stats?.assetCounts?.windows_installer ?? 0, stats?.totalDownloads ?? 0),
                         }}
                       />
                     </div>
@@ -760,7 +760,7 @@ export default function AdminClient() {
                       <div
                         className="h-full bg-amber-500 rounded-full"
                         style={{
-                          width: barWidth(stats?.assetCounts?.roadpro ?? 0, downloads.length),
+                          width: barWidth(stats?.assetCounts?.roadpro ?? 0, stats?.totalDownloads ?? 0),
                         }}
                       />
                     </div>
@@ -775,7 +775,7 @@ export default function AdminClient() {
                       <div
                         className="h-full bg-yellow-400 rounded-full"
                         style={{
-                          width: barWidth(stats?.assetCounts?.traverse ?? 0, downloads.length),
+                          width: barWidth(stats?.assetCounts?.traverse ?? 0, stats?.totalDownloads ?? 0),
                         }}
                       />
                     </div>
@@ -790,7 +790,7 @@ export default function AdminClient() {
                       <div
                         className="h-full bg-teal-400 rounded-full"
                         style={{
-                          width: barWidth(stats?.assetCounts?.folder_manager ?? 0, downloads.length),
+                          width: barWidth(stats?.assetCounts?.folder_manager ?? 0, stats?.totalDownloads ?? 0),
                         }}
                       />
                     </div>
@@ -805,7 +805,7 @@ export default function AdminClient() {
                       <div
                         className="h-full bg-sky-400 rounded-full"
                         style={{
-                          width: barWidth(stats?.assetCounts?.slope ?? 0, downloads.length),
+                          width: barWidth(stats?.assetCounts?.slope ?? 0, stats?.totalDownloads ?? 0),
                         }}
                       />
                     </div>
@@ -820,7 +820,7 @@ export default function AdminClient() {
                       <div
                         className="h-full bg-indigo-500 rounded-full"
                         style={{
-                          width: barWidth(stats?.assetCounts?.sample_csv ?? 0, downloads.length),
+                          width: barWidth(stats?.assetCounts?.sample_csv ?? 0, stats?.totalDownloads ?? 0),
                         }}
                       />
                     </div>
@@ -835,7 +835,7 @@ export default function AdminClient() {
                       <div
                         className="h-full bg-emerald-500 rounded-full"
                         style={{
-                          width: barWidth(stats?.assetCounts?.test_kml ?? 0, downloads.length),
+                          width: barWidth(stats?.assetCounts?.test_kml ?? 0, stats?.totalDownloads ?? 0),
                         }}
                       />
                     </div>
@@ -844,7 +844,7 @@ export default function AdminClient() {
 
                 <div className="pt-2 border-t border-slate-800 flex flex-wrap gap-2.5">
                   <a
-                    href="/api/admin/downloads?format=csv"
+                    href="/api/admin/download-log?format=csv"
                     className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white transition-colors flex items-center gap-2"
                   >
                     <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" /> Export CSV

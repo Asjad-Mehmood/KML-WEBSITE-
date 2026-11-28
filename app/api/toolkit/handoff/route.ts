@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
+import { sessionForToken, tokenFromRequest } from "@/lib/auth/serverSession";
 import { HANDOFF_PAGES, createHandoff, takeHandoff } from "@/lib/toolkit/store";
 import { mayUseToolkit } from "@/lib/toolkit/access";
 import { IN_TOOLKIT_COOKIE } from "@/lib/toolkit/inToolkit";

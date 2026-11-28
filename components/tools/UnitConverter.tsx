@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { Card, Choice, CopyButton, Field } from "./ui";
 import { ShareButton, useShared } from "./share";
-import { convertUnit, parseNumber, type Unit } from "@/lib/toolMath";
+import { convertUnit, parseNumber, type Unit } from "@/lib/geo/toolMath";
 
 /** Type a value in one unit and see it in every other unit of the list. */
 export default function UnitConverter({ units, start, value: startValue }: { units: Unit[]; start: string; value: string }) {

@@ -6,12 +6,12 @@ import { ArrowRight, Compass, Download, FileSpreadsheet, FileText, FolderTree, I
 import RoadProDownload from "../RoadProDownload";
 import TraverseDownload from "../TraverseDownload";
 import FolderManagerDownload from "../FolderManagerDownload";
-import { ROADPRO_FILES, ROADPRO_RELEASE } from "@/lib/roadpro";
-import { TRAVERSE_FILES, TRAVERSE_VERSION } from "@/lib/traverse";
-import { PFM_VERSION } from "@/lib/folderManager";
-import { useTraverseRelease } from "@/lib/useTraverseRelease";
-import { roundedCount, type PublicStats } from "@/lib/publicCounts";
-import { SHOW_ANDROID } from "@/lib/site";
+import { ROADPRO_FILES, ROADPRO_RELEASE } from "@/lib/products/roadpro";
+import { TRAVERSE_FILES, TRAVERSE_VERSION } from "@/lib/products/traverse";
+import { PFM_VERSION } from "@/lib/products/folderManager";
+import { useTraverseRelease } from "@/lib/products/useTraverseRelease";
+import { roundedCount, type PublicStats } from "@/lib/content/publicCounts";
+import { SHOW_ANDROID } from "@/lib/content/site";
 
 const button =
   "w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-sm font-semibold cursor-pointer transition-colors";

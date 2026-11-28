@@ -14,8 +14,8 @@ import {
   AUTO_DRAFT_PAGE,
   AUTO_DRAFT_POINT_CODES,
   type AutoDraftCode,
-} from "@/lib/autoDraft";
-import { openGraphFor, companyTitle } from "@/lib/site";
+} from "@/lib/products/autoDraft";
+import { openGraphFor, companyTitle } from "@/lib/content/site";
 
 const TITLE = "Auto Drafting code guide: field codes for survey drawings";
 const DESCRIPTION =

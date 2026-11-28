@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { corsHeaders, trustedOrigin } from "@/lib/cors";
+import { corsHeaders, trustedOrigin } from "@/lib/http/cors";
 
 test("the site's own addresses may send cookies", () => {
   for (const o of [

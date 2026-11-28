@@ -1,6 +1,6 @@
 "use client";
 
-import { announceDownload } from "@/lib/downloadNotice";
+import { announceDownload } from "@/lib/products/downloadNotice";
 import { useEffect } from "react";
 
 // After signing in to download (/toolkit?download=start): the download starts by itself, once.

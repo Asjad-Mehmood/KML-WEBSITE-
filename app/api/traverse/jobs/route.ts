@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
-import { listOwn, listShared } from "@/lib/traverseJobs";
+import { sessionForToken, tokenFromRequest } from "@/lib/auth/serverSession";
+import { listOwn, listShared } from "@/lib/products/traverseJobs";
 
 // GET ?scope=own|shared: the Traverse & Level jobs this account keeps, or that others shared with it.
 export async function GET(req: NextRequest) {

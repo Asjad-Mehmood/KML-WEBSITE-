@@ -22,9 +22,9 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import WebAppLink from "./WebAppLink";
-import { PRODUCTS, badgeLabel, isNew } from "@/lib/products";
-import type { PublicStats } from "@/lib/publicCounts";
-import { SHOW_ANDROID } from "@/lib/site";
+import { PRODUCTS, badgeLabel, isNew } from "@/lib/products/products";
+import type { PublicStats } from "@/lib/content/publicCounts";
+import { SHOW_ANDROID } from "@/lib/content/site";
 
 interface HeroProps {
   versionTag: string;
@@ -37,7 +37,7 @@ interface HeroProps {
 // An Android phone gets the Android app as the main button (the Windows installer is no use there).
 // Read on the client only: the server renders the Windows button.
 const noSubscribe = () => () => {};
-// (only while the Android app is shown: lib/site.ts SHOW_ANDROID)
+// (only while the Android app is shown: lib/content/site.ts SHOW_ANDROID)
 const onAndroid = () => SHOW_ANDROID && /Android/i.test(navigator.userAgent);
 
 type Tab = {
@@ -63,7 +63,7 @@ const ROTATE_MS = 7000;
 
 // The home page hero, in the manner of a software maker's front page: one headline for the
 // whole toolkit, then a tab per program with its real screenshot in a window frame.
-// Excel to KML is the first tab and the main download; the rest come from lib/products.ts (inHero).
+// Excel to KML is the first tab and the main download; the rest come from lib/products/products.ts (inHero).
 export default function Hero({ versionTag, fileSizeText, onDownloadClick, stats }: HeroProps) {
   const android = useSyncExternalStore(noSubscribe, onAndroid, () => false);
   // only the number of countries (not the number of accounts), once there are a few

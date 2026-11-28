@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { authHost, onAuthHost } from "@/lib/authHost";
-import { dashboardHost, onDashboardHost } from "@/lib/dashboardHost";
-import { SITE_URL } from "@/lib/site";
+import { authHost, onAuthHost } from "@/lib/auth/authHost";
+import { dashboardHost, onDashboardHost } from "@/lib/auth/dashboardHost";
+import { SITE_URL } from "@/lib/content/site";
 
 // Signing out of every address of the site in this browser. With a sign-in address
 // (lib/authHost) and a dashboard address (lib/dashboardHost) each keeps a session of its own,

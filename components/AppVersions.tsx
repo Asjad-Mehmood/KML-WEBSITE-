@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { AlertCircle, CheckCircle2, HelpCircle, Monitor, Globe, Smartphone, Download, AppWindow } from "lucide-react";
-import type { ProgramVersions } from "@/lib/appUsage";
+import type { ProgramVersions } from "@/lib/products/appUsage";
 
 const DOWNLOAD_HREF: Record<string, string> = {
   "excel-to-kml": "/download",

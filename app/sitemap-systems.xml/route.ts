@@ -1,4 +1,4 @@
-import { systemEntries, urlsetResponse } from "@/lib/sitemaps";
+import { systemEntries, urlsetResponse } from "@/lib/content/sitemaps";
 
 export const dynamic = "force-static";
 

@@ -5,16 +5,16 @@ import { ArrowRight, CheckCircle2, Download, Lightbulb, MapPin } from "lucide-re
 import PageShell from "../../../components/PageShell";
 import GridConverter from "../../../components/GridConverter";
 import GridSearch from "../../../components/GridSearch";
-import { GRID_PAGES, gridBySlug } from "@/lib/gridPages";
-import { systemByCode } from "@/lib/epsgCatalog";
-import { gridSearchDescription, gridSearchTitle } from "@/lib/epsgPageText";
-import { areaBox, gridParameterRows, unitLabel } from "@/lib/gridParams";
-import { SITE_URL, jsonLd, openGraphFor } from "@/lib/site";
+import { GRID_PAGES, gridBySlug } from "@/lib/geo/gridPages";
+import { systemByCode } from "@/lib/geo/epsgCatalog";
+import { gridSearchDescription, gridSearchTitle } from "@/lib/geo/epsgPageText";
+import { areaBox, gridParameterRows, unitLabel } from "@/lib/geo/gridParams";
+import { SITE_URL, jsonLd, openGraphFor } from "@/lib/content/site";
 import WebAppLink from "@/components/WebAppLink";
 import GridCheckPoints from "@/components/GridCheckPoints";
 import GridPitfalls from "@/components/GridPitfalls";
 
-// Only the grids listed in lib/gridPages.ts exist; anything else is a 404
+// Only the grids listed in lib/geo/gridPages.ts exist; anything else is a 404
 export const dynamicParams = false;
 
 export function generateStaticParams() {
@@ -24,7 +24,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const g = gridBySlug((await params).slug);
   if (!g) return {};
-  // "converter", "Excel" and the brand when they fit (lib/epsgPageText.ts)
+  // "converter", "Excel" and the brand when they fit (lib/geo/epsgPageText.ts)
   const { title, share } = gridSearchTitle(g.name, `EPSG:${g.code}`);
   const description = gridSearchDescription(g.name, `EPSG:${g.code}`);
   const path = `/convert/${g.slug}`;

@@ -2,8 +2,8 @@
 
 import { useId, useState } from "react";
 import AuthShell, { buttonClass, inputClass } from "../../components/AuthShell";
-import { OCCUPATIONS, OCCUPATION_MAX } from "../../lib/occupations";
-import { usePublicSettings } from "../../lib/publicSettings";
+import { OCCUPATIONS, OCCUPATION_MAX } from "@/lib/account/occupations";
+import { usePublicSettings } from "@/lib/content/publicSettings";
 import ToolkitInvite from "../../components/ToolkitInvite";
 import { AuthCard, destination } from "../signin/SigninFlow";
 

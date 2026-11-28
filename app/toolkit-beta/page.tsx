@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
-import { sessionForToken } from "@/lib/serverSession";
+import { sessionForToken } from "@/lib/auth/serverSession";
 import { isTester } from "@/lib/toolkit/store";
 import { toolkitIsPublic } from "@/lib/toolkit/access";
 import { toolkitDownloads } from "@/lib/toolkit/downloads";

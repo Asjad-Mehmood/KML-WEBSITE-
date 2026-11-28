@@ -32,14 +32,14 @@ import {
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import { useAuth } from "../../context/AuthContext";
-import { GITHUB_REPO_URL, LATEST_VERSION } from "@/lib/site";
+import { GITHUB_REPO_URL, LATEST_VERSION } from "@/lib/content/site";
 import FileViewer, { type ViewerFile } from "@/components/FileViewer";
-import { actionLabel } from "@/lib/activityKinds";
+import { actionLabel } from "@/lib/admin/activityKinds";
 import TraverseJobsPanel from "@/components/dashboard/TraverseJobsPanel";
-import type { TraverseJobCard } from "@/lib/traverseJobs";
+import type { TraverseJobCard } from "@/lib/products/traverseJobs";
 import AppVersions from "@/components/AppVersions";
 import ConfirmEmailBanner from "@/components/ConfirmEmailBanner";
-import type { ProgramVersions } from "@/lib/appUsage";
+import type { ProgramVersions } from "@/lib/products/appUsage";
 import ProgramsHub from "@/components/dashboard/ProgramsHub";
 import PlanCard from "@/components/dashboard/PlanCard";
 import InviteCard from "@/components/dashboard/InviteCard";

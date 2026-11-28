@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from "react";
 import { X, ArrowRight, Lightbulb, CheckCircle2 } from "lucide-react";
-import { FEATURE_DETAILS } from "@/lib/featureDetails";
+import { FEATURE_DETAILS } from "@/lib/content/featureDetails";
 import WebAppLink from "./WebAppLink";
 
 export interface DialogTheme {

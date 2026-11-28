@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { adminVisitor, toolkitIsPublic } from "@/lib/toolkit/access";
 import { frontPageData } from "@/lib/toolkit/frontPage";
-import { openGraphFor } from "@/lib/site";
+import { openGraphFor } from "@/lib/content/site";
 import ToolkitHome from "@/components/toolkit/home/ToolkitHome";
 import ToolkitStructuredData from "@/components/toolkit/home/ToolkitStructuredData";
 import { TOOLKIT_DESCRIPTION, TOOLKIT_TITLE } from "@/lib/toolkit/homeFaq";
 import { homeNews, homeReviews } from "@/lib/toolkit/homeNews";
-import { getExtraSettings } from "@/lib/siteSettings";
+import { getExtraSettings } from "@/lib/content/siteSettings";
 
 // Survey Toolkit: its public page. While the Toolkit is closed to the public (Admin → Settings →
 // Survey Toolkit) only admins see it, as a preview; everyone else gets "not found".

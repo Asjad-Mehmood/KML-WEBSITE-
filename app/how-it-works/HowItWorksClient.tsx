@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Workflow from "../../components/Workflow";
 import Showcase from "../../components/Showcase";
-import { LATEST_VERSION } from "@/lib/site";
+import { LATEST_VERSION } from "@/lib/content/site";
 
 /** The three steps and the live demo, as on the home page. */
 export default function HowItWorksClient() {

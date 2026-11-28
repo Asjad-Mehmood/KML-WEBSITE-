@@ -4,7 +4,7 @@
 // Calculator, RoadPro, Project Folder Manager, Survey Toolkit): for the chosen period against the
 // period before it, its downloads, the people using it, what they did and what went wrong, the
 // devices and versions it runs on (and on Toolkit PCs), what people keep from it, and its releases
-// (app/api/admin/app-overview, lib/appOverview.ts). An app adds its own part with `children`.
+// (app/api/admin/app-overview, lib/products/appOverview.ts). An app adds its own part with `children`.
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   Activity,

@@ -1,4 +1,4 @@
-import { excelTitle, openGraphFor } from "@/lib/site";
+import { excelTitle, openGraphFor } from "@/lib/content/site";
 import type { Metadata } from "next";
 import { BreadcrumbStructuredData, FaqStructuredData } from "../../components/StructuredData";
 

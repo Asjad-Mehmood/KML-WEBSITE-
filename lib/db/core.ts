@@ -2,8 +2,8 @@
 // the helpers the repositories in lib/db/ use. Callers import { db } from "@/lib/db".
 import crypto from "crypto";
 import { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
-import { ADMIN_EMAIL } from "@/lib/adminRole";
+import { prisma } from "@/lib/db/prisma";
+import { ADMIN_EMAIL } from "@/lib/auth/adminRole";
 
 /* ==========================================================================
    TYPE INTERFACES  (kept identical so callers don't break)
@@ -89,7 +89,7 @@ export interface UserActivityRecord {
   timestamp: string;
 }
 
-import type { AppSettings } from "@/lib/adminTypes";
+import type { AppSettings } from "@/lib/admin/adminTypes";
 export type { AppSettings };
 
 /** Where a kept file came from: the Excel to KML Windows app, its web app, or Traverse & Level */

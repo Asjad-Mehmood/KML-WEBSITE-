@@ -3,15 +3,15 @@
 //   The Windows programs (Excel to KML, Traverse & Level, Slope Calculator and, from version 7,
 //   Project Folder Manager): their latest.json (the same file their own update check reads) and
 //   their latest GitHub release.
-//   RoadPro: the version in lib/roadpro.ts and the zip on this website, downloaded once by the
+//   RoadPro: the version in lib/products/roadpro.ts and the zip on this website, downloaded once by the
 //   server and hashed.
 // A tool whose source can't be read, or whose SHA-256 sources disagree, gets no download and
 // a problem instead, so the Toolkit never installs anything it can't check.
 import crypto from "crypto";
 import { unstable_cache } from "next/cache";
-import { SITE_URL } from "@/lib/site";
+import { SITE_URL } from "@/lib/content/site";
 import { TOOLKIT_TOOLS, type InstallerTool, type ToolkitTool, type ZipTool } from "@/lib/toolkit/tools";
-import { notesPathOf } from "@/lib/releaseNotes";
+import { notesPathOf } from "@/lib/products/releaseNotes";
 
 export const TOOLKIT_FEED_SCHEMA = 1;
 

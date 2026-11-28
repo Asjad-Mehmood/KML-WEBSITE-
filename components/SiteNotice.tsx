@@ -3,7 +3,7 @@
 import { useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import { Megaphone, Wrench, X } from "lucide-react";
-import { usePublicSettings } from "@/lib/publicSettings";
+import { usePublicSettings } from "@/lib/content/publicSettings";
 
 const KEY = "site-notice-dismissed";
 const listeners = new Set<() => void>();

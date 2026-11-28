@@ -1,5 +1,5 @@
 // The site's totals (part of db, lib/db/index.ts)
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import type { DownloadRecord } from "./core";
 
 export const statsRepo = {

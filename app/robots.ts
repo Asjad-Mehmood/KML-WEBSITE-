@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { SITE_URL } from "@/lib/site";
+import { SITE_URL } from "@/lib/content/site";
 
 // Sign-in and register stay crawlable so search engines can read their noindex tag. Blocked:
 // API routes; addresses that only redirect (grid search, account pages that send signed-out

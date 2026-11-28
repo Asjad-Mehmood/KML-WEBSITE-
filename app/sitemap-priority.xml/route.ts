@@ -1,4 +1,4 @@
-import { priorityEntries, urlsetResponse } from "@/lib/sitemaps";
+import { priorityEntries, urlsetResponse } from "@/lib/content/sitemaps";
 
 export const dynamic = "force-static";
 

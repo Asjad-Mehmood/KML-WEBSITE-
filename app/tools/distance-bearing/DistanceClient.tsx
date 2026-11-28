@@ -5,7 +5,7 @@ import { Card, Field, ResultRow, Tabs } from "@/components/tools/ui";
 import { ShareButton, useShared } from "@/components/tools/share";
 import {
   compassPoint, direct, fmt, formatBearing, formatDms, gridInverse, inverse, parseDms, parseNumber, validLat, validLon,
-} from "@/lib/toolMath";
+} from "@/lib/geo/toolMath";
 
 type Mode = "geo" | "grid" | "direct";
 

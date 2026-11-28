@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Search, Star } from "lucide-react";
-import type { GridHit } from "@/lib/gridSearch";
+import type { GridHit } from "@/lib/geo/gridSearch";
 
 interface Props {
   id: string;

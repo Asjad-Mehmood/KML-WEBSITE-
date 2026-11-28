@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import "leaflet/dist/leaflet.css";
 import { Layers, MapPin, CheckCircle2, Globe } from "lucide-react";
 import MapSearchBar, { type MapTarget } from "./MapSearchBar";
-import { formatLatLng, toQng } from "@/lib/mapSearch";
+import { formatLatLng, toQng } from "@/lib/geo/mapSearch";
 
 // Credit lines the tile providers require on the map
 const SATELLITE_URL = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";

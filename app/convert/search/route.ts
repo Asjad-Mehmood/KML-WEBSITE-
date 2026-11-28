@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { searchGrids } from "@/lib/gridSearch";
+import { searchGrids } from "@/lib/geo/gridSearch";
 
 // Search box on the /convert pages: top matching grids for ?q=
 export function GET(req: NextRequest) {

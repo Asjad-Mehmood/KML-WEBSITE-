@@ -39,8 +39,8 @@ import {
   TRAVERSE_SCREENS,
   TRAVERSE_STEPS,
   TRAVERSE_VERSION,
-} from "@/lib/traverse";
-import { SITE_URL, jsonLd, openGraphFor, companyTitle } from "@/lib/site";
+} from "@/lib/products/traverse";
+import { SITE_URL, jsonLd, openGraphFor, companyTitle } from "@/lib/content/site";
 
 const TITLE = "Traverse & Level Adjustment Software for Surveyors";
 const DESCRIPTION =

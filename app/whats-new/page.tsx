@@ -6,12 +6,12 @@ import { BreadcrumbStructuredData } from "../../components/StructuredData";
 import ReleaseList from "./ReleaseList";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { openGraphFor, companyTitle } from "@/lib/site";
-import { ROADPRO_RELEASE, ROADPRO_RELEASE_DATE } from "@/lib/roadpro";
-import { TRAVERSE_RELEASED, TRAVERSE_VERSION } from "@/lib/traverse";
-import { SLOPE_RELEASED, SLOPE_VERSION } from "@/lib/slope";
-import { PFM_RELEASED, PFM_VERSION } from "@/lib/folderManager";
-import { PRODUCTS } from "@/lib/products";
+import { openGraphFor, companyTitle } from "@/lib/content/site";
+import { ROADPRO_RELEASE, ROADPRO_RELEASE_DATE } from "@/lib/products/roadpro";
+import { TRAVERSE_RELEASED, TRAVERSE_VERSION } from "@/lib/products/traverse";
+import { SLOPE_RELEASED, SLOPE_VERSION } from "@/lib/products/slope";
+import { PFM_RELEASED, PFM_VERSION } from "@/lib/products/folderManager";
+import { PRODUCTS } from "@/lib/products/products";
 
 const TITLE = "What's New";
 const DESCRIPTION = "What changed in each version of Excel to KML, and the release notes of RoadPro, Traverse & Level, Slope Calculator, Project Folder Manager and Survey Toolkit.";

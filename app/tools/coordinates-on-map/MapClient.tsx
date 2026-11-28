@@ -5,8 +5,8 @@ import dynamic from "next/dynamic";
 import { Crosshair, Layers, Search } from "lucide-react";
 import { Card, ResultRow } from "@/components/tools/ui";
 import { ShareButton, useShared } from "@/components/tools/share";
-import { formatDdm, formatDms, parseDms, parsePair, toUtm, validLat, validLon } from "@/lib/toolMath";
-import { placeSearchAllowed, searchPlaces, type PlaceHit } from "@/lib/mapSearch";
+import { formatDdm, formatDms, parseDms, parsePair, toUtm, validLat, validLon } from "@/lib/geo/toolMath";
+import { placeSearchAllowed, searchPlaces, type PlaceHit } from "@/lib/geo/mapSearch";
 
 const PickMap = dynamic(() => import("@/components/tools/PickMap"), {
   ssr: false,

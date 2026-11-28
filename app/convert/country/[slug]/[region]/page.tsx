@@ -4,9 +4,9 @@ import { notFound } from "next/navigation";
 import PageShell from "../../../../../components/PageShell";
 import SystemList from "../../../../../components/SystemList";
 import GridSearch from "../../../../../components/GridSearch";
-import { BIG_COUNTRY, countries, countryBySlug, countryRegions } from "@/lib/epsgCatalog";
-import { SITE_URL, jsonLd, openGraphFor } from "@/lib/site";
-import { factsOf, factsSummary } from "@/lib/countryFacts";
+import { BIG_COUNTRY, countries, countryBySlug, countryRegions } from "@/lib/geo/epsgCatalog";
+import { SITE_URL, jsonLd, openGraphFor } from "@/lib/content/site";
+import { factsOf, factsSummary } from "@/lib/geo/countryFacts";
 
 // Region pages exist only for big countries (their country page lists regions instead of systems)
 export const dynamicParams = false;

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, PlayCircle } from "lucide-react";
-import { MAIN_STEPS } from "@/lib/tutorial";
+import { MAIN_STEPS } from "@/lib/content/tutorial";
 
 // Home page: the four steps of the app, each with a screenshot, leading to
 // the full tutorial

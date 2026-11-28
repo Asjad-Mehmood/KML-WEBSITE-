@@ -1,6 +1,6 @@
 "use client";
 
-// Admin → Usage (lib/usageStats.ts): how many people use the programs each month against the goal
+// Admin → Usage (lib/admin/usageStats.ts): how many people use the programs each month against the goal
 // before a paid plan, who uses them most, and how many would pass example free limits.
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Gauge, Loader2, RefreshCw, Target, TrendingUp, Users } from "lucide-react";

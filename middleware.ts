@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { adminHost, onAdminHost } from "@/lib/adminHost";
-import { AUTH_PAGE, authHost, onAuthHost } from "@/lib/authHost";
-import { DASHBOARD_PAGE, dashboardHost, isDashboardPath, onDashboardHost } from "@/lib/dashboardHost";
-import { safeNextPath } from "@/lib/authRedirect";
-import { SITE_URL } from "@/lib/site";
-import { corsHeaders } from "@/lib/cors";
+import { adminHost, onAdminHost } from "@/lib/auth/adminHost";
+import { AUTH_PAGE, authHost, onAuthHost } from "@/lib/auth/authHost";
+import { DASHBOARD_PAGE, dashboardHost, isDashboardPath, onDashboardHost } from "@/lib/auth/dashboardHost";
+import { safeNextPath } from "@/lib/auth/authRedirect";
+import { SITE_URL } from "@/lib/content/site";
+import { corsHeaders } from "@/lib/http/cors";
 
 // Admin's pages and APIs (lib/adminHost: they live on ADMIN_HOST once it is set)
 const ADMIN_PAGE = /^\/(admin|toolkit-beta\/admin)(\/|$)/;
@@ -14,7 +14,7 @@ const ADMIN_SIDE_ALSO = /^\/login\/?$|^\/api\/(auth\/(login|verify-otp|resend-ot
 // Next's own files, and files from public/ (images, fonts, scripts)
 const FILE = /^\/_next\/|^\/[^?]*\.[a-z0-9]{2,8}$/i;
 
-// clean address → the endpoint behind it (the reverse of lib/letterEmail.ts PRETTY_LINKS)
+// clean address → the endpoint behind it (the reverse of lib/mail/letterEmail.ts PRETTY_LINKS)
 const PRETTY: Record<string, string> = {
   "/confirm-email": "/api/auth/verify-email",
   "/get/toolkit": "/api/toolkit/download",
@@ -25,7 +25,7 @@ const notFound = () => NextResponse.json({ error: "Not found" }, { status: 404 }
 export function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
 
-  // the clean addresses emails link to (lib/letterEmail.ts prettyLink): the endpoint answers,
+  // the clean addresses emails link to (lib/mail/letterEmail.ts prettyLink): the endpoint answers,
   // the address stays as it is
   const behind = PRETTY[path];
   if (behind && !onAdminHost(req.headers)) {
@@ -146,7 +146,7 @@ function toTwoStep(req: NextRequest, to: string) {
 }
 
 function withCors(req: NextRequest) {
-  // lib/cors.ts: the site's own addresses may send the visitor's cookies; any other origin gets
+  // lib/http/cors.ts: the site's own addresses may send the visitor's cookies; any other origin gets
   // an answer without credentials
   const headers = corsHeaders(req.headers.get("origin"));
   const res = req.method === "OPTIONS" ? new NextResponse(null, { status: 204 }) : NextResponse.next();

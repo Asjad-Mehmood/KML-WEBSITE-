@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { recentFromSender, saveMessage, TOPICS, type Topic } from "@/lib/contactMessages";
-import { isMailConfigured, sendMail } from "@/lib/mailer";
-import { supportAlert } from "@/lib/contactEmail";
-import { clientIp } from "@/lib/loginThrottle";
-import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
-import { SUPPORT_EMAIL } from "@/lib/site";
+import { recentFromSender, saveMessage, TOPICS, type Topic } from "@/lib/content/contactMessages";
+import { isMailConfigured, sendMail } from "@/lib/mail/mailer";
+import { supportAlert } from "@/lib/mail/contactEmail";
+import { clientIp } from "@/lib/auth/loginThrottle";
+import { sessionForToken, tokenFromRequest } from "@/lib/auth/serverSession";
+import { SUPPORT_EMAIL } from "@/lib/content/site";
 
 const EMAIL_RE = /^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,}$/;
 const DETAIL_KEYS = ["Program", "Version", "Platform", "Grid"] as const;

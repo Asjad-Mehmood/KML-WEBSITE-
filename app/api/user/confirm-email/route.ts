@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { sessionForToken } from "@/lib/serverSession";
-import { TooManyVerifyCodes, emailStatus, sendVerification } from "@/lib/emailVerify";
+import { sessionForToken } from "@/lib/auth/serverSession";
+import { TooManyVerifyCodes, emailStatus, sendVerification } from "@/lib/auth/emailVerify";
 
 // "Confirm your email" on the dashboard, for accounts made before confirmation started:
 // emails the signed-in person a code (typed on the dashboard) and a link

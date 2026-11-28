@@ -8,7 +8,7 @@
 import { useState, type ReactNode } from "react";
 import { AlertTriangle, CheckCircle2, Download, ExternalLink, Info, Loader2, Monitor, RefreshCw, UploadCloud, Wrench } from "lucide-react";
 import AppTab, { BarRow, Delta, Empty, Panel, Stat, ago, type AppOverviewData } from "@/components/admin/AppTab";
-import { ROADPRO_FILES, ROADPRO_RELEASE } from "@/lib/roadpro";
+import { ROADPRO_FILES, ROADPRO_RELEASE } from "@/lib/products/roadpro";
 
 type Fetcher = (url: string, options?: RequestInit) => Promise<Response>;
 type Status = "current" | "behind" | "unknown";

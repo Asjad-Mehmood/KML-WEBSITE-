@@ -5,7 +5,7 @@ import ContactForm from "../../components/ContactForm";
 import PageShell from "../../components/PageShell";
 import PageIntro from "../../components/PageIntro";
 import { BreadcrumbStructuredData } from "../../components/StructuredData";
-import { SUPPORT_EMAIL, openGraphFor, companyTitle } from "@/lib/site";
+import { SUPPORT_EMAIL, openGraphFor, companyTitle } from "@/lib/content/site";
 
 const TITLE = "Contact & Support";
 const DESCRIPTION = "Send us a message about Excel to KML, RoadPro, Traverse & Level or Project Folder Manager: questions, problems, requests or ideas. We reply by email, usually within one to two working days.";

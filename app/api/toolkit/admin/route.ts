@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { logAdmin } from "@/lib/adminLog";
-import { getAdminSession } from "@/lib/adminAuth";
+import { logAdmin } from "@/lib/admin/adminLog";
+import { getAdminSession } from "@/lib/auth/adminAuth";
 import { toolkitDownloads } from "@/lib/toolkit/downloads";
 import { toolkitFeed } from "@/lib/toolkit/feed";
 import {
@@ -15,7 +15,7 @@ import {
   toolActionCounts,
 } from "@/lib/toolkit/store";
 import { toolkitIsPublic } from "@/lib/toolkit/access";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import { TOOLKIT_TOOLS } from "@/lib/toolkit/tools";
 
 // Survey Toolkit: everything /toolkit-beta/admin and Admin → Survey Toolkit show, admins only.

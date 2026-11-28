@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { logAdmin } from "@/lib/adminLog";
-import { getAdminSession } from "@/lib/adminAuth";
+import { logAdmin } from "@/lib/admin/adminLog";
+import { getAdminSession } from "@/lib/auth/adminAuth";
 import { addTester, isEmail, listTesters, removeTester } from "@/lib/toolkit/store";
 
 // Survey Toolkit (beta test): the beta's testers, admins only. Admin → Toolkit (beta) uses it.

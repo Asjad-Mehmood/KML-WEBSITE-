@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse, after } from "next/server";
-import { logAdmin } from "@/lib/adminLog";
-import { getAdminSession } from "@/lib/adminAuth";
-import { kickBroadcast, kickStalled } from "@/lib/broadcastRunner";
-import { broadcastStatus, cancelBroadcast, failedRecipients, pauseBroadcast, resumeBroadcast, sendNextBatch } from "@/lib/releases";
+import { logAdmin } from "@/lib/admin/adminLog";
+import { getAdminSession } from "@/lib/auth/adminAuth";
+import { kickBroadcast, kickStalled } from "@/lib/mail/broadcastRunner";
+import { broadcastStatus, cancelBroadcast, failedRecipients, pauseBroadcast, resumeBroadcast, sendNextBatch } from "@/lib/products/releases";
 
 type Ctx = { params: Promise<{ id: string }> };
 
-// The server sends broadcasts in steps (lib/broadcastRunner.ts); the page watches with "watch",
+// The server sends broadcasts in steps (lib/mail/broadcastRunner.ts); the page watches with "watch",
 // which also restarts a run that stopped. "send" (one batch from here) is kept for older pages.
 export const maxDuration = 60;
 

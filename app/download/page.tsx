@@ -3,7 +3,7 @@ import PageShell from "../../components/PageShell";
 import { BreadcrumbStructuredData } from "../../components/StructuredData";
 import DownloadClient from "./DownloadClient";
 import ProductReviews from "../../components/ProductReviews";
-import { SHOW_ANDROID, openGraphFor, excelTitle } from "@/lib/site";
+import { SHOW_ANDROID, openGraphFor, excelTitle } from "@/lib/content/site";
 
 const TITLE = "Download";
 const DESCRIPTION =

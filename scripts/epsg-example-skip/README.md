@@ -1,6 +1,6 @@
 # Check points on /convert/epsg/<code>
 
-`lib/epsgExample.ts` shows five check points per grid, worked out with proj4 (the converter's
+`lib/geo/epsgExample.ts` shows five check points per grid, worked out with proj4 (the converter's
 engine). They are shown only where PROJ, the reference implementation, gives the same easting
 and northing within 25 units. To rebuild `lib/data/epsg-example-skip.json` after
 `public/data/epsg-projected.json` changes:

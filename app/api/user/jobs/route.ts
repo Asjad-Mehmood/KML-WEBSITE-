@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
-import { listJobs, jobBytes } from "@/lib/userJobs";
-import { MAX_JOB_BYTES, MAX_USER_JOBS } from "@/lib/uploadLimits";
+import { sessionForToken, tokenFromRequest } from "@/lib/auth/serverSession";
+import { listJobs, jobBytes } from "@/lib/account/userJobs";
+import { MAX_JOB_BYTES, MAX_USER_JOBS } from "@/lib/account/uploadLimits";
 
 export async function OPTIONS() {
   return new NextResponse(null, { status: 204 });

@@ -3,8 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { BookOpen, Download, FileSpreadsheet, FileText } from "lucide-react";
 import PageShell from "../../../components/PageShell";
-import { SLOPE_APP, SLOPE_FILES, SLOPE_PAGE, SLOPE_VERSION } from "@/lib/slope";
-import { openGraphFor, companyTitle } from "@/lib/site";
+import { SLOPE_APP, SLOPE_FILES, SLOPE_PAGE, SLOPE_VERSION } from "@/lib/products/slope";
+import { openGraphFor, companyTitle } from "@/lib/content/site";
 
 // The Slope Calculator user manual. scripts/slope-manual-pdf.mjs prints this page to
 // public/slope-calculation/Slope-Calculator-User-Manual.pdf; the screenshots come from the app's

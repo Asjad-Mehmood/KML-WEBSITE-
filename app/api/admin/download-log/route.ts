@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminSession } from "@/lib/adminAuth";
-import { logAdmin } from "@/lib/adminLog";
-import { DOWNLOAD_APPS, csvCell, deleteDownloads, downloadSummary, listDownloads, type DownloadFilter } from "@/lib/adminPeople";
+import { getAdminSession } from "@/lib/auth/adminAuth";
+import { logAdmin } from "@/lib/admin/adminLog";
+import { DOWNLOAD_APPS, csvCell, deleteDownloads, downloadSummary, listDownloads, type DownloadFilter } from "@/lib/admin/adminPeople";
 
-// Admin → Downloads (lib/adminPeople.ts)
+// Admin → Downloads (lib/admin/adminPeople.ts)
 // GET ?app= &q= &who=in|out &version= &country= &from= &to= &user= &sort=newest|oldest &offset= &limit= (≤ 200)
 //     &view=summary   per program, the last 30 days, versions, countries, people
 //     &format=csv     the list as a spreadsheet

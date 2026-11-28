@@ -5,12 +5,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
-import { safeNextPath } from "../../lib/authRedirect";
-import { continuePath, inAuthHost } from "../../lib/authHost";
+import { safeNextPath } from "@/lib/auth/authRedirect";
+import { continuePath, inAuthHost } from "@/lib/auth/authHost";
 import GoogleSignIn, { GOOGLE_ERRORS } from "../../components/GoogleSignIn";
 import OtpForm from "../../components/OtpForm";
-import { OCCUPATIONS, OCCUPATION_MAX } from "../../lib/occupations";
-import { usePublicSettings } from "../../lib/publicSettings";
+import { OCCUPATIONS, OCCUPATION_MAX } from "@/lib/account/occupations";
+import { usePublicSettings } from "@/lib/content/publicSettings";
 
 export default function RegisterPage() {
   const router = useRouter();

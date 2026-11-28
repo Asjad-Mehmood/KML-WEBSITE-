@@ -3,8 +3,8 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { PackageOpen } from "lucide-react";
-import type { DownloadProgram } from "@/lib/directDownloads";
-import { useDirectDownload } from "@/lib/publicSettings";
+import type { DownloadProgram } from "@/lib/products/directDownloads";
+import { useDirectDownload } from "@/lib/content/publicSettings";
 
 /**
  * In place of a program's download button while its download is switched off (Admin → Settings →

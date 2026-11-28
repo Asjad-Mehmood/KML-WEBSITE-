@@ -1410,7 +1410,7 @@ interface VersionsData {
 const SOURCE: Record<string, string> = { app: "the program", toolkit: "Survey Toolkit", download: "downloaded" };
 
 /**
- * Who has the newest version of the app and who doesn't (lib/versionsInUse.ts), and emailing the
+ * Who has the newest version of the app and who doesn't (lib/products/versionsInUse.ts), and emailing the
  * ones behind about the newest release
  */
 function WhoUpdated({

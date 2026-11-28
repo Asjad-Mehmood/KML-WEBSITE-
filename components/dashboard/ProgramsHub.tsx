@@ -6,7 +6,7 @@ import type { ComponentType, ReactNode } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { AlertCircle, ArrowRight, CheckCircle2, Compass, DraftingCompass, FolderTree, Globe, Route, TrendingUp, type LucideIcon } from "lucide-react";
-import type { ProgramVersions } from "@/lib/appUsage";
+import type { ProgramVersions } from "@/lib/products/appUsage";
 import toolkitIcon from "@/assets/toolkit/toolkit-icon.png";
 
 const INFO: Record<string, { Icon: LucideIcon; page: string; webApp?: string; where: string }> = {

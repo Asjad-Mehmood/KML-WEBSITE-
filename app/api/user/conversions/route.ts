@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { prisma } from "@/lib/prisma";
-import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
-import { MAX_POINTS_PER_SAVE, MAX_USER_POINTS } from "@/lib/uploadLimits";
+import { prisma } from "@/lib/db/prisma";
+import { sessionForToken, tokenFromRequest } from "@/lib/auth/serverSession";
+import { MAX_POINTS_PER_SAVE, MAX_USER_POINTS } from "@/lib/account/uploadLimits";
 
 export async function OPTIONS() {
   return new NextResponse(null, { status: 204 });

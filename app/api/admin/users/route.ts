@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminSession } from "@/lib/adminAuth";
+import { getAdminSession } from "@/lib/auth/adminAuth";
 import { db } from "@/lib/db";
-import { getClientIp, getIpGeoLocation } from "@/lib/geo";
-import { emailStatuses, markVerified, type EmailStatus } from "@/lib/emailVerify";
-import { blockedIds } from "@/lib/accountControls";
-import { logAdmin } from "@/lib/adminLog";
+import { getClientIp, getIpGeoLocation } from "@/lib/geo/geo";
+import { emailStatuses, markVerified, type EmailStatus } from "@/lib/auth/emailVerify";
+import { blockedIds } from "@/lib/auth/accountControls";
+import { logAdmin } from "@/lib/admin/adminLog";
 
 export async function GET(req: NextRequest) {
   const admin = await getAdminSession(req);

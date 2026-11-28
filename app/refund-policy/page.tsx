@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import LegalShell from "../../components/LegalShell";
-import { LEGAL_UPDATED, SUPPORT_EMAIL, openGraphFor, companyTitle } from "@/lib/site";
+import { LEGAL_UPDATED, SUPPORT_EMAIL, openGraphFor, companyTitle } from "@/lib/content/site";
 
 const TITLE = "Refund Policy";
 const DESCRIPTION = "Refunds for SurveyX Digital Pro: a full refund within 14 days of paying, cancel any time, and how to ask.";

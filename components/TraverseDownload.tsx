@@ -1,13 +1,13 @@
 "use client";
 
-import { announceDownload } from "@/lib/downloadNotice";
+import { announceDownload } from "@/lib/products/downloadNotice";
 import { useRouter } from "next/navigation";
 import ToolkitOnly from "@/components/ToolkitOnly";
-import { directDownloadAllowed, useDirectDownload } from "@/lib/publicSettings";
+import { directDownloadAllowed, useDirectDownload } from "@/lib/content/publicSettings";
 import { Clock, Download } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import { TRAVERSE_FILES, TRAVERSE_VERSION } from "@/lib/traverse";
-import { useTraverseRelease } from "@/lib/useTraverseRelease";
+import { TRAVERSE_FILES, TRAVERSE_VERSION } from "@/lib/products/traverse";
+import { useTraverseRelease } from "@/lib/products/useTraverseRelease";
 
 // "Download for Windows": the same sign-in gate as our other downloads, then the download is
 // recorded and the installer from the latest GitHub release starts. While

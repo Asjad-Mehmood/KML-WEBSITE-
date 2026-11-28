@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
+import { sessionForToken, tokenFromRequest } from "@/lib/auth/serverSession";
 
 // DELETE: the signed-in user closes their own account. Needs their password,
 // so a borrowed or stolen session alone can't wipe an account.

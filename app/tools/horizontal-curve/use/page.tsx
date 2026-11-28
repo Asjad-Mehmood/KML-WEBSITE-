@@ -1,5 +1,5 @@
 import ToolWorkspace from "../../../../components/tools/ToolWorkspace";
-import { toolUseMetadata } from "@/lib/toolMeta";
+import { toolUseMetadata } from "@/lib/geo/toolMeta";
 import CurveClient from "../CurveClient";
 
 const SLUG = "horizontal-curve";

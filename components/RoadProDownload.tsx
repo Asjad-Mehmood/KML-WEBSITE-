@@ -1,12 +1,12 @@
 "use client";
 
-import { announceDownload } from "@/lib/downloadNotice";
+import { announceDownload } from "@/lib/products/downloadNotice";
 import { useRouter } from "next/navigation";
 import ToolkitOnly from "@/components/ToolkitOnly";
-import { directDownloadAllowed, useDirectDownload } from "@/lib/publicSettings";
+import { directDownloadAllowed, useDirectDownload } from "@/lib/content/publicSettings";
 import { Download } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import { ROADPRO_FILES, ROADPRO_RELEASE, ROADPRO_VERSION } from "@/lib/roadpro";
+import { ROADPRO_FILES, ROADPRO_RELEASE, ROADPRO_VERSION } from "@/lib/products/roadpro";
 
 // "Download RoadPro": the same sign-in gate as the Windows app (Admin →
 // Settings → Sign-in to download), then the download is recorded and starts.

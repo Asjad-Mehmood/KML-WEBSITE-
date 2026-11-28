@@ -4,7 +4,7 @@ import React, { useMemo, useState } from "react";
 import { AlertTriangle } from "lucide-react";
 import { Card, Choice, ResultRow, Tabs, inputCls } from "@/components/tools/ui";
 import { ShareButton, useShared } from "@/components/tools/share";
-import { AREA_UNITS, convertUnit, fmt, geoArea, parseCorner, parsePair, planarArea, selfIntersects, toUtm } from "@/lib/toolMath";
+import { AREA_UNITS, convertUnit, fmt, geoArea, parseCorner, parsePair, planarArea, selfIntersects, toUtm } from "@/lib/geo/toolMath";
 
 type Kind = "grid" | "geo";
 

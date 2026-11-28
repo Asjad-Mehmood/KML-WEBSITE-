@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminSession } from "@/lib/adminAuth";
-import { APP_REPO, appSourceToken, fetchAppSource } from "@/lib/appSource";
+import { getAdminSession } from "@/lib/auth/adminAuth";
+import { APP_REPO, appSourceToken, fetchAppSource } from "@/lib/products/appSource";
 
 // Admin → Settings: is the web app served live from the app repository, or
 // from the old copy saved in the website (public/app.html)?

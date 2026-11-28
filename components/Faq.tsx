@@ -14,7 +14,7 @@ import {
   Lightbulb,
 } from "lucide-react";
 import Link from "next/link";
-import { FAQS, faqHighlights } from "@/lib/faqs";
+import { FAQS, faqHighlights } from "@/lib/content/faqs";
 
 type FaqCategory = "all" | "grids" | "import" | "earth" | "security";
 

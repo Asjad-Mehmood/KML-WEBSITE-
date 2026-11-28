@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Star } from "lucide-react";
-import type { PublicReview, ReviewProduct } from "@/lib/reviews";
+import type { PublicReview, ReviewProduct } from "@/lib/content/reviews";
 
 type Data = {
   count: number;

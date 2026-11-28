@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
-import { listOwn } from "@/lib/slopeJobs";
+import { sessionForToken, tokenFromRequest } from "@/lib/auth/serverSession";
+import { listOwn } from "@/lib/products/slopeJobs";
 
 // GET: the calculations this account keeps from the Slope Calculator, newest first.
 // Signed in by the website's cookie (web app) or "Authorization: Bearer <token>" (Windows program).

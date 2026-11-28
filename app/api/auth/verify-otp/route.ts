@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { checkAdminCode } from "@/lib/adminCodeStep";
+import { checkAdminCode } from "@/lib/auth/adminCodeStep";
 
 // Second step of an admin sign-in from a browser we don't know: the code from the email
 export async function POST(req: NextRequest) {

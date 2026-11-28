@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminSession } from "@/lib/adminAuth";
+import { getAdminSession } from "@/lib/auth/adminAuth";
 import { db } from "@/lib/db";
 
 export async function GET(req: NextRequest) {

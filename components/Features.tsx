@@ -10,7 +10,7 @@ import {
   Info,
 } from "lucide-react";
 
-import { FEATURES, type FeatureCard } from "@/lib/featureGroups";
+import { FEATURES, type FeatureCard } from "@/lib/content/featureGroups";
 
 const GRID_PREVIEW = [
   { name: "Qatar National Grid", epsg: "EPSG:2932" },

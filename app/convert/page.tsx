@@ -3,9 +3,9 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import PageShell from "../../components/PageShell";
 import GridSearch from "../../components/GridSearch";
-import { GRID_PAGES, GRID_REGIONS } from "@/lib/gridPages";
-import { countries } from "@/lib/epsgCatalog";
-import { openGraphFor, excelTitle } from "@/lib/site";
+import { GRID_PAGES, GRID_REGIONS } from "@/lib/geo/gridPages";
+import { countries } from "@/lib/geo/epsgCatalog";
+import { openGraphFor, excelTitle } from "@/lib/content/site";
 import WebAppLink from "@/components/WebAppLink";
 
 const TITLE = "Survey Grid to KML Converters";

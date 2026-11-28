@@ -4,8 +4,8 @@ import Link from "next/link";
 import { ArrowRight, CheckCircle2, Lightbulb } from "lucide-react";
 import PageShell from "../../components/PageShell";
 import WebAppLink from "@/components/WebAppLink";
-import { MAIN_STEPS, MORE_FEATURES } from "@/lib/tutorial";
-import { SITE_URL, jsonLd, openGraphFor, excelTitle } from "@/lib/site";
+import { MAIN_STEPS, MORE_FEATURES } from "@/lib/content/tutorial";
+import { SITE_URL, jsonLd, openGraphFor, excelTitle } from "@/lib/content/site";
 
 const TITLE = "App Tutorial: Excel Survey Points to Google Earth";
 const DESCRIPTION =

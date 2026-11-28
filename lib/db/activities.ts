@@ -1,6 +1,6 @@
 // What accounts did (the activity log) (part of db, lib/db/index.ts)
 import crypto from "crypto";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import { activityWhere } from "./core";
 import type { UserActivityRecord } from "./core";
 
@@ -213,5 +213,11 @@ export const activitiesRepo = {
         where: { OR: [{ userId: idLower }, { userEmail: idLower }] },
       });
     }
+  },
+
+  /** Every point counted in the activity log */
+  async totalPointsProcessed(): Promise<number> {
+    const r = await prisma.activity.aggregate({ _sum: { pointsCount: true } });
+    return r._sum.pointsCount ?? 0;
   },
 };

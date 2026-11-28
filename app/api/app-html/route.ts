@@ -3,11 +3,11 @@ import fs from "fs";
 import { createHash } from "crypto";
 import path from "path";
 import { db } from "@/lib/db";
-import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
-import { WEB_APP_LOGIN_URL } from "@/lib/authRedirect";
-import { getExtraSettings } from "@/lib/siteSettings";
-import { appSourceToken, fetchAppSource } from "@/lib/appSource";
-import { checkLimit } from "@/lib/billing";
+import { sessionForToken, tokenFromRequest } from "@/lib/auth/serverSession";
+import { WEB_APP_LOGIN_URL } from "@/lib/auth/authRedirect";
+import { getExtraSettings } from "@/lib/content/siteSettings";
+import { appSourceToken, fetchAppSource } from "@/lib/products/appSource";
+import { checkLimit } from "@/lib/billing/billing";
 
 export const dynamic = "force-dynamic";
 

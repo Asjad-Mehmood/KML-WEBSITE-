@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminSession } from "@/lib/adminAuth";
-import { listMessages, STATUSES, type Status } from "@/lib/contactMessages";
+import { getAdminSession } from "@/lib/auth/adminAuth";
+import { listMessages, STATUSES, type Status } from "@/lib/content/contactMessages";
 
 // Admin → Messages: contact-form messages, newest first, with counts per status
 export async function GET(req: NextRequest) {

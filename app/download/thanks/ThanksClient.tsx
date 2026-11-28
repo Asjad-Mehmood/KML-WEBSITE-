@@ -4,12 +4,12 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, BookOpen, CheckCircle2, Download, Globe, LayoutDashboard, Map, PlayCircle } from "lucide-react";
 import PageShell from "../../../components/PageShell";
-import { clearPendingDownload, peekPendingDownload } from "@/lib/downloadHandoff";
-import { announceDownload } from "@/lib/downloadNotice";
+import { clearPendingDownload, peekPendingDownload } from "@/lib/products/downloadHandoff";
+import { announceDownload } from "@/lib/products/downloadNotice";
 import { useAuth } from "../../../context/AuthContext";
-import { INSTALLER_NAME, SUPPORT_EMAIL } from "@/lib/site";
-import { useLatestRelease } from "@/lib/useLatestRelease";
-import { directDownloadAllowed } from "@/lib/publicSettings";
+import { INSTALLER_NAME, SUPPORT_EMAIL } from "@/lib/content/site";
+import { useLatestRelease } from "@/lib/products/useLatestRelease";
+import { directDownloadAllowed } from "@/lib/content/publicSettings";
 import { useRouter } from "next/navigation";
 
 const NEXT: { href: string; title: string; text: string; Icon: React.ElementType }[] = [

@@ -4,7 +4,7 @@
 // get through the queue fast: tick many and publish, hide or delete them together, "Publish the good
 // ones" (4–5 stars with a comment and no link), keyboard moderation (↑/↓ or J/K to move, P publish,
 // H hide, U back to waiting, X tick), search, stars and sort, each program's spread of stars and its
-// last 30 days, and an optional rule that publishes good reviews by themselves (lib/reviews.ts).
+// last 30 days, and an optional rule that publishes good reviews by themselves (lib/content/reviews.ts).
 // The menu has a part per program (app="excel-to-kml" …).
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AlertTriangle, Check, CheckSquare, EyeOff, Keyboard, Loader2, Mail, RefreshCw, Search, Send, Square, Star, Trash2, TrendingDown, TrendingUp, Undo2, Wand2 } from "lucide-react";
@@ -29,7 +29,7 @@ type Summary = { product: string; status: string; count: number; average: number
 type Spread = { product: string; rating: number; count: number };
 type Trend = { product: string; recent: number | null; before: number | null; recentCount: number };
 
-/** The programs people review (lib/reviews.ts REVIEW_PRODUCTS), and the Releases app each one is */
+/** The programs people review (lib/content/reviews.ts REVIEW_PRODUCTS), and the Releases app each one is */
 export const REVIEW_APPS = [
   { id: "excel-to-kml", name: "Excel to KML", release: "excel-to-kml" },
   { id: "traverse", name: "Traverse & Level", release: "traverse" },

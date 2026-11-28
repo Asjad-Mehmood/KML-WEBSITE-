@@ -17,9 +17,9 @@ import PageShell from "../../components/PageShell";
 import PageIntro from "../../components/PageIntro";
 import NextSteps from "../../components/NextSteps";
 import { BreadcrumbStructuredData } from "../../components/StructuredData";
-import { FEATURES } from "@/lib/featureGroups";
-import { FEATURE_DETAILS } from "@/lib/featureDetails";
-import { openGraphFor, excelTitle } from "@/lib/site";
+import { FEATURES } from "@/lib/content/featureGroups";
+import { FEATURE_DETAILS } from "@/lib/content/featureDetails";
+import { openGraphFor, excelTitle } from "@/lib/content/site";
 
 const TITLE = "Features";
 const DESCRIPTION =

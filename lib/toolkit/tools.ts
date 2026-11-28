@@ -2,7 +2,7 @@
 // and updates, and how it finds, installs and removes each one on a PC. Read from each product's
 // installer and files in the Toolkit's T0 research (its docs/TOOLS.md) and checked on Windows by
 // its Probe workflow. Only the Toolkit's own routes (/api/toolkit/*) use this file.
-import { ROADPRO_FILES, ROADPRO_RELEASED, ROADPRO_VERSION } from "@/lib/roadpro";
+import { ROADPRO_FILES, ROADPRO_RELEASED, ROADPRO_VERSION } from "@/lib/products/roadpro";
 
 export type ToolkitToolId = "excel-to-kml" | "roadpro" | "traverse" | "folder-manager" | "slope" | "auto-draft";
 

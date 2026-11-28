@@ -1,4 +1,4 @@
-import { SITE_URL, jsonLd } from "@/lib/site";
+import { SITE_URL, jsonLd } from "@/lib/content/site";
 import { TOOLKIT_DESCRIPTION, TOOLKIT_FAQS } from "@/lib/toolkit/homeFaq";
 
 // Survey Toolkit's page: the program itself and the questions the page shows (schema.org).

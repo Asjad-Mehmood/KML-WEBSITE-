@@ -5,7 +5,7 @@ import PageShell from "../../components/PageShell";
 import PageIntro from "../../components/PageIntro";
 import NextSteps from "../../components/NextSteps";
 import { BreadcrumbStructuredData } from "../../components/StructuredData";
-import { openGraphFor, excelTitle } from "@/lib/site";
+import { openGraphFor, excelTitle } from "@/lib/content/site";
 
 const TITLE = "File Formats";
 const DESCRIPTION =

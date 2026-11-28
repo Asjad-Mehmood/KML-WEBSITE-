@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Users } from "lucide-react";
 import PageShell from "../../../components/PageShell";
 import JoinTeam from "../../../components/JoinTeam";
-import { teamByCode } from "@/lib/teams";
+import { teamByCode } from "@/lib/account/teams";
 
 // /t/<code>: a team's invite link. Shows the team, then Join (signed in) or Sign in / Create account.
 export const dynamic = "force-dynamic";

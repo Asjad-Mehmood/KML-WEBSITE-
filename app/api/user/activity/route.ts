@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ACTIVITY_APPS, appOfRequest, tagActivity } from "@/lib/activityTags";
-import { trackAppUse } from "@/lib/appUsage";
+import { ACTIVITY_APPS, appOfRequest, tagActivity } from "@/lib/admin/activityTags";
+import { trackAppUse } from "@/lib/products/appUsage";
 import { db } from "@/lib/db";
-import { userFromRequest } from "@/lib/serverSession";
-import { getAdminSession } from "@/lib/adminAuth";
+import { userFromRequest } from "@/lib/auth/serverSession";
+import { getAdminSession } from "@/lib/auth/adminAuth";
 
 export async function OPTIONS() {
   return new NextResponse(null, {

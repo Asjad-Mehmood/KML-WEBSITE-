@@ -1,12 +1,12 @@
 import { after, NextRequest, NextResponse } from "next/server";
-import { logEvent } from "@/lib/activityEvents";
+import { logEvent } from "@/lib/admin/activityEvents";
 import { db, isAdminRole } from "@/lib/db";
-import { cleanOccupation } from "@/lib/occupations";
-import { getClientIp, getIpGeoLocation } from "@/lib/geo";
-import { getExtraSettings } from "@/lib/siteSettings";
-import { REF_COOKIE, recordReferral } from "@/lib/referrals";
-import { checkEmail } from "@/lib/emailCheck";
-import { TooManyVerifyCodes, confirmMessage, isUnconfirmedNewAccount, markRequired, sendVerification, verificationActive } from "@/lib/emailVerify";
+import { cleanOccupation } from "@/lib/account/occupations";
+import { getClientIp, getIpGeoLocation } from "@/lib/geo/geo";
+import { getExtraSettings } from "@/lib/content/siteSettings";
+import { REF_COOKIE, recordReferral } from "@/lib/account/referrals";
+import { checkEmail } from "@/lib/auth/emailCheck";
+import { TooManyVerifyCodes, confirmMessage, isUnconfirmedNewAccount, markRequired, sendVerification, verificationActive } from "@/lib/auth/emailVerify";
 
 export async function POST(req: NextRequest) {
   try {

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import ToolLanding from "../../../components/tools/ToolLanding";
-import { toolMetadata } from "@/lib/toolMeta";
+import { toolMetadata } from "@/lib/geo/toolMeta";
 
 const SLUG = "coordinates-on-map";
 export const metadata = toolMetadata(SLUG);

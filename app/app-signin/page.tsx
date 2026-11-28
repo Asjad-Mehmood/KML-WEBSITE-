@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import AuthShell, { buttonClass } from "../../components/AuthShell";
-import { sessionForToken } from "@/lib/serverSession";
-import { appSigninPath, parseAppLink } from "@/lib/appLink";
+import { sessionForToken } from "@/lib/auth/serverSession";
+import { appSigninPath, parseAppLink } from "@/lib/auth/appLink";
 
 export const metadata: Metadata = {
   title: "Sign in to the Windows app",

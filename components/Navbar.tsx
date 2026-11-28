@@ -1,11 +1,11 @@
 "use client";
 
-import { usePublicSettings } from "@/lib/publicSettings";
-import { PRODUCTS, badgeLabel } from "@/lib/products";
+import { usePublicSettings } from "@/lib/content/publicSettings";
+import { PRODUCTS, badgeLabel } from "@/lib/products/products";
 import React, { useState, useEffect, useRef, useSyncExternalStore } from "react";
-import { SITE_URL } from "@/lib/site";
-import { inAuthHost } from "@/lib/authHost";
-import { inDashboardHost } from "@/lib/dashboardHost";
+import { SITE_URL } from "@/lib/content/site";
+import { inAuthHost } from "@/lib/auth/authHost";
+import { inDashboardHost } from "@/lib/auth/dashboardHost";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
@@ -42,7 +42,7 @@ const NAV_LINKS: { label: string; href: string; id?: string; path?: string; wide
   { label: "Tools", href: "/tools", path: "/tools" },
   { label: "Tutorial", href: "/tutorial", path: "/tutorial", wideOnly: true },
 ];
-// our other software (lib/products.ts): one "Products" menu, so the bar fits however many there are
+// our other software (lib/products/products.ts): one "Products" menu, so the bar fits however many there are
 const PRODUCT_LINKS = PRODUCTS;
 
 // Download in the bar: with the Survey Toolkit's home page (Admin → Settings) it gets the Toolkit;

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CheckCircle2, Clock, AlertTriangle } from "lucide-react";
 import AuthShell, { buttonClass } from "../../components/AuthShell";
-import { companyTitle } from "@/lib/site";
+import { companyTitle } from "@/lib/content/site";
 
 export const metadata: Metadata = {
   title: companyTitle("Confirm your email"),

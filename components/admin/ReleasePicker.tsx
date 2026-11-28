@@ -1,11 +1,11 @@
 "use client";
 
 // Admin → Email → New versions: pick the program and the version, and the email is filled from
-// that release's notes in Admin → Releases (lib/releaseMailDraft.ts). A version that isn't there
+// that release's notes in Admin → Releases (lib/mail/releaseMailDraft.ts). A version that isn't there
 // yet comes in with "Get the newest from GitHub".
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { CheckCircle2, Download, Loader2, X } from "lucide-react";
-import type { ReleaseForMail } from "@/lib/releaseMailDraft";
+import type { ReleaseForMail } from "@/lib/mail/releaseMailDraft";
 
 type AppRow = { id: string; name: string };
 

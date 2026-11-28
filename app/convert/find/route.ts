@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GRID_PAGES } from "@/lib/gridPages";
-import { systemByCode } from "@/lib/epsgCatalog";
-import { searchGrids } from "@/lib/gridSearch";
+import { GRID_PAGES } from "@/lib/geo/gridPages";
+import { systemByCode } from "@/lib/geo/epsgCatalog";
+import { searchGrids } from "@/lib/geo/gridSearch";
 
 // Grid search box on /convert (when submitted without picking a suggestion):
 // a code goes straight to that system's page, a name to the best match.

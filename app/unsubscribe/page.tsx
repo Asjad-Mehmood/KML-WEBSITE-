@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import PageShell from "../../components/PageShell";
 import PageIntro from "../../components/PageIntro";
 import UnsubscribeForm from "./UnsubscribeForm";
-import { verifyUnsubscribeToken } from "@/lib/releaseEmail";
-import { isOptedOut } from "@/lib/releases";
-import { companyTitle } from "@/lib/site";
+import { verifyUnsubscribeToken } from "@/lib/mail/releaseEmail";
+import { isOptedOut } from "@/lib/products/releases";
+import { companyTitle } from "@/lib/content/site";
 
 export const metadata: Metadata = {
   title: companyTitle("Release emails"),

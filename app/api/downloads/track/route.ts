@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { INSTALLER_NAME, LATEST_VERSION } from "@/lib/site";
-import { getClientIp, getIpGeoLocation } from "@/lib/geo";
-import { prisma } from "@/lib/prisma";
-import { isMailConfigured, sendMail } from "@/lib/mailer";
-import { downloadThanksEmail } from "@/lib/downloadEmail";
-import { DOWNLOAD_PROGRAMS, directDownloadsOf, programOfAsset } from "@/lib/directDownloads";
-import { getExtraSettings } from "@/lib/siteSettings";
+import { INSTALLER_NAME, LATEST_VERSION } from "@/lib/content/site";
+import { getClientIp, getIpGeoLocation } from "@/lib/geo/geo";
+import { prisma } from "@/lib/db/prisma";
+import { isMailConfigured, sendMail } from "@/lib/mail/mailer";
+import { downloadThanksEmail } from "@/lib/mail/downloadEmail";
+import { DOWNLOAD_PROGRAMS, directDownloadsOf, programOfAsset } from "@/lib/products/directDownloads";
+import { getExtraSettings } from "@/lib/content/siteSettings";
 
 export async function POST(req: NextRequest) {
   try {

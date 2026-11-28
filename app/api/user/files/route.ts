@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { trackAppUse } from "@/lib/appUsage";
+import { trackAppUse } from "@/lib/products/appUsage";
 import { db, type FilePlatform } from "@/lib/db";
-import { userFromRequest } from "@/lib/serverSession";
-import { traverseControls } from "@/lib/traverseControls";
-import { getAdminSession } from "@/lib/adminAuth";
+import { userFromRequest } from "@/lib/auth/serverSession";
+import { traverseControls } from "@/lib/products/traverseControls";
+import { getAdminSession } from "@/lib/auth/adminAuth";
 import {
   MAX_FILE_BYTES,
   MAX_FILE_NAME,
@@ -11,8 +11,8 @@ import {
   MAX_USER_FILES,
   MAX_USER_STORAGE_BYTES,
   formatBytes,
-} from "@/lib/uploadLimits";
-import { pointsFromExport } from "@/lib/exportPoints";
+} from "@/lib/account/uploadLimits";
+import { pointsFromExport } from "@/lib/geo/exportPoints";
 
 export async function OPTIONS() {
   return new NextResponse(null, { status: 204 });

@@ -1,14 +1,14 @@
 import { after, NextRequest, NextResponse } from "next/server";
-import { authOrigin, continuePath, onAuthHost } from "@/lib/authHost";
-import { logEvent } from "@/lib/activityEvents";
-import { isBlocked } from "@/lib/accountControls";
+import { authOrigin, continuePath, onAuthHost } from "@/lib/auth/authHost";
+import { logEvent } from "@/lib/admin/activityEvents";
+import { isBlocked } from "@/lib/auth/accountControls";
 import { db } from "@/lib/db";
-import { GOOGLE_COOKIE, isGoogleConfigured, profileFromCode } from "@/lib/googleAuth";
-import { safeNextPath } from "@/lib/authRedirect";
-import { getClientIp, getIpGeoLocation } from "@/lib/geo";
-import { getExtraSettings } from "@/lib/siteSettings";
-import { markVerified } from "@/lib/emailVerify";
-import { REF_COOKIE, recordReferral } from "@/lib/referrals";
+import { GOOGLE_COOKIE, isGoogleConfigured, profileFromCode } from "@/lib/auth/googleAuth";
+import { safeNextPath } from "@/lib/auth/authRedirect";
+import { getClientIp, getIpGeoLocation } from "@/lib/geo/geo";
+import { getExtraSettings } from "@/lib/content/siteSettings";
+import { markVerified } from "@/lib/auth/emailVerify";
+import { REF_COOKIE, recordReferral } from "@/lib/account/referrals";
 
 // Back from Google: check the state, get the verified email, then sign in to
 // the matching account or create one, and continue to ?next

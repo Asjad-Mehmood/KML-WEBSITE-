@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import LegalShell from "../../components/LegalShell";
-import { PRIVACY_UPDATED, SHOW_ANDROID, SUPPORT_EMAIL, openGraphFor, companyTitle } from "@/lib/site";
+import { PRIVACY_UPDATED, SHOW_ANDROID, SUPPORT_EMAIL, openGraphFor, companyTitle } from "@/lib/content/site";
 
 const TITLE = "Privacy Policy";
 const DESCRIPTION = "How SurveyX Digital handles your information, the choices you have, and how to delete your account.";

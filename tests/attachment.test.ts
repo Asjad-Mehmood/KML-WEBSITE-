@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { attachment } from "@/lib/attachment";
+import { attachment } from "@/lib/http/attachment";
 
 test("plain names are kept", () => {
   assert.equal(attachment("points.kmz"), `attachment; filename="points.kmz"; filename*=UTF-8''points.kmz`);

@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "../../context/AuthContext";
-import { WEB_APP_LOGIN_URL } from "@/lib/authRedirect";
+import { WEB_APP_LOGIN_URL } from "@/lib/auth/authRedirect";
 import { RotateCw, Maximize2, Minimize2, ArrowLeft, Download, Loader2 } from "lucide-react";
 
 /** inToolkit: shown inside Survey Toolkit, which has its own bar: the app alone, no website around it */

@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { Card, Field, ResultRow, Tabs } from "@/components/tools/ui";
 import { ShareButton, useShared } from "@/components/tools/share";
-import { fmt, parseNumber, slopeFromDegrees, slopeFromOneIn, slopeFromPercent, slopeFromRiseRun, type Slope } from "@/lib/toolMath";
+import { fmt, parseNumber, slopeFromDegrees, slopeFromOneIn, slopeFromPercent, slopeFromRiseRun, type Slope } from "@/lib/geo/toolMath";
 
 type Mode = "riseRun" | "levels" | "convert";
 

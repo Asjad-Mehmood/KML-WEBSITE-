@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { logAdmin } from "@/lib/adminLog";
+import { logAdmin } from "@/lib/admin/adminLog";
 import { revalidatePath } from "next/cache";
-import { getAdminSession } from "@/lib/adminAuth";
+import { getAdminSession } from "@/lib/auth/adminAuth";
 import { db, type AppSettings } from "@/lib/db";
-import { prisma } from "@/lib/prisma";
-import { clientIp } from "@/lib/loginThrottle";
-import { browserLabel } from "@/lib/adminOtp";
-import { isMailConfigured, sendMail } from "@/lib/mailer";
-import { SITE_URL } from "@/lib/site";
-import { DOWNLOAD_PROGRAMS } from "@/lib/directDownloads";
-import { EXTRA_DEFAULTS, HOME_HEROES, getExtraSettings, safeNoticeLink, saveExtraSettings, type ExtraSettings } from "@/lib/siteSettings";
+import { prisma } from "@/lib/db/prisma";
+import { clientIp } from "@/lib/auth/loginThrottle";
+import { browserLabel } from "@/lib/auth/adminOtp";
+import { isMailConfigured, sendMail } from "@/lib/mail/mailer";
+import { SITE_URL } from "@/lib/content/site";
+import { DOWNLOAD_PROGRAMS } from "@/lib/products/directDownloads";
+import { EXTRA_DEFAULTS, HOME_HEROES, getExtraSettings, safeNoticeLink, saveExtraSettings, type ExtraSettings } from "@/lib/content/siteSettings";
 
 type AllSettings = AppSettings & ExtraSettings;
 

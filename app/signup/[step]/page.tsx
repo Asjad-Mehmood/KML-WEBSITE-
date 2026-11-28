@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { SignupStep } from "../../signin/step";
 import { SIGNUP_STEPS, type SignupStepName } from "../steps";
-import { companyTitle } from "@/lib/site";
+import { companyTitle } from "@/lib/content/site";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: companyTitle("Create your account"), robots: { index: false, follow: false } };

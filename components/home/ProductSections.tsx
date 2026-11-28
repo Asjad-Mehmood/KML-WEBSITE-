@@ -9,8 +9,8 @@ import RoadProDownload from "../RoadProDownload";
 import TraverseDownload from "../TraverseDownload";
 import FolderManagerDownload from "../FolderManagerDownload";
 import AppWindow from "./AppWindow";
-import { PRODUCTS, badgeLabel } from "@/lib/products";
-import { TRAVERSE_APP } from "@/lib/traverse";
+import { PRODUCTS, badgeLabel } from "@/lib/products/products";
+import { TRAVERSE_APP } from "@/lib/products/traverse";
 
 // Loaded in the browser only: the map and the radar need the window
 const HeroConverter = dynamic(() => import("../HeroConverter"), {

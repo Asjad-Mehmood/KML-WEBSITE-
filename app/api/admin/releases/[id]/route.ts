@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { logAdmin } from "@/lib/adminLog";
-import { getAdminSession } from "@/lib/adminAuth";
-import { checkRelease, deleteRelease, updateRelease } from "@/lib/releases";
+import { logAdmin } from "@/lib/admin/adminLog";
+import { getAdminSession } from "@/lib/auth/adminAuth";
+import { checkRelease, deleteRelease, updateRelease } from "@/lib/products/releases";
 
 type Ctx = { params: Promise<{ id: string }> };
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminSession } from "@/lib/adminAuth";
-import { previewReviewRequest } from "@/lib/releases";
+import { getAdminSession } from "@/lib/auth/adminAuth";
+import { previewReviewRequest } from "@/lib/products/releases";
 
 // GET ?app=: the review request as it will look, addressed to the admin who asks
 export async function GET(req: NextRequest) {

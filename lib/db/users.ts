@@ -1,7 +1,7 @@
 // Accounts: finding, creating and changing users, passwords, and the admin helpers (part of db, lib/db/index.ts)
 import crypto from "crypto";
-import { prisma } from "@/lib/prisma";
-import { isAdminUser } from "@/lib/adminRole";
+import { prisma } from "@/lib/db/prisma";
+import { isAdminUser } from "@/lib/auth/adminRole";
 import { generateSalt, hashPassword, mapUser, randomSecret, seedDefaultUsersIfEmpty } from "./core";
 import type { UserRecord } from "./core";
 
@@ -106,7 +106,7 @@ export const usersRepo = {
     return isAdminUser(user);
   },
 
-  async getAllUsers(query?: string) {
+  async getAllUsers(query?: string, limit?: number) {
     await seedDefaultUsersIfEmpty();
     const where = query?.trim()
       ? {
@@ -119,7 +119,7 @@ export const usersRepo = {
         }
       : {};
 
-    const users = await prisma.user.findMany({ where, orderBy: { createdAt: "desc" } });
+    const users = await prisma.user.findMany({ where, orderBy: { createdAt: "desc" }, ...(limit ? { take: limit } : {}) });
     return users.map(mapUser).map(this.sanitizeUser);
   },
 
@@ -182,5 +182,17 @@ export const usersRepo = {
     await prisma.conversion.deleteMany({ where: { userId: id } });
     await prisma.user.delete({ where: { id } });
     return true;
+  },
+
+  /** Counted in the database: every account, and per role */
+  async userCounts(): Promise<{ total: number; byRole: Record<string, number> }> {
+    await seedDefaultUsersIfEmpty();
+    const [total, roles] = await Promise.all([prisma.user.count(), prisma.user.groupBy({ by: ["role"], _count: { _all: true } })]);
+    const byRole: Record<string, number> = {};
+    for (const r of roles) {
+      const k = r.role || "Surveyor";
+      byRole[k] = (byRole[k] || 0) + r._count._all;
+    }
+    return { total, byRole };
   },
 };

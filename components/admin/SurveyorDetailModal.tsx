@@ -1,7 +1,7 @@
 "use client";
 
 // Admin → a person: everything about one account in one window (data from GET /api/admin/users/[id],
-// gathered by lib/personProfile.ts). Overview first: who they are, what they use and what they did
+// gathered by lib/admin/personProfile.ts). Overview first: who they are, what they use and what they did
 // lately; then a part for each kind of thing: files, points, jobs and calculations, activity,
 // downloads, Survey Toolkit PCs, reviews and messages, and the account itself (profile, email,
 // controls, release emails and what admins changed). Refresh keeps what's on screen while it loads.
@@ -43,12 +43,12 @@ import {
 } from "lucide-react";
 import FileViewer, { type ViewerFile } from "@/components/FileViewer";
 import { TraverseUserJobs } from "@/components/admin/AdminTraverse";
-import { actionLabel, adminActionTag } from "@/lib/activityKinds";
+import { actionLabel, adminActionTag } from "@/lib/admin/activityKinds";
 import AppVersions from "@/components/AppVersions";
 import EmailConfirmPanel from "@/components/admin/EmailConfirmPanel";
-import type { EmailStatus } from "@/lib/emailVerify";
-import type { ProgramVersions } from "@/lib/appUsage";
-import type { UserActivityItem, UserItem } from "@/lib/adminTypes";
+import type { EmailStatus } from "@/lib/auth/emailVerify";
+import type { ProgramVersions } from "@/lib/products/appUsage";
+import type { UserActivityItem, UserItem } from "@/lib/admin/adminTypes";
 
 export type { UserActivityItem, UserItem };
 

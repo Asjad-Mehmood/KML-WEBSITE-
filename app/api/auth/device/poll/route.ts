@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { signedInResponse } from "@/lib/loginResponse";
-import { poll } from "@/lib/deviceLink";
+import { signedInResponse } from "@/lib/auth/loginResponse";
+import { poll } from "@/lib/auth/deviceLink";
 
 // POST { poll }: the app window asks whether its code was confirmed at /link.
 // Confirmed: the window is signed in (session cookie, like a normal sign-in), once.

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Star, X } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import { usePublicSettings } from "@/lib/publicSettings";
+import { usePublicSettings } from "@/lib/content/publicSettings";
 
 // Asks for a review of a program the signed-in person downloaded: a few seconds after the
 // download ("Thanks for downloading…"), and again on a later visit, from a day after the

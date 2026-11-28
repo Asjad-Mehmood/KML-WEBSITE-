@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { signedInResponse } from "@/lib/loginResponse";
-import { sessionForToken } from "@/lib/serverSession";
-import { clientIp, recordFailure, tooManyFailures } from "@/lib/loginThrottle";
+import { signedInResponse } from "@/lib/auth/loginResponse";
+import { sessionForToken } from "@/lib/auth/serverSession";
+import { clientIp, recordFailure, tooManyFailures } from "@/lib/auth/loginThrottle";
 import { APP_CODE_PROGRAMS, takeHandoff } from "@/lib/toolkit/store";
 
 // A Windows program opened by the Survey Toolkit signs in with the code it was started with:

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { trackAppUse } from "@/lib/appUsage";
-import { sessionForToken, tokenFromRequest } from "@/lib/serverSession";
-import { traverseControls } from "@/lib/traverseControls";
-import { checkLimit } from "@/lib/billing";
+import { trackAppUse } from "@/lib/products/appUsage";
+import { sessionForToken, tokenFromRequest } from "@/lib/auth/serverSession";
+import { traverseControls } from "@/lib/products/traverseControls";
+import { checkLimit } from "@/lib/billing/billing";
 
 // GET: what the admin allows in the Traverse & Level app, for the signed-in account
 // (open or closed and why, sharing, keeping file copies, the job limit).

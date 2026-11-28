@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import LegalShell from "../../components/LegalShell";
-import { GITHUB_REPO_URL, LEGAL_UPDATED, SHOW_ANDROID, SUPPORT_EMAIL, openGraphFor, companyTitle } from "@/lib/site";
+import { GITHUB_REPO_URL, LEGAL_UPDATED, SHOW_ANDROID, SUPPORT_EMAIL, openGraphFor, companyTitle } from "@/lib/content/site";
 
 const TITLE = "Terms of Use";
 const DESCRIPTION = "The terms for using this website and its programs: Excel to KML, RoadPro, Traverse & Level, Slope Calculator and Project Folder Manager.";
