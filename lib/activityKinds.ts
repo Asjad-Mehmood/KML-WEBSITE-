@@ -31,6 +31,10 @@ export const ACTION_LABEL: Record<string, string> = {
   sign_in: "Signed in",
   sign_out: "Signed out",
   sign_up: "Account made",
+  team_create: "Team made",
+  team_join: "Joined a team",
+  team_share: "Job shared with a team",
+  team_copy: "Job copied from a team",
 };
 
 /** Everything the Traverse & Level app records (its saves are "traverse" and "levelling") */
