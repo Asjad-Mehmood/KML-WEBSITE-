@@ -89,6 +89,22 @@ We're sorry for the wait, and thank you for your patience.`,
     buttonUrl: "",
   },
   {
+    id: "missyou",
+    label: "We miss you",
+    hint: "To people not seen for a while (picks that group)",
+    subject: "{name}, your survey tools are still here",
+    title: "It's been a while",
+    body: `We noticed you haven't been back for a while, so here's what you may have missed.
+
+Excel to KML now puts survey points on any of 5,800+ grids into Google Earth, with photos, symbols and a report to hand in. Traverse & Level adjusts traverses and level books in the browser, and Slope Calculator works out slopes and levels along a line. They're all free, and one account works in all of them.
+
+Your account, your saved jobs and your files are just as you left them.
+
+If something didn't work for you, or a grid or feature was missing, just reply to this email and tell us. We read every reply and it often turns into the next update.`,
+    buttonLabel: "Open my account",
+    buttonUrl: "/dashboard",
+  },
+  {
     id: "blank",
     label: "Blank",
     hint: "Write your own",
