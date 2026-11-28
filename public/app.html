@@ -9862,6 +9862,10 @@ PC-01,229045.640,392414.010"></textarea>
           </div>
           <p class="zsub">A logo has to travel inside the file, so choosing one makes the output a
             KMZ even when there are no photos. Google Earth opens it the same way.</p>
+          <label style="display:flex;gap:8px;align-items:center;cursor:pointer;font-size:12.5px;color:var(--ink);margin-top:8px">
+            <input type="checkbox" id="madeWith" checked style="width:auto;margin:0"> Show &ldquo;Made with Excel to KML&rdquo;
+            in the balloons and reports
+          </label>
         </div>
       </div>
 
@@ -13211,7 +13215,7 @@ PC-01,229045.640,392414.010"></textarea>
           text(M, FOOT - 22, credit, 6.8, false, SOFT);
           var mid = pdfFit(job, 6.8, false, 160);
           text(PW / 2 - pdfW(mid, 6.8, false) / 2, FOOT - 22, mid, 6.8, false, SOFT);
-          rtext(PW - M, FOOT - 22, "Page " + (i + 1) + " of " + pages.length, 6.8, true, SOFT);
+          rtext(PW - M, FOOT - 22, (madeWith() ? "Made with Excel to KML  \u00b7  " : "") + "Page " + (i + 1) + " of " + pages.length, 6.8, true, SOFT);
         });
 
         /* ---- assemble the file ---- */
@@ -15180,6 +15184,20 @@ PC-01,229045.640,392414.010"></textarea>
       for (var i = 0; i < LOGO.bytes.length; i += 8192)
         bin += String.fromCharCode.apply(null, LOGO.bytes.subarray(i, i + 8192));
       return "data:image/png;base64," + btoa(bin);
+    }
+
+    /* "Made with Excel to KML" in balloons, the job panel and the reports: on unless switched off
+       (remembered on this computer). A small link to the website, so a client who opens the file
+       can find where it was made. */
+    var MADE_URL = "https://www.surveyxdigital.com/features?utm_source=excel-to-kml&utm_medium=";
+    try { if (localStorage.getItem("bm2kml.madewith") === "0") $("madeWith").checked = false; } catch (e) { }
+    $("madeWith").addEventListener("change", function () {
+      try { localStorage.setItem("bm2kml.madewith", this.checked ? "1" : "0"); } catch (e) { }
+      refresh();
+    });
+    function madeWith() { var c = $("madeWith"); return !c || c.checked; }
+    function madeLink(medium) {
+      return "<a href='" + MADE_URL + medium + "' style='color:#7E96A2'>Made with Excel to KML</a>";
     }
 
     $("logoPick").addEventListener("click", function () { $("logoFile").click(); });
@@ -17516,7 +17534,8 @@ PC-01,229045.640,392414.010"></textarea>
         "<table style=\"border-collapse:collapse;width:100%;font-size:12.5px\">" + trs + "</table>" +
         cmpHtml(g) + balloonTools(g, gi) +
         "<div style=\"margin-top:9px;padding-top:7px;border-top:1px solid #EDF1EF;" +
-        "font-size:11px;color:#7E96A2\">" + esc(foot) + "</div>" +
+        "font-size:11px;color:#7E96A2\">" + esc(foot) +
+        (madeWith() ? (foot ? "   &middot;   " : "") + madeLink("balloon") : "") + "</div>" +
         "</div></div>";
     }
 
@@ -17548,7 +17567,9 @@ PC-01,229045.640,392414.010"></textarea>
         rows.map(function (r) {
           return "<tr><td style='padding:5px 12px;color:#5B7480'>" + r[0] +
             "</td><td align='right' style='padding:5px 12px'>" + r[1] + "</td></tr>";
-        }).join("") + legend + "</table></div>";
+        }).join("") + legend + "</table>" +
+        (madeWith() ? "<div style='padding:8px 2px 0;font-size:11px;color:#7E96A2'>" + madeLink("panel") +
+          " &middot; free survey software by SurveyX Digital</div>" : "") + "</div>";
     }
 
     /* A tile of T metres fills 256 pixels when the camera is at roughly 4.7 T, on a
