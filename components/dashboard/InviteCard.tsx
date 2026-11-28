@@ -49,7 +49,7 @@ export default function InviteCard() {
         <Gift className="w-4 h-4 text-[#0071e3]" aria-hidden /> Invite a colleague
       </h2>
       <p className="mt-1 text-[13px] text-slate-600">
-        Send your link to someone who works with survey data. They get a free account, and you can see here who joined.
+        They get a free account. See here who joined.
       </p>
 
       <div className="mt-4 flex flex-col sm:flex-row gap-2">

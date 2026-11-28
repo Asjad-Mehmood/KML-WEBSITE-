@@ -242,7 +242,7 @@ input.bad { border-color: var(--bad); background: var(--bad-soft); }
 .pill.sync { background: var(--accent-soft); color: var(--accent); }
 .empty-state { text-align: center; padding: 34px 10px; color: var(--muted); }
 .empty-state svg { width: 56px; height: 56px; }
-.empty-state > b { display: block; color: var(--ink); font-size: 16px; margin: 6px 0 2px; }
+.empty-state > b:first-of-type { display: block; color: var(--ink); font-size: 16px; margin: 6px 0 2px; }
 .mini-list { display: flex; flex-direction: column; gap: 8px; }
 .mini { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
 .mini b { font-size: 14.5px; }

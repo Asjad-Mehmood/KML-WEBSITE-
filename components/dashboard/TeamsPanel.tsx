@@ -105,7 +105,7 @@ export default function TeamsPanel() {
           <h2 id="teams-title" className="text-[18px] font-bold tracking-tight text-slate-900 flex items-center gap-2">
             <Users className="w-5 h-5 text-[#0071e3]" aria-hidden /> Teams
           </h2>
-          <p className="text-[13px] text-slate-500">Share jobs with your colleagues, and copy theirs into your own account to open in the apps.</p>
+          <p className="text-[13px] text-slate-500">Share jobs with colleagues and copy theirs to your account.</p>
         </div>
         {teams.length > 0 && !creating && (
           <button type="button" className={btn} onClick={() => setCreating(true)}>

@@ -126977,7 +126977,7 @@ s=o.a.c.f
 s===$&&A.a()
 r=new A.aIY(n)
 n=new A.aIZ(o,n,r)
-r=A.b([r.$1("CROSSFALL \xb7 LEFT AND RIGHT OF THE CENTRELINE"),B.cI,new A.oS(B.E9,s,new A.aIU(o),new A.aIV(),"Sides",null,t.U4)],t.p)
+r=A.b([r.$1("CROSSFALL"),B.cI,new A.oS(B.E9,s,new A.aIU(o),new A.aIV(),"Sides",null,t.U4)],t.p)
 q=s!==B.d_
 if(!q||s===B.c7){p=o.a.c.r
 p===$&&A.a()
@@ -128579,7 +128579,7 @@ m=t.p
 m=A.bK(A.b([o,B.bZ,p,B.dp,B.Uz,B.kg,n,B.kg,A.cS(A.b([A.jK(!1,B.b8C,j,j,!0,j,j,k.z==null?j:new A.aTF(k),j,j),A.jK(!1,B.uH,j,j,!0,j,j,new A.aTG(k),j,j)],m),B.ad,B.hO,B.S,0)],m),B.aL,B.N,B.S)
 p=m
 break A}p=j}o=k.a.d
-if(o==null)o="Sign in to keep calculations in your account and open them on any device. The same account as Excel to KML and Traverse & Level."
+if(o==null)o="Sign in to keep your calculations on any device."
 n=t.p
 p=A.b([A.aF(o,j,j,j,j,A.bm(j,j,i.f,j,j,j,j,j,j,j,j,j,j,j,j,j,1.45,!0,j,j,j,j,j,j,j,j),j,j),B.cJ,p],n)
 i=k.at
@@ -128873,7 +128873,7 @@ p=t.p
 q=A.b([r,B.cJ,A.aF("Slope Calculator",o,o,o,o,q==null?o:q.GQ(B.cU),B.bT,o),B.kf,A.aF("Slope, gradient and chainage levels",o,o,o,o,A.bm(o,o,n,o,o,o,o,o,o,o,o,15,o,o,o,o,o,!0,o,o,o,o,o,o,o,o),B.bT,o),B.b2d],p)
 r=this.c
 if(r.a)q.push(new A.bl(B.Yf,A.bK(A.b([B.we,B.bZ,A.aF("Checking your sign-in\u2026",o,o,o,o,A.bm(o,o,n,o,o,o,o,o,o,o,o,o,o,o,o,o,o,!0,o,o,o,o,o,o,o,o),o,o)],p),B.ad,B.N,B.S),o))
-else q.push(new A.Cm(r,"Sign in with your SurveyX Digital account, or create one for free. One account works on surveyxdigital.com and in all our programs. Opened from the Survey Toolkit, you're signed in already.",o))
+else q.push(new A.Cm(r,"One free account for surveyxdigital.com and all our programs.",o))
 q.push(B.o2)
 q.push(A.aF("Version 1.1.0 \xb7 SurveyX Digital",o,o,o,o,A.bm(o,o,n,o,o,o,o,o,o,o,B.cE,12,o,o,o,o,o,!0,o,o,o,o,o,o,o,o),B.bT,o))
 n=A.dY(A.ls(new A.cO(B.pk,A.bK(q,B.aL,B.N,B.S),o),o,B.aN,B.Y6,o,B.aB),o,o)

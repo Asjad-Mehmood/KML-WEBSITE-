@@ -1,5 +1,5 @@
 // Offline support: keeps the app files on the device so it opens without internet after the first visit.
-const CACHE = 'tl-app-mx0gxunu';
+const CACHE = 'tl-app-mx0hhhe7';
 const CORE = ['./', './index.html', './styles.css', './app.js', './config.js', './vendor/pdf.js', './manifest.webmanifest', './icons/icon.svg', './icons/icon-192.png', './icons/icon-512.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });

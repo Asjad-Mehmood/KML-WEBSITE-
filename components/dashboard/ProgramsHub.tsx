@@ -90,7 +90,7 @@ export default function ProgramsHub({
           <h2 id="programs-h" className="text-[18px] font-bold tracking-tight text-slate-900">
             Your programs
           </h2>
-          <p className="text-[13px] text-slate-500">One account for all of them. Signed in here, signed in everywhere.</p>
+          <p className="text-[13px] text-slate-500">One account for all of them.</p>
         </div>
       </div>
 
@@ -102,7 +102,7 @@ export default function ProgramsHub({
             <p className="font-bold text-slate-900">Survey Toolkit</p>
             {toolkit && <Badge p={toolkit} />}
           </div>
-          <p className="text-[13px] text-slate-600">Installs every program below and keeps each one up to date by itself. Free, for Windows 10 and 11.</p>
+          <p className="text-[13px] text-slate-600">Installs and updates every program. Free, Windows 10 and 11.</p>
         </div>
         <div className="flex w-full sm:w-auto shrink-0 gap-2">
           <Link href="/toolkit" className="inline-flex w-full sm:w-auto justify-center items-center gap-1.5 rounded-xl bg-[#071a44] px-4 py-2.5 text-[13px] font-semibold text-white hover:bg-[#0b2560]">
