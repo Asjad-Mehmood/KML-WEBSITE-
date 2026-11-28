@@ -38,6 +38,7 @@ function audienceOf(b: Record<string, unknown>): AudienceInput {
     audience: String(b.audience || "") as MailAudience,
     userIds: Array.isArray(b.userIds) ? (b.userIds as unknown[]).map(String) : [],
     app: typeof b.app === "string" ? b.app : "",
+    days: Number(b.days) || undefined,
   };
 }
 

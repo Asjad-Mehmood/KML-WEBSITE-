@@ -8,9 +8,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MAIL_TEMPLATES, type MailTemplate } from "@/lib/mailTemplates";
 import { releaseDraft, type ReleaseForMail } from "@/lib/releaseMailDraft";
 import ReleasePicker from "./ReleasePicker";
-import { CheckCircle2, Eye, Loader2, Mail, Pause, Play, RefreshCw, Search, Send, Square, User, Users, X, AppWindow, Globe2, FlaskConical } from "lucide-react";
+import { CheckCircle2, Clock, Eye, Loader2, Mail, Pause, Play, RefreshCw, Search, Send, Square, User, Users, X, AppWindow, Globe2, FlaskConical } from "lucide-react";
 
-type Audience = "one" | "selected" | "app" | "all";
+type Audience = "one" | "selected" | "app" | "all" | "inactive";
+const DAYS = [30, 60, 90, 180];
 interface Person {
   id: string;
   name: string;
@@ -44,6 +45,7 @@ const AUDIENCES: { id: Audience; label: string; Icon: typeof User }[] = [
   { id: "selected", label: "Pick people", Icon: Users },
   { id: "app", label: "Users of an app", Icon: AppWindow },
   { id: "all", label: "Everyone", Icon: Globe2 },
+  { id: "inactive", label: "Not seen lately", Icon: Clock },
 ];
 
 const field = "w-full rounded-xl border border-slate-700 bg-slate-950 px-3.5 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-blue-500 focus:outline-none";
@@ -64,6 +66,7 @@ export default function AdminMail({
   // ---------------------------------------------------------------- who
   const [audience, setAudience] = useState<Audience>("one");
   const [app, setApp] = useState(APPS[0].id);
+  const [days, setDays] = useState(60);
   const [picked, setPicked] = useState<Person[]>([]);
   const [query, setQuery] = useState("");
   const [found, setFound] = useState<Person[]>([]);
@@ -92,7 +95,7 @@ export default function AdminMail({
 
   const ids = useMemo(() => picked.map((p) => p.id), [picked]);
   const needsPick = (audience === "one" || audience === "selected") && !ids.length;
-  const audienceBody = useMemo(() => ({ audience, userIds: audience === "one" ? ids.slice(0, 1) : ids, app }), [audience, ids, app]);
+  const audienceBody = useMemo(() => ({ audience, userIds: audience === "one" ? ids.slice(0, 1) : ids, app, days }), [audience, ids, app, days]);
 
   // how many it reaches, as the choice changes
   useEffect(() => {
@@ -157,6 +160,8 @@ export default function AdminMail({
       return;
     }
     fill(t.id, t);
+    // "We miss you" is for the people not seen lately
+    if (t.id === "missyou") setAudience("inactive");
   };
   const pickRelease = (r: ReleaseForMail) => {
     setPickingRelease(false);
@@ -342,6 +347,24 @@ export default function AdminMail({
           )}
 
           {audience === "all" && <p className="mt-4 text-xs text-slate-400">Every account with a confirmed email.</p>}
+
+          {audience === "inactive" && (
+            <div className="mt-4">
+              <label className={label} htmlFor="mail-days">
+                Not seen for
+              </label>
+              <select id="mail-days" value={days} onChange={(e) => setDays(Number(e.target.value))} className={field}>
+                {DAYS.map((d) => (
+                  <option key={d} value={d}>
+                    {d} days or more
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1.5 text-xs text-slate-500">
+                Accounts with a confirmed email that haven&apos;t signed in, used a program or done any work in that time. Send it once in a while, not every week.
+              </p>
+            </div>
+          )}
 
           <div className="mt-4 rounded-xl bg-slate-950/60 px-4 py-3 text-sm" aria-live="polite">
             {shownReachError ? (
