@@ -8,6 +8,7 @@ import { safeNextPath } from "@/lib/authRedirect";
 import { getClientIp, getIpGeoLocation } from "@/lib/geo";
 import { getExtraSettings } from "@/lib/siteSettings";
 import { markVerified } from "@/lib/emailVerify";
+import { REF_COOKIE, recordReferral } from "@/lib/referrals";
 
 // Back from Google: check the state, get the verified email, then sign in to
 // the matching account or create one, and continue to ?next
@@ -48,6 +49,9 @@ export async function GET(req: NextRequest) {
       const geo = await getIpGeoLocation(getClientIp(req), req);
       // No password is set (a random one is stored); "Forgot password" can add one later
       user = await db.createUser({ name: profile.name, email: profile.email, ipAddress: geo.ip, location: geo.location });
+      // came from someone's invite link (/r/<code>)
+      const ref = req.cookies.get(REF_COOKIE)?.value;
+      if (ref && user) await recordReferral(user.id, ref);
     }
 
 

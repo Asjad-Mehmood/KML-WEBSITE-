@@ -4,6 +4,7 @@ import { db, isAdminRole } from "@/lib/db";
 import { cleanOccupation } from "@/lib/occupations";
 import { getClientIp, getIpGeoLocation } from "@/lib/geo";
 import { getExtraSettings } from "@/lib/siteSettings";
+import { REF_COOKIE, recordReferral } from "@/lib/referrals";
 import { checkEmail } from "@/lib/emailCheck";
 import { TooManyVerifyCodes, confirmMessage, isUnconfirmedNewAccount, markRequired, sendVerification, verificationActive } from "@/lib/emailVerify";
 
@@ -77,6 +78,11 @@ export async function POST(req: NextRequest) {
           ipAddress: geo.ip,
           location: geo.location,
         });
+    // came from someone's invite link (the cookie from /r/<code>, or "ref" from an app)
+    if (!existing && user) {
+      const ref = req.cookies.get(REF_COOKIE)?.value || (typeof body.ref === "string" ? body.ref : "");
+      if (ref) await recordReferral(user.id, ref);
+    }
 
     // Email-and-password accounts confirm their address before they can sign in. The reply says
     // so in "error" too, which is all that older app versions show.
