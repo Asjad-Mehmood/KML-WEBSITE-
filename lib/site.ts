@@ -41,10 +41,10 @@ export const SITE_DESCRIPTION =
   "Convert Excel & CSV survey coordinates on 5,800+ EPSG grids into Google Earth KML, KMZ and DXF, with site photos and PDF reports. Free for Windows and the web.";
 
 export const OG_IMAGE = {
-  url: "/assets/og-image.png",
+  url: "/assets/og-image.jpg",
   width: 1200,
   height: 630,
-  alt: "Excel to KML: convert geospatial coordinate tables into Google Earth KML, KMZ and DXF",
+  alt: "SurveyX Digital: Survey Smart, Work Digital",
 };
 
 /**

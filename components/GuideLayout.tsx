@@ -30,7 +30,7 @@ export default function GuideLayout({ slug, children }: { slug: string; children
     datePublished: guide.published,
     dateModified: guide.published,
     mainEntityOfPage: `${SITE_URL}/guides/${slug}`,
-    image: `${SITE_URL}/assets/og-image.png`,
+    image: `${SITE_URL}/assets/og-image.jpg`,
     author: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
     publisher: { "@type": "Organization", name: SITE_NAME, logo: { "@type": "ImageObject", url: `${SITE_URL}/assets/icon-512.png` } },
   };

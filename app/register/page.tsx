@@ -96,12 +96,12 @@ export default function RegisterPage() {
       {/* Top Header */}
       <div className="max-w-7xl mx-auto w-full flex items-center justify-between py-2">
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center p-1.5 shadow-xs transition-transform group-hover:scale-105">
+          <div className="w-10 h-10 flex items-center justify-center transition-transform group-hover:scale-105">
             <Image
-              src="/assets/icon.png"
+              src="/assets/surveyx-icon.png"
               alt="SurveyX Digital"
-              width={32}
-              height={32}
+              width={40}
+              height={40}
               className="object-contain"
             />
           </div>

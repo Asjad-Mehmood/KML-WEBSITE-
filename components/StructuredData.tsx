@@ -49,7 +49,7 @@ export function HomeStructuredData() {
             downloadUrl: INSTALLER_URL,
             installUrl: `${SITE_URL}/download`,
             screenshot: `${SITE_URL}/assets/hero_geospatial.jpg`,
-            image: `${SITE_URL}/assets/icon-512.png`,
+            image: `${SITE_URL}/assets/excel-to-kml-icon.png`,
             softwareVersion: LATEST_VERSION.replace(/^v/, ""),
             isAccessibleForFree: true,
             offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
