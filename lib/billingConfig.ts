@@ -5,6 +5,7 @@
 // Emergency stop: BILLING_FORCE_OFF=1 in Vercel turns all of it off, whatever the switches say.
 // For a computer or a preview: BILLING_ENABLED=1 turns it all on outside the live site.
 import { prisma } from "@/lib/prisma";
+import { ensureSiteSettingsTable } from "@/lib/siteSettings";
 
 export type BillingConfig = {
   /** Free accounts are held to the limits in the web apps */
@@ -36,27 +37,9 @@ export const forcedOff = () => process.env.BILLING_FORCE_OFF === "1";
 /** BILLING_ENABLED=1 on a computer or a preview (never the live site) turns everything on */
 export const devOn = () => process.env.BILLING_ENABLED === "1" && process.env.VERCEL_ENV !== "production";
 
-let ready: Promise<void> | null = null;
-function ensureTable(): Promise<void> {
-  if (!ready) {
-    ready = prisma
-      .$executeRawUnsafe(`CREATE TABLE IF NOT EXISTS "site_settings" (
-        "key" TEXT NOT NULL,
-        "value" TEXT NOT NULL,
-        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        CONSTRAINT "site_settings_pkey" PRIMARY KEY ("key")
-      )`)
-      .then(() => undefined)
-      .catch((e) => {
-        ready = null;
-        throw e;
-      });
-  }
-  return ready;
-}
 
 async function readKey(key: string): Promise<unknown> {
-  await ensureTable();
+  await ensureSiteSettingsTable();
   const rows = await prisma.$queryRawUnsafe<{ value: string }[]>(`SELECT "value" FROM "site_settings" WHERE "key" = $1`, key);
   if (!rows[0]) return null;
   try {
@@ -67,7 +50,7 @@ async function readKey(key: string): Promise<unknown> {
 }
 
 async function writeKey(key: string, value: unknown): Promise<void> {
-  await ensureTable();
+  await ensureSiteSettingsTable();
   await prisma.$executeRawUnsafe(
     `INSERT INTO "site_settings" ("key", "value", "updatedAt") VALUES ($1, $2, NOW())
      ON CONFLICT ("key") DO UPDATE SET "value" = EXCLUDED."value", "updatedAt" = NOW()`,

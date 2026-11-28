@@ -3,7 +3,7 @@
 //   npm run set-password -- admin@exceltokml.com      prompts for the new password (hidden)
 //   npm run set-password -- --lock-demo               random passwords for the demo accounts
 //
-// Needs DATABASE_URL (read from .env). Hashing matches lib/db.ts (scrypt, 64-byte key).
+// Needs DATABASE_URL (read from .env). Hashing matches lib/db/core.ts (scrypt, 64-byte key).
 import "dotenv/config";
 import crypto from "crypto";
 import readline from "readline";
